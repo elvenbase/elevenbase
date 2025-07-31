@@ -266,6 +266,82 @@ export const useCreateTrainingSession = () => {
   });
 };
 
+export const useDuplicateTrainingSession = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      // Prima ottieni la sessione originale
+      const { data: originalSession, error: fetchError } = await supabase
+        .from('training_sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+
+      // Crea una nuova sessione con gli stessi dati ma nuova data
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const newDate = tomorrow.toISOString().split('T')[0];
+
+      const { data, error } = await supabase
+        .from('training_sessions')
+        .insert([{
+          title: `${originalSession.title} (Copia)`,
+          description: originalSession.description,
+          session_date: newDate,
+          start_time: originalSession.start_time,
+          end_time: originalSession.end_time,
+          location: originalSession.location,
+          max_participants: originalSession.max_participants,
+          created_by: (await supabase.auth.getUser()).data.user?.id
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      toast({ title: "Sessione duplicata con successo" });
+    },
+    onError: () => {
+      toast({ title: "Errore durante la duplicazione della sessione", variant: "destructive" });
+    }
+  });
+};
+
+export const useDeleteTrainingSession = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      // Prima elimina i dati correlati
+      await supabase.from('training_attendance').delete().eq('session_id', sessionId);
+      await supabase.from('training_lineups').delete().eq('session_id', sessionId);
+      
+      // Poi elimina la sessione
+      const { error } = await supabase
+        .from('training_sessions')
+        .delete()
+        .eq('id', sessionId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      toast({ title: "Sessione eliminata con successo" });
+    },
+    onError: () => {
+      toast({ title: "Errore durante l'eliminazione della sessione", variant: "destructive" });
+    }
+  });
+};
+
 // Competitions hooks
 export const useCompetitions = () => {
   return useQuery({

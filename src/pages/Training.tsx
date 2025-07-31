@@ -3,13 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, Clock, Users, Eye } from 'lucide-react';
+import { Plus, Calendar, Clock, Users, Eye, Copy, Trash2, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { TrainingForm } from '@/components/forms/TrainingForm';
 import { TrainingSessionModal } from '@/components/forms/TrainingSessionModal';
 import StatsCard from '@/components/StatsCard';
-import { useTrainingSessions, useTrainingStats, usePlayers } from '@/hooks/useSupabaseData';
+import { useTrainingSessions, useTrainingStats, usePlayers, useDuplicateTrainingSession, useDeleteTrainingSession } from '@/hooks/useSupabaseData';
 
 const Training = () => {
   const [selectedSession, setSelectedSession] = useState<any>(null);
@@ -18,6 +20,8 @@ const Training = () => {
   const { data: trainingSessions, isLoading, refetch: refetchSessions } = useTrainingSessions();
   const { data: stats } = useTrainingStats();
   const { data: players } = usePlayers();
+  const duplicateSession = useDuplicateTrainingSession();
+  const deleteSession = useDeleteTrainingSession();
 
   const handleSessionClosed = () => {
     refetchSessions();
@@ -26,6 +30,14 @@ const Training = () => {
   const openSessionDetails = (session: any) => {
     setSelectedSession(session);
     setModalOpen(true);
+  };
+
+  const handleDuplicate = async (session: any) => {
+    await duplicateSession.mutateAsync(session.id);
+  };
+
+  const handleDelete = async (sessionId: string) => {
+    await deleteSession.mutateAsync(sessionId);
   };
 
   const getStatusBadge = (session: any) => {
@@ -143,15 +155,51 @@ const Training = () => {
                         {getStatusBadge(session)}
                       </TableCell>
                       <TableCell>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openSessionDetails(session)}
-                          className="flex items-center gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          Gestisci
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Apri menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openSessionDetails(session)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Gestisci Sessione
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDuplicate(session)}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Duplica Sessione
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Elimina Sessione
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Questa azione non può essere annullata. Verranno eliminati anche tutti i dati delle presenze e delle formazioni collegati a questa sessione.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(session.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Elimina
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
