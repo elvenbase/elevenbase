@@ -36,6 +36,9 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
   const sessionUrl = session.public_link_token 
     ? `${window.location.origin}/session/${session.public_link_token}`
     : ''
+  
+  console.log('Session URL generated:', sessionUrl)
+  console.log('Session token:', session.public_link_token)
 
 
   // Genera QR Code

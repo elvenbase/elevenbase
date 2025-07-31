@@ -79,14 +79,18 @@ const PublicSession = () => {
   }, [deadline])
 
   const loadSessionData = async () => {
+    console.log('Loading session data for token:', token)
     try {
       const { data, error } = await supabase.functions.invoke('public-registration', {
         body: { token, method: 'GET' }
       })
 
+      console.log('Edge function response:', { data, error })
+
       if (error) throw error
 
       if (data.error) {
+        console.error('Data error:', data.error)
         setError(data.error)
         return
       }
