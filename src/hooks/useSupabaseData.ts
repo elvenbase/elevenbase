@@ -447,6 +447,79 @@ export const useDeleteTrialist = () => {
   });
 };
 
+// Trial Evaluations hooks
+export const useTrialEvaluations = (trialistId?: string) => {
+  return useQuery({
+    queryKey: ['trial-evaluations', trialistId],
+    queryFn: async () => {
+      const query = supabase
+        .from('trial_evaluations')
+        .select('*')
+        .order('evaluation_date', { ascending: false });
+      
+      if (trialistId) {
+        query.eq('trialist_id', trialistId);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!trialistId
+  });
+};
+
+export const useCreateTrialEvaluation = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (evaluation: {
+      trialist_id: string;
+      technical_score?: number;
+      physical_score?: number;
+      tactical_score?: number;
+      attitude_score?: number;
+      notes?: string;
+      evaluation_date?: string;
+    }) => {
+      // Calculate overall rating from individual scores
+      const scores = [
+        evaluation.technical_score,
+        evaluation.physical_score,
+        evaluation.tactical_score,
+        evaluation.attitude_score
+      ].filter(score => score !== undefined && score !== null) as number[];
+      
+      const overall_rating = scores.length > 0 ? 
+        scores.reduce((sum, score) => sum + score, 0) / scores.length : null;
+
+      const { data, error } = await supabase
+        .from('trial_evaluations')
+        .insert([{
+          ...evaluation,
+          overall_rating,
+          evaluator_id: (await supabase.auth.getUser()).data.user?.id
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trial-evaluations'] });
+      queryClient.invalidateQueries({ queryKey: ['trialist-stats'] });
+      toast({ title: "Valutazione salvata con successo" });
+    },
+    onError: (error) => {
+      console.error('Trial evaluation creation failed:', error);
+      toast({ title: "Errore durante il salvataggio della valutazione", variant: "destructive" });
+    }
+  });
+};
+
 // Stats hooks
 export const useStats = () => {
   return useQuery({
