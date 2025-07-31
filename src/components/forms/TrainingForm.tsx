@@ -13,14 +13,18 @@ interface TrainingFormProps {
 
 export const TrainingForm = ({ children }: TrainingFormProps) => {
   const [open, setOpen] = useState(false);
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    session_date: '',
-    start_time: '',
-    end_time: '',
-    location: '',
-    max_participants: ''
+    session_date: getTomorrowDate(),
+    start_time: '21:00',
+    end_time: '23:00'
   });
 
   const createTrainingSession = useCreateTrainingSession();
@@ -33,20 +37,16 @@ export const TrainingForm = ({ children }: TrainingFormProps) => {
       description: formData.description || undefined,
       session_date: formData.session_date,
       start_time: formData.start_time,
-      end_time: formData.end_time,
-      location: formData.location || undefined,
-      max_participants: formData.max_participants ? parseInt(formData.max_participants) : undefined
+      end_time: formData.end_time
     };
 
     await createTrainingSession.mutateAsync(sessionData);
     setFormData({
       title: '',
       description: '',
-      session_date: '',
-      start_time: '',
-      end_time: '',
-      location: '',
-      max_participants: ''
+      session_date: getTomorrowDate(),
+      start_time: '21:00',
+      end_time: '23:00'
     });
     setOpen(false);
   };
@@ -88,29 +88,18 @@ export const TrainingForm = ({ children }: TrainingFormProps) => {
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="session_date">Data</Label>
-              <Input
-                id="session_date"
-                type="date"
-                value={formData.session_date}
-                onChange={(e) => setFormData({ ...formData, session_date: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="location">Luogo</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="es. Campo A"
-              />
-            </div>
+          <div>
+            <Label htmlFor="session_date">Data</Label>
+            <Input
+              id="session_date"
+              type="date"
+              value={formData.session_date}
+              onChange={(e) => setFormData({ ...formData, session_date: e.target.value })}
+              required
+            />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="start_time">Inizio</Label>
               <Input
@@ -129,17 +118,6 @@ export const TrainingForm = ({ children }: TrainingFormProps) => {
                 value={formData.end_time}
                 onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
                 required
-              />
-            </div>
-            <div>
-              <Label htmlFor="max_participants">Max Partecipanti</Label>
-              <Input
-                id="max_participants"
-                type="number"
-                min="1"
-                value={formData.max_participants}
-                onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
-                placeholder="25"
               />
             </div>
           </div>
