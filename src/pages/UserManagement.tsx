@@ -193,12 +193,12 @@ const UserManagement = () => {
         // Crea il profilo usando gen_random_uuid() di PostgreSQL
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .insert([{
+          .insert({
             username: newUserUsername,
             first_name: newUserFirstName,
             last_name: newUserLastName,
             phone: newUserPhone
-          }])
+          })
           .select('id')
           .single();
 
