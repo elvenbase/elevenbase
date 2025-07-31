@@ -47,27 +47,11 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
           attendanceRate: 0
         }));
       }
-
-      // Get training attendance stats
-      console.log('Debug: Date range:', startDate, endDate);
-      console.log('Debug: Date range undefined check:', { startDate: startDate ? 'defined' : 'undefined', endDate: endDate ? 'defined' : 'undefined' });
-      
-      if (!startDate || !endDate) {
-        console.log('Debug: One or both dates are undefined, returning empty stats');
-        return players.map(player => ({
-          ...player,
-          presences: 0,
-          tardiness: 0,
-          totalEvents: 0,
-          attendanceRate: 0
-        }));
-      }
       
       // Prima recupera le sessioni chiuse nel periodo
       // Fix timezone issue: use local date formatting instead of ISO
       const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
       const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
-      console.log('Debug: Date strings:', startDateStr, endDateStr);
       
       const { data: closedSessions, error: sessionsError } = await supabase
         .from('training_sessions')
@@ -76,15 +60,12 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         .lte('session_date', endDateStr)
         .eq('is_closed', true);
       
-      console.log('Debug: Closed sessions:', closedSessions);
-      
       if (sessionsError) {
         console.error('Error fetching training sessions:', sessionsError);
         throw sessionsError;
       }
       
       const sessionIds = closedSessions?.map(s => s.id) || [];
-      console.log('Debug: Session IDs:', sessionIds);
       
       // Poi recupera le presenze per quelle sessioni
       let trainingAttendance = [];
@@ -102,7 +83,6 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         trainingAttendance = data || [];
       }
       
-      console.log('Debug: Training attendance:', trainingAttendance);
 
       // Get match attendance stats
       const { data: matchAttendance, error: matchError } = await supabase

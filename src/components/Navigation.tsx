@@ -25,6 +25,7 @@ const Navigation = () => {
     { name: "Prove", path: "/trials", icon: UserPlus },
     { name: "Competizioni", path: "/competitions", icon: Trophy },
     { name: "Allenamenti", path: "/training", icon: Activity },
+    { name: "Utenti", path: "/users", icon: Shield },
   ];
 
   const handleSignOut = async () => {

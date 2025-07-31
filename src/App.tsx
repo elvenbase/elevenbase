@@ -11,6 +11,8 @@ import Squad from "./pages/Squad";
 import Trials from "./pages/Trials";
 import Competitions from "./pages/Competitions";
 import Training from "./pages/Training";
+import UserManagement from "./pages/UserManagement";
+import AdminRoute from "./components/AdminRoute";
 import SessionManagement from "./pages/SessionManagement";
 import PublicRegistration from './pages/PublicRegistration';
 import PublicSession from './pages/PublicSession';
@@ -45,6 +47,11 @@ const App = () => (
                     <Route path="/trials-kanban" element={<TrialsKanban />} />
                     <Route path="/competitions" element={<Competitions />} />
                     <Route path="/training" element={<Training />} />
+                    <Route path="/users" element={
+                      <AdminRoute>
+                        <UserManagement />
+                      </AdminRoute>
+                    } />
                     <Route path="/training/session/:sessionId" element={<SessionManagement />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
