@@ -182,36 +182,64 @@ const UserManagement = () => {
         }
       } else {
         // Se non c'è email, crea solo il profilo (senza autenticazione)
-        const userId = crypto.randomUUID();
+        console.log('Creating user without email:', {
+          username: newUserUsername,
+          firstName: newUserFirstName,
+          lastName: newUserLastName,
+          phone: newUserPhone,
+          role: newUserRole
+        });
+        
+        // Genera un UUID semplice
+        const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        console.log('Generated userId:', userId);
         
         // Crea il profilo
-        await supabase
+        const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
+          .insert([{
             id: userId,
             username: newUserUsername,
             first_name: newUserFirstName,
             last_name: newUserLastName,
             phone: newUserPhone
-          });
+          }]);
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          throw profileError;
+        }
+        console.log('Profile created successfully');
 
         // Assegna il ruolo
-        await supabase
+        const { error: roleError } = await supabase
           .from('user_roles')
-          .insert({
+          .insert([{
             user_id: userId,
             role: newUserRole as any
-          });
+          }]);
+
+        if (roleError) {
+          console.error('Role assignment error:', roleError);
+          throw roleError;
+        }
+        console.log('Role assigned successfully');
 
         // Se il ruolo è "player", crea anche l'entry nella tabella players
         if (newUserRole === 'player') {
-          await supabase
+          const { error: playerError } = await supabase
             .from('players')
             .insert({
               first_name: newUserFirstName,
               last_name: newUserLastName,
               phone: newUserPhone
             });
+
+          if (playerError) {
+            console.error('Player creation error:', playerError);
+            throw playerError;
+          }
+          console.log('Player created successfully');
         }
       }
       toast.success('Utente creato con successo');
