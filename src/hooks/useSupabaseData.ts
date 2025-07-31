@@ -300,3 +300,28 @@ export const useStats = () => {
     }
   });
 };
+
+export const useTrialistStats = () => {
+  return useQuery({
+    queryKey: ['trialist-stats'],
+    queryFn: async () => {
+      const [inTrialResult, promotedResult, archivedResult, evaluationsResult] = await Promise.all([
+        supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'in_prova'),
+        supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'promosso'),
+        supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'archiviato'),
+        supabase.from('trial_evaluations').select('overall_rating')
+      ]);
+
+      const ratings = evaluationsResult.data?.map(e => e.overall_rating).filter(r => r !== null) || [];
+      const averageRating = ratings.length > 0 ? 
+        ratings.reduce((sum, rating) => sum + (rating || 0), 0) / ratings.length : 0;
+
+      return {
+        inTrial: inTrialResult.count || 0,
+        promoted: promotedResult.count || 0,
+        archived: archivedResult.count || 0,
+        averageRating: Number(averageRating.toFixed(1))
+      };
+    }
+  });
+};

@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Users, Trophy, Star } from "lucide-react";
-import { useTrialists, useStats } from "@/hooks/useSupabaseData";
+import { useTrialists, useTrialistStats } from "@/hooks/useSupabaseData";
 import { TrialistForm } from "@/components/forms/TrialistForm";
 
 const Trials = () => {
+  const { data: trialistStats, isLoading } = useTrialistStats();
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -33,7 +34,9 @@ const Trials = () => {
                 <UserPlus className="h-4 w-4 text-warning-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">5</p>
+            <p className="text-3xl font-bold text-foreground">
+              {isLoading ? '...' : trialistStats?.inTrial || 0}
+            </p>
             <p className="text-sm text-muted-foreground">Trialist attivi</p>
           </Card>
 
@@ -44,8 +47,10 @@ const Trials = () => {
                 <Trophy className="h-4 w-4 text-success-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">3</p>
-            <p className="text-sm text-muted-foreground">Questo mese</p>
+            <p className="text-3xl font-bold text-foreground">
+              {isLoading ? '...' : trialistStats?.promoted || 0}
+            </p>
+            <p className="text-sm text-muted-foreground">Totale promossi</p>
           </Card>
 
           <Card className="p-6 bg-card border-border hover:shadow-glow transition-smooth">
@@ -55,7 +60,9 @@ const Trials = () => {
                 <Star className="h-4 w-4 text-accent-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">4.2</p>
+            <p className="text-3xl font-bold text-foreground">
+              {isLoading ? '...' : trialistStats?.averageRating > 0 ? trialistStats.averageRating : '-'}
+            </p>
             <p className="text-sm text-muted-foreground">Su 5 stelle</p>
           </Card>
         </div>
