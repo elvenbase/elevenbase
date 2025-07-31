@@ -63,19 +63,13 @@ const UserManagement = () => {
   const checkUserPermissions = async () => {
     if (!currentUser) return;
     
-    const { data, error } = await supabase
-      .rpc('has_role', { 
-        _user_id: currentUser.id, 
-        _role: 'admin' 
-      });
-    
     const { data: isSuperAdmin } = await supabase
       .rpc('has_role', { 
         _user_id: currentUser.id, 
         _role: 'superadmin' 
       });
 
-    if (!data && !isSuperAdmin) {
+    if (!isSuperAdmin) {
       toast.error('Non hai i permessi per accedere a questa sezione');
       return;
     }

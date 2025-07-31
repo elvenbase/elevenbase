@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, User, Lock, Mail } from "lucide-react";
+import { Shield, User, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -23,10 +24,37 @@ const Auth = () => {
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    const username = formData.get('username') as string;
     const password = formData.get('password') as string;
     
-    await signIn(email, password);
+    try {
+      // Cerca l'email associata all'username
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .single();
+      
+      if (!profile) {
+        toast.error('Username non trovato');
+        setIsLoading(false);
+        return;
+      }
+
+      // Recupera l'email dell'utente
+      const { data: { users }, error } = await supabase.auth.admin.listUsers();
+      const userRecord = users?.find((u: any) => u.id === profile.id);
+      
+      if (!userRecord?.email) {
+        toast.error('Errore nel recupero dei dati utente');
+        setIsLoading(false);
+        return;
+      }
+      
+      await signIn(userRecord.email, password);
+    } catch (error) {
+      toast.error('Errore durante il login');
+    }
     setIsLoading(false);
   };
 
@@ -80,23 +108,18 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Accedi</TabsTrigger>
-                <TabsTrigger value="signup">Registrati</TabsTrigger>
-              </TabsList>
+            <div className="w-full">
               
-              <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="username">Username</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="admin@carissi.com"
+                        id="username"
+                        name="username"
+                        type="text"
+                        placeholder="admin"
                         required
                         className="pl-10"
                       />
@@ -120,65 +143,13 @@ const Auth = () => {
                     {isLoading ? "Accesso in corso..." : "Accedi"}
                   </Button>
                 </form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-username">Username</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-username"
-                        name="username"
-                        type="text"
-                        placeholder="Il tuo username"
-                        required
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        name="email"
-                        type="email"
-                        placeholder="La tua email"
-                        required
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        name="password"
-                        type="password"
-                        placeholder="Scegli una password"
-                        required
-                        minLength={6}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading} variant="secondary">
-                    {isLoading ? "Registrazione in corso..." : "Registrati"}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            </div>
           </CardContent>
         </Card>
 
         <div className="mt-4 text-center text-sm text-muted-foreground">
           <p>Credenziali admin predefinite:</p>
-          <p>Email: admin@carissi.com</p>
+          <p>Username: admin</p>
           <p>Password: CarissiEsportSG2526</p>
         </div>
       </div>

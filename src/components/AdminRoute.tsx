@@ -19,20 +19,14 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
       }
 
       try {
-        // Verifica se l'utente è admin o superadmin
-        const { data: isAdminResult } = await supabase
-          .rpc('has_role', { 
-            _user_id: user.id, 
-            _role: 'admin' 
-          });
-
+        // Verifica se l'utente è superadmin
         const { data: isSuperAdminResult } = await supabase
           .rpc('has_role', { 
             _user_id: user.id, 
             _role: 'superadmin' 
           });
 
-        setIsAdmin(isAdminResult || isSuperAdminResult);
+        setIsAdmin(isSuperAdminResult);
       } catch (error) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
