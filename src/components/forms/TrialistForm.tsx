@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +28,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   });
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [phonePrefix, setPhonePrefix] = useState('+39');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createTrialist = useCreateTrialist();
@@ -116,7 +119,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       first_name: formData.first_name,
       last_name: formData.last_name,
       email: formData.email || undefined,
-      phone: formData.phone || undefined,
+      phone: phoneNumber ? `${phonePrefix}${phoneNumber}` : undefined,
       birth_date: formData.birth_date || undefined,
       position: formData.position || undefined,
       notes: formData.notes || undefined,
@@ -133,6 +136,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       position: '',
       notes: ''
     });
+    setPhonePrefix('+39');
+    setPhoneNumber('');
     setAvatarUrl('');
     setOpen(false);
   };
@@ -230,14 +235,97 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 placeholder="email@esempio.com"
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="phone">Telefono</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+39 123 456 7890"
-              />
+              <div className="flex gap-2">
+                <Select 
+                  value={phonePrefix} 
+                  onValueChange={setPhonePrefix}
+                >
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60 bg-background border z-50">
+                    <SelectItem value="+39">🇮🇹 +39</SelectItem>
+                    <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                    <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                    <SelectItem value="+33">🇫🇷 +33</SelectItem>
+                    <SelectItem value="+49">🇩🇪 +49</SelectItem>
+                    <SelectItem value="+34">🇪🇸 +34</SelectItem>
+                    <SelectItem value="+41">🇨🇭 +41</SelectItem>
+                    <SelectItem value="+43">🇦🇹 +43</SelectItem>
+                    <SelectItem value="+32">🇧🇪 +32</SelectItem>
+                    <SelectItem value="+31">🇳🇱 +31</SelectItem>
+                    <SelectItem value="+351">🇵🇹 +351</SelectItem>
+                    <SelectItem value="+30">🇬🇷 +30</SelectItem>
+                    <SelectItem value="+45">🇩🇰 +45</SelectItem>
+                    <SelectItem value="+46">🇸🇪 +46</SelectItem>
+                    <SelectItem value="+47">🇳🇴 +47</SelectItem>
+                    <SelectItem value="+358">🇫🇮 +358</SelectItem>
+                    <SelectItem value="+354">🇮🇸 +354</SelectItem>
+                    <SelectItem value="+353">🇮🇪 +353</SelectItem>
+                    <SelectItem value="+420">🇨🇿 +420</SelectItem>
+                    <SelectItem value="+421">🇸🇰 +421</SelectItem>
+                    <SelectItem value="+36">🇭🇺 +36</SelectItem>
+                    <SelectItem value="+48">🇵🇱 +48</SelectItem>
+                    <SelectItem value="+40">🇷🇴 +40</SelectItem>
+                    <SelectItem value="+359">🇧🇬 +359</SelectItem>
+                    <SelectItem value="+385">🇭🇷 +385</SelectItem>
+                    <SelectItem value="+386">🇸🇮 +386</SelectItem>
+                    <SelectItem value="+381">🇷🇸 +381</SelectItem>
+                    <SelectItem value="+382">🇲🇪 +382</SelectItem>
+                    <SelectItem value="+387">🇧🇦 +387</SelectItem>
+                    <SelectItem value="+389">🇲🇰 +389</SelectItem>
+                    <SelectItem value="+355">🇦🇱 +355</SelectItem>
+                    <SelectItem value="+7">🇷🇺 +7</SelectItem>
+                    <SelectItem value="+380">🇺🇦 +380</SelectItem>
+                    <SelectItem value="+375">🇧🇾 +375</SelectItem>
+                    <SelectItem value="+370">🇱🇹 +370</SelectItem>
+                    <SelectItem value="+371">🇱🇻 +371</SelectItem>
+                    <SelectItem value="+372">🇪🇪 +372</SelectItem>
+                    <SelectItem value="+90">🇹🇷 +90</SelectItem>
+                    <SelectItem value="+972">🇮🇱 +972</SelectItem>
+                    <SelectItem value="+20">🇪🇬 +20</SelectItem>
+                    <SelectItem value="+212">🇲🇦 +212</SelectItem>
+                    <SelectItem value="+213">🇩🇿 +213</SelectItem>
+                    <SelectItem value="+216">🇹🇳 +216</SelectItem>
+                    <SelectItem value="+218">🇱🇾 +218</SelectItem>
+                    <SelectItem value="+27">🇿🇦 +27</SelectItem>
+                    <SelectItem value="+86">🇨🇳 +86</SelectItem>
+                    <SelectItem value="+81">🇯🇵 +81</SelectItem>
+                    <SelectItem value="+82">🇰🇷 +82</SelectItem>
+                    <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                    <SelectItem value="+852">🇭🇰 +852</SelectItem>
+                    <SelectItem value="+65">🇸🇬 +65</SelectItem>
+                    <SelectItem value="+60">🇲🇾 +60</SelectItem>
+                    <SelectItem value="+66">🇹🇭 +66</SelectItem>
+                    <SelectItem value="+84">🇻🇳 +84</SelectItem>
+                    <SelectItem value="+63">🇵🇭 +63</SelectItem>
+                    <SelectItem value="+62">🇮🇩 +62</SelectItem>
+                    <SelectItem value="+61">🇦🇺 +61</SelectItem>
+                    <SelectItem value="+64">🇳🇿 +64</SelectItem>
+                    <SelectItem value="+55">🇧🇷 +55</SelectItem>
+                    <SelectItem value="+54">🇦🇷 +54</SelectItem>
+                    <SelectItem value="+56">🇨🇱 +56</SelectItem>
+                    <SelectItem value="+57">🇨🇴 +57</SelectItem>
+                    <SelectItem value="+51">🇵🇪 +51</SelectItem>
+                    <SelectItem value="+52">🇲🇽 +52</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="123 456 7890"
+                  className="flex-1"
+                />
+              </div>
+              {phoneNumber && (
+                <p className="text-xs text-muted-foreground">
+                  WhatsApp: https://wa.me/{`${phonePrefix}${phoneNumber}`.replace(/[^0-9]/g, '')}
+                </p>
+              )}
             </div>
           </div>
 
