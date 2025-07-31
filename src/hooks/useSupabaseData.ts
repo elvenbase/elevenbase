@@ -49,28 +49,43 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
       }
 
       // Get training attendance stats
-      const { data: trainingAttendance, error: trainingError } = await supabase
-        .from('training_attendance')
-        .select(`
-          player_id,
-          status,
-          arrival_time,
-          session_id
-        `)
-        .in('session_id', 
-          (await supabase
-            .from('training_sessions')
-            .select('id')
-            .gte('session_date', startDate.toISOString().split('T')[0])
-            .lte('session_date', endDate.toISOString().split('T')[0])
-            .eq('is_closed', true)
-          ).data?.map(s => s.id) || []
-        );
-
-      if (trainingError) {
-        console.error('Error fetching training attendance:', trainingError);
-        throw trainingError;
+      console.log('Debug: Date range:', startDate, endDate);
+      
+      // Prima recupera le sessioni chiuse nel periodo
+      const { data: closedSessions, error: sessionsError } = await supabase
+        .from('training_sessions')
+        .select('id, session_date, is_closed')
+        .gte('session_date', startDate.toISOString().split('T')[0])
+        .lte('session_date', endDate.toISOString().split('T')[0])
+        .eq('is_closed', true);
+      
+      console.log('Debug: Closed sessions:', closedSessions);
+      
+      if (sessionsError) {
+        console.error('Error fetching training sessions:', sessionsError);
+        throw sessionsError;
       }
+      
+      const sessionIds = closedSessions?.map(s => s.id) || [];
+      console.log('Debug: Session IDs:', sessionIds);
+      
+      // Poi recupera le presenze per quelle sessioni
+      let trainingAttendance = [];
+      if (sessionIds.length > 0) {
+        const { data, error: trainingError } = await supabase
+          .from('training_attendance')
+          .select('player_id, status, arrival_time, session_id')
+          .in('session_id', sessionIds);
+        
+        if (trainingError) {
+          console.error('Error fetching training attendance:', trainingError);
+          throw trainingError;
+        }
+        
+        trainingAttendance = data || [];
+      }
+      
+      console.log('Debug: Training attendance:', trainingAttendance);
 
       // Get match attendance stats
       const { data: matchAttendance, error: matchError } = await supabase
