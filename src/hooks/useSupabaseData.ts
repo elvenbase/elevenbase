@@ -50,6 +50,18 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
 
       // Get training attendance stats
       console.log('Debug: Date range:', startDate, endDate);
+      console.log('Debug: Date range undefined check:', { startDate: startDate ? 'defined' : 'undefined', endDate: endDate ? 'defined' : 'undefined' });
+      
+      if (!startDate || !endDate) {
+        console.log('Debug: One or both dates are undefined, returning empty stats');
+        return players.map(player => ({
+          ...player,
+          presences: 0,
+          tardiness: 0,
+          totalEvents: 0,
+          attendanceRate: 0
+        }));
+      }
       
       // Prima recupera le sessioni chiuse nel periodo
       const startDateStr = startDate.toISOString().split('T')[0];
