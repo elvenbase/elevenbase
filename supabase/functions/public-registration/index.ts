@@ -25,13 +25,15 @@ serve(async (req) => {
     // Gestisci le chiamate da supabase.functions.invoke che usano sempre POST
     if (req.method === 'POST') {
       try {
-        requestBody = await req.json()
+        const bodyText = await req.text()
+        requestBody = JSON.parse(bodyText)
+        
         if (requestBody.method === 'GET') {
           method = 'GET'
           token = requestBody.token
         } else {
           // È una vera richiesta POST
-          token = requestBody.token
+          token = requestBody.token || token
         }
       } catch {
         // Se non c'è un body JSON valido, prova con i query params
