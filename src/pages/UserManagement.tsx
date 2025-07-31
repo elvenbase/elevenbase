@@ -190,26 +190,25 @@ const UserManagement = () => {
           role: newUserRole
         });
         
-        // Genera un UUID semplice
-        const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        console.log('Generated userId:', userId);
-        
-        // Crea il profilo
-        const { error: profileError } = await supabase
+        // Crea il profilo usando gen_random_uuid() di PostgreSQL
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .insert([{
-            id: userId,
             username: newUserUsername,
             first_name: newUserFirstName,
             last_name: newUserLastName,
             phone: newUserPhone
-          }]);
+          }])
+          .select('id')
+          .single();
 
         if (profileError) {
           console.error('Profile creation error:', profileError);
           throw profileError;
         }
-        console.log('Profile created successfully');
+        
+        const userId = profileData.id;
+        console.log('Profile created successfully with ID:', userId);
 
         // Assegna il ruolo
         const { error: roleError } = await supabase
