@@ -1,5 +1,6 @@
 
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -14,6 +15,7 @@ import Competitions from "./pages/Competitions";
 import Training from "./pages/Training";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import TrialsKanban from "./components/TrialsKanban";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,7 @@ const App = () => (
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/squad" element={<Squad />} />
                     <Route path="/trials" element={<Trials />} />
+                    <Route path="/trials-kanban" element={<TrialsKanban />} />
                     <Route path="/competitions" element={<Competitions />} />
                     <Route path="/training" element={<Training />} />
                     <Route path="*" element={<NotFound />} />

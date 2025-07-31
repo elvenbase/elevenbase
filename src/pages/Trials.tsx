@@ -96,7 +96,10 @@ const Trials = () => {
                 <span className="text-sm">Drag & Drop tra colonne</span>
               </div>
             </div>
-            <Button variant="gaming">
+            <Button 
+              variant="gaming"
+              onClick={() => window.location.href = '/trials-kanban'}
+            >
               <Star className="h-4 w-4 mr-2" />
               Visualizza Kanban
             </Button>

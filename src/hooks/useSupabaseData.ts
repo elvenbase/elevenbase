@@ -375,3 +375,182 @@ export const useRecentActivity = () => {
     }
   });
 };
+
+// Training Statistics hooks
+export const useTrainingStats = () => {
+  return useQuery({
+    queryKey: ['training-stats'],
+    queryFn: async () => {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const [monthlySessionsResult, attendanceResult, nextSessionResult] = await Promise.all([
+        supabase
+          .from('training_sessions')
+          .select('id', { count: 'exact' })
+          .gte('session_date', startOfMonth.toISOString().split('T')[0])
+          .lte('session_date', endOfMonth.toISOString().split('T')[0]),
+        supabase
+          .from('training_attendance')
+          .select('status'),
+        supabase
+          .from('training_sessions')
+          .select('id, title, session_date, start_time')
+          .gte('session_date', new Date().toISOString().split('T')[0])
+          .order('session_date', { ascending: true })
+          .order('start_time', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      ]);
+
+      const totalAttendance = attendanceResult.data?.length || 0;
+      const presentCount = attendanceResult.data?.filter(a => a.status === 'present').length || 0;
+      const attendanceRate = totalAttendance > 0 ? (presentCount / totalAttendance) * 100 : 0;
+
+      return {
+        monthlySessions: monthlySessionsResult.count || 0,
+        attendanceRate: Math.round(attendanceRate),
+        nextSession: nextSessionResult.data || null
+      };
+    }
+  });
+};
+
+// Competition Statistics hooks
+export const useCompetitionStats = () => {
+  return useQuery({
+    queryKey: ['competition-stats'],
+    queryFn: async () => {
+      const [championshipsResult, tournamentsResult, matchesResult, nextMatchResult] = await Promise.all([
+        supabase.from('competitions').select('id', { count: 'exact' }).eq('type', 'championship').eq('is_active', true),
+        supabase.from('competitions').select('id', { count: 'exact' }).eq('type', 'tournament').eq('is_active', true),
+        supabase.from('matches').select('id', { count: 'exact' }),
+        supabase
+          .from('matches')
+          .select('match_date, opponent_name')
+          .gte('match_date', new Date().toISOString().split('T')[0])
+          .order('match_date', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      ]);
+
+      let daysToNext = 0;
+      if (nextMatchResult.data) {
+        const nextDate = new Date(nextMatchResult.data.match_date);
+        const today = new Date();
+        daysToNext = Math.ceil((nextDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      }
+
+      return {
+        championships: championshipsResult.count || 0,
+        tournaments: tournamentsResult.count || 0,
+        totalMatches: matchesResult.count || 0,
+        daysToNext
+      };
+    }
+  });
+};
+
+// Matches hooks
+export const useMatches = () => {
+  return useQuery({
+    queryKey: ['matches'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select(`
+          *,
+          competitions:competition_id(name)
+        `)
+        .order('match_date', { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+};
+
+export const useCreateMatch = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (match: {
+      opponent_name: string;
+      match_date: string;
+      match_time: string;
+      home_away?: string;
+      location?: string;
+      competition_id?: string;
+      notes?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('matches')
+        .insert([{ ...match, created_by: (await supabase.auth.getUser()).data.user?.id }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      toast({ title: "Partita creata con successo" });
+    },
+    onError: () => {
+      toast({ title: "Errore durante la creazione della partita", variant: "destructive" });
+    }
+  });
+};
+
+// Training Attendance hooks
+export const useTrainingAttendance = (sessionId: string) => {
+  return useQuery({
+    queryKey: ['training-attendance', sessionId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_attendance')
+        .select(`
+          *,
+          players:player_id(first_name, last_name)
+        `)
+        .eq('session_id', sessionId);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!sessionId
+  });
+};
+
+export const useCreateAttendance = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (attendance: {
+      session_id: string;
+      player_id: string;
+      status: string;
+      arrival_time?: string;
+      notes?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('training_attendance')
+        .insert([attendance])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-attendance'] });
+      toast({ title: "Presenza registrata con successo" });
+    },
+    onError: () => {
+      toast({ title: "Errore durante la registrazione", variant: "destructive" });
+    }
+  });
+};

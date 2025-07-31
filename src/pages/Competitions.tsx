@@ -1,10 +1,22 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Plus, Calendar, Target } from "lucide-react";
-import { useCompetitions, useStats } from "@/hooks/useSupabaseData";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Plus, Calendar, Target, Edit, Trash2 } from "lucide-react";
+import { useCompetitions, useCompetitionStats, useMatches } from "@/hooks/useSupabaseData";
 import { CompetitionForm } from "@/components/forms/CompetitionForm";
+import { MatchForm } from "@/components/forms/MatchForm";
 
 const Competitions = () => {
+  const { data: competitions = [] } = useCompetitions();
+  const { data: matches = [] } = useMatches();
+  const { data: stats } = useCompetitionStats();
+
+  const upcomingMatches = matches
+    .filter(match => new Date(match.match_date) >= new Date())
+    .sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime())
+    .slice(0, 5);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -33,7 +45,7 @@ const Competitions = () => {
                 <Trophy className="h-4 w-4 text-primary-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">2</p>
+            <p className="text-3xl font-bold text-foreground">{stats?.championships || 0}</p>
             <p className="text-sm text-muted-foreground">Attivi</p>
           </Card>
 
@@ -44,7 +56,7 @@ const Competitions = () => {
                 <Target className="h-4 w-4 text-accent-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">1</p>
+            <p className="text-3xl font-bold text-foreground">{stats?.tournaments || 0}</p>
             <p className="text-sm text-muted-foreground">In corso</p>
           </Card>
 
@@ -55,8 +67,8 @@ const Competitions = () => {
                 <Calendar className="h-4 w-4 text-success-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">18</p>
-            <p className="text-sm text-muted-foreground">Stagione corrente</p>
+            <p className="text-3xl font-bold text-foreground">{stats?.totalMatches || 0}</p>
+            <p className="text-sm text-muted-foreground">Totali</p>
           </Card>
 
           <Card className="p-6 bg-card border-border hover:shadow-glow transition-smooth">
@@ -66,12 +78,12 @@ const Competitions = () => {
                 <Calendar className="h-4 w-4 text-warning-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">3</p>
+            <p className="text-3xl font-bold text-foreground">{stats?.daysToNext || 0}</p>
             <p className="text-sm text-muted-foreground">Giorni</p>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Card className="p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -87,10 +99,12 @@ const Competitions = () => {
                 <p className="text-sm text-muted-foreground mb-3">
                   Crea un campionato con girone all'italiana, doppio o singolo
                 </p>
-                <Button variant="outline" size="sm">
-                  <Trophy className="h-4 w-4 mr-2" />
-                  Crea Campionato
-                </Button>
+                <CompetitionForm>
+                  <Button variant="outline" size="sm">
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Crea Campionato
+                  </Button>
+                </CompetitionForm>
               </div>
               
               <div className="p-4 rounded-xl bg-muted border-l-4 border-accent">
@@ -98,10 +112,12 @@ const Competitions = () => {
                 <p className="text-sm text-muted-foreground mb-3">
                   Organizza un torneo con gironi e fasi eliminatorie
                 </p>
-                <Button variant="gaming" size="sm">
-                  <Target className="h-4 w-4 mr-2" />
-                  Crea Torneo
-                </Button>
+                <CompetitionForm>
+                  <Button variant="gaming" size="sm">
+                    <Target className="h-4 w-4 mr-2" />
+                    Crea Torneo
+                  </Button>
+                </CompetitionForm>
               </div>
             </div>
           </Card>
@@ -109,53 +125,165 @@ const Competitions = () => {
           <Card className="p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Calendario Partite</h3>
-                <p className="text-sm text-muted-foreground">Prossimi match programmati</p>
+                <h3 className="text-lg font-semibold text-foreground">Prossime Partite</h3>
+                <p className="text-sm text-muted-foreground">Match programmati</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MatchForm>
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nuova Partita
+                  </Button>
+                </MatchForm>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              {upcomingMatches.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="text-sm">Nessuna partita programmata</p>
+                </div>
+              ) : (
+                upcomingMatches.map((match) => (
+                  <div key={match.id} className="flex items-center justify-between p-3 rounded-xl bg-muted hover:bg-muted/80 transition-smooth">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-3 h-3 rounded-full ${match.home_away === 'home' ? "bg-accent" : "bg-warning"}`} />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {match.competitions?.name || 'Amichevole'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-foreground">
+                        {new Date(match.match_date).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{match.match_time}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Competizioni Attive</h3>
+                <p className="text-sm text-muted-foreground">Gestisci le tue competizioni</p>
+              </div>
+              <Trophy className="h-5 w-5 text-primary" />
+            </div>
+            
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Stato</TableHead>
+                  <TableHead className="text-right">Azioni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {competitions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      Nessuna competizione creata
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  competitions.map((competition) => (
+                    <TableRow key={competition.id}>
+                      <TableCell className="font-medium">{competition.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {competition.type === 'championship' ? 'Campionato' :
+                           competition.type === 'tournament' ? 'Torneo' : 'Amichevole'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={competition.is_active ? 'default' : 'outline'}>
+                          {competition.is_active ? 'Attiva' : 'Conclusa'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Tutte le Partite</h3>
+                <p className="text-sm text-muted-foreground">Cronologia completa</p>
               </div>
               <Calendar className="h-5 w-5 text-accent" />
             </div>
             
-            <div className="space-y-3">
-              {[
-                {
-                  opponent: "Team Alpha",
-                  date: "Ven 1 Feb",
-                  time: "21:00",
-                  competition: "Serie A E-Sports",
-                  isHome: true
-                },
-                {
-                  opponent: "Gaming Heroes",
-                  date: "Dom 3 Feb", 
-                  time: "20:30",
-                  competition: "Coppa Italia",
-                  isHome: false
-                },
-                {
-                  opponent: "Cyber Warriors",
-                  date: "Mer 6 Feb",
-                  time: "21:30",
-                  competition: "Serie A E-Sports", 
-                  isHome: true
-                }
-              ].map((match, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-muted hover:bg-muted/80 transition-smooth">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${match.isHome ? "bg-accent" : "bg-warning"}`} />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {match.isHome ? "vs" : "@"} {match.opponent}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{match.competition}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-foreground">{match.date}</p>
-                    <p className="text-xs text-muted-foreground">{match.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Avversario</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Risultato</TableHead>
+                  <TableHead className="text-right">Azioni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {matches.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      Nessuna partita registrata
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  matches.slice(0, 5).map((match) => (
+                    <TableRow key={match.id}>
+                      <TableCell className="font-medium">
+                        {match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(match.match_date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {match.status === 'completed' ? (
+                          <Badge variant={
+                            (match.our_score || 0) > (match.opponent_score || 0) ? 'default' :
+                            (match.our_score || 0) < (match.opponent_score || 0) ? 'destructive' : 'secondary'
+                          }>
+                            {match.our_score || 0} - {match.opponent_score || 0}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">{match.status}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </Card>
         </div>
       </div>
