@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
@@ -13,45 +14,45 @@ const QuickActions = () => {
   const actions = [
     {
       title: "Aggiungi Giocatore",
-      description: "Registra un nuovo membro della rosa",
+      description: "Registra un nuovo membro",
       icon: UserPlus,
       color: "bg-primary",
       action: () => console.log("Add player")
     },
     {
       title: "Programma Allenamento",
-      description: "Crea una nuova sessione di training",
+      description: "Crea nuova sessione",
       icon: Calendar,
       color: "bg-accent",
       action: () => console.log("Schedule training")
     },
     {
       title: "Nuova Competizione",
-      description: "Registra torneo o campionato",
+      description: "Registra torneo",
       icon: Trophy,
       color: "bg-warning",
       action: () => console.log("New competition")
     },
     {
       title: "Rapporto Match",
-      description: "Inserisci risultati partita",
+      description: "Inserisci risultati",
       icon: FileText,
       color: "bg-success",
       action: () => console.log("Match report")
     },
     {
-      title: "Presenza Rapida",
-      description: "Segna presenze allenamento",
+      title: "Gestione Presenze",
+      description: "Segna presenze",
       icon: Timer,
       color: "bg-destructive",
-      action: () => console.log("Quick attendance")
+      action: () => console.log("Attendance")
     },
     {
-      title: "Valuta Trialist",
-      description: "Aggiungi note di valutazione",
+      title: "Valuta Candidato",
+      description: "Note di valutazione",
       icon: Target,
       color: "bg-secondary",
-      action: () => console.log("Evaluate trialist")
+      action: () => console.log("Evaluate candidate")
     }
   ];
 
@@ -59,23 +60,23 @@ const QuickActions = () => {
     <Card className="p-6 bg-card border-border">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-foreground">Azioni Rapide</h3>
-        <p className="text-sm text-muted-foreground">Gestisci rapidamente le operazioni più comuni</p>
+        <p className="text-sm text-muted-foreground">Gestisci le operazioni più comuni</p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-3">
         {actions.map((action, index) => {
           const Icon = action.icon;
           return (
             <Button
               key={index}
               variant="ghost"
-              className="h-auto p-4 flex-col space-y-2 hover:bg-muted hover:shadow-card transition-smooth"
+              className="h-auto p-3 justify-start space-x-3 hover:bg-muted hover:shadow-sm transition-colors"
               onClick={action.action}
             >
-              <div className={`p-3 rounded-xl ${action.color} text-white shadow-glow`}>
-                <Icon className="h-5 w-5" />
+              <div className={`p-2 rounded-lg ${action.color} text-white flex-shrink-0`}>
+                <Icon className="h-4 w-4" />
               </div>
-              <div className="text-center space-y-1">
+              <div className="text-left">
                 <p className="text-sm font-medium text-foreground">{action.title}</p>
                 <p className="text-xs text-muted-foreground">{action.description}</p>
               </div>

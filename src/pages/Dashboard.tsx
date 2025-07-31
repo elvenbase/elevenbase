@@ -40,29 +40,29 @@ const Dashboard = () => {
             className="border-l-4 border-l-primary"
           />
           <StatsCard
-            title="Prossimi Allenamenti"
-            value="3"
-            description="Questa settimana"
+            title="Allenamenti"
+            value="0"
+            description="Programmati"
             icon={Calendar}
             className="border-l-4 border-l-secondary"
           />
           <StatsCard
-            title="Competizioni Attive"
-            value="2"
-            description="Tornei in corso"
+            title="Competizioni"
+            value="0"
+            description="In corso"
             icon={Trophy}
             className="border-l-4 border-l-accent"
           />
           <StatsCard
-            title="Prove Programmate"
-            value="5"
-            description="Nuovi candidati"
+            title="Prove"
+            value="0"
+            description="Programmate"
             icon={Target}
             className="border-l-4 border-l-success"
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <Card className="p-6 bg-card border-border">
               <div className="flex items-center justify-between mb-4">
@@ -74,7 +74,7 @@ const Dashboard = () => {
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {activePlayers.slice(0, 10).map((player) => (
-                  <div key={player.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-smooth">
+                  <div key={player.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <span className="text-foreground">
                       {player.firstName} {player.lastName}
                     </span>
