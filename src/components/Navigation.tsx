@@ -10,11 +10,14 @@ import {
   BarChart3, 
   Menu, 
   X,
-  Shield
+  Shield,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: BarChart3 },
@@ -23,6 +26,10 @@ const Navigation = () => {
     { name: "Competizioni", path: "/competitions", icon: Trophy },
     { name: "Allenamenti", path: "/training", icon: Activity },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <nav className="bg-card border-b border-border shadow-card sticky top-0 z-50">
@@ -71,11 +78,22 @@ const Navigation = () => {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" size="icon" className="text-muted-foreground">
-              <Shield className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-muted-foreground"
+              onClick={handleSignOut}
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
-            <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
-              A
+            <div className="flex items-center space-x-2">
+              <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
+                {user?.email?.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-sm font-medium text-foreground hidden lg:block">
+                {user?.email}
+              </span>
             </div>
           </div>
 
@@ -116,14 +134,23 @@ const Navigation = () => {
               })}
               
               <div className="pt-4 border-t border-border mt-4">
-                <div className="flex items-center space-x-3 px-4 py-3">
-                  <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
-                    A
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
+                      {user?.email?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{user?.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">Admin</p>
-                    <p className="text-xs text-muted-foreground">admin@caderissi.sg</p>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="text-muted-foreground"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>
