@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -34,6 +35,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Attempting to update player:', player.id, formData);
+    
     try {
       await updatePlayer.mutateAsync({
         id: player.id,
@@ -45,6 +48,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         phone: formData.phone || undefined
       });
       setOpen(false);
+      console.log('Player updated successfully');
     } catch (error) {
       console.error('Error updating player:', error);
     }

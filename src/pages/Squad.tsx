@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -303,9 +304,7 @@ const Squad = () => {
                         <div className="flex justify-end gap-2">
                           <EditPlayerForm player={player} />
                           
-                          <Button variant="outline" size="sm" onClick={() => {}}>
-                            <BarChart3 className="h-4 w-4" />
-                          </Button>
+                          <PlayerStatsModal player={player} />
 
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

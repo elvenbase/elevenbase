@@ -13,7 +13,10 @@ export const usePlayers = () => {
         .select('*')
         .order('last_name');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching players:', error);
+        throw error;
+      }
       return data;
     }
   });
@@ -30,7 +33,10 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         .select('*')
         .order('last_name');
       
-      if (playersError) throw playersError;
+      if (playersError) {
+        console.error('Error fetching players:', playersError);
+        throw playersError;
+      }
 
       if (!startDate || !endDate) {
         return players.map(player => ({
@@ -53,7 +59,10 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         .gte('training_sessions.session_date', startDate.toISOString().split('T')[0])
         .lte('training_sessions.session_date', endDate.toISOString().split('T')[0]);
 
-      if (trainingError) throw trainingError;
+      if (trainingError) {
+        console.error('Error fetching training attendance:', trainingError);
+        throw trainingError;
+      }
 
       // Get match attendance stats
       const { data: matchAttendance, error: matchError } = await supabase
@@ -66,7 +75,10 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         .gte('matches.match_date', startDate.toISOString().split('T')[0])
         .lte('matches.match_date', endDate.toISOString().split('T')[0]);
 
-      if (matchError) throw matchError;
+      if (matchError) {
+        console.error('Error fetching match attendance:', matchError);
+        throw matchError;
+      }
 
       // Calculate stats for each player
       return players.map(player => {
@@ -102,13 +114,17 @@ export const useCreatePlayer = () => {
 
   return useMutation({
     mutationFn: async (player: { first_name: string; last_name: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended'; phone?: string }) => {
+      console.log('Creating player:', player);
       const { data, error } = await supabase
         .from('players')
         .insert(player)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating player:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -116,7 +132,8 @@ export const useCreatePlayer = () => {
       queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
       toast({ title: "Giocatore aggiunto con successo" });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Player creation failed:', error);
       toast({ title: "Errore durante l'aggiunta del giocatore", variant: "destructive" });
     }
   });
@@ -128,6 +145,7 @@ export const useUpdatePlayer = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended'; phone?: string }) => {
+      console.log('Updating player:', id, updates);
       const { data, error } = await supabase
         .from('players')
         .update(updates)
@@ -135,7 +153,10 @@ export const useUpdatePlayer = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating player:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -143,7 +164,8 @@ export const useUpdatePlayer = () => {
       queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
       toast({ title: "Giocatore aggiornato con successo" });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Player update failed:', error);
       toast({ title: "Errore durante l'aggiornamento del giocatore", variant: "destructive" });
     }
   });
@@ -155,19 +177,24 @@ export const useDeletePlayer = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      console.log('Deleting player:', id);
       const { error } = await supabase
         .from('players')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting player:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
       queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
       toast({ title: "Giocatore eliminato con successo" });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Player deletion failed:', error);
       toast({ title: "Errore durante l'eliminazione del giocatore", variant: "destructive" });
     }
   });
