@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -163,9 +164,11 @@ const Training = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openSessionDetails(session)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Gestisci Sessione
+                            <DropdownMenuItem asChild>
+                              <Link to={`/training/session/${session.id}`} className="flex items-center">
+                                <Eye className="mr-2 h-4 w-4" />
+                                Gestisci Sessione
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => handleDuplicate(session)}>
