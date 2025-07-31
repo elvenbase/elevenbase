@@ -1,0 +1,137 @@
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { 
+  Users, 
+  UserPlus, 
+  Trophy, 
+  Activity, 
+  BarChart3, 
+  Menu, 
+  X,
+  Shield
+} from "lucide-react";
+import clubLogo from "@/assets/club-logo.png";
+
+const Navigation = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navigationItems = [
+    { name: "Dashboard", path: "/", icon: BarChart3 },
+    { name: "Rosa", path: "/squad", icon: Users },
+    { name: "Prove", path: "/trials", icon: UserPlus },
+    { name: "Competizioni", path: "/competitions", icon: Trophy },
+    { name: "Allenamenti", path: "/training", icon: Activity },
+  ];
+
+  return (
+    <nav className="bg-card border-b border-border shadow-card sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo and brand */}
+          <NavLink to="/" className="flex items-center space-x-3 group">
+            <div className="relative">
+              <img 
+                src={clubLogo} 
+                alt="Ca De Rissi SG Esport" 
+                className="h-10 w-10 rounded-lg shadow-glow group-hover:shadow-accent-glow transition-smooth"
+              />
+              <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 rounded-lg transition-smooth" />
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Ca De Rissi SG
+              </h1>
+              <p className="text-xs text-muted-foreground">E-Sport Management</p>
+            </div>
+          </NavLink>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth ${
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-glow"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`
+                  }
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">{item.name}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+
+          {/* User Menu */}
+          <div className="hidden md:flex items-center space-x-3">
+            <Button variant="ghost" size="icon" className="text-muted-foreground">
+              <Shield className="h-4 w-4" />
+            </Button>
+            <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
+              A
+            </div>
+          </div>
+
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-border animate-slide-in">
+            <div className="space-y-2">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `flex items-center space-x-3 px-4 py-3 rounded-xl transition-smooth ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-glow"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`
+                    }
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{item.name}</span>
+                  </NavLink>
+                );
+              })}
+              
+              <div className="pt-4 border-t border-border mt-4">
+                <div className="flex items-center space-x-3 px-4 py-3">
+                  <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
+                    A
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Admin</p>
+                    <p className="text-xs text-muted-foreground">admin@caderissi.sg</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+export default Navigation;
