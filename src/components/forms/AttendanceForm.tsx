@@ -13,6 +13,8 @@ interface AttendanceFormProps {
   sessionId: string;
   sessionTitle: string;
   children?: React.ReactNode;
+  sessionClosed?: boolean;
+  onSessionClosed?: () => void;
 }
 
 export const AttendanceForm = ({ sessionId, sessionTitle, children }: AttendanceFormProps) => {
@@ -20,6 +22,7 @@ export const AttendanceForm = ({ sessionId, sessionTitle, children }: Attendance
   const { data: players = [] } = usePlayers();
   const { data: existingAttendance = [] } = useTrainingAttendance(sessionId);
   const createAttendance = useCreateAttendance();
+  const updateStatistics = useUpdatePlayerStatistics();
   
   const [attendanceData, setAttendanceData] = useState<Record<string, {
     status: 'present' | 'absent' | 'late';
