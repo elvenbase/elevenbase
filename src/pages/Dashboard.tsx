@@ -13,9 +13,13 @@ import {
   Award,
   Activity
 } from "lucide-react";
-import { players } from "@/data/players";
+import { usePlayers, useStats } from "@/hooks/useSupabaseData";
+import { PlayerForm } from "@/components/forms/PlayerForm";
 
 const Dashboard = () => {
+  const { data: players = [], isLoading: playersLoading } = usePlayers();
+  const { data: stats, isLoading: statsLoading } = useStats();
+  
   const activePlayers = players.filter(player => player.status === 'active');
   const totalPlayers = activePlayers.length;
 
@@ -41,21 +45,21 @@ const Dashboard = () => {
           />
           <StatsCard
             title="Allenamenti"
-            value="0"
+            value={stats?.trainingSessions || 0}
             description="Programmati"
             icon={Calendar}
             className="border-l-4 border-l-secondary"
           />
           <StatsCard
             title="Competizioni"
-            value="0"
+            value={stats?.activeCompetitions || 0}
             description="In corso"
             icon={Trophy}
             className="border-l-4 border-l-accent"
           />
           <StatsCard
             title="Prove"
-            value="0"
+            value={stats?.activeTrials || 0}
             description="Programmate"
             icon={Target}
             className="border-l-4 border-l-success"
@@ -67,24 +71,26 @@ const Dashboard = () => {
             <Card className="p-6 bg-card border-border">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold text-foreground">Rosa Giocatori</h3>
-                <Button variant="outline" size="sm">
-                  <Users className="h-4 w-4 mr-2" />
-                  Gestisci Rosa
-                </Button>
+                <PlayerForm>
+                  <Button variant="outline" size="sm">
+                    <Users className="h-4 w-4 mr-2" />
+                    Gestisci Rosa
+                  </Button>
+                </PlayerForm>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {activePlayers.slice(0, 10).map((player) => (
                   <div key={player.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <span className="text-foreground">
-                      {player.firstName} {player.lastName}
+                      {player.first_name} {player.last_name}
                     </span>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs bg-success/20 text-success px-2 py-1 rounded-full">
                         Attivo
                       </span>
-                      {player.jerseyNumber && (
+                      {player.jersey_number && (
                         <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
-                          #{player.jerseyNumber}
+                          #{player.jersey_number}
                         </span>
                       )}
                     </div>

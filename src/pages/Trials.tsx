@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Users, Trophy, Star } from "lucide-react";
+import { useTrialists, useStats } from "@/hooks/useSupabaseData";
+import { TrialistForm } from "@/components/forms/TrialistForm";
 
 const Trials = () => {
   return (
@@ -15,10 +17,12 @@ const Trials = () => {
               Gestione trialist e processo di valutazione
             </p>
           </div>
-          <Button variant="hero" className="space-x-2">
-            <UserPlus className="h-4 w-4" />
-            <span>Nuovo Trialist</span>
-          </Button>
+          <TrialistForm>
+            <Button variant="hero" className="space-x-2">
+              <UserPlus className="h-4 w-4" />
+              <span>Nuovo Trialist</span>
+            </Button>
+          </TrialistForm>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

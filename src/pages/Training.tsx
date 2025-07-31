@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Activity, Plus, Calendar, Users, Clock, CheckCircle } from "lucide-react";
+import { useTrainingSessions, useStats } from "@/hooks/useSupabaseData";
+import { TrainingForm } from "@/components/forms/TrainingForm";
 
 const Training = () => {
   return (
@@ -15,10 +17,12 @@ const Training = () => {
               Pianificazione sessioni e gestione presenze
             </p>
           </div>
-          <Button variant="hero" className="space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>Nuova Sessione</span>
-          </Button>
+          <TrainingForm>
+            <Button variant="hero" className="space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Nuova Sessione</span>
+            </Button>
+          </TrainingForm>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

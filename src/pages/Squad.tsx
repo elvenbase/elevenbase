@@ -11,9 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Users, UserPlus, Edit, Search, Filter } from "lucide-react";
-import { players } from "@/data/players";
+import { usePlayers } from "@/hooks/useSupabaseData";
+import { PlayerForm } from "@/components/forms/PlayerForm";
 
 const Squad = () => {
+  const { data: players = [], isLoading } = usePlayers();
   const activePlayers = players.filter(player => player.status === 'active');
 
   return (
@@ -28,10 +30,12 @@ const Squad = () => {
               Gestione giocatori e composizione squadra
             </p>
           </div>
-          <Button variant="hero" className="space-x-2">
-            <UserPlus className="h-4 w-4" />
-            <span>Aggiungi Giocatore</span>
-          </Button>
+          <PlayerForm>
+            <Button variant="hero" className="space-x-2">
+              <UserPlus className="h-4 w-4" />
+              <span>Aggiungi Giocatore</span>
+            </Button>
+          </PlayerForm>
         </div>
 
         <div className="flex gap-4 mb-6">
@@ -70,11 +74,11 @@ const Squad = () => {
               <TableBody>
                 {activePlayers.map((player) => (
                   <TableRow key={player.id}>
-                    <TableCell className="font-medium">{player.firstName}</TableCell>
-                    <TableCell>{player.lastName}</TableCell>
+                    <TableCell className="font-medium">{player.first_name}</TableCell>
+                    <TableCell>{player.last_name}</TableCell>
                     <TableCell>
-                      {player.jerseyNumber ? (
-                        <Badge variant="outline">#{player.jerseyNumber}</Badge>
+                      {player.jersey_number ? (
+                        <Badge variant="outline">#{player.jersey_number}</Badge>
                       ) : (
                         <span className="text-muted-foreground">N/A</span>
                       )}
