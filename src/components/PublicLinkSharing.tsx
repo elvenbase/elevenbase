@@ -93,7 +93,16 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
 
   const openPublicLink = () => {
     if (sessionUrl) {
+      console.log('Opening URL:', sessionUrl)
       window.open(sessionUrl, '_blank')
+    }
+  }
+
+  const navigateToSession = () => {
+    if (session.public_link_token) {
+      const url = `/session/${session.public_link_token}`
+      console.log('Navigating to:', url)
+      window.location.href = url
     }
   }
 
@@ -207,10 +216,15 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
 
         {/* Pulsante di aggiornamento */}
         {onRefresh && (
-          <Button variant="outline" onClick={onRefresh} className="w-full">
+          <Button onClick={onRefresh} variant="outline" size="sm">
             Aggiorna Statistiche
           </Button>
         )}
+
+        {/* Test button per debug */}
+        <Button onClick={navigateToSession} variant="secondary" size="sm">
+          🔗 Apri Pagina Sessione (Test)
+        </Button>
 
         {/* Avviso scadenza */}
         {isExpired && (
