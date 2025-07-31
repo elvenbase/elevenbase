@@ -52,11 +52,15 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
       console.log('Debug: Date range:', startDate, endDate);
       
       // Prima recupera le sessioni chiuse nel periodo
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+      console.log('Debug: Date strings:', startDateStr, endDateStr);
+      
       const { data: closedSessions, error: sessionsError } = await supabase
         .from('training_sessions')
-        .select('id, session_date, is_closed')
-        .gte('session_date', startDate.toISOString().split('T')[0])
-        .lte('session_date', endDate.toISOString().split('T')[0])
+        .select('id, session_date, is_closed, title')
+        .gte('session_date', startDateStr)
+        .lte('session_date', endDateStr)
         .eq('is_closed', true);
       
       console.log('Debug: Closed sessions:', closedSessions);
