@@ -140,8 +140,6 @@ export const TrainingSessionModal = ({
             <AttendanceForm
               sessionId={session.id}
               sessionTitle={session.title}
-              sessionClosed={session.is_closed}
-              onSessionClosed={handleSessionClosed}
             />
           </TabsContent>
 
