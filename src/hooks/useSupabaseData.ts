@@ -419,6 +419,34 @@ export const useUpdateTrialist = () => {
   });
 };
 
+export const useDeleteTrialist = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('trialists')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting trialist:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trialists'] });
+      queryClient.invalidateQueries({ queryKey: ['trialist-stats'] });
+      toast({ title: "Trialist eliminato con successo" });
+    },
+    onError: (error) => {
+      console.error('Trialist deletion failed:', error);
+      toast({ title: "Errore durante l'eliminazione del trialist", variant: "destructive" });
+    }
+  });
+};
+
 // Stats hooks
 export const useStats = () => {
   return useQuery({

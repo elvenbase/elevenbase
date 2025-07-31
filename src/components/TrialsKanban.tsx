@@ -3,13 +3,14 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useTrialists, useUpdateTrialistStatus } from '@/hooks/useSupabaseData';
+import { useTrialists, useUpdateTrialistStatus, useDeleteTrialist } from '@/hooks/useSupabaseData';
 import { User, Star, ArrowRight, Archive, Edit, Trash2 } from 'lucide-react';
 import EditTrialistForm from '@/components/forms/EditTrialistForm';
 
 const TrialsKanban = () => {
   const { data: trialists = [], isLoading } = useTrialists();
   const updateTrialistStatus = useUpdateTrialistStatus();
+  const deleteTrialist = useDeleteTrialist();
   const [draggedItem, setDraggedItem] = useState<any>(null);
 
   const columns = [
@@ -68,6 +69,12 @@ const TrialsKanban = () => {
       id: trialistId,
       status: newStatus
     });
+  };
+
+  const handleDeleteTrialist = async (trialistId: string) => {
+    if (window.confirm('Sei sicuro di voler eliminare questo trialist? Questa azione non può essere annullata.')) {
+      await deleteTrialist.mutateAsync(trialistId);
+    }
   };
 
   if (isLoading) {
@@ -138,7 +145,17 @@ const TrialsKanban = () => {
                           )}
                         </div>
                       </div>
-                      <EditTrialistForm trialist={trialist} />
+                      <div className="flex items-center space-x-1">
+                        <EditTrialistForm trialist={trialist} />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteTrialist(trialist.id)}
+                          className="p-1 h-6 w-6"
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
 
                     {trialist.notes && (
