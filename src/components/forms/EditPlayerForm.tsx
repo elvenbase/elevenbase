@@ -1,12 +1,15 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUpdatePlayer } from "@/hooks/useSupabaseData";
-import { Edit } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Edit, Upload, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface EditPlayerFormProps {
   player: {
@@ -17,6 +20,7 @@ interface EditPlayerFormProps {
     position?: string;
     status: 'active' | 'inactive' | 'injured' | 'suspended';
     phone?: string;
+    avatar_url?: string;
   };
 }
 
@@ -51,8 +55,89 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
   
   const [phonePrefix, setPhonePrefix] = useState(initialPrefix);
   const [phoneNumber, setPhoneNumber] = useState(initialNumber);
+  const [avatarUrl, setAvatarUrl] = useState(player.avatar_url || '');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const updatePlayer = useUpdatePlayer();
+  const { toast } = useToast();
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File troppo grande",
+        description: "La dimensione massima consentita è 5MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Formato non valido",
+        description: "Seleziona un'immagine valida (JPG, PNG, etc.).",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${player.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('player-avatars')
+        .upload(filePath, file, {
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('player-avatars')
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(publicUrl);
+      
+      toast({
+        title: "Avatar caricato",
+        description: "L'immagine del profilo è stata caricata con successo.",
+      });
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: "Errore caricamento",
+        description: "Si è verificato un errore durante il caricamento dell'immagine.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const removeAvatar = async () => {
+    if (avatarUrl && avatarUrl.includes('player-avatars')) {
+      try {
+        const fileName = avatarUrl.split('/').pop();
+        if (fileName) {
+          await supabase.storage
+            .from('player-avatars')
+            .remove([`avatars/${fileName}`]);
+        }
+      } catch (error) {
+        console.error('Error removing avatar:', error);
+      }
+    }
+    setAvatarUrl('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +151,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         jersey_number: formData.jersey_number ? Number(formData.jersey_number) : undefined,
         position: formData.position || undefined,
         status: formData.status,
-        phone: formData.phone || undefined
+        phone: formData.phone || undefined,
+        avatar_url: avatarUrl || undefined
       });
       setOpen(false);
       console.log('Player updated successfully');
@@ -247,6 +333,52 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                 <SelectItem value="suspended">Squalificato</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Foto Profilo</Label>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
+                <AvatarFallback>
+                  {player.first_name.charAt(0)}{player.last_name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {uploadingAvatar ? "Caricamento..." : "Carica Foto"}
+                </Button>
+                {avatarUrl && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={removeAvatar}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+            {avatarUrl && (
+              <p className="text-xs text-muted-foreground">
+                Formato supportati: JPG, PNG (max 5MB)
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end space-x-2">

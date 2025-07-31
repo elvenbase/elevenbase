@@ -144,7 +144,7 @@ export const useUpdatePlayer = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended'; phone?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended'; phone?: string; avatar_url?: string }) => {
       console.log('Updating player:', id, updates);
       const { data, error } = await supabase
         .from('players')
