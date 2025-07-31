@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import Squad from "./pages/Squad";
 import Trials from "./pages/Trials";
 import Competitions from "./pages/Competitions";
 import Training from "./pages/Training";
+import PublicRegistration from './pages/PublicRegistration';
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import TrialsKanban from "./components/TrialsKanban";
@@ -27,7 +27,11 @@ const App = () => (
         <AuthProvider>
           <div className="min-h-screen bg-background">
             <Routes>
+              {/* Public routes */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/public-registration/:token" element={<PublicRegistration />} />
+              
+              {/* Protected routes */}
               <Route path="/*" element={
                 <ProtectedRoute>
                   <Navigation />

@@ -200,19 +200,6 @@ export const useDeletePlayer = () => {
   });
 };
 
-export const useUpdatePlayerStatistics = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (playerId: string) => {
-      return { success: true };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['players'] });
-      queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
-      queryClient.invalidateQueries({ queryKey: ['player-statistics'] });
-    },
-  });
-};
 
 export const usePlayerStatistics = (playerId: string) => {
   return useQuery({
@@ -802,10 +789,75 @@ export const useCreateAttendance = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['training-attendance'] });
-      toast({ title: "Presenza registrata con successo" });
+    }
+  });
+};
+
+// Hook per aggiornare le statistiche dei giocatori
+export const useUpdatePlayerStatistics = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ sessionId }: { sessionId: string }) => {
+      // Prendi tutte le presenze per questa sessione
+      const { data: attendance, error: attendanceError } = await supabase
+        .from('training_attendance')
+        .select('player_id, status')
+        .eq('session_id', sessionId);
+
+      if (attendanceError) throw attendanceError;
+
+      // Aggiorna le statistiche per ogni giocatore
+      for (const record of attendance || []) {
+        const { data: existingStats, error: statsError } = await supabase
+          .from('player_statistics')
+          .select('*')
+          .eq('player_id', record.player_id)
+          .maybeSingle();
+
+        if (statsError) throw statsError;
+
+        // Calcola le nuove statistiche basate su tutte le presenze del giocatore
+        const { data: allAttendance, error: allAttendanceError } = await supabase
+          .from('training_attendance')
+          .select('status')
+          .eq('player_id', record.player_id);
+
+        if (allAttendanceError) throw allAttendanceError;
+
+        const totalSessions = allAttendance?.length || 0;
+        const presentSessions = allAttendance?.filter(a => a.status === 'present').length || 0;
+        const attendanceRate = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
+
+        if (existingStats) {
+          // Aggiorna statistiche esistenti
+          const { error: updateError } = await supabase
+            .from('player_statistics')
+            .update({
+              training_attendance_rate: attendanceRate,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingStats.id);
+
+          if (updateError) throw updateError;
+        } else {
+          // Crea nuove statistiche
+          const { error: insertError } = await supabase
+            .from('player_statistics')
+            .insert({
+              player_id: record.player_id,
+              training_attendance_rate: attendanceRate,
+              season: new Date().getFullYear().toString()
+            });
+
+          if (insertError) throw insertError;
+        }
+      }
+
+      return { success: true };
     },
-    onError: () => {
-      toast({ title: "Errore durante la registrazione", variant: "destructive" });
+    onSuccess: () => {
+      const queryClient = useQueryClient();
+      queryClient.invalidateQueries({ queryKey: ['player-statistics'] });
     }
   });
 };
