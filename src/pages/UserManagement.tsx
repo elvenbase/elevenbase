@@ -138,32 +138,68 @@ const UserManagement = () => {
         return;
       }
 
-      // Genera un'email temporanea basata sull'username
-      const tempEmail = `${newUserUsername.toLowerCase()}@temp.carissi.com`;
+      if (newUserRole === 'player' && !newUserPhone) {
+        toast.error('Il telefono è obbligatorio per i giocatori');
+        return;
+      }
 
-      // Crea l'utente tramite signup normale
-      const { data, error } = await supabase.auth.signUp({
-        email: tempEmail,
-        password: newUserPassword,
-        options: {
-          data: {
+      if (newUserEmail) {
+        // Se c'è un'email, crea l'utente tramite signup normale
+        const { data, error } = await supabase.auth.signUp({
+          email: newUserEmail,
+          password: newUserPassword,
+          options: {
+            data: {
+              username: newUserUsername,
+              first_name: newUserFirstName,
+              last_name: newUserLastName,
+              phone: newUserPhone
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          // Assegna il ruolo
+          await supabase
+            .from('user_roles')
+            .insert({
+              user_id: data.user.id,
+              role: newUserRole as any
+            });
+
+          // Se il ruolo è "player", crea anche l'entry nella tabella players
+          if (newUserRole === 'player') {
+            await supabase
+              .from('players')
+              .insert({
+                first_name: newUserFirstName,
+                last_name: newUserLastName,
+                phone: newUserPhone
+              });
+          }
+        }
+      } else {
+        // Se non c'è email, crea solo il profilo (senza autenticazione)
+        const userId = crypto.randomUUID();
+        
+        // Crea il profilo
+        await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
             username: newUserUsername,
             first_name: newUserFirstName,
             last_name: newUserLastName,
             phone: newUserPhone
-          }
-        }
-      });
+          });
 
-      if (error) throw error;
-
-      if (data.user) {
-        // Il profilo viene creato automaticamente dal trigger
         // Assegna il ruolo
         await supabase
           .from('user_roles')
           .insert({
-            user_id: data.user.id,
+            user_id: userId,
             role: newUserRole as any
           });
 
@@ -177,12 +213,11 @@ const UserManagement = () => {
               phone: newUserPhone
             });
         }
-
-        toast.success('Utente creato con successo');
-        setIsCreateModalOpen(false);
-        resetForm();
-        fetchUsers();
       }
+      toast.success('Utente creato con successo');
+      setIsCreateModalOpen(false);
+      resetForm();
+      fetchUsers();
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast.error('Errore nella creazione dell\'utente: ' + error.message);
@@ -351,12 +386,13 @@ const UserManagement = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="phone">Telefono</Label>
+                    <Label htmlFor="phone">Telefono {newUserRole === 'player' && <span className="text-destructive">*</span>}</Label>
                     <Input
                       id="phone"
                       value={newUserPhone}
                       onChange={(e) => setNewUserPhone(e.target.value)}
                       placeholder="+39 123 456 7890"
+                      required={newUserRole === 'player'}
                     />
                   </div>
                   <div>
