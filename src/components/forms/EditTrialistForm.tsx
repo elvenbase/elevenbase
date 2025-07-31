@@ -1,35 +1,48 @@
-import { useState, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useCreateTrialist } from '@/hooks/useSupabaseData';
-import { supabase } from '@/integrations/supabase/client';
-import { Plus, Upload, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUpdateTrialist } from "@/hooks/useSupabaseData";
+import { supabase } from "@/integrations/supabase/client";
+import { Edit, Upload, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-interface TrialistFormProps {
-  children?: React.ReactNode;
+interface EditTrialistFormProps {
+  trialist: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email?: string;
+    phone?: string;
+    birth_date?: string;
+    position?: string;
+    status: 'in_prova' | 'promosso' | 'archiviato';
+    notes?: string;
+    avatar_url?: string;
+  };
 }
 
-export const TrialistForm = ({ children }: TrialistFormProps) => {
+const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    birth_date: '',
-    position: '',
-    notes: ''
+    first_name: trialist.first_name,
+    last_name: trialist.last_name,
+    email: trialist.email || '',
+    phone: trialist.phone || '',
+    birth_date: trialist.birth_date || '',
+    position: trialist.position || '',
+    status: trialist.status,
+    notes: trialist.notes || ''
   });
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState(trialist.avatar_url || '');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const createTrialist = useCreateTrialist();
+  const updateTrialist = useUpdateTrialist();
   const { toast } = useToast();
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +73,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `temp-${Date.now()}.${fileExt}`;
+      const fileName = `${trialist.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -111,45 +124,38 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Attempting to update trialist:', trialist.id, formData);
     
-    const trialistData = {
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      email: formData.email || undefined,
-      phone: formData.phone || undefined,
-      birth_date: formData.birth_date || undefined,
-      position: formData.position || undefined,
-      notes: formData.notes || undefined,
-      avatar_url: avatarUrl || undefined
-    };
-
-    await createTrialist.mutateAsync(trialistData);
-    setFormData({
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone: '',
-      birth_date: '',
-      position: '',
-      notes: ''
-    });
-    setAvatarUrl('');
-    setOpen(false);
+    try {
+      await updateTrialist.mutateAsync({
+        id: trialist.id,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email || undefined,
+        phone: formData.phone || undefined,
+        birth_date: formData.birth_date || undefined,
+        position: formData.position || undefined,
+        status: formData.status,
+        notes: formData.notes || undefined,
+        avatar_url: avatarUrl || undefined
+      });
+      setOpen(false);
+      console.log('Trialist updated successfully');
+    } catch (error) {
+      console.error('Error updating trialist:', error);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {children || (
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nuovo Trialist
-          </Button>
-        )}
+        <Button variant="outline" size="sm">
+          <Edit className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nuovo Trialist</DialogTitle>
+          <DialogTitle>Modifica Trialist</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -158,7 +164,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               <Avatar className="h-16 w-16">
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
                 <AvatarFallback>
-                  {formData.first_name.charAt(0) || 'U'}{formData.last_name.charAt(0) || 'U'}
+                  {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex gap-2">
@@ -199,7 +205,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="first_name">Nome</Label>
               <Input
                 id="first_name"
@@ -208,7 +214,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 required
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="last_name">Cognome</Label>
               <Input
                 id="last_name"
@@ -218,9 +224,9 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               />
             </div>
           </div>
-
+          
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -230,7 +236,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 placeholder="email@esempio.com"
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="phone">Telefono</Label>
               <Input
                 id="phone"
@@ -242,7 +248,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="birth_date">Data di Nascita</Label>
               <Input
                 id="birth_date"
@@ -251,18 +257,32 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="position">Posizione</Label>
               <Input
                 id="position"
                 value={formData.position}
                 onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                placeholder="es. Centrocampista"
+                placeholder="es. Attaccante, Centrocampista..."
               />
             </div>
           </div>
 
-          <div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select value={formData.status} onValueChange={(value: 'in_prova' | 'promosso' | 'archiviato') => setFormData({ ...formData, status: value })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="in_prova">In Prova</SelectItem>
+                <SelectItem value="promosso">Promosso</SelectItem>
+                <SelectItem value="archiviato">Archiviato</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="notes">Note</Label>
             <Textarea
               id="notes"
@@ -277,8 +297,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annulla
             </Button>
-            <Button type="submit" disabled={createTrialist.isPending}>
-              {createTrialist.isPending ? 'Aggiunta...' : 'Aggiungi Trialist'}
+            <Button type="submit" disabled={updateTrialist.isPending}>
+              {updateTrialist.isPending ? "Aggiornamento..." : "Salva Modifiche"}
             </Button>
           </div>
         </form>
@@ -286,3 +306,5 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     </Dialog>
   );
 };
+
+export default EditTrialistForm;

@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTrialists, useUpdateTrialistStatus } from '@/hooks/useSupabaseData';
-import { User, Star, ArrowRight, Archive } from 'lucide-react';
+import { User, Star, ArrowRight, Archive, Edit, Trash2 } from 'lucide-react';
+import EditTrialistForm from '@/components/forms/EditTrialistForm';
 
 const TrialsKanban = () => {
   const { data: trialists = [], isLoading } = useTrialists();
@@ -118,6 +119,10 @@ const TrialsKanban = () => {
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-8 w-8">
+                          <AvatarImage 
+                            src={(trialist as any).avatar_url || undefined} 
+                            alt={`${trialist.first_name} ${trialist.last_name}`} 
+                          />
                           <AvatarFallback>
                             {trialist.first_name[0]}{trialist.last_name[0]}
                           </AvatarFallback>
@@ -133,6 +138,7 @@ const TrialsKanban = () => {
                           )}
                         </div>
                       </div>
+                      <EditTrialistForm trialist={trialist} />
                     </div>
 
                     {trialist.notes && (

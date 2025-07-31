@@ -341,6 +341,7 @@ export const useCreateTrialist = () => {
       birth_date?: string;
       position?: string;
       notes?: string;
+      avatar_url?: string;
     }) => {
       const { data, error } = await supabase
         .from('trialists')
@@ -383,6 +384,37 @@ export const useUpdateTrialistStatus = () => {
     },
     onError: () => {
       toast({ title: "Errore durante l'aggiornamento", variant: "destructive" });
+    }
+  });
+};
+
+export const useUpdateTrialist = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; email?: string; phone?: string; birth_date?: string; position?: string; status?: 'in_prova' | 'promosso' | 'archiviato'; notes?: string; avatar_url?: string }) => {
+      console.log('Updating trialist:', id, updates);
+      const { data, error } = await supabase
+        .from('trialists')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating trialist:', error);
+        throw error;
+      }
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trialists'] });
+      toast({ title: "Trialist aggiornato con successo" });
+    },
+    onError: (error) => {
+      console.error('Trialist update failed:', error);
+      toast({ title: "Errore durante l'aggiornamento del trialist", variant: "destructive" });
     }
   });
 };
