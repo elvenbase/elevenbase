@@ -43,6 +43,71 @@ export const useCreatePlayer = () => {
   });
 };
 
+export const useUpdatePlayer = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended' }) => {
+      const { data, error } = await supabase
+        .from('players')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      toast({ title: "Giocatore aggiornato con successo" });
+    },
+    onError: () => {
+      toast({ title: "Errore durante l'aggiornamento del giocatore", variant: "destructive" });
+    }
+  });
+};
+
+export const useDeletePlayer = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('players')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      toast({ title: "Giocatore eliminato con successo" });
+    },
+    onError: () => {
+      toast({ title: "Errore durante l'eliminazione del giocatore", variant: "destructive" });
+    }
+  });
+};
+
+export const usePlayerStatistics = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player-statistics', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('player_statistics')
+        .select('*')
+        .eq('player_id', playerId);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!playerId
+  });
+};
+
 // Training sessions hooks
 export const useTrainingSessions = () => {
   return useQuery({
