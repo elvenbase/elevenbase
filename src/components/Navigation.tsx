@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import {
   X,
   Shield
 } from "lucide-react";
-import clubLogo from "@/assets/club-logo.png";
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -32,7 +32,7 @@ const Navigation = () => {
           <NavLink to="/" className="flex items-center space-x-3 group">
             <div className="relative">
               <img 
-                src={clubLogo} 
+                src="/lovable-uploads/4d9824da-3b59-4aa2-8979-c77928fd7b18.png" 
                 alt="Ca De Rissi SG Esport" 
                 className="h-10 w-10 rounded-lg shadow-glow group-hover:shadow-accent-glow transition-smooth"
               />
