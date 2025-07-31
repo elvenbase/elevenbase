@@ -113,13 +113,11 @@ const PublicRegistration = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('public-registration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           token,
           playerId: selectedPlayer,
           status: selectedStatus
-        })
+        }
       })
 
       if (error) throw error
