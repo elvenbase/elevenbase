@@ -12,6 +12,11 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== PUBLIC REGISTRATION REQUEST START ===')
+    console.log('Method:', req.method)
+    console.log('URL:', req.url)
+    console.log('Headers:', Object.fromEntries(req.headers.entries()))
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -22,19 +27,26 @@ serve(async (req) => {
     let method = req.method
     let requestBody = null
     
+    console.log('Initial token from query params:', token)
+    
     // Gestisci le chiamate da supabase.functions.invoke che usano sempre POST
     if (req.method === 'POST') {
       try {
         const bodyText = await req.text()
-        if (bodyText) {
+        console.log('Request body text:', bodyText)
+        
+        if (bodyText && bodyText.trim()) {
           requestBody = JSON.parse(bodyText)
+          console.log('Parsed request body:', requestBody)
           
           if (requestBody.method === 'GET') {
             method = 'GET'
             token = requestBody.token
+            console.log('Converted to GET request, token:', token)
           } else {
             // È una vera richiesta POST
             token = requestBody.token || token
+            console.log('POST request, token:', token)
           }
         }
       } catch (error) {
@@ -43,9 +55,12 @@ serve(async (req) => {
         if (!token) {
           const pathParts = url.pathname.split('/')
           token = pathParts[pathParts.length - 1]
+          console.log('Token from path:', token)
         }
       }
     }
+    
+    console.log('Final method:', method, 'Final token:', token)
     
     if (method === 'GET') {
       if (!token) {
