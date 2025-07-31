@@ -139,7 +139,7 @@ const UserManagement = () => {
       }
 
       // Genera un'email temporanea basata sull'username
-      const tempEmail = `${newUserUsername.toLowerCase()}@temp.carissi.local`;
+      const tempEmail = `${newUserUsername.toLowerCase()}@temp.carissi.com`;
 
       // Crea l'utente tramite signup normale
       const { data, error } = await supabase.auth.signUp({
