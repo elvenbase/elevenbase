@@ -20,6 +20,9 @@ interface User {
   last_sign_in_at?: string;
   profiles?: {
     username?: string;
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
   };
   user_roles?: Array<{
     role: 'superadmin' | 'admin' | 'coach' | 'player';
@@ -37,6 +40,9 @@ const UserManagement = () => {
   
   // Form states
   const [newUserUsername, setNewUserUsername] = useState('');
+  const [newUserFirstName, setNewUserFirstName] = useState('');
+  const [newUserLastName, setNewUserLastName] = useState('');
+  const [newUserPhone, setNewUserPhone] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState<'superadmin' | 'admin' | 'coach' | 'player'>('player');
@@ -85,6 +91,9 @@ const UserManagement = () => {
         .select(`
           id,
           username,
+          first_name,
+          last_name,
+          phone,
           created_at
         `);
       
@@ -102,7 +111,12 @@ const UserManagement = () => {
             id: profile.id,
             email: profile.username || 'N/A',
             created_at: profile.created_at,
-            profiles: { username: profile.username },
+            profiles: { 
+              username: profile.username,
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              phone: profile.phone
+            },
             user_roles: userRoles || []
           };
         })
@@ -119,8 +133,8 @@ const UserManagement = () => {
 
   const handleCreateUser = async () => {
     try {
-      if (!newUserUsername || !newUserPassword) {
-        toast.error('Username e password sono obbligatorie');
+      if (!newUserUsername || !newUserPassword || !newUserFirstName || !newUserLastName) {
+        toast.error('Username, nome, cognome e password sono obbligatori');
         return;
       }
 
@@ -133,7 +147,10 @@ const UserManagement = () => {
         password: newUserPassword,
         options: {
           data: {
-            username: newUserUsername
+            username: newUserUsername,
+            first_name: newUserFirstName,
+            last_name: newUserLastName,
+            phone: newUserPhone
           }
         }
       });
@@ -149,6 +166,17 @@ const UserManagement = () => {
             user_id: data.user.id,
             role: newUserRole as any
           });
+
+        // Se il ruolo è "player", crea anche l'entry nella tabella players
+        if (newUserRole === 'player') {
+          await supabase
+            .from('players')
+            .insert({
+              first_name: newUserFirstName,
+              last_name: newUserLastName,
+              phone: newUserPhone
+            });
+        }
 
         toast.success('Utente creato con successo');
         setIsCreateModalOpen(false);
@@ -211,6 +239,9 @@ const UserManagement = () => {
 
   const resetForm = () => {
     setNewUserUsername('');
+    setNewUserFirstName('');
+    setNewUserLastName('');
+    setNewUserPhone('');
     setNewUserEmail('');
     setNewUserPassword('');
     setNewUserRole('player');
@@ -219,6 +250,8 @@ const UserManagement = () => {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = (user.profiles?.username?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (user.profiles?.first_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (user.profiles?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (roleFilter === 'all') return matchesSearch;
@@ -297,6 +330,35 @@ const UserManagement = () => {
                       placeholder="Nome utente"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName">Nome</Label>
+                      <Input
+                        id="firstName"
+                        value={newUserFirstName}
+                        onChange={(e) => setNewUserFirstName(e.target.value)}
+                        placeholder="Nome"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName">Cognome</Label>
+                      <Input
+                        id="lastName"
+                        value={newUserLastName}
+                        onChange={(e) => setNewUserLastName(e.target.value)}
+                        placeholder="Cognome"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Telefono</Label>
+                    <Input
+                      id="phone"
+                      value={newUserPhone}
+                      onChange={(e) => setNewUserPhone(e.target.value)}
+                      placeholder="+39 123 456 7890"
+                    />
+                  </div>
                   <div>
                     <Label htmlFor="email">Email (opzionale)</Label>
                     <Input
@@ -372,10 +434,10 @@ const UserManagement = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Username</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead>Nome Completo</TableHead>
+                    <TableHead>Telefono</TableHead>
                     <TableHead>Ruolo</TableHead>
                     <TableHead>Creato il</TableHead>
-                    <TableHead>Ultimo accesso</TableHead>
                     <TableHead className="text-right">Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -383,7 +445,13 @@ const UserManagement = () => {
                   {filteredUsers.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.profiles?.username || '-'}</TableCell>
-                      <TableCell>{user.email !== `${user.profiles?.username?.toLowerCase()}@temp.carissi.local` ? user.email : '-'}</TableCell>
+                      <TableCell>
+                        {user.profiles?.first_name && user.profiles?.last_name 
+                          ? `${user.profiles.first_name} ${user.profiles.last_name}` 
+                          : '-'
+                        }
+                      </TableCell>
+                      <TableCell>{user.profiles?.phone || '-'}</TableCell>
                       <TableCell>
                         <Badge variant={getRoleBadgeColor(user.user_roles?.[0]?.role || 'player')}>
                           {getRoleLabel(user.user_roles?.[0]?.role || 'player')}
@@ -391,12 +459,6 @@ const UserManagement = () => {
                       </TableCell>
                       <TableCell>
                         {new Date(user.created_at).toLocaleDateString('it-IT')}
-                      </TableCell>
-                      <TableCell>
-                        {user.last_sign_in_at 
-                          ? new Date(user.last_sign_in_at).toLocaleDateString('it-IT')
-                          : 'Mai'
-                        }
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
