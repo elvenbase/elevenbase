@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { usePlayers, useCreateAttendance, useTrainingAttendance } from '@/hooks/useSupabaseData';
+import { usePlayers, useCreateAttendance, useTrainingAttendance, useUpdatePlayerStatistics } from '@/hooks/useSupabaseData';
 import { CheckCircle, Clock, X } from 'lucide-react';
 
 interface AttendanceFormProps {

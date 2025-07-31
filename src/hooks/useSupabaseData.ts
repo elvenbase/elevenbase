@@ -200,6 +200,20 @@ export const useDeletePlayer = () => {
   });
 };
 
+export const useUpdatePlayerStatistics = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (playerId: string) => {
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
+      queryClient.invalidateQueries({ queryKey: ['player-statistics'] });
+    },
+  });
+};
+
 export const usePlayerStatistics = (playerId: string) => {
   return useQuery({
     queryKey: ['player-statistics', playerId],
