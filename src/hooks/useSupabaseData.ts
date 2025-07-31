@@ -55,11 +55,17 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
           player_id,
           status,
           arrival_time,
-          training_sessions!inner(session_date, is_closed)
+          session_id
         `)
-        .gte('training_sessions.session_date', startDate.toISOString().split('T')[0])
-        .lte('training_sessions.session_date', endDate.toISOString().split('T')[0])
-        .eq('training_sessions.is_closed', true); // Solo sessioni chiuse
+        .in('session_id', 
+          (await supabase
+            .from('training_sessions')
+            .select('id')
+            .gte('session_date', startDate.toISOString().split('T')[0])
+            .lte('session_date', endDate.toISOString().split('T')[0])
+            .eq('is_closed', true)
+          ).data?.map(s => s.id) || []
+        );
 
       if (trainingError) {
         console.error('Error fetching training attendance:', trainingError);
