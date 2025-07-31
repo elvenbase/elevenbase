@@ -66,21 +66,23 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
     }
   };
 
-  const handleArrivalTimeChange = async (playerId: string, arrivalTime: string) => {
+  const handleLateStatusChange = async (playerId: string, isLate: boolean) => {
     try {
       const existingRecord = existingAttendance.find(a => a.player_id === playerId);
       
       if (existingRecord) {
         const { error } = await supabase
           .from('training_attendance')
-          .update({ arrival_time: arrivalTime })
+          .update({ 
+            arrival_time: isLate ? '99:99' : null // Uso 99:99 per indicare ritardo
+          })
           .eq('id', existingRecord.id);
 
         if (error) throw error;
         refetch();
       }
     } catch (error: any) {
-      toast.error('Errore nell\'aggiornare l\'orario: ' + error.message);
+      toast.error('Errore nell\'aggiornare il ritardo: ' + error.message);
     }
   };
 
@@ -162,7 +164,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
           <div className="col-span-3">Giocatore</div>
           <div className="col-span-2 text-center">Auto-registrazione</div>
           <div className="col-span-2 text-center">Conferma Presenza</div>
-          <div className="col-span-2 text-center">Orario Arrivo</div>
+          <div className="col-span-2 text-center">Ritardo</div>
           <div className="col-span-3">Note</div>
         </div>
         
@@ -250,15 +252,18 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                   </Select>
                 </div>
 
-                {/* Orario Arrivo */}
-                <div className="col-span-2">
+                {/* Ritardo */}
+                <div className="col-span-2 text-center">
                   {attendance?.status === 'present' && (
-                    <Input
-                      type="time"
-                      value={attendance?.arrival_time || ''}
-                      onChange={(e) => handleArrivalTimeChange(player.id, e.target.value)}
-                      className="h-8 text-sm"
-                    />
+                    <div className="flex items-center justify-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={attendance?.arrival_time === '99:99'}
+                        onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
+                        className="h-4 w-4"
+                      />
+                      <span className="text-sm">In ritardo</span>
+                    </div>
                   )}
                 </div>
 

@@ -54,10 +54,12 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         .select(`
           player_id,
           status,
-          training_sessions!inner(session_date)
+          arrival_time,
+          training_sessions!inner(session_date, is_closed)
         `)
         .gte('training_sessions.session_date', startDate.toISOString().split('T')[0])
-        .lte('training_sessions.session_date', endDate.toISOString().split('T')[0]);
+        .lte('training_sessions.session_date', endDate.toISOString().split('T')[0])
+        .eq('training_sessions.is_closed', true); // Solo sessioni chiuse
 
       if (trainingError) {
         console.error('Error fetching training attendance:', trainingError);
@@ -86,7 +88,7 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         const playerMatchAttendance = matchAttendance.filter(ma => ma.player_id === player.id);
         
         const trainingPresences = playerTrainingAttendance.filter(ta => ta.status === 'present').length;
-        const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'late').length;
+        const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'present' && ta.arrival_time === '99:99').length;
         
         const matchPresences = playerMatchAttendance.filter(ma => ma.status === 'present').length;
         const matchTardiness = playerMatchAttendance.filter(ma => ma.status === 'late').length;
