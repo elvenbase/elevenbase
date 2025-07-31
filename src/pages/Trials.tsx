@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { UserPlus, Users, Trophy, Star } from "lucide-react";
 import { useTrialists, useTrialistStats } from "@/hooks/useSupabaseData";
 import { TrialistForm } from "@/components/forms/TrialistForm";
+import TrialsKanban from "@/components/TrialsKanban";
 
 const Trials = () => {
   const { data: trialistStats, isLoading } = useTrialistStats();
@@ -67,44 +68,7 @@ const Trials = () => {
           </Card>
         </div>
 
-        <Card className="p-8 bg-card border-border text-center">
-          <div className="max-w-md mx-auto">
-            <div className="p-6 bg-gradient-accent rounded-2xl shadow-accent-glow mb-6 inline-block">
-              <Users className="h-12 w-12 text-accent-foreground" />
-            </div>
-            <h3 className="text-2xl font-bold text-foreground mb-4">
-              Sistema Prove Kanban
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              Vista Kanban per gestire il processo di valutazione trialist:
-            </p>
-            <div className="space-y-3 text-left mb-6">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-warning rounded-full" />
-                <span className="text-sm">Colonna "In Prova" - Trialist attivi</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-success rounded-full" />
-                <span className="text-sm">Colonna "Promossi" - Accettati in rosa</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-muted-foreground rounded-full" />
-                <span className="text-sm">Colonna "Archiviati" - Non selezionati</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-accent rounded-full" />
-                <span className="text-sm">Drag & Drop tra colonne</span>
-              </div>
-            </div>
-            <Button 
-              variant="gaming"
-              onClick={() => window.location.href = '/trials-kanban'}
-            >
-              <Star className="h-4 w-4 mr-2" />
-              Visualizza Kanban
-            </Button>
-          </div>
-        </Card>
+        <TrialsKanban />
       </div>
     </div>
   );
