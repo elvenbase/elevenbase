@@ -132,7 +132,7 @@ const Squad = () => {
         <CardHeader>
           <CardTitle className="text-3xl font-bold">Rosa Squadra</CardTitle>
           <CardDescription>
-            Gestisci i giocatori della squadra con statistiche presenze e ritardi
+            Gestisci i giocatori della squadra con statistiche di presenze e ritardi agli allenamenti
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,7 +172,7 @@ const Squad = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div>
-                <label className="text-sm font-medium mb-2 block">Periodo di analisi presenze:</label>
+                <label className="text-sm font-medium mb-2 block">Periodo di analisi presenze allenamenti:</label>
                 <DateRangePicker
                   dateRange={dateRange}
                   onDateRangeChange={setDateRange}
@@ -181,7 +181,7 @@ const Squad = () => {
               </div>
               {dateRange?.from && dateRange?.to && (
                 <div className="text-sm text-muted-foreground pt-6">
-                  Statistiche calcolate per il periodo selezionato
+                  Statistiche allenamenti calcolate per il periodo selezionato
                 </div>
               )}
             </div>
@@ -220,12 +220,12 @@ const Squad = () => {
                     </TableHead>
                     <TableHead>
                       <Button variant="ghost" onClick={() => handleSort('presences')} className="h-auto p-0 font-semibold">
-                        Presenze {getSortIcon('presences')}
+                        Presenze Allenamenti {getSortIcon('presences')}
                       </Button>
                     </TableHead>
                     <TableHead>
                       <Button variant="ghost" onClick={() => handleSort('tardiness')} className="h-auto p-0 font-semibold">
-                        Ritardi {getSortIcon('tardiness')}
+                        Ritardi Allenamenti {getSortIcon('tardiness')}
                       </Button>
                     </TableHead>
                     <TableHead>
