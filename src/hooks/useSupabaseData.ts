@@ -325,3 +325,53 @@ export const useTrialistStats = () => {
     }
   });
 };
+
+export const useRecentActivity = () => {
+  return useQuery({
+    queryKey: ['recent-activity'],
+    queryFn: async () => {
+      const [playersResult, trainingsResult, competitionsResult, trialistsResult] = await Promise.all([
+        supabase.from('players').select('first_name, last_name, created_at').order('created_at', { ascending: false }).limit(3),
+        supabase.from('training_sessions').select('title, created_at').order('created_at', { ascending: false }).limit(3),
+        supabase.from('competitions').select('name, created_at').order('created_at', { ascending: false }).limit(3),
+        supabase.from('trialists').select('first_name, last_name, created_at').order('created_at', { ascending: false }).limit(3)
+      ]);
+
+      const activities: Array<{type: string, message: string, timestamp: string}> = [];
+
+      playersResult.data?.forEach(player => {
+        activities.push({
+          type: 'player',
+          message: `Nuovo giocatore: ${player.first_name} ${player.last_name}`,
+          timestamp: player.created_at
+        });
+      });
+
+      trainingsResult.data?.forEach(training => {
+        activities.push({
+          type: 'training',
+          message: `Allenamento programmato: ${training.title}`,
+          timestamp: training.created_at
+        });
+      });
+
+      competitionsResult.data?.forEach(competition => {
+        activities.push({
+          type: 'competition',
+          message: `Nuova competizione: ${competition.name}`,
+          timestamp: competition.created_at
+        });
+      });
+
+      trialistsResult.data?.forEach(trialist => {
+        activities.push({
+          type: 'trialist',
+          message: `Nuovo candidato: ${trialist.first_name} ${trialist.last_name}`,
+          timestamp: trialist.created_at
+        });
+      });
+
+      return activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+    }
+  });
+};

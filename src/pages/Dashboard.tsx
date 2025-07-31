@@ -13,12 +13,13 @@ import {
   Award,
   Activity
 } from "lucide-react";
-import { usePlayers, useStats } from "@/hooks/useSupabaseData";
+import { usePlayers, useStats, useRecentActivity } from "@/hooks/useSupabaseData";
 import { PlayerForm } from "@/components/forms/PlayerForm";
 
 const Dashboard = () => {
   const { data: players = [], isLoading: playersLoading } = usePlayers();
   const { data: stats, isLoading: statsLoading } = useStats();
+  const { data: recentActivity = [], isLoading: activityLoading } = useRecentActivity();
   
   const activePlayers = players.filter(player => player.status === 'active');
   const totalPlayers = activePlayers.length;
@@ -116,18 +117,30 @@ const Dashboard = () => {
                 <h3 className="text-lg font-semibold text-foreground">Attività Recenti</h3>
               </div>
               <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-success rounded-full" />
-                  <span className="text-sm text-foreground">Rosa aggiornata con {totalPlayers} giocatori</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary rounded-full" />
-                  <span className="text-sm text-foreground">Sistema di gestione inizializzato</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-secondary rounded-full" />
-                  <span className="text-sm text-foreground">Dashboard configurata</span>
-                </div>
+                {activityLoading ? (
+                  <div className="space-y-2">
+                    <div className="h-4 bg-muted rounded animate-pulse" />
+                    <div className="h-4 bg-muted rounded animate-pulse" />
+                    <div className="h-4 bg-muted rounded animate-pulse" />
+                  </div>
+                ) : recentActivity.length > 0 ? (
+                  recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-center space-x-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        activity.type === 'player' ? 'bg-success' :
+                        activity.type === 'training' ? 'bg-primary' :
+                        activity.type === 'competition' ? 'bg-accent' :
+                        'bg-secondary'
+                      }`} />
+                      <span className="text-sm text-foreground">{activity.message}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-muted rounded-full" />
+                    <span className="text-sm text-muted-foreground">Nessuna attività recente</span>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
