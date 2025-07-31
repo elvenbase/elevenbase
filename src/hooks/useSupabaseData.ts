@@ -64,8 +64,9 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
       }
       
       // Prima recupera le sessioni chiuse nel periodo
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const endDateStr = endDate.toISOString().split('T')[0];
+      // Fix timezone issue: use local date formatting instead of ISO
+      const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+      const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
       console.log('Debug: Date strings:', startDateStr, endDateStr);
       
       const { data: closedSessions, error: sessionsError } = await supabase
