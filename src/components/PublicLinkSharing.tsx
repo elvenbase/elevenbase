@@ -33,15 +33,15 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [isExpired, setIsExpired] = useState(false)
-
-  const publicUrl = session.public_link_token 
-    ? `${window.location.origin}/public-registration/${session.public_link_token}`
+  const sessionUrl = session.public_link_token 
+    ? `${window.location.origin}/session/${session.public_link_token}`
     : ''
+
 
   // Genera QR Code
   useEffect(() => {
-    if (publicUrl) {
-      QRCode.toDataURL(publicUrl, {
+    if (sessionUrl) {
+      QRCode.toDataURL(sessionUrl, {
         width: 200,
         margin: 2,
         color: {
@@ -50,7 +50,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
         }
       }).then(setQrCodeUrl).catch(console.error)
     }
-  }, [publicUrl])
+  }, [sessionUrl])
 
   // Countdown timer
   useEffect(() => {
@@ -78,10 +78,10 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
   }, [session.allow_responses_until])
 
   const copyToClipboard = async () => {
-    if (!publicUrl) return
+    if (!sessionUrl) return
 
     try {
-      await navigator.clipboard.writeText(publicUrl)
+      await navigator.clipboard.writeText(sessionUrl)
       toast.success('Link copiato negli appunti!')
     } catch (error) {
       toast.error('Errore nel copiare il link')
@@ -89,8 +89,8 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
   }
 
   const openPublicLink = () => {
-    if (publicUrl) {
-      window.open(publicUrl, '_blank')
+    if (sessionUrl) {
+      window.open(sessionUrl, '_blank')
     }
   }
 
@@ -192,7 +192,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
         <div className="space-y-2">
           <label className="text-sm font-medium">Link di registrazione</label>
           <div className="flex gap-2">
-            <Input value={publicUrl} readOnly className="font-mono text-sm" />
+            <Input value={sessionUrl} readOnly className="font-mono text-sm" />
             <Button variant="outline" size="icon" onClick={copyToClipboard}>
               <Copy className="h-4 w-4" />
             </Button>

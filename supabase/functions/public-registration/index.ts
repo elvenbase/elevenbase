@@ -96,23 +96,29 @@ serve(async (req) => {
       }
 
       // Prendi tutti i giocatori attivi
+      console.log('Fetching active players...')
       const { data: players, error: playersError } = await supabase
         .from('players')
         .select('id, first_name, last_name, jersey_number')
         .eq('status', 'active')
         .order('last_name')
 
+      console.log('Players query result:', { players, error: playersError })
       if (playersError) {
+        console.error('Players error:', playersError)
         throw playersError
       }
 
       // Prendi le registrazioni esistenti
+      console.log('Fetching existing attendance for session:', session.id)
       const { data: existingAttendance, error: attendanceError } = await supabase
         .from('training_attendance')
         .select('player_id, status, self_registered')
         .eq('session_id', session.id)
 
+      console.log('Attendance query result:', { existingAttendance, error: attendanceError })
       if (attendanceError) {
+        console.error('Attendance error:', attendanceError)
         throw attendanceError
       }
 

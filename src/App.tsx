@@ -12,6 +12,7 @@ import Trials from "./pages/Trials";
 import Competitions from "./pages/Competitions";
 import Training from "./pages/Training";
 import PublicRegistration from './pages/PublicRegistration';
+import PublicSession from './pages/PublicSession';
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import TrialsKanban from "./components/TrialsKanban";
@@ -30,6 +31,7 @@ const App = () => (
               {/* Public routes */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/public-registration/:token" element={<PublicRegistration />} />
+              <Route path="/session/:token" element={<PublicSession />} />
               
               {/* Protected routes */}
               <Route path="/*" element={
