@@ -26,16 +26,19 @@ serve(async (req) => {
     if (req.method === 'POST') {
       try {
         const bodyText = await req.text()
-        requestBody = JSON.parse(bodyText)
-        
-        if (requestBody.method === 'GET') {
-          method = 'GET'
-          token = requestBody.token
-        } else {
-          // È una vera richiesta POST
-          token = requestBody.token || token
+        if (bodyText) {
+          requestBody = JSON.parse(bodyText)
+          
+          if (requestBody.method === 'GET') {
+            method = 'GET'
+            token = requestBody.token
+          } else {
+            // È una vera richiesta POST
+            token = requestBody.token || token
+          }
         }
-      } catch {
+      } catch (error) {
+        console.error('Error parsing request body:', error)
         // Se non c'è un body JSON valido, prova con i query params
         if (!token) {
           const pathParts = url.pathname.split('/')
