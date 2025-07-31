@@ -115,10 +115,13 @@ const Squad = () => {
   }, [players, searchTerm, statusFilter, sortField, sortDirection]);
 
   const handleDeletePlayer = async (playerId: string) => {
+    console.log('🗑️ Attempting to delete player with ID:', playerId);
     try {
+      console.log('🔄 Calling deletePlayer.mutateAsync...');
       await deletePlayer.mutateAsync(playerId);
+      console.log('✅ Player deleted successfully');
     } catch (error) {
-      console.error('Error deleting player:', error);
+      console.error('❌ Error deleting player:', error);
     }
   };
 
