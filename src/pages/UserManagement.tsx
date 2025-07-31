@@ -36,10 +36,10 @@ const UserManagement = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   
   // Form states
+  const [newUserUsername, setNewUserUsername] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState<'superadmin' | 'admin' | 'coach' | 'player'>('player');
-  const [newUserUsername, setNewUserUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const { user: currentUser } = useAuth();
@@ -79,54 +79,35 @@ const UserManagement = () => {
     try {
       setIsLoading(true);
       
-      // Prima recupero gli utenti dal auth.users (tramite admin API)
-      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
+      // Recupero i profili esistenti con i ruoli
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          username,
+          created_at
+        `);
       
-      if (authError) {
-        // Fallback: recupero i profili esistenti
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select(`
-            *,
-            user_roles(role)
-          `);
-        
-        if (profilesError) throw profilesError;
-        
-        const usersWithRoles = profiles?.map(profile => ({
-          id: profile.id,
-          email: profile.username || 'N/A',
-          created_at: profile.created_at,
-          profiles: { username: profile.username },
-          user_roles: Array.isArray(profile.user_roles) ? profile.user_roles : []
-        })) || [];
-        
-        setUsers(usersWithRoles);
-        return;
-      }
-
+      if (profilesError) throw profilesError;
+      
       // Recupero i ruoli per ogni utente
       const usersWithRoles = await Promise.all(
-        authUsers.map(async (authUser) => {
+        (profiles || []).map(async (profile) => {
           const { data: userRoles } = await supabase
             .from('user_roles')
             .select('role')
-            .eq('user_id', authUser.id);
-
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', authUser.id)
-            .single();
+            .eq('user_id', profile.id);
 
           return {
-            ...authUser,
-            profiles: profile,
+            id: profile.id,
+            email: profile.username || 'N/A',
+            created_at: profile.created_at,
+            profiles: { username: profile.username },
             user_roles: userRoles || []
           };
         })
       );
-
+      
       setUsers(usersWithRoles);
     } catch (error: any) {
       console.error('Error fetching users:', error);
@@ -138,31 +119,29 @@ const UserManagement = () => {
 
   const handleCreateUser = async () => {
     try {
-      if (!newUserEmail || !newUserPassword) {
-        toast.error('Email e password sono obbligatorie');
+      if (!newUserUsername || !newUserPassword) {
+        toast.error('Username e password sono obbligatorie');
         return;
       }
 
-      // Crea l'utente tramite admin API
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: newUserEmail,
+      // Genera un'email temporanea basata sull'username
+      const tempEmail = `${newUserUsername.toLowerCase()}@temp.carissi.local`;
+
+      // Crea l'utente tramite signup normale
+      const { data, error } = await supabase.auth.signUp({
+        email: tempEmail,
         password: newUserPassword,
-        email_confirm: true
+        options: {
+          data: {
+            username: newUserUsername
+          }
+        }
       });
 
       if (error) throw error;
 
       if (data.user) {
-        // Crea il profilo
-        if (newUserUsername) {
-          await supabase
-            .from('profiles')
-            .insert({
-              id: data.user.id,
-              username: newUserUsername
-            });
-        }
-
+        // Il profilo viene creato automaticamente dal trigger
         // Assegna il ruolo
         await supabase
           .from('user_roles')
@@ -222,11 +201,6 @@ const UserManagement = () => {
         .delete()
         .eq('id', userId);
 
-      // Elimina l'utente tramite admin API
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      
-      if (error) throw error;
-
       toast.success('Utente eliminato con successo');
       fetchUsers();
     } catch (error: any) {
@@ -236,16 +210,16 @@ const UserManagement = () => {
   };
 
   const resetForm = () => {
+    setNewUserUsername('');
     setNewUserEmail('');
     setNewUserPassword('');
     setNewUserRole('player');
-    setNewUserUsername('');
     setShowPassword(false);
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.profiles?.username?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = (user.profiles?.username?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (roleFilter === 'all') return matchesSearch;
     
@@ -315,22 +289,22 @@ const UserManagement = () => {
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                      id="username"
+                      value={newUserUsername}
+                      onChange={(e) => setNewUserUsername(e.target.value)}
+                      placeholder="Nome utente"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email (opzionale)</Label>
                     <Input
                       id="email"
                       type="email"
                       value={newUserEmail}
                       onChange={(e) => setNewUserEmail(e.target.value)}
                       placeholder="utente@esempio.com"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="username">Username (opzionale)</Label>
-                    <Input
-                      id="username"
-                      value={newUserUsername}
-                      onChange={(e) => setNewUserUsername(e.target.value)}
-                      placeholder="Nome utente"
                     />
                   </div>
                   <div>
@@ -397,8 +371,8 @@ const UserManagement = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Email</TableHead>
                     <TableHead>Username</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Ruolo</TableHead>
                     <TableHead>Creato il</TableHead>
                     <TableHead>Ultimo accesso</TableHead>
@@ -408,8 +382,8 @@ const UserManagement = () => {
                 <TableBody>
                   {filteredUsers.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
-                      <TableCell>{user.profiles?.username || '-'}</TableCell>
+                      <TableCell className="font-medium">{user.profiles?.username || '-'}</TableCell>
+                      <TableCell>{user.email !== `${user.profiles?.username?.toLowerCase()}@temp.carissi.local` ? user.email : '-'}</TableCell>
                       <TableCell>
                         <Badge variant={getRoleBadgeColor(user.user_roles?.[0]?.role || 'player')}>
                           {getRoleLabel(user.user_roles?.[0]?.role || 'player')}
