@@ -18,9 +18,31 @@ serve(async (req) => {
     )
 
     const url = new URL(req.url)
-    const token = url.searchParams.get('token')
+    let token = url.searchParams.get('token')
+    let method = req.method
+    let requestBody = null
     
-    if (req.method === 'GET') {
+    // Gestisci le chiamate da supabase.functions.invoke che usano sempre POST
+    if (req.method === 'POST') {
+      try {
+        requestBody = await req.json()
+        if (requestBody.method === 'GET') {
+          method = 'GET'
+          token = requestBody.token
+        } else {
+          // È una vera richiesta POST
+          token = requestBody.token
+        }
+      } catch {
+        // Se non c'è un body JSON valido, prova con i query params
+        if (!token) {
+          const pathParts = url.pathname.split('/')
+          token = pathParts[pathParts.length - 1]
+        }
+      }
+    }
+    
+    if (method === 'GET') {
       if (!token) {
         return new Response(JSON.stringify({ error: 'Token mancante' }), {
           status: 400,
@@ -84,8 +106,15 @@ serve(async (req) => {
       })
     }
 
-    if (req.method === 'POST') {
-      const { playerId, status } = await req.json()
+    if (method === 'POST' || (req.method === 'POST' && method !== 'GET')) {
+      if (!requestBody) {
+        return new Response(JSON.stringify({ error: 'Body JSON non valido' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      
+      const { playerId, status } = requestBody
 
       if (!token || !playerId || !status) {
         return new Response(JSON.stringify({ error: 'Parametri mancanti' }), {

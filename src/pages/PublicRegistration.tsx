@@ -81,9 +81,7 @@ const PublicRegistration = () => {
   const loadSessionData = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('public-registration', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: new URLSearchParams({ token: token! })
+        body: { token, method: 'GET' }
       })
 
       if (error) throw error
