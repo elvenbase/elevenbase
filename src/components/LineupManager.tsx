@@ -113,8 +113,8 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
         }
       })
       
-      // Assegna alla nuova posizione (se non è vuoto)
-      if (playerId) {
+      // Assegna alla nuova posizione (se non è vuoto o "none")
+      if (playerId && playerId !== 'none') {
         newPositions[positionId] = playerId
       } else {
         delete newPositions[positionId]
@@ -273,7 +273,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                     <SelectValue placeholder="Seleziona giocatore" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nessun giocatore</SelectItem>
+                    <SelectItem value="none">Nessun giocatore</SelectItem>
                     {getAvailablePlayers(position.id).map(player => (
                       <SelectItem key={player.id} value={player.id}>
                         <div className="flex items-center gap-2">
