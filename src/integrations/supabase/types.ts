@@ -274,6 +274,8 @@ export type Database = {
           id: string
           notes: string | null
           player_id: string
+          registration_time: string | null
+          self_registered: boolean | null
           session_id: string
           status: string
         }
@@ -283,6 +285,8 @@ export type Database = {
           id?: string
           notes?: string | null
           player_id: string
+          registration_time?: string | null
+          self_registered?: boolean | null
           session_id: string
           status?: string
         }
@@ -292,6 +296,8 @@ export type Database = {
           id?: string
           notes?: string | null
           player_id?: string
+          registration_time?: string | null
+          self_registered?: boolean | null
           session_id?: string
           status?: string
         }
@@ -312,41 +318,85 @@ export type Database = {
           },
         ]
       }
+      training_lineups: {
+        Row: {
+          created_at: string
+          formation: string
+          id: string
+          players_data: Json | null
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          formation: string
+          id?: string
+          players_data?: Json | null
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          formation?: string
+          id?: string
+          players_data?: Json | null
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_lineups_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_sessions: {
         Row: {
+          allow_responses_until: string | null
           created_at: string
           created_by: string | null
           description: string | null
           end_time: string
           id: string
+          is_closed: boolean | null
           location: string | null
           max_participants: number | null
+          public_link_token: string | null
           session_date: string
           start_time: string
           title: string
           updated_at: string
         }
         Insert: {
+          allow_responses_until?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           end_time: string
           id?: string
+          is_closed?: boolean | null
           location?: string | null
           max_participants?: number | null
+          public_link_token?: string | null
           session_date: string
           start_time: string
           title: string
           updated_at?: string
         }
         Update: {
+          allow_responses_until?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           end_time?: string
           id?: string
+          is_closed?: boolean | null
           location?: string | null
           max_participants?: number | null
+          public_link_token?: string | null
           session_date?: string
           start_time?: string
           title?: string
@@ -481,6 +531,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_response_deadline: {
+        Args: { session_date: string; start_time: string }
+        Returns: string
+      }
+      generate_public_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_role: {
         Args: {
           _user_id: string
