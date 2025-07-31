@@ -111,9 +111,6 @@ const TrialistCard = ({
         <span>
           Inizio: {new Date(trialist.trial_start_date).toLocaleDateString()}
         </span>
-        {trialist.email && (
-          <span>{trialist.email}</span>
-        )}
       </div>
 
       <div className="flex items-center space-x-1 mt-3">

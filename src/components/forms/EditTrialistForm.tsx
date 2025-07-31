@@ -48,7 +48,6 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const [formData, setFormData] = useState({
     first_name: trialist.first_name,
     last_name: trialist.last_name,
-    email: trialist.email || '',
     phone: trialist.phone || '',
     birth_date: trialist.birth_date || '',
     position: trialist.position || '',
@@ -150,7 +149,6 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
         id: trialist.id,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        email: formData.email || undefined,
         phone: phoneNumber ? `${phonePrefix}${phoneNumber}` : undefined,
         birth_date: formData.birth_date || undefined,
         position: formData.position || undefined,
@@ -245,16 +243,6 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@esempio.com"
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Telefono</Label>
               <div className="flex gap-2">

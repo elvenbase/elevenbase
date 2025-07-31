@@ -20,7 +20,6 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    email: '',
     phone: '',
     birth_date: '',
     position: '',
@@ -118,7 +117,6 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     const trialistData = {
       first_name: formData.first_name,
       last_name: formData.last_name,
-      email: formData.email || undefined,
       phone: phoneNumber ? `${phonePrefix}${phoneNumber}` : undefined,
       birth_date: formData.birth_date || undefined,
       position: formData.position || undefined,
@@ -130,7 +128,6 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     setFormData({
       first_name: '',
       last_name: '',
-      email: '',
       phone: '',
       birth_date: '',
       position: '',
@@ -224,19 +221,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@esempio.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefono</Label>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Telefono</Label>
               <div className="flex gap-2">
                 <Select 
                   value={phonePrefix} 
@@ -327,7 +313,6 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 </p>
               )}
             </div>
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
