@@ -317,9 +317,9 @@ const Squad = () => {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                <AlertDialogTitle>Elimina giocatore</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Questa azione eliminerà definitivamente il giocatore {player.first_name} {player.last_name} dal database.
+                                  Questa azione rimuoverà definitivamente <strong>{player.first_name} {player.last_name}</strong> dalla rosa della squadra. Tutti i dati associati verranno eliminati.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
