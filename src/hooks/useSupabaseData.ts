@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { startOfDay, endOfDay, subMonths } from 'date-fns';
 
 // Players hooks
 export const usePlayers = () => {
@@ -18,12 +19,89 @@ export const usePlayers = () => {
   });
 };
 
+// Enhanced players hook with attendance stats
+export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
+  return useQuery({
+    queryKey: ['players-with-attendance', startDate?.toISOString(), endDate?.toISOString()],
+    queryFn: async () => {
+      // First get all players
+      const { data: players, error: playersError } = await supabase
+        .from('players')
+        .select('*')
+        .order('last_name');
+      
+      if (playersError) throw playersError;
+
+      if (!startDate || !endDate) {
+        return players.map(player => ({
+          ...player,
+          presences: 0,
+          tardiness: 0,
+          totalEvents: 0,
+          attendanceRate: 0
+        }));
+      }
+
+      // Get training attendance stats
+      const { data: trainingAttendance, error: trainingError } = await supabase
+        .from('training_attendance')
+        .select(`
+          player_id,
+          status,
+          training_sessions!inner(session_date)
+        `)
+        .gte('training_sessions.session_date', startDate.toISOString().split('T')[0])
+        .lte('training_sessions.session_date', endDate.toISOString().split('T')[0]);
+
+      if (trainingError) throw trainingError;
+
+      // Get match attendance stats
+      const { data: matchAttendance, error: matchError } = await supabase
+        .from('match_attendance')
+        .select(`
+          player_id,
+          status,
+          matches!inner(match_date)
+        `)
+        .gte('matches.match_date', startDate.toISOString().split('T')[0])
+        .lte('matches.match_date', endDate.toISOString().split('T')[0]);
+
+      if (matchError) throw matchError;
+
+      // Calculate stats for each player
+      return players.map(player => {
+        const playerTrainingAttendance = trainingAttendance.filter(ta => ta.player_id === player.id);
+        const playerMatchAttendance = matchAttendance.filter(ma => ma.player_id === player.id);
+        
+        const trainingPresences = playerTrainingAttendance.filter(ta => ta.status === 'present').length;
+        const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'late').length;
+        
+        const matchPresences = playerMatchAttendance.filter(ma => ma.status === 'present').length;
+        const matchTardiness = playerMatchAttendance.filter(ma => ma.status === 'late').length;
+        
+        const totalPresences = trainingPresences + matchPresences;
+        const totalTardiness = trainingTardiness + matchTardiness;
+        const totalEvents = playerTrainingAttendance.length + playerMatchAttendance.length;
+        const attendanceRate = totalEvents > 0 ? Math.round((totalPresences / totalEvents) * 100) : 0;
+
+        return {
+          ...player,
+          presences: totalPresences,
+          tardiness: totalTardiness,
+          totalEvents,
+          attendanceRate
+        };
+      });
+    },
+  });
+};
+
 export const useCreatePlayer = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (player: { first_name: string; last_name: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended' }) => {
+    mutationFn: async (player: { first_name: string; last_name: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended'; phone?: string }) => {
       const { data, error } = await supabase
         .from('players')
         .insert(player)
@@ -35,6 +113,7 @@ export const useCreatePlayer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
+      queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
       toast({ title: "Giocatore aggiunto con successo" });
     },
     onError: () => {
@@ -48,7 +127,7 @@ export const useUpdatePlayer = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended' }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended'; phone?: string }) => {
       const { data, error } = await supabase
         .from('players')
         .update(updates)
@@ -61,6 +140,7 @@ export const useUpdatePlayer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
+      queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
       toast({ title: "Giocatore aggiornato con successo" });
     },
     onError: () => {
@@ -84,6 +164,7 @@ export const useDeletePlayer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
+      queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
       toast({ title: "Giocatore eliminato con successo" });
     },
     onError: () => {

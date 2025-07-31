@@ -53,6 +53,51 @@ export type Database = {
         }
         Relationships: []
       }
+      match_attendance: {
+        Row: {
+          arrival_time: string | null
+          created_at: string
+          id: string
+          match_id: string
+          notes: string | null
+          player_id: string
+          status: string
+        }
+        Insert: {
+          arrival_time?: string | null
+          created_at?: string
+          id?: string
+          match_id: string
+          notes?: string | null
+          player_id: string
+          status?: string
+        }
+        Update: {
+          arrival_time?: string | null
+          created_at?: string
+          id?: string
+          match_id?: string
+          notes?: string | null
+          player_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_attendance_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_attendance_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           competition_id: string | null
@@ -169,6 +214,7 @@ export type Database = {
           id: string
           jersey_number: number | null
           last_name: string
+          phone: string | null
           position: string | null
           status: Database["public"]["Enums"]["player_status"]
           updated_at: string
@@ -179,6 +225,7 @@ export type Database = {
           id?: string
           jersey_number?: number | null
           last_name: string
+          phone?: string | null
           position?: string | null
           status?: Database["public"]["Enums"]["player_status"]
           updated_at?: string
@@ -189,6 +236,7 @@ export type Database = {
           id?: string
           jersey_number?: number | null
           last_name?: string
+          phone?: string | null
           position?: string | null
           status?: Database["public"]["Enums"]["player_status"]
           updated_at?: string

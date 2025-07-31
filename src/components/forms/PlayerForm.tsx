@@ -1,11 +1,10 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreatePlayer } from '@/hooks/useSupabaseData';
-import { Plus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 
 interface PlayerFormProps {
   children?: React.ReactNode;
@@ -18,7 +17,8 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
     last_name: '',
     jersey_number: '',
     position: '',
-    status: 'active' as 'active' | 'inactive' | 'injured' | 'suspended'
+    status: 'active',
+    phone: ''
   });
 
   const createPlayer = useCreatePlayer();
@@ -31,94 +31,123 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
       last_name: formData.last_name,
       jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
       position: formData.position || undefined,
-      status: formData.status
+      status: formData.status as 'active' | 'inactive' | 'injured' | 'suspended',
+      phone: formData.phone || undefined
     };
 
-    await createPlayer.mutateAsync(playerData);
-    setFormData({ first_name: '', last_name: '', jersey_number: '', position: '', status: 'active' });
-    setOpen(false);
+    try {
+      await createPlayer.mutateAsync(playerData);
+      setFormData({
+        first_name: '',
+        last_name: '',
+        jersey_number: '',
+        position: '',
+        status: 'active',
+        phone: ''
+      });
+      setOpen(false);
+    } catch (error) {
+      console.error('Error creating player:', error);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4" />
             Aggiungi Giocatore
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Aggiungi Nuovo Giocatore</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="first_name">Nome</Label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Nome</label>
               <Input
-                id="first_name"
+                type="text"
+                placeholder="Nome"
                 value={formData.first_name}
-                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="last_name">Cognome</Label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Cognome</label>
               <Input
-                id="last_name"
+                type="text"
+                placeholder="Cognome"
                 value={formData.last_name}
-                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
                 required
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="jersey_number">Numero Maglia</Label>
-              <Input
-                id="jersey_number"
-                type="number"
-                min="1"
-                max="99"
-                value={formData.jersey_number}
-                onChange={(e) => setFormData({ ...formData, jersey_number: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="position">Posizione</Label>
-              <Input
-                id="position"
-                value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                placeholder="es. Portiere, Difensore..."
               />
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'injured' | 'suspended') => setFormData({ ...formData, status: value })}>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Numero Maglia</label>
+              <Input
+                type="number"
+                placeholder="Es. 10"
+                min="1"
+                max="99"
+                value={formData.jersey_number}
+                onChange={(e) => setFormData(prev => ({ ...prev, jersey_number: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Posizione</label>
+              <Input
+                type="text"
+                placeholder="Ruolo (es. Centrocampista)"
+                value={formData.position}
+                onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Telefono</label>
+            <Input
+              type="tel"
+              placeholder="+39 123 456 7890"
+              value={formData.phone}
+              onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+            />
+            {formData.phone && (
+              <p className="text-xs text-muted-foreground">
+                WhatsApp: https://wa.me/{formData.phone.replace(/[^0-9]/g, '')}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Stato</label>
+            <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Seleziona stato" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Attivo</SelectItem>
                 <SelectItem value="inactive">Inattivo</SelectItem>
                 <SelectItem value="injured">Infortunato</SelectItem>
-                <SelectItem value="suspended">Sospeso</SelectItem>
+                <SelectItem value="suspended">Squalificato</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annulla
             </Button>
             <Button type="submit" disabled={createPlayer.isPending}>
-              {createPlayer.isPending ? 'Aggiunta...' : 'Aggiungi Giocatore'}
+              {createPlayer.isPending ? 'Aggiungendo...' : 'Aggiungi Giocatore'}
             </Button>
           </div>
         </form>
@@ -126,3 +155,5 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
     </Dialog>
   );
 };
+
+export default PlayerForm;

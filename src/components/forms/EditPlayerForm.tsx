@@ -15,6 +15,7 @@ interface EditPlayerFormProps {
     jersey_number?: number;
     position?: string;
     status: 'active' | 'inactive' | 'injured' | 'suspended';
+    phone?: string;
   };
 }
 
@@ -25,7 +26,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
     last_name: player.last_name,
     jersey_number: player.jersey_number || '',
     position: player.position || '',
-    status: player.status
+    status: player.status,
+    phone: player.phone || ''
   });
 
   const updatePlayer = useUpdatePlayer();
@@ -39,7 +41,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         last_name: formData.last_name,
         jersey_number: formData.jersey_number ? Number(formData.jersey_number) : undefined,
         position: formData.position || undefined,
-        status: formData.status
+        status: formData.status,
+        phone: formData.phone || undefined
       });
       setOpen(false);
     } catch (error) {
@@ -101,6 +104,22 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                 placeholder="es. Attaccante, Centrocampista..."
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Telefono</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="+39 123 456 7890"
+            />
+            {formData.phone && (
+              <p className="text-xs text-muted-foreground">
+                WhatsApp: https://wa.me/{formData.phone.replace(/[^0-9]/g, '')}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
