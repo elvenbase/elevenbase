@@ -419,76 +419,52 @@ const PublicSession = () => {
                     const playerId = lineup.players_data?.positions?.[position.id]
                     const player = playerId ? players.find(p => p.id === playerId) : null
                     
-                    // Aggiusta le posizioni per evitare sovrapposizioni su mobile
-                    let adjustedY = position.y;
-                    let adjustedX = position.x;
-                    
-                    // Portiere più visibile
-                    if (position.name === 'Portiere') {
-                      adjustedY = Math.max(position.y - 3, 8);
-                    }
-                    
-                    // Sfasa i giocatori che sono sulla stessa linea Y per evitare sovrapposizioni
-                    const sameLinePositions = formations[lineup.formation]?.positions.filter(p => 
-                      Math.abs(p.y - position.y) < 2 && p.id !== position.id
-                    ) || [];
-                    
-                    if (sameLinePositions.length > 0) {
-                      // Crea un offset basato sulla posizione X per sfalsare i giocatori
-                      const offsetIndex = position.x < 30 ? -2 : position.x > 70 ? 2 : 0;
-                      adjustedY += offsetIndex;
-                    }
-                    
                     return (
                       <div
                         key={position.id}
-                        className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10"
-                        style={{
-                          left: `${position.x}%`,
-                          top: `${adjustedY}%`
+                        className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                        style={{ 
+                          left: `${position.x}%`, 
+                          top: `${position.y}%` 
                         }}
                       >
-                        {/* Container per avatar e numero maglia */}
-                        <div className="relative mb-1">
+                        <div className="flex flex-col items-center space-y-1">
                           {player ? (
                             <div className="relative">
-                              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 border-2 md:border-3 border-white shadow-lg bg-white">
-                                <AvatarImage 
-                                  src={player.avatar_url || undefined} 
-                                  className="object-cover"
-                                />
+                              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-3 border-white shadow-lg">
+                                <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
-                                  className="text-white text-sm md:text-base font-bold"
+                                  className="text-white font-bold text-sm"
                                   style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
                                 >
                                   {getPlayerInitials(player)}
                                 </AvatarFallback>
                               </Avatar>
                               {player.jersey_number && (
-                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 flex items-center justify-center border-2 border-white shadow">
-                                  <span className="text-xs">{player.jersey_number}</span>
+                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow">
+                                  {player.jersey_number}
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full border-2 md:border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
-                              <Users className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white/70" />
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
+                              <Users className="w-6 h-6 text-white/70" />
+                            </div>
+                          )}
+                          
+                          {/* Etichetta posizione - solo su desktop */}
+                          <div className="hidden md:block text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
+                            {position.name}
+                          </div>
+                          
+                          {/* Nome giocatore */}
+                          {player && (
+                            <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
+                              <span className="md:hidden">{player.first_name} {player.last_name.charAt(0)}.</span>
+                              <span className="hidden md:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
                             </div>
                           )}
                         </div>
-                        
-                        {/* Etichetta posizione - solo su desktop */}
-                        <div className="hidden md:block text-xs text-white font-medium px-2 py-1 bg-black/70 rounded backdrop-blur-sm min-w-fit text-center">
-                          {position.name}
-                        </div>
-                        
-                        {/* Nome giocatore - centrato sotto l'avatar */}
-                        {player && (
-                          <div className="text-xs text-white/90 text-center px-1.5 py-0.5 bg-black/50 rounded backdrop-blur-sm min-w-12 max-w-20 md:max-w-28 truncate">
-                            <span className="md:hidden">{player.first_name} {player.last_name.charAt(0)}.</span>
-                            <span className="hidden md:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
-                          </div>
-                        )}
                       </div>
                     )
                   })}
