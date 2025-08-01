@@ -262,7 +262,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       {/* Tabella giocatori */}
       <div className="border rounded-lg overflow-x-auto">
         {/* Header Desktop */}
-        <div className="hidden md:grid md:grid-cols-13 gap-4 p-4 bg-muted/50 font-medium text-sm">
+        <div className="hidden md:grid md:grid-cols-12 gap-4 p-4 bg-muted/50 font-medium text-sm">
           <div className="col-span-1 flex items-center justify-center">
             <Checkbox 
               checked={selectedPlayers.length === allPlayers.length && allPlayers.length > 0}
@@ -272,7 +272,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
           <div className="col-span-3">Giocatore</div>
           <div className="col-span-2 text-center">Auto-registrazione</div>
           <div className="col-span-2 text-center">Conferma Presenza</div>
-          <div className="col-span-2 text-center">Ritardo</div>
+          <div className="col-span-1 text-center">Ritardo</div>
           <div className="col-span-3">Note</div>
         </div>
         
@@ -293,7 +293,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
             return (
               <div key={player.id}>
                 {/* Layout Desktop */}
-                <div className="hidden md:grid md:grid-cols-13 gap-4 p-4 items-center hover:bg-muted/30">
+                <div className="hidden md:grid md:grid-cols-12 gap-4 p-4 items-center hover:bg-muted/30">
                   {/* Checkbox selezione */}
                   <div className="col-span-1 flex items-center justify-center">
                     <Checkbox 
@@ -380,16 +380,16 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                   </div>
 
                   {/* Ritardo */}
-                  <div className="col-span-2 text-center">
+                  <div className="col-span-1 text-center">
                     {attendance?.status === 'present' && (
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1">
                         <input
                           type="checkbox"
                           checked={attendance?.arrival_time === '99:99'}
                           onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
                           className="h-4 w-4"
                         />
-                        <span className="text-sm">In ritardo</span>
+                        <span className="text-xs">Ritardo</span>
                       </div>
                     )}
                   </div>
