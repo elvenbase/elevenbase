@@ -34,18 +34,22 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Deleting user:', userId);
 
-    // Delete user from auth system
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-
-    if (authError) {
-      console.error('Auth delete error:', authError);
-      return new Response(
-        JSON.stringify({ error: authError.message }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        }
-      );
+    // Try to delete user from auth system (might not exist)
+    try {
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+      if (authError && authError.message !== 'User not found') {
+        console.error('Auth delete error:', authError);
+        return new Response(
+          JSON.stringify({ error: authError.message }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          }
+        );
+      }
+      console.log('User deleted from auth system or was not found');
+    } catch (authErr) {
+      console.warn('Auth deletion failed, continuing with database cleanup:', authErr);
     }
 
     // Delete from profiles table (should cascade via foreign key)
