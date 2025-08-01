@@ -403,11 +403,6 @@ const PublicSession = () => {
                     const playerId = lineup.players_data?.positions?.[position.id]
                     const player = playerId ? players.find(p => p.id === playerId) : null
                     
-                    // Debug: log player info when found
-                    if (player) {
-                      console.log('Rendering player:', player.first_name, player.last_name, 'Avatar URL:', player.avatar_url)
-                    }
-                    
                     return (
                       <div
                         key={position.id}
@@ -420,12 +415,8 @@ const PublicSession = () => {
                          <div className="flex flex-col items-center space-y-1">
                            {player ? (
                              <div className="relative">
-                               <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-3 border-white shadow-lg">
-                                 <AvatarImage 
-                                   src={player.avatar_url || undefined}
-                                   onError={() => console.log('Avatar load error for player:', player.first_name, player.last_name, 'URL:', player.avatar_url)}
-                                   onLoad={() => console.log('Avatar loaded for player:', player.first_name, player.last_name)}
-                                 />
+                                <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-3 border-white shadow-lg">
+                                  <AvatarImage src={player.avatar_url || undefined} />
                                  <AvatarFallback 
                                    className="text-white font-bold text-sm bg-primary"
                                    style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}

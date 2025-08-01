@@ -99,7 +99,7 @@ serve(async (req) => {
       console.log('Fetching active players...')
       const { data: players, error: playersError } = await supabase
         .from('players')
-        .select('id, first_name, last_name, jersey_number')
+        .select('id, first_name, last_name, jersey_number, avatar_url')
         .eq('status', 'active')
         .order('last_name')
 
