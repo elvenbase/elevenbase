@@ -68,27 +68,22 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth ${
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-glow"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    }`
-                  }
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="text-sm font-medium">{item.name}</span>
-                </NavLink>
-              );
-            })}
+            {/* Dashboard first */}
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth ${
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-glow"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`
+              }
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span className="text-sm font-medium">Dashboard</span>
+            </NavLink>
             
-            {/* Squad Dropdown */}
+            {/* Squad Dropdown - second position */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -117,6 +112,27 @@ const Navigation = () => {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Rest of navigation items */}
+            {navigationItems.slice(1).map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth ${
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-glow"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`
+                  }
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">{item.name}</span>
+                </NavLink>
+              );
+            })}
           </div>
 
           {/* User Menu */}
@@ -155,7 +171,24 @@ const Navigation = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-slide-in">
             <div className="space-y-2">
-              {navigationItems.map((item) => {
+              {/* Dashboard first */}
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 px-4 py-3 rounded-xl transition-smooth ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-glow"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`
+                }
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <BarChart3 className="h-5 w-5" />
+                <span className="font-medium">Dashboard</span>
+              </NavLink>
+              
+              {/* Squad items - second position */}
+              {squadItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <NavLink
@@ -176,8 +209,8 @@ const Navigation = () => {
                 );
               })}
               
-              {/* Squad items for mobile */}
-              {squadItems.map((item) => {
+              {/* Rest of navigation items */}
+              {navigationItems.slice(1).map((item) => {
                 const Icon = item.icon;
                 return (
                   <NavLink
