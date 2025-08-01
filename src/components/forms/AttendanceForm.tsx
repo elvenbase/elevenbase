@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, XCircle, Users, Lock } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { CheckCircle, XCircle, Users, Lock, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData';
@@ -16,6 +17,7 @@ interface AttendanceFormProps {
 const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   
   const { data: allPlayers = [], refetch: refetchPlayers } = usePlayers();
   const { data: existingAttendance = [], refetch } = useTrainingAttendance(sessionId);
@@ -116,6 +118,64 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
     }
   };
 
+  const handleBulkStatusChange = async (status: string) => {
+    if (selectedPlayers.length === 0) {
+      toast.error('Seleziona almeno un giocatore');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      for (const playerId of selectedPlayers) {
+        const existingRecord = existingAttendance.find(a => a.player_id === playerId);
+        
+        if (existingRecord) {
+          await supabase
+            .from('training_attendance')
+            .update({ 
+              status,
+              self_registered: false
+            })
+            .eq('id', existingRecord.id);
+        } else {
+          await supabase
+            .from('training_attendance')
+            .insert({
+              session_id: sessionId,
+              player_id: playerId,
+              status,
+              self_registered: false
+            });
+        }
+      }
+
+      toast.success(`${selectedPlayers.length} giocatori aggiornati`);
+      setSelectedPlayers([]);
+      refetch();
+    } catch (error: any) {
+      toast.error('Errore nell\'aggiornamento bulk: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedPlayers.length === allPlayers.length) {
+      setSelectedPlayers([]);
+    } else {
+      setSelectedPlayers(allPlayers.map(p => p.id));
+    }
+  };
+
+  const handleSelectPlayer = (playerId: string) => {
+    setSelectedPlayers(prev => 
+      prev.includes(playerId) 
+        ? prev.filter(id => id !== playerId)
+        : [...prev, playerId]
+    );
+  };
+
   const handleCloseSession = async () => {
     try {
       setIsLoading(true);
@@ -158,9 +218,56 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         </div>
       </div>
 
+      {/* Controlli selezione multipla */}
+      {selectedPlayers.length > 0 && (
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-600" />
+              <span className="font-medium text-blue-900 dark:text-blue-100">
+                {selectedPlayers.length} giocatori selezionati
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => handleBulkStatusChange('present')}
+                disabled={isLoading}
+              >
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Presenti
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => handleBulkStatusChange('absent')}
+                disabled={isLoading}
+              >
+                <XCircle className="w-4 h-4 mr-1" />
+                Assenti
+              </Button>
+              <Button 
+                size="sm" 
+                variant="ghost"
+                onClick={() => setSelectedPlayers([])}
+              >
+                Deseleziona
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tabella giocatori */}
       <div className="border rounded-lg">
-        <div className="grid grid-cols-12 gap-4 p-4 bg-muted/50 font-medium text-sm">
+        <div className="grid grid-cols-13 gap-4 p-4 bg-muted/50 font-medium text-sm">
+          <div className="col-span-1 flex items-center justify-center">
+            <Checkbox 
+              checked={selectedPlayers.length === allPlayers.length && allPlayers.length > 0}
+              onCheckedChange={handleSelectAll}
+            />
+          </div>
           <div className="col-span-3">Giocatore</div>
           <div className="col-span-2 text-center">Auto-registrazione</div>
           <div className="col-span-2 text-center">Conferma Presenza</div>
@@ -174,7 +281,15 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
             const isEditing = editingPlayer === player.id
             
             return (
-              <div key={player.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/30">
+              <div key={player.id} className="grid grid-cols-13 gap-4 p-4 items-center hover:bg-muted/30">
+                {/* Checkbox selezione */}
+                <div className="col-span-1 flex items-center justify-center">
+                  <Checkbox 
+                    checked={selectedPlayers.includes(player.id)}
+                    onCheckedChange={() => handleSelectPlayer(player.id)}
+                  />
+                </div>
+                
                 {/* Giocatore */}
                 <div className="col-span-3">
                   <div className="flex items-center gap-3">
