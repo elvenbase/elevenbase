@@ -419,10 +419,24 @@ const PublicSession = () => {
                     const playerId = lineup.players_data?.positions?.[position.id]
                     const player = playerId ? players.find(p => p.id === playerId) : null
                     
-                    // Aggiusta la posizione Y del portiere per mobile e spazia meglio i giocatori
+                    // Aggiusta le posizioni per evitare sovrapposizioni su mobile
                     let adjustedY = position.y;
+                    let adjustedX = position.x;
+                    
+                    // Portiere più visibile
                     if (position.name === 'Portiere') {
                       adjustedY = Math.max(position.y - 3, 8);
+                    }
+                    
+                    // Sfasa i giocatori che sono sulla stessa linea Y per evitare sovrapposizioni
+                    const sameLinePositions = formations[lineup.formation]?.positions.filter(p => 
+                      Math.abs(p.y - position.y) < 2 && p.id !== position.id
+                    ) || [];
+                    
+                    if (sameLinePositions.length > 0) {
+                      // Crea un offset basato sulla posizione X per sfalsare i giocatori
+                      const offsetIndex = position.x < 30 ? -2 : position.x > 70 ? 2 : 0;
+                      adjustedY += offsetIndex;
                     }
                     
                     return (
