@@ -415,7 +415,7 @@ const PublicSession = () => {
                         <div className="flex flex-col items-center space-y-1">
                           {player ? (
                             <div className="relative">
-                              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-3 border-white shadow-lg">
+                              <Avatar className="w-12 h-12 md:w-14 md:h-14 border-3 border-white shadow-lg">
                                 <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
                                   className="text-white font-bold text-sm"
