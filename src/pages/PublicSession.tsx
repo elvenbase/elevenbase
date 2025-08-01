@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { useCustomFormations } from '@/hooks/useCustomFormations'
 
 interface Player {
   id: string
@@ -53,6 +54,7 @@ const PublicSession = () => {
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [lineup, setLineup] = useState<Lineup | null>(null)
+  const { formations: customFormations } = useCustomFormations()
 
   useEffect(() => {
     if (!token) {
@@ -205,7 +207,8 @@ const PublicSession = () => {
     return colors[Math.abs(hash) % colors.length]
   }
 
-  const formations: Record<string, { name: string; positions: { id: string; name: string; x: number; y: number }[] }> = {
+  // Formazioni predefinite
+  const predefinedFormations: Record<string, { name: string; positions: { id: string; name: string; x: number; y: number }[] }> = {
     '4-4-2': {
       name: '4-4-2',
       positions: [
@@ -255,6 +258,23 @@ const PublicSession = () => {
       ]
     }
   }
+
+  // Combina formazioni predefinite e personalizzate
+  const getAllFormations = () => {
+    const formations = { ...predefinedFormations }
+    
+    // Aggiungi formazioni custom
+    customFormations.forEach(customFormation => {
+      formations[customFormation.name] = {
+        name: customFormation.name,
+        positions: customFormation.positions
+      }
+    })
+    
+    return formations
+  }
+
+  const formations = getAllFormations()
 
   if (loading) {
     return (
