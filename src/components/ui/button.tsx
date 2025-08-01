@@ -9,18 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-glow hover:shadow-accent-glow",
         destructive:
-          "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl",
         outline:
-          "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-xl",
         secondary:
-          "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
-        ghost: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
-        link: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl",
+        ghost: "hover:bg-accent hover:text-accent-foreground rounded-xl",
+        link: "text-primary underline-offset-4 hover:underline",
         hero: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-glow font-bold",
-        gaming: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-accent-glow",
-        gradient: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-glow",
+        gaming: "bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl shadow-accent-glow hover:scale-105 transition-bounce",
+        gradient: "bg-gradient-primary text-foreground hover:scale-105 rounded-xl shadow-glow transition-bounce",
       },
       size: {
         default: "h-10 px-4 py-2",
