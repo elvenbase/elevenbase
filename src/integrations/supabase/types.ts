@@ -253,6 +253,7 @@ export type Database = {
           id: string
           last_name: string | null
           phone: string | null
+          status: string | null
           updated_at: string
           username: string | null
         }
@@ -262,6 +263,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           phone?: string | null
+          status?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -271,6 +273,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           phone?: string | null
+          status?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -553,6 +556,10 @@ export type Database = {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
+        Returns: boolean
+      }
+      is_user_active: {
+        Args: { _user_id: string }
         Returns: boolean
       }
     }

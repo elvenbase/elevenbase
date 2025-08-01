@@ -23,6 +23,7 @@ interface User {
     first_name?: string;
     last_name?: string;
     phone?: string;
+    status?: 'active' | 'inactive';
   };
   user_roles?: Array<{
     role: 'superadmin' | 'admin' | 'coach' | 'player';
@@ -94,6 +95,7 @@ const UserManagement = () => {
           first_name,
           last_name,
           phone,
+          status,
           created_at
         `);
       
@@ -115,7 +117,8 @@ const UserManagement = () => {
               username: profile.username,
               first_name: profile.first_name,
               last_name: profile.last_name,
-              phone: profile.phone
+              phone: profile.phone,
+              status: (profile.status as 'active' | 'inactive') || 'inactive'
             },
             user_roles: userRoles || []
           };
@@ -181,64 +184,54 @@ const UserManagement = () => {
           }
         }
       } else {
-        // Se non c'è email, crea solo il profilo (senza autenticazione)
-        console.log('Creating user without email:', {
-          username: newUserUsername,
-          firstName: newUserFirstName,
-          lastName: newUserLastName,
-          phone: newUserPhone,
-          role: newUserRole
-        });
+        // Se non c'è email, crea email fake e account di autenticazione
+        const fakeEmail = `${newUserUsername.toLowerCase()}@users.com`;
+        console.log('Creating user with fake email:', fakeEmail);
         
-        // Crea il profilo usando gen_random_uuid() di PostgreSQL
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            username: newUserUsername,
-            first_name: newUserFirstName,
-            last_name: newUserLastName,
-            phone: newUserPhone
-          })
-          .select('id')
-          .single();
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          throw profileError;
-        }
-        
-        const userId = profileData.id;
-        console.log('Profile created successfully with ID:', userId);
-
-        // Assegna il ruolo
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert([{
-            user_id: userId,
-            role: newUserRole as any
-          }]);
-
-        if (roleError) {
-          console.error('Role assignment error:', roleError);
-          throw roleError;
-        }
-        console.log('Role assigned successfully');
-
-        // Se il ruolo è "player", crea anche l'entry nella tabella players
-        if (newUserRole === 'player') {
-          const { error: playerError } = await supabase
-            .from('players')
-            .insert({
+        // Crea l'utente tramite signup con email fake
+        const { data, error } = await supabase.auth.signUp({
+          email: fakeEmail,
+          password: newUserPassword,
+          options: {
+            emailRedirectTo: undefined, // Non mandare email di conferma
+            data: {
+              username: newUserUsername,
               first_name: newUserFirstName,
               last_name: newUserLastName,
               phone: newUserPhone
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          // Aggiorna il profilo creato dal trigger con status inattivo
+          await supabase
+            .from('profiles')
+            .update({
+              status: 'inactive'
+            })
+            .eq('id', data.user.id);
+
+          // Assegna il ruolo
+          await supabase
+            .from('user_roles')
+            .insert({
+              user_id: data.user.id,
+              role: newUserRole as any
             });
 
-          if (playerError) {
-            console.error('Player creation error:', playerError);
-            throw playerError;
+          // Se il ruolo è "player", crea anche l'entry nella tabella players
+          if (newUserRole === 'player') {
+            await supabase
+              .from('players')
+              .insert({
+                first_name: newUserFirstName,
+                last_name: newUserLastName,
+                phone: newUserPhone
+              });
           }
-          console.log('Player created successfully');
         }
       }
       toast.success('Utente creato con successo');
@@ -328,6 +321,26 @@ const UserManagement = () => {
     setNewUserPassword('');
     setNewUserRole('player');
     setShowPassword(false);
+  };
+
+  const handleToggleUserStatus = async (userId: string, currentStatus: 'active' | 'inactive') => {
+    try {
+      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+      console.log('Toggling user status:', userId, 'from', currentStatus, 'to', newStatus);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: newStatus })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast.success(`Utente ${newStatus === 'active' ? 'attivato' : 'disattivato'} con successo`);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error toggling user status:', error);
+      toast.error('Errore nel cambiamento dello stato utente: ' + error.message);
+    }
   };
 
   const filteredUsers = users.filter(user => {
@@ -520,6 +533,7 @@ const UserManagement = () => {
                     <TableHead>Nome Completo</TableHead>
                     <TableHead>Telefono</TableHead>
                     <TableHead>Ruolo</TableHead>
+                    <TableHead>Stato</TableHead>
                     <TableHead>Creato il</TableHead>
                     <TableHead className="text-right">Azioni</TableHead>
                   </TableRow>
@@ -541,10 +555,24 @@ const UserManagement = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
+                        <Badge variant={user.profiles?.status === 'active' ? 'default' : 'secondary'}>
+                          {user.profiles?.status === 'active' ? 'Attivo' : 'Inattivo'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         {new Date(user.created_at).toLocaleDateString('it-IT')}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleUserStatus(user.id, user.profiles?.status || 'inactive')}
+                            className="mr-2"
+                          >
+                            {user.profiles?.status === 'active' ? 'Disattiva' : 'Attiva'}
+                          </Button>
+                          
                           <Select
                             value={user.user_roles?.[0]?.role || 'player'}
                             onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole as any)}
