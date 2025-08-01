@@ -24,6 +24,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
   const [forwards, setForwards] = useState(formation?.forwards || 2)
   const [positions, setPositions] = useState(formation?.positions || [])
   const [draggedPosition, setDraggedPosition] = useState<string | null>(null)
+  const [editingRole, setEditingRole] = useState<string | null>(null)
 
   const totalPlayers = defenders + midfielders + forwards
 
@@ -37,7 +38,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
       name: `Portiere`,
       x: 50,
       y: 85,
-      role: 'Portiere'
+      role: 'Portiere',
+      roleShort: 'P'
     })
 
     // Defenders
@@ -49,7 +51,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Difensore ${positionId}`,
         x,
         y: 70,
-        role: 'Difensore'
+        role: 'Difensore',
+        roleShort: 'D'
       })
       positionId++
     }
@@ -63,7 +66,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Centrocampista ${positionId}`,
         x,
         y: 45,
-        role: 'Centrocampista'
+        role: 'Centrocampista',
+        roleShort: 'C'
       })
       positionId++
     }
@@ -77,7 +81,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Attaccante ${positionId}`,
         x,
         y: 20,
-        role: 'Attaccante'
+        role: 'Attaccante',
+        roleShort: 'A'
       })
       positionId++
     }
@@ -85,12 +90,21 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
     setPositions(newPositions)
   }, [defenders, midfielders, forwards])
 
-  const handlePositionDrag = (positionId: string, event: React.MouseEvent) => {
-    const rect = event.currentTarget.parentElement?.getBoundingClientRect()
+  const handlePositionDrag = (positionId: string, event: React.MouseEvent | React.TouchEvent) => {
+    const rect = (event.currentTarget as HTMLElement).parentElement?.getBoundingClientRect()
     if (!rect) return
 
-    const x = ((event.clientX - rect.left) / rect.width) * 100
-    const y = ((event.clientY - rect.top) / rect.height) * 100
+    let clientX, clientY
+    if ('touches' in event && event.touches.length > 0) {
+      clientX = event.touches[0].clientX
+      clientY = event.touches[0].clientY
+    } else {
+      clientX = (event as React.MouseEvent).clientX
+      clientY = (event as React.MouseEvent).clientY
+    }
+
+    const x = ((clientX - rect.left) / rect.width) * 100
+    const y = ((clientY - rect.top) / rect.height) * 100
 
     setPositions(prev => prev.map(pos => 
       pos.id === positionId 
@@ -99,9 +113,9 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
     ))
   }
 
-  const updatePositionRole = (positionId: string, role: string) => {
+  const updatePositionRole = (positionId: string, role: string, roleShort?: string) => {
     setPositions(prev => prev.map(pos => 
-      pos.id === positionId ? { ...pos, role } : pos
+      pos.id === positionId ? { ...pos, role, roleShort } : pos
     ))
   }
 
@@ -192,7 +206,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
       {positions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Campo da Calcio - Posiziona i Giocatori</CardTitle>
+            <CardTitle>Campo da Calcio - Posiziona e Personalizza i Giocatori</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="relative w-full aspect-[2/3] bg-green-500 rounded-lg overflow-hidden border-2 border-white">
@@ -211,40 +225,133 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
               {positions.map((position) => (
                 <div
                   key={position.id}
-                  className="absolute w-8 h-8 bg-blue-600 rounded-full border-2 border-white cursor-move flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 hover:bg-blue-700 transition-colors"
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
                   style={{
                     left: `${position.x}%`,
                     top: `${position.y}%`
                   }}
-                  onMouseDown={(e) => setDraggedPosition(position.id)}
-                  onMouseMove={(e) => {
-                    if (draggedPosition === position.id) {
-                      handlePositionDrag(position.id, e)
-                    }
-                  }}
-                  onMouseUp={() => setDraggedPosition(null)}
-                  title={position.name}
                 >
-                  <span className="text-white text-xs font-bold">
-                    {position.id === 'gk' ? 'P' : position.id.split('-')[1] || '1'}
-                  </span>
+                  <div className="flex flex-col items-center space-y-1">
+                    {/* Player pin */}
+                    <div
+                      className="w-8 h-8 bg-blue-600 rounded-full border-2 border-white cursor-move flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg"
+                      onMouseDown={(e) => {
+                        setDraggedPosition(position.id)
+                        e.preventDefault()
+                      }}
+                      onTouchStart={(e) => {
+                        setDraggedPosition(position.id)
+                        e.preventDefault()
+                      }}
+                      onMouseMove={(e) => {
+                        if (draggedPosition === position.id) {
+                          handlePositionDrag(position.id, e)
+                        }
+                      }}
+                      onTouchMove={(e) => {
+                        if (draggedPosition === position.id) {
+                          handlePositionDrag(position.id, e)
+                        }
+                      }}
+                      onMouseUp={() => setDraggedPosition(null)}
+                      onTouchEnd={() => setDraggedPosition(null)}
+                      title={position.name}
+                    >
+                      <span className="text-white text-xs font-bold">
+                        {position.roleShort || position.id === 'gk' ? 'P' : position.id.split('-')[1] || '1'}
+                      </span>
+                    </div>
+                    
+                    {/* Role display/edit */}
+                    {editingRole === position.id ? (
+                      <div className="bg-white/90 backdrop-blur-sm rounded px-2 py-1 shadow-lg min-w-[100px]">
+                        <Input
+                          value={position.role || ''}
+                          onChange={(e) => updatePositionRole(position.id, e.target.value, position.roleShort)}
+                          placeholder="Ruolo esteso"
+                          className="text-xs h-6 mb-1"
+                          onBlur={() => setEditingRole(null)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              setEditingRole(null)
+                            }
+                          }}
+                          autoFocus
+                        />
+                        <Input
+                          value={position.roleShort || ''}
+                          onChange={(e) => updatePositionRole(position.id, position.role || '', e.target.value)}
+                          placeholder="Abbreviato"
+                          className="text-xs h-6"
+                          maxLength={3}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="text-xs text-white font-medium px-2 py-1 bg-black/60 rounded backdrop-blur-sm cursor-pointer hover:bg-black/80 transition-colors max-w-[80px] text-center"
+                        onClick={() => setEditingRole(position.id)}
+                        title="Clicca per modificare"
+                      >
+                        {position.role || position.name}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Position roles editor */}
-            <div className="mt-4 space-y-2">
-              <h4 className="font-semibold">Personalizza Ruoli</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {/* Position fine-tuning controls */}
+            <div className="mt-4 space-y-3">
+              <h4 className="font-semibold">Controlli Posizionamento</h4>
+              <div className="text-sm text-muted-foreground">
+                • Trascina i pin sul campo per posizionare i giocatori
+                • Clicca sui ruoli sotto i pin per personalizzarli
+                • Usa le coordinate per regolazioni precise
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto">
                 {positions.map((position) => (
-                  <div key={position.id} className="flex items-center space-x-2">
-                    <Label className="min-w-0 flex-1 text-sm">{position.name}:</Label>
-                    <Input
-                      value={position.role || ''}
-                      onChange={(e) => updatePositionRole(position.id, e.target.value)}
-                      placeholder="es. Quinto, Regista..."
-                      className="flex-1"
-                    />
+                  <div key={position.id} className="flex items-center space-x-2 p-2 border rounded">
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{position.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {position.role} {position.roleShort && `(${position.roleShort})`}
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="text-xs">
+                        <Label className="text-xs">X:</Label>
+                        <Input
+                          type="number"
+                          value={Math.round(position.x)}
+                          onChange={(e) => {
+                            const x = Math.max(5, Math.min(95, parseInt(e.target.value) || 0))
+                            setPositions(prev => prev.map(pos => 
+                              pos.id === position.id ? { ...pos, x } : pos
+                            ))
+                          }}
+                          className="w-16 h-6 text-xs"
+                          min={5}
+                          max={95}
+                        />
+                      </div>
+                      <div className="text-xs">
+                        <Label className="text-xs">Y:</Label>
+                        <Input
+                          type="number"
+                          value={Math.round(position.y)}
+                          onChange={(e) => {
+                            const y = Math.max(5, Math.min(95, parseInt(e.target.value) || 0))
+                            setPositions(prev => prev.map(pos => 
+                              pos.id === position.id ? { ...pos, y } : pos
+                            ))
+                          }}
+                          className="w-16 h-6 text-xs"
+                          min={5}
+                          max={95}
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

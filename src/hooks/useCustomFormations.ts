@@ -14,6 +14,7 @@ export interface CustomFormation {
     x: number
     y: number
     role?: string
+    roleShort?: string
   }>
   created_by?: string
   created_at: string

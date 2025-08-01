@@ -28,49 +28,49 @@ const formations = {
   '4-4-2': {
     name: '4-4-2',
     positions: [
-      { id: 'gk', name: 'Portiere', x: 50, y: 90 },
-      { id: 'rb', name: 'Terzino Dx', x: 80, y: 70 },
-      { id: 'cb1', name: 'Centrale 1', x: 60, y: 70 },
-      { id: 'cb2', name: 'Centrale 2', x: 40, y: 70 },
-      { id: 'lb', name: 'Terzino Sx', x: 20, y: 70 },
-      { id: 'rm', name: 'Esterno Dx', x: 80, y: 40 },
-      { id: 'cm1', name: 'Mediano 1', x: 60, y: 40 },
-      { id: 'cm2', name: 'Mediano 2', x: 40, y: 40 },
-      { id: 'lm', name: 'Esterno Sx', x: 20, y: 40 },
-      { id: 'st1', name: 'Attaccante 1', x: 60, y: 15 },
-      { id: 'st2', name: 'Attaccante 2', x: 40, y: 15 }
+      { id: 'gk', name: 'Portiere', x: 50, y: 90, role: 'Portiere', roleShort: 'P' },
+      { id: 'rb', name: 'Terzino Dx', x: 80, y: 70, role: 'Terzino Destro', roleShort: 'TD' },
+      { id: 'cb1', name: 'Centrale 1', x: 60, y: 70, role: 'Difensore Centrale', roleShort: 'DC' },
+      { id: 'cb2', name: 'Centrale 2', x: 40, y: 70, role: 'Difensore Centrale', roleShort: 'DC' },
+      { id: 'lb', name: 'Terzino Sx', x: 20, y: 70, role: 'Terzino Sinistro', roleShort: 'TS' },
+      { id: 'rm', name: 'Esterno Dx', x: 80, y: 40, role: 'Esterno Destro', roleShort: 'ED' },
+      { id: 'cm1', name: 'Mediano 1', x: 60, y: 40, role: 'Mediano', roleShort: 'M' },
+      { id: 'cm2', name: 'Mediano 2', x: 40, y: 40, role: 'Mediano', roleShort: 'M' },
+      { id: 'lm', name: 'Esterno Sx', x: 20, y: 40, role: 'Esterno Sinistro', roleShort: 'ES' },
+      { id: 'st1', name: 'Attaccante 1', x: 60, y: 15, role: 'Attaccante', roleShort: 'A' },
+      { id: 'st2', name: 'Attaccante 2', x: 40, y: 15, role: 'Attaccante', roleShort: 'A' }
     ]
   },
   '4-3-3': {
     name: '4-3-3',
     positions: [
-      { id: 'gk', name: 'Portiere', x: 50, y: 90 },
-      { id: 'rb', name: 'Terzino Dx', x: 80, y: 70 },
-      { id: 'cb1', name: 'Centrale 1', x: 60, y: 70 },
-      { id: 'cb2', name: 'Centrale 2', x: 40, y: 70 },
-      { id: 'lb', name: 'Terzino Sx', x: 20, y: 70 },
-      { id: 'cdm', name: 'Mediano', x: 50, y: 50 },
-      { id: 'cm1', name: 'Mezzala Dx', x: 65, y: 40 },
-      { id: 'cm2', name: 'Mezzala Sx', x: 35, y: 40 },
-      { id: 'rw', name: 'Ala Dx', x: 80, y: 20 },
-      { id: 'st', name: 'Punta', x: 50, y: 15 },
-      { id: 'lw', name: 'Ala Sx', x: 20, y: 20 }
+      { id: 'gk', name: 'Portiere', x: 50, y: 90, role: 'Portiere', roleShort: 'P' },
+      { id: 'rb', name: 'Terzino Dx', x: 80, y: 70, role: 'Terzino Destro', roleShort: 'TD' },
+      { id: 'cb1', name: 'Centrale 1', x: 60, y: 70, role: 'Difensore Centrale', roleShort: 'DC' },
+      { id: 'cb2', name: 'Centrale 2', x: 40, y: 70, role: 'Difensore Centrale', roleShort: 'DC' },
+      { id: 'lb', name: 'Terzino Sx', x: 20, y: 70, role: 'Terzino Sinistro', roleShort: 'TS' },
+      { id: 'cdm', name: 'Mediano', x: 50, y: 50, role: 'Mediano', roleShort: 'M' },
+      { id: 'cm1', name: 'Mezzala Dx', x: 65, y: 40, role: 'Mezzala Destra', roleShort: 'MD' },
+      { id: 'cm2', name: 'Mezzala Sx', x: 35, y: 40, role: 'Mezzala Sinistra', roleShort: 'MS' },
+      { id: 'rw', name: 'Ala Dx', x: 80, y: 20, role: 'Ala Destra', roleShort: 'AD' },
+      { id: 'st', name: 'Punta', x: 50, y: 15, role: 'Punta Centrale', roleShort: 'PC' },
+      { id: 'lw', name: 'Ala Sx', x: 20, y: 20, role: 'Ala Sinistra', roleShort: 'AS' }
     ]
   },
   '3-5-2': {
     name: '3-5-2',
     positions: [
-      { id: 'gk', name: 'Portiere', x: 50, y: 90 },
-      { id: 'cb1', name: 'Centrale Dx', x: 70, y: 70 },
-      { id: 'cb2', name: 'Centrale', x: 50, y: 70 },
-      { id: 'cb3', name: 'Centrale Sx', x: 30, y: 70 },
-      { id: 'rwb', name: 'Quinto Dx', x: 85, y: 50 },
-      { id: 'cm1', name: 'Mediano 1', x: 65, y: 40 },
-      { id: 'cm2', name: 'Regista', x: 50, y: 45 },
-      { id: 'cm3', name: 'Mediano 2', x: 35, y: 40 },
-      { id: 'lwb', name: 'Quinto Sx', x: 15, y: 50 },
-      { id: 'st1', name: 'Attaccante 1', x: 60, y: 15 },
-      { id: 'st2', name: 'Attaccante 2', x: 40, y: 15 }
+      { id: 'gk', name: 'Portiere', x: 50, y: 90, role: 'Portiere', roleShort: 'P' },
+      { id: 'cb1', name: 'Centrale Dx', x: 70, y: 70, role: 'Difensore Centrale', roleShort: 'DC' },
+      { id: 'cb2', name: 'Centrale', x: 50, y: 70, role: 'Libero', roleShort: 'L' },
+      { id: 'cb3', name: 'Centrale Sx', x: 30, y: 70, role: 'Difensore Centrale', roleShort: 'DC' },
+      { id: 'rwb', name: 'Quinto Dx', x: 85, y: 50, role: 'Quinto Destro', roleShort: 'QD' },
+      { id: 'cm1', name: 'Mediano 1', x: 65, y: 40, role: 'Mediano', roleShort: 'M' },
+      { id: 'cm2', name: 'Regista', x: 50, y: 45, role: 'Regista', roleShort: 'R' },
+      { id: 'cm3', name: 'Mediano 2', x: 35, y: 40, role: 'Mediano', roleShort: 'M' },
+      { id: 'lwb', name: 'Quinto Sx', x: 15, y: 50, role: 'Quinto Sinistro', roleShort: 'QS' },
+      { id: 'st1', name: 'Attaccante 1', x: 60, y: 15, role: 'Attaccante', roleShort: 'A' },
+      { id: 'st2', name: 'Attaccante 2', x: 40, y: 15, role: 'Attaccante', roleShort: 'A' }
     ]
   }
 }
@@ -340,7 +340,10 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                           </div>
                         )}
                         <div className="text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
-                          {position.name}
+                          {position.role || position.name}
+                          {position.roleShort && (
+                            <div className="text-xs opacity-75">({position.roleShort})</div>
+                          )}
                         </div>
                         {assignedPlayer && (
                           <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
