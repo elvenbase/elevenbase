@@ -385,108 +385,148 @@ const PublicSession = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Campo da calcio con proporzioni realistiche */}
-              <div className="w-full mx-auto">
-                <div 
-                  className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 md:border-4 border-white rounded-lg shadow-lg overflow-hidden" 
-                  style={{ aspectRatio: '2/3', minHeight: '450px', maxHeight: '650px' }}
-                >
-                  {/* Sfondo erba con pattern */}
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Campo da calcio */}
+                <div className="w-full mx-auto">
                   <div 
-                    className="absolute inset-0 opacity-20" 
-                    style={{
-                      backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(0,100,0,0.1) 5px, rgba(0,100,0,0.1) 10px)'
-                    }}
-                  />
-                  
-                  {/* Linee del campo */}
-                  <div className="absolute inset-0">
-                    {/* Bordo campo */}
-                    <div className="absolute inset-2 md:inset-3 border border-white md:border-2 rounded-sm" />
+                    className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 md:border-4 border-white rounded-lg shadow-lg overflow-hidden" 
+                    style={{ aspectRatio: '2/3', minHeight: '450px', maxHeight: '650px' }}
+                  >
+                    {/* Sfondo erba con pattern */}
+                    <div 
+                      className="absolute inset-0 opacity-20" 
+                      style={{
+                        backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(0,100,0,0.1) 5px, rgba(0,100,0,0.1) 10px)'
+                      }}
+                    />
+                    
+                    {/* Linee del campo */}
+                    {/* Linea centrale orizzontale */}
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 md:h-1 bg-white transform -translate-y-1/2" />
+                    
+                    {/* Cerchio centrale */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 md:w-24 h-20 md:h-24 border-2 md:border-4 border-white rounded-full" />
                     
                     {/* Area di rigore superiore */}
-                    <div className="absolute top-2 md:top-3 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border border-white md:border-2" />
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 md:border-l-4 border-r-2 md:border-r-4 border-b-2 md:border-b-4 border-white" />
+                    
+                    {/* Area di rigore inferiore */}
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 md:border-l-4 border-r-2 md:border-r-4 border-t-2 md:border-t-4 border-white" />
+                    
                     {/* Area piccola superiore */}
-                    <div className="absolute top-2 md:top-3 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border border-white md:border-2" />
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 md:border-l-4 border-r-2 md:border-r-4 border-b-2 md:border-b-4 border-white" />
+                    
+                    {/* Area piccola inferiore */}
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 md:border-l-4 border-r-2 md:border-r-4 border-t-2 md:border-t-4 border-white" />
+                    
                     {/* Dischetto superiore */}
                     <div className="absolute top-[15%] left-1/2 transform -translate-x-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
                     
-                    {/* Linea di metà campo */}
-                    <div className="absolute top-1/2 left-2 md:left-3 right-2 md:right-3 border-t border-white md:border-t-2" />
-                    {/* Cerchio di centrocampo */}
-                    <div 
-                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-white md:border-2 rounded-full"
-                      style={{ width: '25%', aspectRatio: '1' }}
-                    />
-                    {/* Punto del centrocampo */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
-                    
-                    {/* Area di rigore inferiore */}
-                    <div className="absolute bottom-2 md:bottom-3 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border border-white md:border-2" />
-                    {/* Area piccola inferiore */}
-                    <div className="absolute bottom-2 md:bottom-3 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border border-white md:border-2" />
                     {/* Dischetto inferiore */}
                     <div className="absolute bottom-[15%] left-1/2 transform -translate-x-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
                     
                     {/* Porte */}
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/6 h-0.5 md:h-1 bg-white" />
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/6 h-0.5 md:h-1 bg-white" />
-                  </div>
 
-                  {/* Posizioni giocatori */}
-                  {getFormationFromLineup(lineup.formation)?.positions.map(position => {
-                    const playerId = lineup.players_data?.positions?.[position.id]
-                    const player = playerId ? players.find(p => p.id === playerId) : null
-                    
-                    return (
-                      <div
-                        key={position.id}
-                        className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                        style={{ 
-                          left: `${position.x}%`, 
-                          top: `${position.y}%` 
-                        }}
-                      >
-                         <div className="flex flex-col items-center space-y-1">
-                           {player ? (
-                             <div className="relative">
-                                <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-3 border-white shadow-lg">
-                                  <AvatarImage src={player.avatar_url || undefined} />
-                                 <AvatarFallback 
-                                   className="text-white font-bold text-sm bg-primary"
-                                   style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
-                                 >
-                                   {getPlayerInitials(player)}
-                                 </AvatarFallback>
-                               </Avatar>
-                              {player.jersey_number && (
-                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow">
-                                  {player.jersey_number}
+                    {/* Posizioni giocatori */}
+                    {getFormationFromLineup(lineup.formation)?.positions.map(position => {
+                      const playerId = lineup.players_data?.positions?.[position.id]
+                      const player = playerId ? players.find(p => p.id === playerId) : null
+                      
+                      return (
+                        <div
+                          key={position.id}
+                          className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                          style={{ 
+                            left: `${position.x}%`, 
+                            top: `${position.y}%` 
+                          }}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            {player ? (
+                              <div className="flex flex-col items-center gap-1">
+                                {/* Avatar giocatore */}
+                                <div 
+                                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-3 border-white flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg"
+                                  style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
+                                >
+                                  {player.jersey_number || getPlayerInitials(player)}
                                 </div>
-                              )}
+                                {/* Badge numero maglia se non è nell'avatar */}
+                                {player.jersey_number && (
+                                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center border-2 border-white font-bold">
+                                    {player.jersey_number}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
+                                <Users className="w-6 h-6 text-white/70" />
+                              </div>
+                            )}
+                            
+                            {/* Etichetta posizione - solo su desktop */}
+                            <div className="hidden md:block text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
+                              {position.roleShort || position.name}
                             </div>
-                          ) : (
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
-                              <Users className="w-6 h-6 text-white/70" />
-                            </div>
-                          )}
-                          
-                          {/* Etichetta posizione - solo su desktop */}
-                          <div className="hidden md:block text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
-                            {position.roleShort || position.name}
+                            
+                            {/* Nome giocatore */}
+                            {player && (
+                              <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
+                                <span className="md:hidden">{player.first_name} {player.last_name.charAt(0)}.</span>
+                                <span className="hidden md:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
+                              </div>
+                            )}
                           </div>
-                          
-                          {/* Nome giocatore */}
-                          {player && (
-                            <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
-                              <span className="md:hidden">{player.first_name} {player.last_name.charAt(0)}.</span>
-                              <span className="hidden md:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Lista giocatori schierati */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Giocatori schierati</h3>
+                  <div className="space-y-2">
+                    {getFormationFromLineup(lineup.formation)?.positions
+                      .filter(position => lineup.players_data?.positions?.[position.id])
+                      .map(position => {
+                        const playerId = lineup.players_data?.positions?.[position.id]
+                        const player = players.find(p => p.id === playerId)
+                        
+                        if (!player) return null
+                        
+                        return (
+                          <div 
+                            key={position.id}
+                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
+                          >
+                            <div 
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                              style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
+                            >
+                              {player.jersey_number || getPlayerInitials(player)}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium">
+                                {player.first_name} {player.last_name}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {position.roleShort || position.name}
+                                {player.jersey_number && ` • #${player.jersey_number}`}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+                  
+                  {/* Conteggio giocatori */}
+                  <div className="text-sm text-muted-foreground mt-4">
+                    {getFormationFromLineup(lineup.formation)?.positions
+                      .filter(position => lineup.players_data?.positions?.[position.id]).length || 0} giocatori schierati
+                  </div>
                 </div>
               </div>
             </CardContent>
