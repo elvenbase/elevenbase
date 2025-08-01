@@ -419,19 +419,23 @@ const PublicSession = () => {
                     const playerId = lineup.players_data?.positions?.[position.id]
                     const player = playerId ? players.find(p => p.id === playerId) : null
                     
-                    // Aggiusta la posizione Y del portiere per mobile
-                    const adjustedY = position.name === 'Portiere' ? Math.max(position.y - 3, 8) : position.y;
+                    // Aggiusta la posizione Y del portiere per mobile e spazia meglio i giocatori
+                    let adjustedY = position.y;
+                    if (position.name === 'Portiere') {
+                      adjustedY = Math.max(position.y - 3, 8);
+                    }
                     
                     return (
                       <div
                         key={position.id}
-                        className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-10"
+                        className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10"
                         style={{
                           left: `${position.x}%`,
                           top: `${adjustedY}%`
                         }}
                       >
-                        <div className="relative">
+                        {/* Container per avatar e numero maglia */}
+                        <div className="relative mb-1">
                           {player ? (
                             <div className="relative">
                               <Avatar className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 border-2 md:border-3 border-white shadow-lg bg-white">
@@ -457,20 +461,20 @@ const PublicSession = () => {
                               <Users className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white/70" />
                             </div>
                           )}
-                          
-                          {/* Etichetta posizione - solo su desktop */}
-                          <div className="hidden md:block text-xs text-white font-medium px-2 py-1 bg-black/70 rounded backdrop-blur-sm mt-1 min-w-fit text-center">
-                            {position.name}
-                          </div>
-                          
-                          {/* Nome giocatore */}
-                          {player && (
-                            <div className="text-xs text-white/90 text-center px-1.5 py-0.5 bg-black/50 rounded backdrop-blur-sm max-w-20 sm:max-w-24 md:max-w-28 truncate mt-1">
-                              <span className="md:hidden">{player.first_name} {player.last_name.charAt(0)}.</span>
-                              <span className="hidden md:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
-                            </div>
-                          )}
                         </div>
+                        
+                        {/* Etichetta posizione - solo su desktop */}
+                        <div className="hidden md:block text-xs text-white font-medium px-2 py-1 bg-black/70 rounded backdrop-blur-sm min-w-fit text-center">
+                          {position.name}
+                        </div>
+                        
+                        {/* Nome giocatore - centrato sotto l'avatar */}
+                        {player && (
+                          <div className="text-xs text-white/90 text-center px-1.5 py-0.5 bg-black/50 rounded backdrop-blur-sm min-w-12 max-w-20 md:max-w-28 truncate">
+                            <span className="md:hidden">{player.first_name} {player.last_name.charAt(0)}.</span>
+                            <span className="hidden md:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
