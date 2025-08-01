@@ -66,27 +66,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
-      // Verifica se l'utente è attivo (temporaneamente disabilitato per debug)
+      // Verifica se l'utente è attivo
       if (data.user) {
         console.log('User logged in successfully:', data.user.email);
-        // Commentiamo temporaneamente il controllo dello status per vedere se il login funziona
-        /*
-        const { data: isActive } = await supabase.rpc('is_user_active', {
-          _user_id: data.user.id
-        });
-
-        if (!isActive) {
-          // Fai logout immediato se l'utente non è attivo
-          await supabase.auth.signOut();
-          const inactiveError = new Error("Account non attivo. Contatta l'amministratore.");
-          toast({
-            title: "Account non attivo",
-            description: "Il tuo account non è ancora stato attivato. Contatta l'amministratore.",
-            variant: "destructive",
+        
+        try {
+          const { data: isActive, error: statusError } = await supabase.rpc('is_user_active', {
+            _user_id: data.user.id
           });
-          return { error: inactiveError };
+
+          if (statusError) {
+            console.warn('Errore nel controllo dello status, permettendo login:', statusError);
+            // Se c'è un errore nel controllo status, permettiamo il login comunque
+          } else if (!isActive) {
+            // Fai logout immediato se l'utente non è attivo
+            await supabase.auth.signOut();
+            const inactiveError = new Error("Account non attivo. Contatta l'amministratore.");
+            toast({
+              title: "Account non attivo",
+              description: "Il tuo account non è ancora stato attivato. Contatta l'amministratore.",
+              variant: "destructive",
+            });
+            return { error: inactiveError };
+          }
+        } catch (statusErr) {
+          console.warn('Errore nel controllo dello status, permettendo login:', statusErr);
+          // Se c'è un errore, permettiamo comunque il login
         }
-        */
       }
       
       return { error: null };
