@@ -209,28 +209,63 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
             <CardTitle>Campo da Calcio - Posiziona e Personalizza i Giocatori</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative w-full aspect-[2/3] bg-green-500 rounded-lg overflow-hidden border-2 border-white">
-              {/* Field markings */}
-              <div className="absolute inset-0">
-                {/* Center circle */}
-                <div className="absolute left-1/2 top-1/2 w-20 h-20 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2" />
-                {/* Center line */}
-                <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-white transform -translate-y-1/2" />
-                {/* Penalty areas */}
-                <div className="absolute left-1/4 right-1/4 top-0 h-16 border-b-2 border-l-2 border-r-2 border-white" />
-                <div className="absolute left-1/4 right-1/4 bottom-0 h-16 border-t-2 border-l-2 border-r-2 border-white" />
-              </div>
-
-              {/* Positions */}
-              {positions.map((position) => (
-                <div
-                  key={position.id}
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
+            <div className="relative w-full max-w-2xl mx-auto">
+              <div 
+                className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden" 
+                style={{ aspectRatio: '2/3', minHeight: '500px' }}
+              >
+                {/* Sfondo erba con pattern */}
+                <div 
+                  className="absolute inset-0 opacity-20" 
                   style={{
-                    left: `${position.x}%`,
-                    top: `${position.y}%`
+                    backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,100,0,0.1) 10px, rgba(0,100,0,0.1) 20px)'
                   }}
-                >
+                />
+                
+                {/* Linee del campo */}
+                <div className="absolute inset-0">
+                  {/* Bordo campo */}
+                  <div className="absolute inset-2 border-2 border-white rounded-sm" />
+                  
+                  {/* Area di rigore superiore */}
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-2 border-white" />
+                  {/* Area piccola superiore */}
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-2 border-white" />
+                  {/* Dischetto superiore */}
+                  <div className="absolute top-[12%] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+                  
+                  {/* Linea di metà campo */}
+                  <div className="absolute top-1/2 left-2 right-2 border-t-2 border-white" />
+                  {/* Cerchio di centrocampo */}
+                  <div 
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-white rounded-full"
+                    style={{ width: '25%', aspectRatio: '1' }}
+                  />
+                  {/* Punto del centrocampo */}
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full" />
+                  
+                  {/* Area di rigore inferiore */}
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-2 border-white" />
+                  {/* Area piccola inferiore */}
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-2 border-white" />
+                  {/* Dischetto inferiore */}
+                  <div className="absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+                  
+                  {/* Porte */}
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1 bg-white" />
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1 bg-white" />
+                </div>
+
+                {/* Positions */}
+                {positions.map((position) => (
+                  <div
+                    key={position.id}
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
+                    style={{
+                      left: `${position.x}%`,
+                      top: `${position.y}%`
+                    }}
+                  >
                   <div className="flex flex-col items-center space-y-1">
                     {/* Player pin */}
                     <div
@@ -296,8 +331,9 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                       </div>
                     )}
                   </div>
-                </div>
-              ))}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Position fine-tuning controls */}
