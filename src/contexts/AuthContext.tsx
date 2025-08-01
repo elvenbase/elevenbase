@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -63,9 +63,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: error.message,
           variant: "destructive",
         });
+        return { error };
+      }
+
+      // Verifica se l'utente è attivo
+      if (data.user) {
+        const { data: isActive } = await supabase.rpc('is_user_active', {
+          _user_id: data.user.id
+        });
+
+        if (!isActive) {
+          // Fai logout immediato se l'utente non è attivo
+          await supabase.auth.signOut();
+          const inactiveError = new Error("Account non attivo. Contatta l'amministratore.");
+          toast({
+            title: "Account non attivo",
+            description: "Il tuo account non è ancora stato attivato. Contatta l'amministratore.",
+            variant: "destructive",
+          });
+          return { error: inactiveError };
+        }
       }
       
-      return { error };
+      return { error: null };
     } catch (err) {
       const error = err as Error;
       toast({
