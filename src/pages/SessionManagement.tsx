@@ -222,7 +222,8 @@ const SessionManagement = () => {
                       first_name: a.players?.first_name || '',
                       last_name: a.players?.last_name || '',
                       jersey_number: players?.find(p => p.id === a.player_id)?.jersey_number,
-                      position: players?.find(p => p.id === a.player_id)?.position
+                      position: players?.find(p => p.id === a.player_id)?.position,
+                      avatar_url: players?.find(p => p.id === a.player_id)?.avatar_url
                     })) || []}
                   />
                 )}
