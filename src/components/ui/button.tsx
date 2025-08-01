@@ -9,18 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-glow hover:shadow-accent-glow",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl",
+          "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-xl",
+          "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl",
-        ghost: "hover:bg-accent hover:text-accent-foreground rounded-xl",
-        link: "text-primary underline-offset-4 hover:underline",
-        hero: "bg-gradient-hero text-white hover:scale-105 rounded-xl shadow-glow hover:shadow-accent-glow transition-bounce font-bold",
-        gaming: "bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl shadow-accent-glow hover:scale-105 transition-bounce",
-        gradient: "bg-gradient-primary text-foreground hover:scale-105 rounded-xl shadow-glow transition-bounce",
+          "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
+        ghost: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
+        link: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
+        hero: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-glow font-bold",
+        gaming: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-accent-glow",
+        gradient: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-glow",
       },
       size: {
         default: "h-10 px-4 py-2",
