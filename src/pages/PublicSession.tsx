@@ -209,65 +209,49 @@ const PublicSession = () => {
     '4-4-2': {
       name: '4-4-2',
       positions: [
-        { id: 'gk', name: 'Portiere', x: 50, y: 95 },
-        { id: 'lb', name: 'TD', x: 15, y: 75 },
-        { id: 'cb1', name: 'DC', x: 35, y: 75 },
-        { id: 'cb2', name: 'DC', x: 65, y: 75 },
-        { id: 'rb', name: 'DD', x: 85, y: 75 },
-        { id: 'lm', name: 'ES', x: 15, y: 45 },
-        { id: 'cm1', name: 'CC', x: 35, y: 45 },
-        { id: 'cm2', name: 'CC', x: 65, y: 45 },
-        { id: 'rm', name: 'ED', x: 85, y: 45 },
-        { id: 'st1', name: 'AT', x: 35, y: 15 },
-        { id: 'st2', name: 'AT', x: 65, y: 15 }
+        { id: 'gk', name: 'Portiere', x: 50, y: 90 },
+        { id: 'rb', name: 'Terzino Dx', x: 80, y: 70 },
+        { id: 'cb1', name: 'Centrale 1', x: 60, y: 70 },
+        { id: 'cb2', name: 'Centrale 2', x: 40, y: 70 },
+        { id: 'lb', name: 'Terzino Sx', x: 20, y: 70 },
+        { id: 'rm', name: 'Esterno Dx', x: 80, y: 40 },
+        { id: 'cm1', name: 'Mediano 1', x: 60, y: 40 },
+        { id: 'cm2', name: 'Mediano 2', x: 40, y: 40 },
+        { id: 'lm', name: 'Esterno Sx', x: 20, y: 40 },
+        { id: 'st1', name: 'Attaccante 1', x: 60, y: 15 },
+        { id: 'st2', name: 'Attaccante 2', x: 40, y: 15 }
       ]
     },
     '4-3-3': {
       name: '4-3-3',
       positions: [
-        { id: 'gk', name: 'Portiere', x: 50, y: 95 },
-        { id: 'lb', name: 'TD', x: 15, y: 75 },
-        { id: 'cb1', name: 'DC', x: 35, y: 75 },
-        { id: 'cb2', name: 'DC', x: 65, y: 75 },
-        { id: 'rb', name: 'DD', x: 85, y: 75 },
-        { id: 'cm1', name: 'CC', x: 25, y: 50 },
-        { id: 'cm2', name: 'CC', x: 50, y: 50 },
-        { id: 'cm3', name: 'CC', x: 75, y: 50 },
-        { id: 'lw', name: 'AS', x: 20, y: 15 },
-        { id: 'st', name: 'AT', x: 50, y: 15 },
-        { id: 'rw', name: 'AD', x: 80, y: 15 }
+        { id: 'gk', name: 'Portiere', x: 50, y: 90 },
+        { id: 'rb', name: 'Terzino Dx', x: 80, y: 70 },
+        { id: 'cb1', name: 'Centrale 1', x: 60, y: 70 },
+        { id: 'cb2', name: 'Centrale 2', x: 40, y: 70 },
+        { id: 'lb', name: 'Terzino Sx', x: 20, y: 70 },
+        { id: 'cdm', name: 'Mediano', x: 50, y: 50 },
+        { id: 'cm1', name: 'Mezzala Dx', x: 65, y: 40 },
+        { id: 'cm2', name: 'Mezzala Sx', x: 35, y: 40 },
+        { id: 'rw', name: 'Ala Dx', x: 80, y: 20 },
+        { id: 'st', name: 'Punta', x: 50, y: 15 },
+        { id: 'lw', name: 'Ala Sx', x: 20, y: 20 }
       ]
     },
     '3-5-2': {
       name: '3-5-2',
       positions: [
-        { id: 'gk', name: 'Portiere', x: 50, y: 95 },
-        { id: 'cb1', name: 'DC', x: 25, y: 75 },
-        { id: 'cb2', name: 'DC', x: 50, y: 75 },
-        { id: 'cb3', name: 'DC', x: 75, y: 75 },
-        { id: 'lwb', name: 'ES', x: 10, y: 50 },
-        { id: 'cm1', name: 'CC', x: 30, y: 50 },
-        { id: 'cm2', name: 'CC', x: 50, y: 50 },
-        { id: 'cm3', name: 'CC', x: 70, y: 50 },
-        { id: 'rwb', name: 'ED', x: 90, y: 50 },
-        { id: 'st1', name: 'AT', x: 40, y: 15 },
-        { id: 'st2', name: 'AT', x: 60, y: 15 }
-      ]
-    },
-    '5-3-2': {
-      name: '5-3-2',
-      positions: [
-        { id: 'gk', name: 'Portiere', x: 50, y: 95 },
-        { id: 'lwb', name: 'ES', x: 10, y: 75 },
-        { id: 'cb1', name: 'DC', x: 30, y: 80 },
-        { id: 'cb2', name: 'DC', x: 50, y: 80 },
-        { id: 'cb3', name: 'DC', x: 70, y: 80 },
-        { id: 'rwb', name: 'ED', x: 90, y: 75 },
-        { id: 'cm1', name: 'CC', x: 30, y: 45 },
-        { id: 'cm2', name: 'CC', x: 50, y: 45 },
-        { id: 'cm3', name: 'CC', x: 70, y: 45 },
-        { id: 'st1', name: 'AT', x: 40, y: 15 },
-        { id: 'st2', name: 'AT', x: 60, y: 15 }
+        { id: 'gk', name: 'Portiere', x: 50, y: 90 },
+        { id: 'cb1', name: 'Centrale Dx', x: 70, y: 70 },
+        { id: 'cb2', name: 'Centrale', x: 50, y: 70 },
+        { id: 'cb3', name: 'Centrale Sx', x: 30, y: 70 },
+        { id: 'rwb', name: 'Quinto Dx', x: 85, y: 50 },
+        { id: 'cm1', name: 'Mediano 1', x: 65, y: 40 },
+        { id: 'cm2', name: 'Regista', x: 50, y: 45 },
+        { id: 'cm3', name: 'Mediano 2', x: 35, y: 40 },
+        { id: 'lwb', name: 'Quinto Sx', x: 15, y: 50 },
+        { id: 'st1', name: 'Attaccante 1', x: 60, y: 15 },
+        { id: 'st2', name: 'Attaccante 2', x: 40, y: 15 }
       ]
     }
   }
