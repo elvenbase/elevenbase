@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Clock, MapPin, Calendar, CheckCircle, XCircle, Users } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Loader2, Clock, MapPin, Calendar, CheckCircle, XCircle, Users, Target } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { format } from 'date-fns'
@@ -15,6 +16,7 @@ interface Player {
   first_name: string
   last_name: string
   jersey_number?: number
+  avatar_url?: string
 }
 
 interface Session {
@@ -33,6 +35,11 @@ interface AttendanceRecord {
   self_registered: boolean
 }
 
+interface Lineup {
+  formation: string
+  players_data: any
+}
+
 const PublicSession = () => {
   const { token } = useParams<{ token: string }>()
   const [loading, setLoading] = useState(true)
@@ -45,6 +52,7 @@ const PublicSession = () => {
   const [deadline, setDeadline] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
+  const [lineup, setLineup] = useState<Lineup | null>(null)
 
   useEffect(() => {
     if (!token) {
@@ -99,11 +107,40 @@ const PublicSession = () => {
       setPlayers(data.players)
       setExistingAttendance(data.existingAttendance)
       setDeadline(new Date(data.deadline))
+
+      // Carica anche la formazione se disponibile
+      if (data.session?.id) {
+        await loadLineup(data.session.id)
+      }
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
       setError('Errore nel caricamento dei dati')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadLineup = async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('training_lineups')
+        .select('*')
+        .eq('session_id', sessionId)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Errore nel caricare la formazione:', error)
+        return
+      }
+      
+      if (data) {
+        setLineup({
+          formation: data.formation,
+          players_data: data.players_data
+        })
+      }
+    } catch (error) {
+      console.error('Errore nel caricare la formazione:', error)
     }
   }
 
@@ -153,6 +190,54 @@ const PublicSession = () => {
   const formatSessionDateTime = (date: string, time: string) => {
     const sessionDate = new Date(date + 'T' + time)
     return format(sessionDate, "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
+  }
+
+  const getPlayerInitials = (player: Player) => {
+    return `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`
+  }
+
+  const getAvatarColor = (name: string) => {
+    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
+    let hash = 0
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash)
+    }
+    return colors[Math.abs(hash) % colors.length]
+  }
+
+  const formations: Record<string, { name: string; positions: { id: string; name: string; x: number; y: number }[] }> = {
+    '4-4-2': {
+      name: '4-4-2',
+      positions: [
+        { id: 'gk', name: 'Portiere', x: 50, y: 95 },
+        { id: 'lb', name: 'TD', x: 15, y: 75 },
+        { id: 'cb1', name: 'DC', x: 35, y: 75 },
+        { id: 'cb2', name: 'DC', x: 65, y: 75 },
+        { id: 'rb', name: 'DD', x: 85, y: 75 },
+        { id: 'lm', name: 'ES', x: 15, y: 45 },
+        { id: 'cm1', name: 'CC', x: 35, y: 45 },
+        { id: 'cm2', name: 'CC', x: 65, y: 45 },
+        { id: 'rm', name: 'ED', x: 85, y: 45 },
+        { id: 'st1', name: 'AT', x: 35, y: 15 },
+        { id: 'st2', name: 'AT', x: 65, y: 15 }
+      ]
+    },
+    '4-3-3': {
+      name: '4-3-3',
+      positions: [
+        { id: 'gk', name: 'Portiere', x: 50, y: 95 },
+        { id: 'lb', name: 'TD', x: 15, y: 75 },
+        { id: 'cb1', name: 'DC', x: 35, y: 75 },
+        { id: 'cb2', name: 'DC', x: 65, y: 75 },
+        { id: 'rb', name: 'DD', x: 85, y: 75 },
+        { id: 'cm1', name: 'CC', x: 25, y: 50 },
+        { id: 'cm2', name: 'CC', x: 50, y: 50 },
+        { id: 'cm3', name: 'CC', x: 75, y: 50 },
+        { id: 'lw', name: 'AS', x: 20, y: 15 },
+        { id: 'st', name: 'AT', x: 50, y: 15 },
+        { id: 'rw', name: 'AD', x: 80, y: 15 }
+      ]
+    }
   }
 
   if (loading) {
@@ -235,6 +320,82 @@ const PublicSession = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Formazione */}
+        {lineup && (
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Formazione - {lineup.formation}
+              </CardTitle>
+              <CardDescription>
+                La formazione ufficiale per questa sessione di allenamento
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative bg-gradient-to-b from-green-400 to-green-600 rounded-lg p-6 min-h-[400px]">
+                {/* Campo da calcio sfondo */}
+                <div className="absolute inset-0 bg-gradient-to-b from-green-400 to-green-600 rounded-lg opacity-90"></div>
+                <div className="absolute inset-4 border-2 border-white/60 rounded"></div>
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-20 h-16 border-2 border-white/60 border-b-0 rounded-t"></div>
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-16 border-2 border-white/60 border-t-0 rounded-b"></div>
+                <div className="absolute top-1/2 left-4 right-4 h-px bg-white/60"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border-2 border-white/60 rounded-full"></div>
+
+                {/* Posizioni giocatori */}
+                {formations[lineup.formation]?.positions.map(position => {
+                  const playerId = lineup.players_data?.positions?.[position.id]
+                  const player = playerId ? players.find(p => p.id === playerId) : null
+                  
+                  return (
+                    <div
+                      key={position.id}
+                      className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10"
+                      style={{
+                        left: `${position.x}%`,
+                        top: `${position.y}%`
+                      }}
+                    >
+                      <div className="relative">
+                        {player ? (
+                          <div className="relative">
+                            <Avatar className="w-12 h-12 border-2 border-white shadow-lg">
+                              <AvatarImage src={player.avatar_url || undefined} />
+                              <AvatarFallback 
+                                className="text-white text-xs font-bold"
+                                style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
+                              >
+                                {getPlayerInitials(player)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {player.jersey_number && (
+                              <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow">
+                                {player.jersey_number}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
+                            <Users className="w-6 h-6 text-white/70" />
+                          </div>
+                        )}
+                        <div className="text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
+                          {position.name}
+                        </div>
+                        {player && (
+                          <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
+                            {player.first_name} {player.last_name.charAt(0)}.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Registrazione */}
