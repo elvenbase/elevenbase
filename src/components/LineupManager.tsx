@@ -119,7 +119,13 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
     }
     
     // Use predefined formations
-    return formations[selectedFormation as keyof typeof formations]
+    const predefinedFormation = formations[selectedFormation as keyof typeof formations]
+    if (predefinedFormation) {
+      return predefinedFormation
+    }
+    
+    // Fallback to default formation if nothing is found
+    return formations['4-4-2']
   }
 
   const handlePlayerAssignment = (positionId: string, playerId: string) => {
