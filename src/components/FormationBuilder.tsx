@@ -298,7 +298,14 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                     
                     {/* Role display/edit */}
                     {editingRole === position.id ? (
-                      <div className="bg-white/95 backdrop-blur-sm rounded px-3 py-2 shadow-lg min-w-[120px] space-y-2" onClick={(e) => e.stopPropagation()}>
+                      <div 
+                        className={`bg-white/95 backdrop-blur-sm rounded px-3 py-2 shadow-lg min-w-[120px] space-y-2 absolute z-50 ${
+                          position.x > 70 ? 'right-0' : position.x < 30 ? 'left-0' : 'left-1/2 -translate-x-1/2'
+                        } ${
+                          position.y < 30 ? 'top-full mt-2' : 'bottom-full mb-2'
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Input
                           value={position.role || ''}
                           onChange={(e) => updatePositionRole(position.id, e.target.value, position.roleShort)}
