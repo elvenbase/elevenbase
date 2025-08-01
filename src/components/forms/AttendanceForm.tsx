@@ -76,7 +76,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         const { error } = await supabase
           .from('training_attendance')
           .update({ 
-            arrival_time: isLate ? new Date().toISOString() : null
+            arrival_time: isLate ? '00:01:00' : null
           })
           .eq('id', existingRecord.id);
 
