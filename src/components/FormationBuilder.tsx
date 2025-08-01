@@ -90,8 +90,10 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
     setPositions(newPositions)
   }, [defenders, midfielders, forwards])
 
-  const handlePositionDrag = (positionId: string, event: React.MouseEvent | React.TouchEvent) => {
-    const rect = (event.currentTarget as HTMLElement).parentElement?.getBoundingClientRect()
+  const handlePositionDrag = useCallback((positionId: string, event: React.MouseEvent | React.TouchEvent) => {
+    event.preventDefault()
+    
+    const rect = (event.currentTarget as HTMLElement).closest('.field-container')?.getBoundingClientRect()
     if (!rect) return
 
     let clientX, clientY
@@ -111,7 +113,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         ? { ...pos, x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) }
         : pos
     ))
-  }
+  }, [])
 
   const updatePositionRole = (positionId: string, role: string, roleShort?: string) => {
     setPositions(prev => prev.map(pos => 
@@ -210,10 +212,17 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
           </CardHeader>
           <CardContent>
             <div className="relative w-full max-w-2xl mx-auto">
-              <div 
-                className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden" 
-                style={{ aspectRatio: '2/3', minHeight: '500px' }}
-              >
+            <div 
+              className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden field-container" 
+              style={{ aspectRatio: '2/3', minHeight: '500px' }}
+              onMouseMove={(e) => {
+                if (draggedPosition) {
+                  handlePositionDrag(draggedPosition, e)
+                }
+              }}
+              onMouseUp={() => setDraggedPosition(null)}
+              onMouseLeave={() => setDraggedPosition(null)}
+            >
                 {/* Sfondo erba con pattern */}
                 <div 
                   className="absolute inset-0 opacity-20" 
@@ -273,23 +282,13 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                       onMouseDown={(e) => {
                         setDraggedPosition(position.id)
                         e.preventDefault()
+                        e.stopPropagation()
                       }}
                       onTouchStart={(e) => {
                         setDraggedPosition(position.id)
                         e.preventDefault()
+                        e.stopPropagation()
                       }}
-                      onMouseMove={(e) => {
-                        if (draggedPosition === position.id) {
-                          handlePositionDrag(position.id, e)
-                        }
-                      }}
-                      onTouchMove={(e) => {
-                        if (draggedPosition === position.id) {
-                          handlePositionDrag(position.id, e)
-                        }
-                      }}
-                      onMouseUp={() => setDraggedPosition(null)}
-                      onTouchEnd={() => setDraggedPosition(null)}
                       title={position.name}
                     >
                       <span className="text-white text-xs font-bold">
@@ -299,32 +298,41 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                     
                     {/* Role display/edit */}
                     {editingRole === position.id ? (
-                      <div className="bg-white/90 backdrop-blur-sm rounded px-2 py-1 shadow-lg min-w-[100px]">
+                      <div className="bg-white/95 backdrop-blur-sm rounded px-3 py-2 shadow-lg min-w-[120px] space-y-2" onClick={(e) => e.stopPropagation()}>
                         <Input
                           value={position.role || ''}
                           onChange={(e) => updatePositionRole(position.id, e.target.value, position.roleShort)}
                           placeholder="Ruolo esteso"
-                          className="text-xs h-6 mb-1"
-                          onBlur={() => setEditingRole(null)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              setEditingRole(null)
-                            }
-                          }}
+                          className="text-xs h-7"
                           autoFocus
                         />
                         <Input
                           value={position.roleShort || ''}
                           onChange={(e) => updatePositionRole(position.id, position.role || '', e.target.value)}
                           placeholder="Abbreviato"
-                          className="text-xs h-6"
+                          className="text-xs h-7"
                           maxLength={3}
                         />
+                        <div className="flex gap-1">
+                          <Button 
+                            size="sm" 
+                            className="h-6 text-xs" 
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingRole(null)
+                            }}
+                          >
+                            OK
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <div
                         className="text-xs text-white font-medium px-2 py-1 bg-black/60 rounded backdrop-blur-sm cursor-pointer hover:bg-black/80 transition-colors max-w-[80px] text-center"
-                        onClick={() => setEditingRole(position.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingRole(position.id)
+                        }}
                         title="Clicca per modificare"
                       >
                         {position.role || position.name}
