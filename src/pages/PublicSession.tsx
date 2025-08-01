@@ -385,12 +385,16 @@ const PublicSession = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid lg:grid-cols-2 gap-6">
-                {/* Campo da calcio */}
-                <div className="w-full mx-auto">
+              <div className="flex flex-col xl:grid xl:grid-cols-3 gap-6">
+                {/* Campo da calcio - più compatto */}
+                <div className="xl:col-span-2">
                   <div 
-                    className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 md:border-4 border-white rounded-lg shadow-lg overflow-hidden" 
-                    style={{ aspectRatio: '2/3', minHeight: '450px', maxHeight: '650px' }}
+                    className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 border-white rounded-lg shadow-lg overflow-hidden mx-auto" 
+                    style={{ 
+                      aspectRatio: '2/3', 
+                      maxWidth: '400px',
+                      height: '600px'
+                    }}
                   >
                     {/* Sfondo erba con pattern */}
                     <div 
@@ -400,36 +404,15 @@ const PublicSession = () => {
                       }}
                     />
                     
-                    {/* Linee del campo */}
-                    {/* Linea centrale orizzontale */}
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 md:h-1 bg-white transform -translate-y-1/2" />
-                    
-                    {/* Cerchio centrale */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 md:w-24 h-20 md:h-24 border-2 md:border-4 border-white rounded-full" />
-                    
-                    {/* Area di rigore superiore */}
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 md:border-l-4 border-r-2 md:border-r-4 border-b-2 md:border-b-4 border-white" />
-                    
-                    {/* Area di rigore inferiore */}
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 md:border-l-4 border-r-2 md:border-r-4 border-t-2 md:border-t-4 border-white" />
-                    
-                    {/* Area piccola superiore */}
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 md:border-l-4 border-r-2 md:border-r-4 border-b-2 md:border-b-4 border-white" />
-                    
-                    {/* Area piccola inferiore */}
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 md:border-l-4 border-r-2 md:border-r-4 border-t-2 md:border-t-4 border-white" />
-                    
-                    {/* Dischetto superiore */}
-                    <div className="absolute top-[15%] left-1/2 transform -translate-x-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
-                    
-                    {/* Dischetto inferiore */}
-                    <div className="absolute bottom-[15%] left-1/2 transform -translate-x-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
-                    
-                    {/* Porte */}
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/6 h-0.5 md:h-1 bg-white" />
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/6 h-0.5 md:h-1 bg-white" />
+                    {/* Linee del campo - semplificate */}
+                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-white transform -translate-y-1/2" />
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border-2 border-white rounded-full" />
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-b-2 border-white" />
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-t-2 border-white" />
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-b-2 border-white" />
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-t-2 border-white" />
 
-                    {/* Posizioni giocatori */}
+                    {/* Posizioni giocatori - semplificate */}
                     {getFormationFromLineup(lineup.formation)?.positions.map(position => {
                       const playerId = lineup.players_data?.positions?.[position.id]
                       const player = playerId ? players.find(p => p.id === playerId) : null
@@ -437,96 +420,102 @@ const PublicSession = () => {
                       return (
                         <div
                           key={position.id}
-                          className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                          className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
                           style={{ 
                             left: `${position.x}%`, 
                             top: `${position.y}%` 
                           }}
+                          title={player ? `${player.first_name} ${player.last_name} - ${position.roleShort || position.name}` : position.roleShort || position.name}
                         >
-                          <div className="flex flex-col items-center gap-1">
-                            {player ? (
-                              <div className="flex flex-col items-center gap-1">
-                                {/* Avatar giocatore */}
-                                <div 
-                                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-3 border-white flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg"
-                                  style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
-                                >
-                                  {player.jersey_number || getPlayerInitials(player)}
-                                </div>
-                                {/* Badge numero maglia se non è nell'avatar */}
-                                {player.jersey_number && (
-                                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center border-2 border-white font-bold">
-                                    {player.jersey_number}
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
-                                <Users className="w-6 h-6 text-white/70" />
-                              </div>
-                            )}
-                            
-                            {/* Etichetta posizione - solo su desktop */}
-                            <div className="hidden md:block text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
-                              {position.roleShort || position.name}
+                          {player ? (
+                            <div 
+                              className="w-12 h-12 rounded-full border-3 border-white flex items-center justify-center text-white font-bold text-sm shadow-lg hover:scale-110 transition-transform"
+                              style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
+                            >
+                              {player.jersey_number || getPlayerInitials(player)}
                             </div>
-                            
-                            {/* Nome giocatore */}
-                            {player && (
-                              <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
-                                <span className="md:hidden">{player.first_name} {player.last_name.charAt(0)}.</span>
-                                <span className="hidden md:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
-                              </div>
-                            )}
-                          </div>
+                          ) : (
+                            <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
+                              <Users className="w-5 h-5 text-white/70" />
+                            </div>
+                          )}
                         </div>
                       )
                     })}
                   </div>
                 </div>
 
-                {/* Lista giocatori schierati */}
+                {/* Lista giocatori organizzata per ruoli */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Giocatori schierati</h3>
-                  <div className="space-y-2">
-                    {getFormationFromLineup(lineup.formation)?.positions
-                      .filter(position => lineup.players_data?.positions?.[position.id])
-                      .map(position => {
-                        const playerId = lineup.players_data?.positions?.[position.id]
-                        const player = players.find(p => p.id === playerId)
-                        
-                        if (!player) return null
-                        
-                        return (
-                          <div 
-                            key={position.id}
-                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
-                          >
-                            <div 
-                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                              style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
-                            >
-                              {player.jersey_number || getPlayerInitials(player)}
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-medium">
-                                {player.first_name} {player.last_name}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                {position.roleShort || position.name}
-                                {player.jersey_number && ` • #${player.jersey_number}`}
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                  </div>
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Titolari ({getFormationFromLineup(lineup.formation)?.positions
+                      .filter(position => lineup.players_data?.positions?.[position.id]).length || 0})
+                  </h3>
                   
-                  {/* Conteggio giocatori */}
-                  <div className="text-sm text-muted-foreground mt-4">
-                    {getFormationFromLineup(lineup.formation)?.positions
-                      .filter(position => lineup.players_data?.positions?.[position.id]).length || 0} giocatori schierati
-                  </div>
+                  {/* Organizzazione per settori */}
+                  {[
+                    { name: 'Portiere', roles: ['P'], color: 'bg-yellow-500' },
+                    { name: 'Difesa', roles: ['TD', 'DC', 'DCD', 'DCS', 'TS'], color: 'bg-blue-500' },
+                    { name: 'Centrocampo', roles: ['ED', 'MC', 'ES', 'MED', 'MD', 'MS', 'REG', 'QD', 'QS'], color: 'bg-green-500' },
+                    { name: 'Attacco', roles: ['ATT', 'PU', 'AD', 'AS'], color: 'bg-red-500' }
+                  ].map(sector => {
+                    const sectorPlayers = getFormationFromLineup(lineup.formation)?.positions
+                      .filter(position => {
+                        const hasPlayer = lineup.players_data?.positions?.[position.id]
+                        const roleShort = position.roleShort || position.name
+                        return hasPlayer && sector.roles.includes(roleShort)
+                      }) || []
+
+                    if (sectorPlayers.length === 0) return null
+
+                    return (
+                      <div key={sector.name} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${sector.color}`} />
+                          <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
+                            {sector.name}
+                          </h4>
+                        </div>
+                        <div className="space-y-1 pl-5">
+                          {sectorPlayers.map(position => {
+                            const playerId = lineup.players_data?.positions?.[position.id]
+                            const player = players.find(p => p.id === playerId)
+                            
+                            if (!player) return null
+                            
+                            return (
+                              <div 
+                                key={position.id}
+                                className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                              >
+                                <div 
+                                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs border-2 border-white"
+                                  style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
+                                >
+                                  {player.jersey_number || getPlayerInitials(player)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm truncate">
+                                    {player.first_name} {player.last_name}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <span className="font-medium">{position.roleShort || position.name}</span>
+                                    {player.jersey_number && (
+                                      <>
+                                        <span>•</span>
+                                        <span>#${player.jersey_number}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </CardContent>
