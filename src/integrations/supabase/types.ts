@@ -547,6 +547,10 @@ export type Database = {
         Args: { session_date: string; start_time: string }
         Returns: string
       }
+      create_fake_user: {
+        Args: { _email: string; _password: string; _username: string }
+        Returns: string
+      }
       generate_public_token: {
         Args: Record<PropertyKey, never>
         Returns: string
