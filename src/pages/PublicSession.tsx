@@ -370,7 +370,7 @@ const PublicSession = () => {
               <div className="w-full mx-auto">
                 <div 
                   className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 md:border-4 border-white rounded-lg shadow-lg overflow-hidden" 
-                  style={{ aspectRatio: '2/3', minHeight: '400px', maxHeight: '600px' }}
+                  style={{ aspectRatio: '2/3', minHeight: '450px', maxHeight: '650px' }}
                 >
                   {/* Sfondo erba con pattern */}
                   <div 
@@ -383,17 +383,17 @@ const PublicSession = () => {
                   {/* Linee del campo */}
                   <div className="absolute inset-0">
                     {/* Bordo campo */}
-                    <div className="absolute inset-1 md:inset-2 border border-white md:border-2 rounded-sm" />
+                    <div className="absolute inset-2 md:inset-3 border border-white md:border-2 rounded-sm" />
                     
                     {/* Area di rigore superiore */}
-                    <div className="absolute top-1 md:top-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border border-white md:border-2" />
+                    <div className="absolute top-2 md:top-3 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border border-white md:border-2" />
                     {/* Area piccola superiore */}
-                    <div className="absolute top-1 md:top-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border border-white md:border-2" />
+                    <div className="absolute top-2 md:top-3 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border border-white md:border-2" />
                     {/* Dischetto superiore */}
-                    <div className="absolute top-[12%] left-1/2 transform -translate-x-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
+                    <div className="absolute top-[15%] left-1/2 transform -translate-x-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
                     
                     {/* Linea di metà campo */}
-                    <div className="absolute top-1/2 left-1 md:left-2 right-1 md:right-2 border-t border-white md:border-t-2" />
+                    <div className="absolute top-1/2 left-2 md:left-3 right-2 md:right-3 border-t border-white md:border-t-2" />
                     {/* Cerchio di centrocampo */}
                     <div 
                       className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-white md:border-2 rounded-full"
@@ -403,11 +403,11 @@ const PublicSession = () => {
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
                     
                     {/* Area di rigore inferiore */}
-                    <div className="absolute bottom-1 md:bottom-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border border-white md:border-2" />
+                    <div className="absolute bottom-2 md:bottom-3 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border border-white md:border-2" />
                     {/* Area piccola inferiore */}
-                    <div className="absolute bottom-1 md:bottom-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border border-white md:border-2" />
+                    <div className="absolute bottom-2 md:bottom-3 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border border-white md:border-2" />
                     {/* Dischetto inferiore */}
-                    <div className="absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
+                    <div className="absolute bottom-[15%] left-1/2 transform -translate-x-1/2 w-1 h-1 md:w-2 md:h-2 bg-white rounded-full" />
                     
                     {/* Porte */}
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/6 h-0.5 md:h-1 bg-white" />
@@ -419,49 +419,55 @@ const PublicSession = () => {
                     const playerId = lineup.players_data?.positions?.[position.id]
                     const player = playerId ? players.find(p => p.id === playerId) : null
                     
+                    // Aggiusta la posizione Y del portiere per mobile
+                    const adjustedY = position.name === 'Portiere' ? Math.max(position.y - 3, 8) : position.y;
+                    
                     return (
                       <div
                         key={position.id}
-                        className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 md:gap-1 z-10"
+                        className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-10"
                         style={{
                           left: `${position.x}%`,
-                          top: `${position.y}%`
+                          top: `${adjustedY}%`
                         }}
                       >
                         <div className="relative">
                           {player ? (
                             <div className="relative">
-                              <Avatar className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 border-2 md:border-3 border-white shadow-lg">
-                                <AvatarImage src={player.avatar_url || undefined} />
+                              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 border-2 md:border-3 border-white shadow-lg bg-white">
+                                <AvatarImage 
+                                  src={player.avatar_url || undefined} 
+                                  className="object-cover"
+                                />
                                 <AvatarFallback 
-                                  className="text-white text-xs md:text-sm font-bold"
+                                  className="text-white text-sm md:text-base font-bold"
                                   style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
                                 >
                                   {getPlayerInitials(player)}
                                 </AvatarFallback>
                               </Avatar>
                               {player.jersey_number && (
-                                <div className="absolute -bottom-0.5 -right-0.5 md:-bottom-1 md:-right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 flex items-center justify-center border border-white md:border-2 shadow">
+                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 flex items-center justify-center border-2 border-white shadow">
                                   <span className="text-xs">{player.jersey_number}</span>
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full border-2 md:border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
-                              <Users className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white/70" />
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full border-2 md:border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
+                              <Users className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white/70" />
                             </div>
                           )}
                           
-                          {/* Etichetta posizione - nascosta su mobile molto piccolo */}
-                          <div className="hidden sm:block text-xs text-white font-medium px-1 py-0.5 md:px-2 md:py-1 bg-black/60 rounded backdrop-blur-sm mt-0.5 md:mt-1 min-w-fit text-center">
+                          {/* Etichetta posizione - sempre visibile su mobile */}
+                          <div className="text-xs text-white font-medium px-1.5 py-0.5 md:px-2 md:py-1 bg-black/70 rounded backdrop-blur-sm mt-1 min-w-fit text-center">
                             {position.name}
                           </div>
                           
-                          {/* Nome giocatore - ridotto su mobile */}
+                          {/* Nome giocatore */}
                           {player && (
-                            <div className="text-xs text-white/90 text-center px-1 py-0.25 md:px-2 md:py-0.5 bg-black/40 rounded backdrop-blur-sm max-w-16 sm:max-w-20 md:max-w-24 truncate">
+                            <div className="text-xs text-white/90 text-center px-1.5 py-0.5 bg-black/50 rounded backdrop-blur-sm max-w-20 sm:max-w-24 truncate">
+                              <span className="sm:hidden text-xs">{player.first_name.charAt(0)}.{player.last_name.charAt(0)}.</span>
                               <span className="hidden sm:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
-                              <span className="sm:hidden">{player.first_name.charAt(0)}{player.last_name.charAt(0)}</span>
                             </div>
                           )}
                         </div>
