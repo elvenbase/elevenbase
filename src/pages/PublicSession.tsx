@@ -458,16 +458,16 @@ const PublicSession = () => {
                             </div>
                           )}
                           
-                          {/* Etichetta posizione - sempre visibile su mobile */}
-                          <div className="text-xs text-white font-medium px-1.5 py-0.5 md:px-2 md:py-1 bg-black/70 rounded backdrop-blur-sm mt-1 min-w-fit text-center">
+                          {/* Etichetta posizione - solo su desktop */}
+                          <div className="hidden md:block text-xs text-white font-medium px-2 py-1 bg-black/70 rounded backdrop-blur-sm mt-1 min-w-fit text-center">
                             {position.name}
                           </div>
                           
                           {/* Nome giocatore */}
                           {player && (
-                            <div className="text-xs text-white/90 text-center px-1.5 py-0.5 bg-black/50 rounded backdrop-blur-sm max-w-20 sm:max-w-24 truncate">
-                              <span className="sm:hidden text-xs">{player.first_name.charAt(0)}.{player.last_name.charAt(0)}.</span>
-                              <span className="hidden sm:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
+                            <div className="text-xs text-white/90 text-center px-1.5 py-0.5 bg-black/50 rounded backdrop-blur-sm max-w-20 sm:max-w-24 md:max-w-28 truncate mt-1">
+                              <span className="md:hidden">{player.first_name} {player.last_name.charAt(0)}.</span>
+                              <span className="hidden md:inline">{player.first_name} {player.last_name.charAt(0)}.</span>
                             </div>
                           )}
                         </div>
