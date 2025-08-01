@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Trash2, Save, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLineupManager } from '@/hooks/useLineupManager'
+import { useCustomFormations } from '@/hooks/useCustomFormations'
 
 interface Player {
   id: string
@@ -86,6 +87,8 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
     loadLineup 
   } = useLineupManager(sessionId)
 
+  const { formations: customFormations } = useCustomFormations()
+
   // Carica formazione esistente quando cambia la sessione
   useEffect(() => {
     loadLineup()
@@ -103,6 +106,20 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
     setSelectedFormation(formation)
     // Reset posizioni quando cambia formazione
     setPlayerPositions({})
+  }
+
+  const getCurrentFormation = () => {
+    // Check if it's a custom formation
+    const customFormation = customFormations.find(f => f.id === selectedFormation)
+    if (customFormation) {
+      return {
+        name: customFormation.name,
+        positions: customFormation.positions
+      }
+    }
+    
+    // Use predefined formations
+    return formations[selectedFormation as keyof typeof formations]
   }
 
   const handlePlayerAssignment = (positionId: string, playerId: string) => {
@@ -167,7 +184,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
     setPlayerPositions({})
   }
 
-  const currentFormation = formations[selectedFormation as keyof typeof formations]
+  const currentFormation = getCurrentFormation()
   const assignedCount = Object.keys(playerPositions).length
 
   // Funzione per generare colori avatar basati sulle iniziali
@@ -213,6 +230,15 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                   {formation.name}
                 </SelectItem>
               ))}
+              {customFormations.length > 0 && (
+                <>
+                  {customFormations.map((formation) => (
+                    <SelectItem key={formation.id} value={formation.id}>
+                      {formation.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>

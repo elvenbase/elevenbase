@@ -9,6 +9,7 @@ import Navigation from "./components/Navigation";
 import Dashboard from "./pages/Dashboard";
 import Squad from "./pages/Squad";
 import Trials from "./pages/Trials";
+import Formations from "./pages/Formations";
 import Competitions from "./pages/Competitions";
 import Training from "./pages/Training";
 import UserManagement from "./pages/UserManagement";
@@ -45,6 +46,7 @@ const App = () => (
                     <Route path="/squad" element={<Squad />} />
                     <Route path="/trials" element={<Trials />} />
                     <Route path="/trials-kanban" element={<TrialsKanban />} />
+                    <Route path="/formations" element={<Formations />} />
                     <Route path="/competitions" element={<Competitions />} />
                     <Route path="/training" element={<Training />} />
                     <Route path="/users" element={

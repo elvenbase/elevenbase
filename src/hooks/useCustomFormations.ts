@@ -1,0 +1,116 @@
+import { useState, useEffect } from 'react'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
+
+export interface CustomFormation {
+  id: string
+  name: string
+  defenders: number
+  midfielders: number
+  forwards: number
+  positions: Array<{
+    id: string
+    name: string
+    x: number
+    y: number
+    role?: string
+  }>
+  created_by?: string
+  created_at: string
+  updated_at: string
+}
+
+export const useCustomFormations = () => {
+  const [formations, setFormations] = useState<CustomFormation[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const loadFormations = async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('custom_formations')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setFormations((data || []) as CustomFormation[])
+    } catch (error) {
+      console.error('Errore nel caricare le formazioni:', error)
+      toast.error('Errore nel caricare le formazioni')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const createFormation = async (formation: Omit<CustomFormation, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('custom_formations')
+        .insert(formation)
+        .select()
+        .single()
+
+      if (error) throw error
+      
+      setFormations(prev => [data as CustomFormation, ...prev])
+      toast.success('Formazione creata con successo')
+      return data
+    } catch (error) {
+      console.error('Errore nella creazione della formazione:', error)
+      toast.error('Errore nella creazione della formazione')
+      throw error
+    }
+  }
+
+  const updateFormation = async (id: string, formation: Partial<CustomFormation>) => {
+    try {
+      const { data, error } = await supabase
+        .from('custom_formations')
+        .update(formation)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+      
+      setFormations(prev => prev.map(f => f.id === id ? data as CustomFormation : f))
+      toast.success('Formazione aggiornata con successo')
+      return data
+    } catch (error) {
+      console.error('Errore nell\'aggiornamento della formazione:', error)
+      toast.error('Errore nell\'aggiornamento della formazione')
+      throw error
+    }
+  }
+
+  const deleteFormation = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('custom_formations')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      
+      setFormations(prev => prev.filter(f => f.id !== id))
+      toast.success('Formazione eliminata con successo')
+    } catch (error) {
+      console.error('Errore nell\'eliminazione della formazione:', error)
+      toast.error('Errore nell\'eliminazione della formazione')
+      throw error
+    }
+  }
+
+  useEffect(() => {
+    loadFormations()
+  }, [])
+
+  return {
+    formations,
+    loading,
+    createFormation,
+    updateFormation,
+    deleteFormation,
+    refetch: loadFormations
+  }
+}

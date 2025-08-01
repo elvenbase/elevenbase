@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_formations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          defenders: number
+          forwards: number
+          id: string
+          midfielders: number
+          name: string
+          positions: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          defenders?: number
+          forwards?: number
+          id?: string
+          midfielders?: number
+          name: string
+          positions: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          defenders?: number
+          forwards?: number
+          id?: string
+          midfielders?: number
+          name?: string
+          positions?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       match_attendance: {
         Row: {
           arrival_time: string | null

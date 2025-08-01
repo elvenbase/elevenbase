@@ -11,7 +11,8 @@ import {
   Menu, 
   X,
   Shield,
-  LogOut
+  LogOut,
+  Grid3X3
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -23,6 +24,7 @@ const Navigation = () => {
     { name: "Dashboard", path: "/", icon: BarChart3 },
     { name: "Rosa", path: "/squad", icon: Users },
     { name: "Prove", path: "/trials", icon: UserPlus },
+    { name: "Formazioni", path: "/formations", icon: Grid3X3 },
     { name: "Competizioni", path: "/competitions", icon: Trophy },
     { name: "Allenamenti", path: "/training", icon: Activity },
     { name: "Utenti", path: "/users", icon: Shield },
