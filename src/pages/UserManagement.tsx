@@ -253,49 +253,69 @@ const UserManagement = () => {
 
   const handleUpdateUserRole = async (userId: string, newRole: 'superadmin' | 'admin' | 'coach' | 'player') => {
     try {
+      console.log('Updating role for user:', userId, 'to:', newRole);
+      
       // Rimuovi tutti i ruoli esistenti
-      await supabase
+      const { error: deleteError } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId);
 
+      if (deleteError) {
+        console.error('Error deleting existing roles:', deleteError);
+      }
+
       // Aggiungi il nuovo ruolo
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('user_roles')
         .insert({
           user_id: userId,
           role: newRole as any
         });
 
-      if (error) throw error;
+      if (insertError) {
+        console.error('Error inserting new role:', insertError);
+        throw insertError;
+      }
 
       toast.success('Ruolo aggiornato con successo');
       fetchUsers();
     } catch (error: any) {
       console.error('Error updating user role:', error);
-      toast.error('Errore nell\'aggiornamento del ruolo');
+      toast.error('Errore nell\'aggiornamento del ruolo: ' + error.message);
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
     try {
+      console.log('Deleting user:', userId);
+      
       // Elimina i ruoli associati
-      await supabase
+      const { error: roleError } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId);
 
+      if (roleError) {
+        console.error('Error deleting user roles:', roleError);
+      }
+
       // Elimina il profilo
-      await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .delete()
         .eq('id', userId);
+
+      if (profileError) {
+        console.error('Error deleting profile:', profileError);
+        throw profileError;
+      }
 
       toast.success('Utente eliminato con successo');
       fetchUsers();
     } catch (error: any) {
       console.error('Error deleting user:', error);
-      toast.error('Errore nell\'eliminazione dell\'utente');
+      toast.error('Errore nell\'eliminazione dell\'utente: ' + error.message);
     }
   };
 
