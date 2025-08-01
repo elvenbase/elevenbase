@@ -11,8 +11,9 @@ import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { TrainingForm } from '@/components/forms/TrainingForm';
 import { TrainingSessionModal } from '@/components/forms/TrainingSessionModal';
+import { DuplicateTrainingForm } from '@/components/forms/DuplicateTrainingForm';
 import StatsCard from '@/components/StatsCard';
-import { useTrainingSessions, useTrainingStats, usePlayers, useDuplicateTrainingSession, useDeleteTrainingSession } from '@/hooks/useSupabaseData';
+import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSession } from '@/hooks/useSupabaseData';
 
 const Training = () => {
   const [selectedSession, setSelectedSession] = useState<any>(null);
@@ -21,7 +22,6 @@ const Training = () => {
   const { data: trainingSessions, isLoading, refetch: refetchSessions } = useTrainingSessions();
   const { data: stats } = useTrainingStats();
   const { data: players } = usePlayers();
-  const duplicateSession = useDuplicateTrainingSession();
   const deleteSession = useDeleteTrainingSession();
 
   const handleSessionClosed = () => {
@@ -33,9 +33,6 @@ const Training = () => {
     setModalOpen(true);
   };
 
-  const handleDuplicate = async (session: any) => {
-    await duplicateSession.mutateAsync(session.id);
-  };
 
   const handleDelete = async (sessionId: string) => {
     await deleteSession.mutateAsync(sessionId);
@@ -171,10 +168,7 @@ const Training = () => {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDuplicate(session)}>
-                              <Copy className="mr-2 h-4 w-4" />
-                              Duplica Sessione
-                            </DropdownMenuItem>
+                            <DuplicateTrainingForm session={session} />
                             <DropdownMenuSeparator />
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
