@@ -276,6 +276,21 @@ const PublicSession = () => {
 
   const formations = getAllFormations()
 
+  // Funzione per ottenere la formazione dal lineup (che può essere ID o nome)
+  const getFormationFromLineup = (formationIdentifier: string) => {
+    // Prima prova a cercare per ID nelle formazioni custom
+    const customFormation = customFormations.find(f => f.id === formationIdentifier)
+    if (customFormation) {
+      return {
+        name: customFormation.name,
+        positions: customFormation.positions
+      }
+    }
+    
+    // Poi prova a cercare per nome nelle formazioni (predefinite + custom)
+    return formations[formationIdentifier] || null
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -363,7 +378,7 @@ const PublicSession = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
-                Formazione - {lineup.formation}
+                Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}
               </CardTitle>
               <CardDescription>
                 La formazione ufficiale per questa sessione di allenamento
@@ -419,7 +434,7 @@ const PublicSession = () => {
                   </div>
 
                   {/* Posizioni giocatori */}
-                  {formations[lineup.formation]?.positions.map(position => {
+                  {getFormationFromLineup(lineup.formation)?.positions.map(position => {
                     const playerId = lineup.players_data?.positions?.[position.id]
                     const player = playerId ? players.find(p => p.id === playerId) : null
                     
