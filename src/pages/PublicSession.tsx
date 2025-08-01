@@ -366,64 +366,108 @@ const PublicSession = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="relative bg-gradient-to-b from-green-400 to-green-600 rounded-lg p-6 aspect-[2/3] min-h-[500px]">
-                {/* Campo da calcio sfondo */}
-                <div className="absolute inset-0 bg-gradient-to-b from-green-400 to-green-600 rounded-lg opacity-90"></div>
-                <div className="absolute inset-4 border-2 border-white/60 rounded"></div>
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-20 h-16 border-2 border-white/60 border-b-0 rounded-t"></div>
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-16 border-2 border-white/60 border-t-0 rounded-b"></div>
-                <div className="absolute top-1/2 left-4 right-4 h-px bg-white/60"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border-2 border-white/60 rounded-full"></div>
-
-                {/* Posizioni giocatori */}
-                {formations[lineup.formation]?.positions.map(position => {
-                  const playerId = lineup.players_data?.positions?.[position.id]
-                  const player = playerId ? players.find(p => p.id === playerId) : null
+              {/* Campo da calcio con proporzioni realistiche */}
+              <div className="w-full max-w-2xl mx-auto">
+                <div 
+                  className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden" 
+                  style={{ aspectRatio: '2/3', minHeight: '500px' }}
+                >
+                  {/* Sfondo erba con pattern */}
+                  <div 
+                    className="absolute inset-0 opacity-20" 
+                    style={{
+                      backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,100,0,0.1) 10px, rgba(0,100,0,0.1) 20px)'
+                    }}
+                  />
                   
-                  return (
-                    <div
-                      key={position.id}
-                      className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10"
-                      style={{
-                        left: `${position.x}%`,
-                        top: `${position.y}%`
-                      }}
-                    >
-                      <div className="relative">
-                        {player ? (
-                          <div className="relative">
-                            <Avatar className="w-12 h-12 border-2 border-white shadow-lg">
-                              <AvatarImage src={player.avatar_url || undefined} />
-                              <AvatarFallback 
-                                className="text-white text-xs font-bold"
-                                style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
-                              >
-                                {getPlayerInitials(player)}
-                              </AvatarFallback>
-                            </Avatar>
-                            {player.jersey_number && (
-                              <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow">
-                                {player.jersey_number}
-                              </div>
-                            )}
+                  {/* Linee del campo */}
+                  <div className="absolute inset-0">
+                    {/* Bordo campo */}
+                    <div className="absolute inset-2 border-2 border-white rounded-sm" />
+                    
+                    {/* Area di rigore superiore */}
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-2 border-white" />
+                    {/* Area piccola superiore */}
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-2 border-white" />
+                    {/* Dischetto superiore */}
+                    <div className="absolute top-[12%] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+                    
+                    {/* Linea di metà campo */}
+                    <div className="absolute top-1/2 left-2 right-2 border-t-2 border-white" />
+                    {/* Cerchio di centrocampo */}
+                    <div 
+                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-white rounded-full"
+                      style={{ width: '25%', aspectRatio: '1' }}
+                    />
+                    {/* Punto del centrocampo */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full" />
+                    
+                    {/* Area di rigore inferiore */}
+                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-2 border-white" />
+                    {/* Area piccola inferiore */}
+                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-2 border-white" />
+                    {/* Dischetto inferiore */}
+                    <div className="absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+                    
+                    {/* Porte */}
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1 bg-white" />
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1 bg-white" />
+                  </div>
+
+                  {/* Posizioni giocatori */}
+                  {formations[lineup.formation]?.positions.map(position => {
+                    const playerId = lineup.players_data?.positions?.[position.id]
+                    const player = playerId ? players.find(p => p.id === playerId) : null
+                    
+                    return (
+                      <div
+                        key={position.id}
+                        className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-10"
+                        style={{
+                          left: `${position.x}%`,
+                          top: `${position.y}%`
+                        }}
+                      >
+                        <div className="relative">
+                          {player ? (
+                            <div className="relative">
+                              <Avatar className="w-14 h-14 border-3 border-white shadow-lg">
+                                <AvatarImage src={player.avatar_url || undefined} />
+                                <AvatarFallback 
+                                  className="text-white text-sm font-bold"
+                                  style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
+                                >
+                                  {getPlayerInitials(player)}
+                                </AvatarFallback>
+                              </Avatar>
+                              {player.jersey_number && (
+                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow">
+                                  {player.jersey_number}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="w-14 h-14 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
+                              <Users className="w-7 h-7 text-white/70" />
+                            </div>
+                          )}
+                          
+                          {/* Etichetta posizione */}
+                          <div className="text-xs text-white font-medium px-2 py-1 bg-black/60 rounded backdrop-blur-sm mt-1 min-w-fit text-center">
+                            {position.name}
                           </div>
-                        ) : (
-                          <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
-                            <Users className="w-6 h-6 text-white/70" />
-                          </div>
-                        )}
-                        <div className="text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
-                          {position.name}
+                          
+                          {/* Nome giocatore */}
+                          {player && (
+                            <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/40 rounded backdrop-blur-sm max-w-24 truncate">
+                              {player.first_name} {player.last_name.charAt(0)}.
+                            </div>
+                          )}
                         </div>
-                        {player && (
-                          <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
-                            {player.first_name} {player.last_name.charAt(0)}.
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
             </CardContent>
           </Card>
