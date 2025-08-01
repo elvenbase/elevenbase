@@ -237,33 +237,87 @@ const UserManagement = () => {
     try {
       console.log('Deleting user:', userId);
       
-      // Elimina i ruoli associati
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      // Call edge function to delete user from auth system and database
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId }
+      });
 
-      if (roleError) {
-        console.error('Error deleting user roles:', roleError);
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
       }
 
-      // Elimina il profilo
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
-
-      if (profileError) {
-        console.error('Error deleting profile:', profileError);
-        throw profileError;
-      }
-
-      toast.success('Utente eliminato con successo');
+      toast.success(data.message);
       fetchUsers();
     } catch (error: any) {
       console.error('Error deleting user:', error);
       toast.error('Errore nell\'eliminazione dell\'utente: ' + error.message);
     }
+  };
+
+  const handleEditUser = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      console.log('Updating user:', selectedUser.id);
+      
+      // Prepare update data
+      const updateData: any = {
+        userId: selectedUser.id
+      };
+      
+      if (newUserUsername !== selectedUser.profiles?.username) {
+        updateData.username = newUserUsername;
+      }
+      if (newUserFirstName !== selectedUser.profiles?.first_name) {
+        updateData.firstName = newUserFirstName;
+      }
+      if (newUserLastName !== selectedUser.profiles?.last_name) {
+        updateData.lastName = newUserLastName;
+      }
+      if (newUserPhone !== selectedUser.profiles?.phone) {
+        updateData.phone = newUserPhone;
+      }
+      if (newUserEmail && newUserEmail !== selectedUser.email) {
+        updateData.email = newUserEmail;
+      }
+      if (newUserPassword) {
+        updateData.password = newUserPassword;
+      }
+
+      // Call edge function to update user
+      const { data, error } = await supabase.functions.invoke('update-user', {
+        body: updateData
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      toast.success(data.message);
+      setIsEditModalOpen(false);
+      setSelectedUser(null);
+      resetForm();
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error updating user:', error);
+      toast.error('Errore nell\'aggiornamento dell\'utente: ' + error.message);
+    }
+  };
+
+  const openEditModal = (user: User) => {
+    setSelectedUser(user);
+    setNewUserUsername(user.profiles?.username || '');
+    setNewUserFirstName(user.profiles?.first_name || '');
+    setNewUserLastName(user.profiles?.last_name || '');
+    setNewUserPhone(user.profiles?.phone || '');
+    setNewUserEmail(user.email || '');
+    setNewUserPassword('');
+    setNewUserRole(user.user_roles?.[0]?.role || 'player');
+    setIsEditModalOpen(true);
   };
 
   const resetForm = () => {
@@ -472,6 +526,97 @@ const UserManagement = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* Modal di Modifica */}
+            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Modifica Utente</DialogTitle>
+                  <DialogDescription>
+                    Modifica i dati dell'utente selezionato
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-username">Username</Label>
+                    <Input
+                      id="edit-username"
+                      value={newUserUsername}
+                      onChange={(e) => setNewUserUsername(e.target.value)}
+                      placeholder="Nome utente"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="edit-firstName">Nome</Label>
+                      <Input
+                        id="edit-firstName"
+                        value={newUserFirstName}
+                        onChange={(e) => setNewUserFirstName(e.target.value)}
+                        placeholder="Nome"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-lastName">Cognome</Label>
+                      <Input
+                        id="edit-lastName"
+                        value={newUserLastName}
+                        onChange={(e) => setNewUserLastName(e.target.value)}
+                        placeholder="Cognome"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-phone">Telefono</Label>
+                    <Input
+                      id="edit-phone"
+                      value={newUserPhone}
+                      onChange={(e) => setNewUserPhone(e.target.value)}
+                      placeholder="+39 123 456 7890"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-email">Email</Label>
+                    <Input
+                      id="edit-email"
+                      type="email"
+                      value={newUserEmail}
+                      onChange={(e) => setNewUserEmail(e.target.value)}
+                      placeholder="utente@esempio.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-password">Nuova Password (opzionale)</Label>
+                    <div className="relative">
+                      <Input
+                        id="edit-password"
+                        type={showPassword ? "text" : "password"}
+                        value={newUserPassword}
+                        onChange={(e) => setNewUserPassword(e.target.value)}
+                        placeholder="Lascia vuoto per non modificare"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                    Annulla
+                  </Button>
+                  <Button onClick={handleEditUser}>
+                    Salva Modifiche
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
       </Card>
@@ -523,31 +668,38 @@ const UserManagement = () => {
                         {new Date(user.created_at).toLocaleDateString('it-IT')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleToggleUserStatus(user.id, user.profiles?.status || 'inactive')}
-                            className="mr-2"
-                          >
-                            {user.profiles?.status === 'active' ? 'Disattiva' : 'Attiva'}
-                          </Button>
-                          
-                          <Select
-                            value={user.user_roles?.[0]?.role || 'player'}
-                            onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole as any)}
-                          >
-                            <SelectTrigger className="w-32 h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {roles.map(role => (
-                                <SelectItem key={role.value} value={role.value}>
-                                  {role.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                         <div className="flex justify-end gap-2">
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => handleToggleUserStatus(user.id, user.profiles?.status || 'inactive')}
+                           >
+                             {user.profiles?.status === 'active' ? 'Disattiva' : 'Attiva'}
+                           </Button>
+                           
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => openEditModal(user)}
+                           >
+                             <Edit className="h-4 w-4" />
+                           </Button>
+                           
+                           <Select
+                             value={user.user_roles?.[0]?.role || 'player'}
+                             onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole as any)}
+                           >
+                             <SelectTrigger className="w-32 h-8">
+                               <SelectValue />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {roles.map(role => (
+                                 <SelectItem key={role.value} value={role.value}>
+                                   {role.label}
+                                 </SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
                           
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
