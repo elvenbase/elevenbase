@@ -2,6 +2,12 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Users, 
   UserPlus, 
@@ -12,7 +18,8 @@ import {
   X,
   Shield,
   LogOut,
-  Grid3X3
+  Grid3X3,
+  ChevronDown
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -22,12 +29,15 @@ const Navigation = () => {
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: BarChart3 },
-    { name: "Rosa", path: "/squad", icon: Users },
     { name: "Prove", path: "/trials", icon: UserPlus },
-    { name: "Formazioni", path: "/formations", icon: Grid3X3 },
     { name: "Competizioni", path: "/competitions", icon: Trophy },
     { name: "Allenamenti", path: "/training", icon: Activity },
     { name: "Utenti", path: "/users", icon: Shield },
+  ];
+
+  const squadItems = [
+    { name: "Rosa", path: "/squad", icon: Users },
+    { name: "Formazioni", path: "/formations", icon: Grid3X3 },
   ];
 
   const handleSignOut = async () => {
@@ -77,6 +87,36 @@ const Navigation = () => {
                 </NavLink>
               );
             })}
+            
+            {/* Squad Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="text-sm font-medium">Rosa</span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {squadItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem key={item.path} asChild>
+                      <NavLink
+                        to={item.path}
+                        className="flex items-center space-x-2 w-full"
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </NavLink>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* User Menu */}
@@ -116,6 +156,28 @@ const Navigation = () => {
           <div className="md:hidden py-4 border-t border-border animate-slide-in">
             <div className="space-y-2">
               {navigationItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `flex items-center space-x-3 px-4 py-3 rounded-xl transition-smooth ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-glow"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`
+                    }
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{item.name}</span>
+                  </NavLink>
+                );
+              })}
+              
+              {/* Squad items for mobile */}
+              {squadItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <NavLink
