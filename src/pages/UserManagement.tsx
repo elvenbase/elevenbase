@@ -167,8 +167,15 @@ const UserManagement = () => {
         throw new Error(data.error);
       }
 
-      // Assegna il ruolo
+      // Assegna il ruolo (prima elimina quello di default creato dal trigger)
       if (data.user) {
+        // Elimina il ruolo di default creato dal trigger
+        await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', data.user.id);
+
+        // Assegna il ruolo selezionato
         await supabase
           .from('user_roles')
           .insert({
