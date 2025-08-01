@@ -260,8 +260,9 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       )}
 
       {/* Tabella giocatori */}
-      <div className="border rounded-lg">
-        <div className="grid grid-cols-13 gap-4 p-4 bg-muted/50 font-medium text-sm">
+      <div className="border rounded-lg overflow-x-auto">
+        {/* Header Desktop */}
+        <div className="hidden md:grid md:grid-cols-13 gap-4 p-4 bg-muted/50 font-medium text-sm">
           <div className="col-span-1 flex items-center justify-center">
             <Checkbox 
               checked={selectedPlayers.length === allPlayers.length && allPlayers.length > 0}
@@ -275,36 +276,155 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
           <div className="col-span-3">Note</div>
         </div>
         
+        {/* Header Mobile */}
+        <div className="md:hidden p-4 bg-muted/50 font-medium text-sm flex items-center gap-4">
+          <Checkbox 
+            checked={selectedPlayers.length === allPlayers.length && allPlayers.length > 0}
+            onCheckedChange={handleSelectAll}
+          />
+          <span>Seleziona tutti</span>
+        </div>
+        
         <div className="divide-y">
           {allPlayers.map((player) => {
             const attendance = existingAttendance.find(a => a.player_id === player.id)
             const isEditing = editingPlayer === player.id
             
             return (
-              <div key={player.id} className="grid grid-cols-13 gap-4 p-4 items-center hover:bg-muted/30">
-                {/* Checkbox selezione */}
-                <div className="col-span-1 flex items-center justify-center">
-                  <Checkbox 
-                    checked={selectedPlayers.includes(player.id)}
-                    onCheckedChange={() => handleSelectPlayer(player.id)}
-                  />
+              <div key={player.id}>
+                {/* Layout Desktop */}
+                <div className="hidden md:grid md:grid-cols-13 gap-4 p-4 items-center hover:bg-muted/30">
+                  {/* Checkbox selezione */}
+                  <div className="col-span-1 flex items-center justify-center">
+                    <Checkbox 
+                      checked={selectedPlayers.includes(player.id)}
+                      onCheckedChange={() => handleSelectPlayer(player.id)}
+                    />
+                  </div>
+                  
+                  {/* Giocatore */}
+                  <div className="col-span-3">
+                    <div className="flex items-center gap-3">
+                      {player.avatar_url ? (
+                        <img 
+                          src={player.avatar_url} 
+                          alt={`${player.first_name} ${player.last_name}`}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                          <Users className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div>
+                        <div className="font-medium">
+                          {player.first_name} {player.last_name}
+                        </div>
+                        {player.jersey_number && (
+                          <div className="text-xs text-muted-foreground">
+                            #{player.jersey_number}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Auto-registrazione */}
+                  <div className="col-span-2 text-center">
+                    {attendance?.self_registered ? (
+                      <Badge 
+                        variant={attendance.status === 'present' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {attendance.status === 'present' ? (
+                          <>
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Presente
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3 h-3 mr-1" />
+                            Assente
+                          </>
+                        )}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">Non risposto</span>
+                    )}
+                  </div>
+
+                  {/* Conferma Presenza */}
+                  <div className="col-span-2">
+                    <Select 
+                      value={attendance?.status || ''} 
+                      onValueChange={(value) => handleStatusChange(player.id, value)}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue placeholder="Seleziona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="present">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            Presente
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="absent">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                            Assente
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Ritardo */}
+                  <div className="col-span-2 text-center">
+                    {attendance?.status === 'present' && (
+                      <div className="flex items-center justify-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={attendance?.arrival_time === '99:99'}
+                          onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                        <span className="text-sm">In ritardo</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Note */}
+                  <div className="col-span-3">
+                    <Input
+                      placeholder="Note..."
+                      value={attendance?.notes || ''}
+                      onChange={(e) => handleNotesChange(player.id, e.target.value)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
                 </div>
-                
-                {/* Giocatore */}
-                <div className="col-span-3">
+
+                {/* Layout Mobile */}
+                <div className="md:hidden p-4 space-y-3 hover:bg-muted/30">
+                  {/* Header con checkbox e giocatore */}
                   <div className="flex items-center gap-3">
+                    <Checkbox 
+                      checked={selectedPlayers.includes(player.id)}
+                      onCheckedChange={() => handleSelectPlayer(player.id)}
+                    />
                     {player.avatar_url ? (
                       <img 
                         src={player.avatar_url} 
                         alt={`${player.first_name} ${player.last_name}`}
-                        className="w-8 h-8 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                        <Users className="w-4 h-4" />
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        <Users className="w-5 h-5" />
                       </div>
                     )}
-                    <div>
+                    <div className="flex-1">
                       <div className="font-medium">
                         {player.first_name} {player.last_name}
                       </div>
@@ -314,82 +434,70 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                         </div>
                       )}
                     </div>
+                    {attendance?.self_registered && (
+                      <Badge 
+                        variant={attendance.status === 'present' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {attendance.status === 'present' ? 'Auto-Presente' : 'Auto-Assente'}
+                      </Badge>
+                    )}
                   </div>
-                </div>
 
-                {/* Auto-registrazione */}
-                <div className="col-span-2 text-center">
-                  {attendance?.self_registered ? (
-                    <Badge 
-                      variant={attendance.status === 'present' ? 'default' : 'secondary'}
-                      className="text-xs"
-                    >
-                      {attendance.status === 'present' ? (
-                        <>
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Presente
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-3 h-3 mr-1" />
-                          Assente
-                        </>
-                      )}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">Non risposto</span>
-                  )}
-                </div>
-
-                {/* Conferma Presenza */}
-                <div className="col-span-2">
-                  <Select 
-                    value={attendance?.status || ''} 
-                    onValueChange={(value) => handleStatusChange(player.id, value)}
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue placeholder="Seleziona" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="present">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          Presente
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="absent">
-                        <div className="flex items-center gap-2">
-                          <XCircle className="h-4 w-4 text-red-600" />
-                          Assente
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Ritardo */}
-                <div className="col-span-2 text-center">
-                  {attendance?.status === 'present' && (
-                    <div className="flex items-center justify-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={attendance?.arrival_time === '99:99'}
-                        onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
-                        className="h-4 w-4"
-                      />
-                      <span className="text-sm">In ritardo</span>
+                  {/* Controlli */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground block mb-1">Presenza</label>
+                      <Select 
+                        value={attendance?.status || ''} 
+                        onValueChange={(value) => handleStatusChange(player.id, value)}
+                      >
+                        <SelectTrigger className="h-8">
+                          <SelectValue placeholder="Seleziona" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="present">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              Presente
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="absent">
+                            <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              Assente
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
-                </div>
 
-                {/* Note */}
-                <div className="col-span-3">
-                  <Input
-                    placeholder="Note..."
-                    value={attendance?.notes || ''}
-                    onChange={(e) => handleNotesChange(player.id, e.target.value)}
-                    className="h-8 text-sm"
-                  />
+                    {attendance?.status === 'present' && (
+                      <div>
+                        <label className="text-xs text-muted-foreground block mb-1">Ritardo</label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="checkbox"
+                            checked={attendance?.arrival_time === '99:99'}
+                            onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
+                            className="h-4 w-4"
+                          />
+                          <span className="text-sm">In ritardo</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Note */}
+                  <div>
+                    <label className="text-xs text-muted-foreground block mb-1">Note</label>
+                    <Input
+                      placeholder="Note..."
+                      value={attendance?.notes || ''}
+                      onChange={(e) => handleNotesChange(player.id, e.target.value)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
                 </div>
               </div>
             )
