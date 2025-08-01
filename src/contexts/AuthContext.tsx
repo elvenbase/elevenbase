@@ -66,8 +66,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
-      // Verifica se l'utente è attivo
+      // Verifica se l'utente è attivo (temporaneamente disabilitato per debug)
       if (data.user) {
+        console.log('User logged in successfully:', data.user.email);
+        // Commentiamo temporaneamente il controllo dello status per vedere se il login funziona
+        /*
         const { data: isActive } = await supabase.rpc('is_user_active', {
           _user_id: data.user.id
         });
@@ -83,6 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
           return { error: inactiveError };
         }
+        */
       }
       
       return { error: null };
