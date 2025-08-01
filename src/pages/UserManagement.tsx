@@ -146,95 +146,49 @@ const UserManagement = () => {
         return;
       }
 
-      if (newUserEmail) {
-        // Se c'è un'email, crea l'utente tramite signup normale
-        const { data, error } = await supabase.auth.signUp({
-          email: newUserEmail,
+      // Generate fake email if none provided
+      const email = newUserEmail || `${newUserUsername.toLowerCase()}@users.com`;
+      
+      // Call edge function to create user in auth system
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email,
           password: newUserPassword,
-          options: {
-            data: {
-              username: newUserUsername,
-              first_name: newUserFirstName,
-              last_name: newUserLastName,
-              phone: newUserPhone
-            }
-          }
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          // Assegna il ruolo
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: data.user.id,
-              role: newUserRole as any
-            });
-
-          // Se il ruolo è "player", crea anche l'entry nella tabella players
-          if (newUserRole === 'player') {
-            await supabase
-              .from('players')
-              .insert({
-                first_name: newUserFirstName,
-                last_name: newUserLastName,
-                phone: newUserPhone
-              });
-          }
+          username: newUserUsername,
+          firstName: newUserFirstName,
+          lastName: newUserLastName,
+          phone: newUserPhone,
         }
-      } else {
-        // Se non c'è email, crea email fake e account di autenticazione
-        const fakeEmail = `${newUserUsername.toLowerCase()}@users.com`;
-        console.log('Creating user with fake email:', fakeEmail);
-        
-        // Crea l'utente tramite signup con email fake
-        const { data, error } = await supabase.auth.signUp({
-          email: fakeEmail,
-          password: newUserPassword,
-          options: {
-            emailRedirectTo: undefined, // Non mandare email di conferma
-            data: {
-              username: newUserUsername,
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Assegna il ruolo
+      if (data.user) {
+        await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: newUserRole as any
+          });
+
+        // Se il ruolo è "player", crea anche l'entry nella tabella players
+        if (newUserRole === 'player') {
+          await supabase
+            .from('players')
+            .insert({
               first_name: newUserFirstName,
               last_name: newUserLastName,
               phone: newUserPhone
-            }
-          }
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          // Aggiorna il profilo creato dal trigger con status inattivo
-          await supabase
-            .from('profiles')
-            .update({
-              status: 'inactive'
-            })
-            .eq('id', data.user.id);
-
-          // Assegna il ruolo
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: data.user.id,
-              role: newUserRole as any
             });
-
-          // Se il ruolo è "player", crea anche l'entry nella tabella players
-          if (newUserRole === 'player') {
-            await supabase
-              .from('players')
-              .insert({
-                first_name: newUserFirstName,
-                last_name: newUserLastName,
-                phone: newUserPhone
-              });
-          }
         }
       }
-      toast.success('Utente creato con successo');
+
+      toast.success(`Utente creato con successo. Email: ${email}, Password: ${newUserPassword}`);
       setIsCreateModalOpen(false);
       resetForm();
       fetchUsers();
@@ -325,17 +279,23 @@ const UserManagement = () => {
 
   const handleToggleUserStatus = async (userId: string, currentStatus: 'active' | 'inactive') => {
     try {
-      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-      console.log('Toggling user status:', userId, 'from', currentStatus, 'to', newStatus);
+      const activate = currentStatus === 'inactive';
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({ status: newStatus })
-        .eq('id', userId);
+      // Call edge function to activate/deactivate user
+      const { data, error } = await supabase.functions.invoke('activate-user', {
+        body: {
+          userId,
+          activate
+        }
+      });
 
       if (error) throw error;
 
-      toast.success(`Utente ${newStatus === 'active' ? 'attivato' : 'disattivato'} con successo`);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      toast.success(data.message);
       fetchUsers();
     } catch (error: any) {
       console.error('Error toggling user status:', error);
