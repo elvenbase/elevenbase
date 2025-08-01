@@ -76,7 +76,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         const { error } = await supabase
           .from('training_attendance')
           .update({ 
-            arrival_time: isLate ? '99:99' : null // Uso 99:99 per indicare ritardo
+            arrival_time: isLate ? new Date().toISOString() : null
           })
           .eq('id', existingRecord.id);
 
@@ -385,7 +385,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                       <div className="flex items-center justify-center gap-1">
                         <input
                           type="checkbox"
-                          checked={attendance?.arrival_time === '99:99'}
+                          checked={!!attendance?.arrival_time}
                           onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
                           className="h-4 w-4"
                         />
@@ -478,7 +478,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                         <div className="flex items-center gap-2 mt-1">
                           <input
                             type="checkbox"
-                            checked={attendance?.arrival_time === '99:99'}
+                            checked={!!attendance?.arrival_time}
                             onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
                             className="h-4 w-4"
                           />
