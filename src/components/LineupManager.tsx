@@ -335,7 +335,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                             )}
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
+                          <div className="w-12 h-12 rounded-full border-3 border-dashed border-black bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
                             <Users className="w-6 h-6 text-white/70" />
                           </div>
                         )}
