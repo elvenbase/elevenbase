@@ -416,11 +416,7 @@ const PublicSession = () => {
                           {player ? (
                             <div className="relative">
                               <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-3 border-white shadow-lg">
-                                <AvatarImage 
-                                  src={player.avatar_url || undefined} 
-                                  onError={() => console.log('Avatar image failed to load:', player.avatar_url)}
-                                  onLoad={() => console.log('Avatar image loaded:', player.avatar_url)}
-                                />
+                                <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
                                   className="text-white font-bold text-sm bg-primary"
                                   style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
