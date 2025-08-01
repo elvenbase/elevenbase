@@ -3,7 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Trash2, Save } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Trash2, Save, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLineupManager } from '@/hooks/useLineupManager'
 
@@ -13,6 +15,7 @@ interface Player {
   last_name: string
   jersey_number?: number
   position?: string
+  avatar_url?: string
 }
 
 interface LineupManagerProps {
@@ -167,12 +170,33 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const currentFormation = formations[selectedFormation as keyof typeof formations]
   const assignedCount = Object.keys(playerPositions).length
 
+  // Funzione per generare colori avatar basati sulle iniziali
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      'hsl(var(--primary))',
+      'hsl(var(--secondary))', 
+      'hsl(var(--accent))',
+      'hsl(210, 100%, 60%)',
+      'hsl(330, 80%, 60%)',
+      'hsl(120, 70%, 50%)',
+      'hsl(30, 90%, 60%)',
+      'hsl(270, 70%, 60%)'
+    ]
+    const hash = name.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
+    return colors[hash % colors.length]
+  }
+
+  // Funzione per ottenere iniziali del giocatore
+  const getPlayerInitials = (player: Player) => {
+    return `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`.toUpperCase()
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Gestione Formazione</CardTitle>
         <CardDescription>
-          Configura la formazione per questa sessione di allenamento
+          Clicca su una posizione nel campo per assegnare un giocatore
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -196,98 +220,177 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
         {/* Statistiche */}
         <div className="flex gap-4">
           <Badge variant="outline">
-            Giocatori presenti: {presentPlayers.length}
+            <Users className="mr-1 h-3 w-3" />
+            Presenti: {presentPlayers.length}
           </Badge>
           <Badge variant="outline">
             Assegnati: {assignedCount}/11
           </Badge>
         </div>
 
-        {/* Campo da calcio */}
-        <div className="relative bg-green-100 border-2 border-green-600 rounded-lg" 
-             style={{ aspectRatio: '1/1.5', minHeight: '400px' }}>
-          {/* Linee del campo */}
-          <div className="absolute inset-0">
-            {/* Area di rigore superiore */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/3 h-1/6 border-2 border-green-600 bg-green-200/50"></div>
-            {/* Area piccola superiore */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/5 h-1/12 border-2 border-green-600 bg-green-300/50"></div>
+        {/* Campo da calcio con proporzioni realistiche */}
+        <div className="w-full max-w-2xl mx-auto">
+          <div 
+            className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden" 
+            style={{ aspectRatio: '2/3', minHeight: '500px' }}
+          >
+            {/* Sfondo erba con pattern */}
+            <div 
+              className="absolute inset-0 opacity-20" 
+              style={{
+                backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,100,0,0.1) 10px, rgba(0,100,0,0.1) 20px)'
+              }}
+            />
             
-            {/* Linea di metà campo */}
-            <div className="absolute top-1/2 left-0 right-0 border-t-2 border-green-600"></div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/4 h-1/4 border-2 border-green-600 rounded-full bg-green-200/30"></div>
-            
-            {/* Area di rigore inferiore */}
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/3 h-1/6 border-2 border-green-600 bg-green-200/50"></div>
-            {/* Area piccola inferiore */}
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/5 h-1/12 border-2 border-green-600 bg-green-300/50"></div>
-          </div>
+            {/* Linee del campo */}
+            <div className="absolute inset-0">
+              {/* Bordo campo */}
+              <div className="absolute inset-2 border-2 border-white rounded-sm" />
+              
+              {/* Area di rigore superiore */}
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-2 border-white" />
+              {/* Area piccola superiore */}
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-2 border-white" />
+              {/* Dischetto superiore */}
+              <div className="absolute top-[12%] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+              
+              {/* Linea di metà campo */}
+              <div className="absolute top-1/2 left-2 right-2 border-t-2 border-white" />
+              {/* Cerchio di centrocampo */}
+              <div 
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-white rounded-full"
+                style={{ width: '25%', aspectRatio: '1' }}
+              />
+              {/* Punto del centrocampo */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full" />
+              
+              {/* Area di rigore inferiore */}
+              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-2 border-white" />
+              {/* Area piccola inferiore */}
+              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-2 border-white" />
+              {/* Dischetto inferiore */}
+              <div className="absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+              
+              {/* Porte */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1 bg-white" />
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1 bg-white" />
+            </div>
 
-          {/* Posizioni giocatori */}
-          {currentFormation.positions.map(position => {
-            const assignedPlayer = playerPositions[position.id] ? getPlayerById(playerPositions[position.id]) : null
-            
-            return (
-              <div
-                key={position.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                style={{ 
-                  left: `${position.x}%`, 
-                  top: `${position.y}%` 
-                }}
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
-                    assignedPlayer 
-                      ? 'bg-primary text-primary-foreground border-primary' 
-                      : 'bg-background border-border'
-                  }`}>
-                    {assignedPlayer?.jersey_number || '?'}
-                  </div>
-                  <div className="text-xs text-center font-medium min-w-20">
-                    {position.name}
-                  </div>
-                  {assignedPlayer && (
-                    <div className="text-xs text-center text-muted-foreground">
-                      {assignedPlayer.first_name} {assignedPlayer.last_name}
+            {/* Posizioni giocatori */}
+            {currentFormation.positions.map(position => {
+              const assignedPlayer = playerPositions[position.id] ? getPlayerById(playerPositions[position.id]) : null
+              
+              return (
+                <Popover key={position.id}>
+                  <PopoverTrigger asChild>
+                    <div
+                      className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
+                      style={{ 
+                        left: `${position.x}%`, 
+                        top: `${position.y}%` 
+                      }}
+                    >
+                      <div className="flex flex-col items-center space-y-1">
+                        {assignedPlayer ? (
+                          <div className="relative">
+                            <Avatar className="w-12 h-12 border-3 border-white shadow-lg group-hover:scale-110 transition-transform">
+                              <AvatarImage src={assignedPlayer.avatar_url || undefined} />
+                              <AvatarFallback 
+                                className="text-white font-bold text-sm"
+                                style={{ backgroundColor: getAvatarColor(assignedPlayer.first_name + assignedPlayer.last_name) }}
+                              >
+                                {getPlayerInitials(assignedPlayer)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {assignedPlayer.jersey_number && (
+                              <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow">
+                                {assignedPlayer.jersey_number}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
+                            <Users className="w-6 h-6 text-white/70" />
+                          </div>
+                        )}
+                        <div className="text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
+                          {position.name}
+                        </div>
+                        {assignedPlayer && (
+                          <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
+                            {assignedPlayer.first_name} {assignedPlayer.last_name.charAt(0)}.
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Assegnazione giocatori */}
-        <div className="space-y-4">
-          <h4 className="font-medium">Assegna Giocatori</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {currentFormation.positions.map(position => (
-              <div key={position.id} className="space-y-2">
-                <label className="text-sm font-medium">{position.name}</label>
-                <Select 
-                  value={playerPositions[position.id] || ''} 
-                  onValueChange={(value) => handlePlayerAssignment(position.id, value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona giocatore" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nessun giocatore</SelectItem>
-                    {getAvailablePlayers(position.id).map(player => (
-                      <SelectItem key={player.id} value={player.id}>
-                        <div className="flex items-center gap-2">
-                          {player.first_name} {player.last_name}
-                          {player.jersey_number && (
-                            <Badge variant="outline">#{player.jersey_number}</Badge>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-4">
+                    <div className="space-y-3">
+                      <div className="font-semibold text-center">{position.name}</div>
+                      <Select 
+                        value={playerPositions[position.id] || ''} 
+                        onValueChange={(value) => handlePlayerAssignment(position.id, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleziona giocatore" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Rimuovi giocatore</SelectItem>
+                          {getAvailablePlayers(position.id).map(player => (
+                            <SelectItem key={player.id} value={player.id}>
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarImage src={player.avatar_url || undefined} />
+                                  <AvatarFallback 
+                                    className="text-white text-xs font-bold"
+                                    style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
+                                  >
+                                    {getPlayerInitials(player)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{player.first_name} {player.last_name}</span>
+                                  {player.position && (
+                                    <span className="text-xs text-muted-foreground">{player.position}</span>
+                                  )}
+                                </div>
+                                {player.jersey_number && (
+                                  <Badge variant="outline" className="ml-auto">
+                                    #{player.jersey_number}
+                                  </Badge>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {assignedPlayer && (
+                        <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={assignedPlayer.avatar_url || undefined} />
+                            <AvatarFallback 
+                              className="text-white font-bold"
+                              style={{ backgroundColor: getAvatarColor(assignedPlayer.first_name + assignedPlayer.last_name) }}
+                            >
+                              {getPlayerInitials(assignedPlayer)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="font-medium">{assignedPlayer.first_name} {assignedPlayer.last_name}</div>
+                            {assignedPlayer.position && (
+                              <div className="text-sm text-muted-foreground">{assignedPlayer.position}</div>
+                            )}
+                          </div>
+                          {assignedPlayer.jersey_number && (
+                            <Badge variant="secondary">#{assignedPlayer.jersey_number}</Badge>
                           )}
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )
+            })}
           </div>
         </div>
 
