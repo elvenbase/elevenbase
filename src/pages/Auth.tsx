@@ -28,30 +28,15 @@ const Auth = () => {
     const password = formData.get('password') as string;
     
     try {
-      // Cerca l'email associata all'username
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', username)
-        .single();
-      
-      if (!profile) {
-        toast.error('Username non trovato');
-        setIsLoading(false);
-        return;
+      // Se l'input contiene una @ è un'email, altrimenti è un username
+      if (username.includes('@')) {
+        // È un'email, usa direttamente
+        await signIn(username, password);
+      } else {
+        // È un username, converti in email fake
+        const email = `${username.toLowerCase()}@users.com`;
+        await signIn(email, password);
       }
-
-      // Recupera l'email dell'utente
-      const { data: { users }, error } = await supabase.auth.admin.listUsers();
-      const userRecord = users?.find((u: any) => u.id === profile.id);
-      
-      if (!userRecord?.email) {
-        toast.error('Errore nel recupero dei dati utente');
-        setIsLoading(false);
-        return;
-      }
-      
-      await signIn(userRecord.email, password);
     } catch (error) {
       toast.error('Errore durante il login');
     }
