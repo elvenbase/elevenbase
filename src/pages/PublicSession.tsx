@@ -237,6 +237,38 @@ const PublicSession = () => {
         { id: 'st', name: 'AT', x: 50, y: 15 },
         { id: 'rw', name: 'AD', x: 80, y: 15 }
       ]
+    },
+    '3-5-2': {
+      name: '3-5-2',
+      positions: [
+        { id: 'gk', name: 'Portiere', x: 50, y: 95 },
+        { id: 'cb1', name: 'DC', x: 25, y: 75 },
+        { id: 'cb2', name: 'DC', x: 50, y: 75 },
+        { id: 'cb3', name: 'DC', x: 75, y: 75 },
+        { id: 'lwb', name: 'ES', x: 10, y: 50 },
+        { id: 'cm1', name: 'CC', x: 30, y: 50 },
+        { id: 'cm2', name: 'CC', x: 50, y: 50 },
+        { id: 'cm3', name: 'CC', x: 70, y: 50 },
+        { id: 'rwb', name: 'ED', x: 90, y: 50 },
+        { id: 'st1', name: 'AT', x: 40, y: 15 },
+        { id: 'st2', name: 'AT', x: 60, y: 15 }
+      ]
+    },
+    '5-3-2': {
+      name: '5-3-2',
+      positions: [
+        { id: 'gk', name: 'Portiere', x: 50, y: 95 },
+        { id: 'lwb', name: 'ES', x: 10, y: 75 },
+        { id: 'cb1', name: 'DC', x: 30, y: 80 },
+        { id: 'cb2', name: 'DC', x: 50, y: 80 },
+        { id: 'cb3', name: 'DC', x: 70, y: 80 },
+        { id: 'rwb', name: 'ED', x: 90, y: 75 },
+        { id: 'cm1', name: 'CC', x: 30, y: 45 },
+        { id: 'cm2', name: 'CC', x: 50, y: 45 },
+        { id: 'cm3', name: 'CC', x: 70, y: 45 },
+        { id: 'st1', name: 'AT', x: 40, y: 15 },
+        { id: 'st2', name: 'AT', x: 60, y: 15 }
+      ]
     }
   }
 
@@ -334,7 +366,7 @@ const PublicSession = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="relative bg-gradient-to-b from-green-400 to-green-600 rounded-lg p-6 min-h-[400px]">
+              <div className="relative bg-gradient-to-b from-green-400 to-green-600 rounded-lg p-6 aspect-[2/3] min-h-[500px]">
                 {/* Campo da calcio sfondo */}
                 <div className="absolute inset-0 bg-gradient-to-b from-green-400 to-green-600 rounded-lg opacity-90"></div>
                 <div className="absolute inset-4 border-2 border-white/60 rounded"></div>
