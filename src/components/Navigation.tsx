@@ -52,7 +52,7 @@ const Navigation = () => {
           <NavLink to="/" className="flex items-center space-x-3 group">
             <div className="relative">
               <img 
-                src="/lovable-uploads/4d9824da-3b59-4aa2-8979-c77928fd7b18.png" 
+                src="/lovable-uploads/Logo ElevenBase.png" 
                 alt="Ca De Rissi SG Esport" 
                 className="h-10 w-10 rounded-lg shadow-glow group-hover:shadow-accent-glow transition-smooth"
               />
