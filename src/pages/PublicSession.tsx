@@ -455,16 +455,21 @@ const PublicSession = () => {
                   
                   {/* Organizzazione per settori */}
                   {[
-                    { name: 'Portiere', roles: ['P'], color: 'bg-yellow-500' },
-                    { name: 'Difesa', roles: ['TD', 'DC', 'DCD', 'DCS', 'TS'], color: 'bg-blue-500' },
-                    { name: 'Centrocampo', roles: ['ED', 'MC', 'ES', 'MED', 'MD', 'MS', 'REG', 'QD', 'QS'], color: 'bg-green-500' },
-                    { name: 'Attacco', roles: ['ATT', 'PU', 'AD', 'AS'], color: 'bg-red-500' }
+                    { name: 'Portiere', roles: ['P', 'Portiere'], color: 'bg-yellow-500' },
+                    { name: 'Difesa', roles: ['TD', 'DC', 'DCD', 'DCS', 'TS', 'Difensore centrale', 'Difensore centrale sinistro', 'Difensore centrale destro', 'Terzino destro', 'Terzino sinistro'], color: 'bg-blue-500' },
+                    { name: 'Centrocampo', roles: ['ED', 'MC', 'ES', 'MED', 'MD', 'MS', 'REG', 'QD', 'QS', 'Centrocampista', 'Mediano', 'Mezzala', 'Quinto', 'Regista'], color: 'bg-green-500' },
+                    { name: 'Attacco', roles: ['ATT', 'PU', 'AD', 'AS', 'Attaccante', 'Punta', 'Ala'], color: 'bg-red-500' }
                   ].map(sector => {
                     const sectorPlayers = getFormationFromLineup(lineup.formation)?.positions
                       .filter(position => {
                         const hasPlayer = lineup.players_data?.positions?.[position.id]
-                        const roleShort = position.roleShort || position.name
-                        return hasPlayer && sector.roles.includes(roleShort)
+                        // Prova prima con roleShort, poi con role come fallback, infine con name
+                        const roleToCheck = position.roleShort || (position as any).role || position.name || ''
+                        const matchesRole = sector.roles.some(role => 
+                          roleToCheck.toLowerCase().includes(role.toLowerCase()) ||
+                          role.toLowerCase().includes(roleToCheck.toLowerCase())
+                        )
+                        return hasPlayer && matchesRole
                       }) || []
 
                     if (sectorPlayers.length === 0) return null
