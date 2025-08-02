@@ -76,7 +76,7 @@ const Auth = () => {
             <img 
               src="/lovable-uploads/logo_elevenBase.png" 
               alt="Ca De Rissi SG Esport" 
-              className="h-16 w-16 rounded-lg shadow-glow"
+              className="h-16 w-16 rounded-lg"
             />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
