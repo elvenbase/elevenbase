@@ -9,6 +9,7 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useTrainingSessions, useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData'
 import { AttendanceForm } from '@/components/forms/AttendanceForm'
+import { TrainingForm } from '@/components/forms/TrainingForm'
 import LineupManager from '@/components/LineupManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
 
@@ -92,10 +93,15 @@ const SessionManagement = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Modifica Sessione
-              </Button>
+              <TrainingForm 
+                session={session} 
+                mode="edit"
+              >
+                <Button variant="outline" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Modifica Sessione
+                </Button>
+              </TrainingForm>
             </div>
           </div>
         </div>
