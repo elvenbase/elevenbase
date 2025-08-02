@@ -1,18 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateTrainingSession } from '@/hooks/useSupabaseData';
-import { Plus } from 'lucide-react';
+import { useCreateTrainingSession, useUpdateTrainingSession } from '@/hooks/useSupabaseData';
+import { Plus, Edit } from 'lucide-react';
+
+interface TrainingSession {
+  id: string;
+  title: string;
+  description?: string;
+  session_date: string;
+  start_time: string;
+  end_time: string;
+  location?: string;
+  max_participants?: number;
+}
 
 interface TrainingFormProps {
   children?: React.ReactNode;
+  session?: TrainingSession;
+  mode?: 'create' | 'edit';
+  onOpenChange?: (open: boolean) => void;
 }
 
-export const TrainingForm = ({ children }: TrainingFormProps) => {
+export const TrainingForm = ({ children, session, mode = 'create', onOpenChange }: TrainingFormProps) => {
   const [open, setOpen] = useState(false);
+  
   const getTomorrowDate = () => {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -28,10 +43,26 @@ export const TrainingForm = ({ children }: TrainingFormProps) => {
     description: '',
     session_date: getTomorrowDate(),
     start_time: '21:00',
-    end_time: '23:00'
+    end_time: '23:00',
+    location: ''
   });
 
   const createTrainingSession = useCreateTrainingSession();
+  const updateTrainingSession = useUpdateTrainingSession();
+
+  // Popola il form con i dati della sessione se in modalità edit
+  useEffect(() => {
+    if (mode === 'edit' && session) {
+      setFormData({
+        title: session.title,
+        description: session.description || '',
+        session_date: session.session_date,
+        start_time: session.start_time,
+        end_time: session.end_time,
+        location: session.location || ''
+      });
+    }
+  }, [mode, session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,33 +72,52 @@ export const TrainingForm = ({ children }: TrainingFormProps) => {
       description: formData.description || undefined,
       session_date: formData.session_date,
       start_time: formData.start_time,
-      end_time: formData.end_time
+      end_time: formData.end_time,
+      location: formData.location || undefined
     };
 
-    await createTrainingSession.mutateAsync(sessionData);
-    setFormData({
-      title: '',
-      description: '',
-      session_date: getTomorrowDate(),
-      start_time: '21:00',
-      end_time: '23:00'
-    });
+    if (mode === 'edit' && session) {
+      await updateTrainingSession.mutateAsync({
+        sessionId: session.id,
+        updates: sessionData
+      });
+    } else {
+      await createTrainingSession.mutateAsync(sessionData);
+    }
+
+    if (mode === 'create') {
+      setFormData({
+        title: '',
+        description: '',
+        session_date: getTomorrowDate(),
+        start_time: '21:00',
+        end_time: '23:00',
+        location: ''
+      });
+    }
+    
     setOpen(false);
+    onOpenChange?.(false);
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children || (
           <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nuova Sessione
+            {mode === 'edit' ? <Edit className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+            {mode === 'edit' ? 'Modifica Sessione' : 'Nuova Sessione'}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Nuova Sessione di Allenamento</DialogTitle>
+          <DialogTitle>{mode === 'edit' ? 'Modifica Sessione di Allenamento' : 'Nuova Sessione di Allenamento'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -126,12 +176,28 @@ export const TrainingForm = ({ children }: TrainingFormProps) => {
             </div>
           </div>
 
+          <div>
+            <Label htmlFor="location">Luogo</Label>
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              placeholder="es. Campo principale"
+            />
+          </div>
+
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Annulla
             </Button>
-            <Button type="submit" disabled={createTrainingSession.isPending}>
-              {createTrainingSession.isPending ? 'Creazione...' : 'Crea Sessione'}
+            <Button 
+              type="submit" 
+              disabled={createTrainingSession.isPending || updateTrainingSession.isPending}
+            >
+              {mode === 'edit' 
+                ? (updateTrainingSession.isPending ? 'Aggiornamento...' : 'Aggiorna Sessione')
+                : (createTrainingSession.isPending ? 'Creazione...' : 'Crea Sessione')
+              }
             </Button>
           </div>
         </form>

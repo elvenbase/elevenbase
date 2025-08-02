@@ -334,6 +334,43 @@ export const useDuplicateTrainingSession = () => {
   });
 };
 
+export const useUpdateTrainingSession = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ sessionId, updates }: {
+      sessionId: string;
+      updates: {
+        title?: string;
+        description?: string;
+        session_date?: string;
+        start_time?: string;
+        end_time?: string;
+        location?: string;
+        max_participants?: number;
+      };
+    }) => {
+      const { data, error } = await supabase
+        .from('training_sessions')
+        .update(updates)
+        .eq('id', sessionId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      toast({ title: "Sessione aggiornata con successo" });
+    },
+    onError: () => {
+      toast({ title: "Errore durante l'aggiornamento della sessione", variant: "destructive" });
+    }
+  });
+};
+
 export const useDeleteTrainingSession = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

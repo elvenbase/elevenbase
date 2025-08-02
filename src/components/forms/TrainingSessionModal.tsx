@@ -3,10 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Users, Link, BarChart3 } from 'lucide-react';
+import { Calendar, Clock, Users, Link, BarChart3, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { AttendanceForm } from './AttendanceForm';
+import { TrainingForm } from './TrainingForm';
 import LineupManager from '../LineupManager';
 import PublicLinkSharing from '../PublicLinkSharing';
 import { useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData';
@@ -38,6 +39,7 @@ export const TrainingSessionModal = ({
   onSessionClosed 
 }: TrainingSessionModalProps) => {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   
   const { data: attendance = [] } = useTrainingAttendance(session?.id || '');
   const { data: players = [] } = usePlayers();
@@ -97,7 +99,19 @@ export const TrainingSessionModal = ({
               <Calendar className="h-5 w-5" />
               {session.title}
             </DialogTitle>
-            {getStatusBadge()}
+            <div className="flex items-center gap-2">
+              <TrainingForm 
+                session={session} 
+                mode="edit" 
+                onOpenChange={setEditModalOpen}
+              >
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Modifica
+                </Button>
+              </TrainingForm>
+              {getStatusBadge()}
+            </div>
           </div>
           
           <div className="text-sm text-muted-foreground space-y-1">
