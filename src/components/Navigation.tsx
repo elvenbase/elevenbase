@@ -60,7 +60,7 @@ const Navigation = () => {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Ca De Rissi SG
+                ElevenBase
               </h1>
               <p className="text-xs text-muted-foreground">E-Sport Management</p>
             </div>
