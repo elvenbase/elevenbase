@@ -231,18 +231,13 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
               {/* Nome giocatore su due righe */}
               <div 
                 style={{
-                  backgroundColor: '#000',
-                  color: '#fff',
-                  borderRadius: '4px',
+                  backgroundColor: '#fff',
+                  color: '#000',
                   fontSize: '12px',
                   fontWeight: 'bold',
-                  width: '110px',
-                  height: '32px',
                   border: '1px solid #000',
                   textAlign: 'center',
                   padding: '10%',
-                  lineHeight: '1.1',
-                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
