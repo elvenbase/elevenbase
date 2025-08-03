@@ -7,6 +7,7 @@ import { FormationBuilder } from '@/components/FormationBuilder'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { JerseyManager } from '@/components/JerseyManager'
+import { PngExportSettingsManager } from '@/components/PngExportSettingsManager'
 
 export default function Formations() {
   const { formations, loading, createFormation, updateFormation, deleteFormation } = useCustomFormations()
@@ -174,6 +175,11 @@ export default function Formations() {
 
       {/* Gestione Maglie */}
       <JerseyManager />
+
+      {/* Impostazioni PNG */}
+      <div className="mt-8">
+        <PngExportSettingsManager />
+      </div>
     </div>
   )
 }

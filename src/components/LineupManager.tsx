@@ -11,6 +11,7 @@ import { useLineupManager } from '@/hooks/useLineupManager'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
 import FormationExporter from '@/components/FormationExporter'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
+import { usePngExportSettings } from '@/hooks/usePngExportSettings'
 import html2canvas from 'html2canvas'
 
 interface Player {
@@ -93,6 +94,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
 
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
+  const { defaultSetting } = usePngExportSettings()
   
   // Stati per la personalizzazione PNG - inizializzati dopo l'hook
   const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
@@ -105,15 +107,15 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
     loadLineup()
   }, [sessionId])
 
-  // Aggiorna colori quando cambia la maglia di default
+  // Aggiorna colori quando cambiano le impostazioni PNG di default
   useEffect(() => {
-    if (defaultJersey) {
-      setFieldLinesColor(defaultJersey.png_field_lines_color || '#ffffff')
-      setJerseyNumbersColor(defaultJersey.png_jersey_numbers_color || '#000000')
-      setNameBoxColor(defaultJersey.png_name_box_color || '#ffffff')
-      setNameTextColor(defaultJersey.png_name_text_color || '#000000')
+    if (defaultSetting) {
+      setFieldLinesColor(defaultSetting.field_lines_color)
+      setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
+      setNameBoxColor(defaultSetting.name_box_color)
+      setNameTextColor(defaultSetting.name_text_color)
     }
-  }, [defaultJersey])
+  }, [defaultSetting])
 
   // Aggiorna stato locale quando viene caricata la formazione
   useEffect(() => {
@@ -547,11 +549,11 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               variant="outline" 
               size="sm"
               onClick={() => {
-                if (defaultJersey) {
-                  setFieldLinesColor(defaultJersey.png_field_lines_color || '#ffffff')
-                  setJerseyNumbersColor(defaultJersey.png_jersey_numbers_color || '#000000')
-                  setNameBoxColor(defaultJersey.png_name_box_color || '#ffffff')
-                  setNameTextColor(defaultJersey.png_name_text_color || '#000000')
+                if (defaultSetting) {
+                  setFieldLinesColor(defaultSetting.field_lines_color)
+                  setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
+                  setNameBoxColor(defaultSetting.name_box_color)
+                  setNameTextColor(defaultSetting.name_text_color)
                 }
               }}
             >

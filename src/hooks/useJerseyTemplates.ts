@@ -11,10 +11,6 @@ export interface JerseyTemplate {
   created_at: string
   updated_at: string
   created_by: string | null
-  png_field_lines_color?: string
-  png_jersey_numbers_color?: string
-  png_name_box_color?: string
-  png_name_text_color?: string
 }
 
 export const useJerseyTemplates = () => {
@@ -159,10 +155,6 @@ export const useJerseyTemplates = () => {
     description?: string
     image_url: string
     is_default?: boolean
-    png_field_lines_color?: string
-    png_jersey_numbers_color?: string
-    png_name_box_color?: string
-    png_name_text_color?: string
   }) => {
     if (!tableExists) {
       toast.error('La funzionalità maglie personalizzate non è ancora disponibile')
