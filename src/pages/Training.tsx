@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, Clock, Users, Eye, Copy, Trash2, MoreHorizontal } from 'lucide-react';
+import { Plus, Calendar, Clock, Users, Eye, Copy, Trash2, MoreHorizontal, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
@@ -18,6 +18,7 @@ import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSes
 const Training = () => {
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
   
   const { data: trainingSessions, isLoading, refetch: refetchSessions } = useTrainingSessions();
   const { data: stats } = useTrainingStats();
@@ -33,6 +34,15 @@ const Training = () => {
     setModalOpen(true);
   };
 
+  const toggleExpanded = (sessionId: string) => {
+    const newExpanded = new Set(expandedSessions);
+    if (newExpanded.has(sessionId)) {
+      newExpanded.delete(sessionId);
+    } else {
+      newExpanded.add(sessionId);
+    }
+    setExpandedSessions(newExpanded);
+  };
 
   const handleDelete = async (sessionId: string) => {
     await deleteSession.mutateAsync(sessionId);
@@ -53,29 +63,143 @@ const Training = () => {
     }
   };
 
+  // Mobile card component for training sessions
+  const TrainingSessionCard = ({ session }: { session: any }) => {
+    const isExpanded = expandedSessions.has(session.id);
+    
+    return (
+      <Card className="mb-4">
+        <CardContent className="p-4">
+          {/* Main content - always visible */}
+          <div className="space-y-3">
+            {/* Header with title and status */}
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-lg leading-tight">{session.title}</h3>
+                {session.description && (
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{session.description}</p>
+                )}
+              </div>
+              <div className="ml-3 flex-shrink-0">
+                {getStatusBadge(session)}
+              </div>
+            </div>
+
+            {/* Date and time info */}
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>{format(new Date(session.session_date), 'EEE d MMM', { locale: it })}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span>{session.start_time}</span>
+              </div>
+            </div>
+
+            {/* Quick action button */}
+            <Link to={`/training/session/${session.id}`} className="block">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Settings className="h-4 w-4 mr-2" />
+                Gestisci Sessione
+              </Button>
+            </Link>
+
+            {/* Expand/collapse button */}
+            <Button
+              variant="ghost"
+              onClick={() => toggleExpanded(session.id)}
+              className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <span className="text-sm">
+                {isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}
+              </span>
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+
+          {/* Expandable section */}
+          {isExpanded && (
+            <div className="mt-4 pt-4 border-t border-border space-y-3">
+              <div className="grid grid-cols-1 gap-2">
+                {/* Duplicate session */}
+                <DuplicateTrainingForm session={session} />
+                
+                {/* Delete session */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Elimina Sessione
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Questa azione non può essere annullata. Verranno eliminati anche tutti i dati delle presenze e delle formazioni collegati a questa sessione.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annulla</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDelete(session.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Elimina
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+
+              {/* Additional session info */}
+              <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                <div className="text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Data completa:</span>
+                    <span>{format(new Date(session.session_date), 'EEEE d MMMM yyyy', { locale: it })}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Orario:</span>
+                    <span>{session.start_time} - {session.end_time}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-4xl font-bold text-primary mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-2">
               Allenamenti
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Gestione completa delle sessioni di allenamento
             </p>
           </div>
           <TrainingForm>
-            <Button className="space-x-2">
+            <Button className="w-full sm:w-auto space-x-2">
               <Plus className="h-4 w-4" />
               <span>Nuova Sessione</span>
             </Button>
           </TrainingForm>
         </div>
 
-        {/* Statistiche */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Statistiche - Optimized for mobile */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <StatsCard
             title="Sessioni Mese"
             value={stats?.monthlySessions || 0}
@@ -108,100 +232,142 @@ const Training = () => {
         </div>
 
         {/* Lista Sessioni */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sessioni di Allenamento</CardTitle>
-            <CardDescription>
-              Clicca su una sessione per gestire presenze, formazioni e condividere il link pubblico
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div>
+          {/* Desktop table view */}
+          <div className="hidden lg:block">
+            <Card>
+              <CardHeader>
+                <CardTitle>Sessioni di Allenamento</CardTitle>
+                <CardDescription>
+                  Clicca su una sessione per gestire presenze, formazioni e condividere il link pubblico
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-2 text-muted-foreground">Caricamento sessioni...</p>
+                  </div>
+                ) : trainingSessions && trainingSessions.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Titolo</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Orario</TableHead>
+                        <TableHead>Stato</TableHead>
+                        <TableHead>Azioni</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {trainingSessions.map((session) => (
+                        <TableRow key={session.id}>
+                          <TableCell className="font-medium">
+                            <div>
+                              <div>{session.title}</div>
+                              {session.description && (
+                                <div className="text-sm text-muted-foreground">{session.description}</div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(session.session_date), 'EEEE d MMMM yyyy', { locale: it })}
+                          </TableCell>
+                          <TableCell>
+                            {session.start_time} - {session.end_time}
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(session)}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Apri menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                  <Link to={`/training/session/${session.id}`} className="flex items-center">
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Gestisci Sessione
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DuplicateTrainingForm session={session} />
+                                <DropdownMenuSeparator />
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Elimina Sessione
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Questa azione non può essere annullata. Verranno eliminati anche tutti i dati delle presenze e delle formazioni collegati a questa sessione.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDelete(session.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Elimina
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8">
+                    <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Nessuna sessione trovata</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Inizia creando la tua prima sessione di allenamento
+                    </p>
+                    <TrainingForm>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Nuova Sessione
+                      </Button>
+                    </TrainingForm>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Mobile card view */}
+          <div className="lg:hidden">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold mb-2">Sessioni di Allenamento</h2>
+              <p className="text-sm text-muted-foreground">
+                Tocca "Gestisci Sessione" per accedere rapidamente alla gestione
+              </p>
+            </div>
+            
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 <p className="mt-2 text-muted-foreground">Caricamento sessioni...</p>
               </div>
             ) : trainingSessions && trainingSessions.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Titolo</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Orario</TableHead>
-                    <TableHead>Stato</TableHead>
-                    <TableHead>Azioni</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {trainingSessions.map((session) => (
-                    <TableRow key={session.id}>
-                      <TableCell className="font-medium">
-                        <div>
-                          <div>{session.title}</div>
-                          {session.description && (
-                            <div className="text-sm text-muted-foreground">{session.description}</div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(session.session_date), 'EEEE d MMMM yyyy', { locale: it })}
-                      </TableCell>
-                      <TableCell>
-                        {session.start_time} - {session.end_time}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(session)}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Apri menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link to={`/training/session/${session.id}`} className="flex items-center">
-                                <Eye className="mr-2 h-4 w-4" />
-                                Gestisci Sessione
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DuplicateTrainingForm session={session} />
-                            <DropdownMenuSeparator />
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Elimina Sessione
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Questa azione non può essere annullata. Verranno eliminati anche tutti i dati delle presenze e delle formazioni collegati a questa sessione.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Annulla</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDelete(session.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Elimina
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="space-y-4">
+                {trainingSessions.map((session) => (
+                  <TrainingSessionCard key={session.id} session={session} />
+                ))}
+              </div>
             ) : (
               <div className="text-center py-8">
                 <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -210,15 +376,15 @@ const Training = () => {
                   Inizia creando la tua prima sessione di allenamento
                 </p>
                 <TrainingForm>
-                  <Button>
+                  <Button className="w-full">
                     <Plus className="h-4 w-4 mr-2" />
                     Nuova Sessione
                   </Button>
                 </TrainingForm>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Modal Dettagli Sessione */}
         <TrainingSessionModal
