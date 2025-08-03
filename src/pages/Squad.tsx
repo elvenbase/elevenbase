@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Edit, Trash2, BarChart3, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
+import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { subMonths } from 'date-fns';
@@ -26,6 +27,7 @@ const Squad = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const { getAvatarBackground } = useAvatarColor();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
     to: new Date()
@@ -267,7 +269,10 @@ const Squad = () => {
                               src={(player as any).avatar_url || undefined} 
                               alt={`${player.first_name} ${player.last_name}`} 
                             />
-                            <AvatarFallback>
+                            <AvatarFallback 
+                              className="text-white font-bold"
+                              style={getAvatarBackground(player.first_name + player.last_name)}
+                            >
                               {player.first_name.charAt(0)}{player.last_name.charAt(0)}
                             </AvatarFallback>
                           </Avatar>

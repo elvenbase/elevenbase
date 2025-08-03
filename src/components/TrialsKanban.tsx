@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTrialists, useUpdateTrialistStatus, useDeleteTrialist, useTrialEvaluations } from '@/hooks/useSupabaseData';
+import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { User, Star, ArrowRight, Archive, Trash2, Award } from 'lucide-react';
 import EditTrialistForm from '@/components/forms/EditTrialistForm';
 import { TrialEvaluationForm } from '@/components/forms/TrialEvaluationForm';
@@ -24,6 +25,7 @@ const TrialistCard = ({
 }) => {
   const { data: evaluations = [] } = useTrialEvaluations(trialist.id);
   const latestEvaluation = evaluations[0];
+  const { getAvatarBackground } = useAvatarColor();
 
   return (
     <Card
@@ -38,7 +40,10 @@ const TrialistCard = ({
               src={trialist.avatar_url || undefined} 
               alt={`${trialist.first_name} ${trialist.last_name}`} 
             />
-            <AvatarFallback>
+            <AvatarFallback 
+              className="text-white font-bold"
+              style={getAvatarBackground(trialist.first_name + trialist.last_name)}
+            >
               {trialist.first_name[0]}{trialist.last_name[0]}
             </AvatarFallback>
           </Avatar>
