@@ -48,6 +48,18 @@ const Training = () => {
     await deleteSession.mutateAsync(sessionId);
   };
 
+  // Funzione per determinare se una sessione è archiviata
+  const isSessionArchived = (session: any) => {
+    if (session.is_closed) return true;
+    
+    const sessionDateTime = new Date(session.session_date + 'T' + session.end_time);
+    const now = new Date();
+    const hoursSinceEnd = (now.getTime() - sessionDateTime.getTime()) / (1000 * 60 * 60);
+    
+    // Archivia automaticamente dopo 48 ore dalla fine
+    return hoursSinceEnd > 48;
+  };
+
   const getStatusBadge = (session: any) => {
     if (session.is_closed) {
       return <Badge variant="destructive">Chiusa</Badge>;
@@ -56,12 +68,41 @@ const Training = () => {
     const sessionDateTime = new Date(session.session_date + 'T' + session.start_time);
     const now = new Date();
     
-    if (sessionDateTime < now) {
+    if (isSessionArchived(session)) {
+      return <Badge variant="outline">Archiviata</Badge>;
+    } else if (sessionDateTime < now) {
       return <Badge variant="secondary">Passata</Badge>;
     } else {
       return <Badge variant="default">Programmata</Badge>;
     }
   };
+
+  // Separa e ordina le sessioni
+  const separatedSessions = trainingSessions ? {
+    active: trainingSessions
+      .filter(session => !isSessionArchived(session))
+      .sort((a, b) => {
+        const dateA = new Date(a.session_date + 'T' + a.start_time);
+        const dateB = new Date(b.session_date + 'T' + b.start_time);
+        const now = new Date();
+        
+        // Prima le future (più vicine prima), poi le passate (più recenti prima)
+        if (dateA >= now && dateB >= now) {
+          return dateA.getTime() - dateB.getTime(); // Future: più vicine prima
+        } else if (dateA < now && dateB < now) {
+          return dateB.getTime() - dateA.getTime(); // Passate: più recenti prima
+        } else {
+          return dateA >= now ? -1 : 1; // Future prima delle passate
+        }
+      }),
+    archived: trainingSessions
+      .filter(session => isSessionArchived(session))
+      .sort((a, b) => {
+        const dateA = new Date(a.session_date + 'T' + a.start_time);
+        const dateB = new Date(b.session_date + 'T' + b.start_time);
+        return dateB.getTime() - dateA.getTime(); // Più recenti prima
+      })
+  } : { active: [], archived: [] };
 
   // Mobile card component for training sessions
   const TrainingSessionCard = ({ session }: { session: any }) => {
@@ -248,19 +289,24 @@ const Training = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                     <p className="mt-2 text-muted-foreground">Caricamento sessioni...</p>
                   </div>
-                ) : trainingSessions && trainingSessions.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Titolo</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Orario</TableHead>
-                        <TableHead>Stato</TableHead>
-                        <TableHead>Azioni</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {trainingSessions.map((session) => (
+                ) : separatedSessions.active.length > 0 || separatedSessions.archived.length > 0 ? (
+                  <div className="space-y-6">
+                    {/* Sessioni Attive */}
+                    {separatedSessions.active.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Sessioni Attive</h3>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Titolo</TableHead>
+                              <TableHead>Data</TableHead>
+                              <TableHead>Orario</TableHead>
+                              <TableHead>Stato</TableHead>
+                              <TableHead>Azioni</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {separatedSessions.active.map((session) => (
                         <TableRow key={session.id}>
                           <TableCell className="font-medium">
                             <div>
@@ -325,10 +371,100 @@ const Training = () => {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+
+                    {/* Sessioni Archiviate */}
+                    {separatedSessions.archived.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4 text-muted-foreground">
+                          Archiviate ({separatedSessions.archived.length})
+                        </h3>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Titolo</TableHead>
+                              <TableHead>Data</TableHead>
+                              <TableHead>Orario</TableHead>
+                              <TableHead>Stato</TableHead>
+                              <TableHead>Azioni</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {separatedSessions.archived.map((session) => (
+                              <TableRow key={session.id} className="opacity-75">
+                                <TableCell className="font-medium">
+                                  <div>
+                                    <div>{session.title}</div>
+                                    {session.description && (
+                                      <div className="text-sm text-muted-foreground">{session.description}</div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {format(new Date(session.session_date), 'EEEE d MMMM yyyy', { locale: it })}
+                                </TableCell>
+                                <TableCell>
+                                  {session.start_time} - {session.end_time}
+                                </TableCell>
+                                <TableCell>
+                                  {getStatusBadge(session)}
+                                </TableCell>
+                                <TableCell>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Apri menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem asChild>
+                                        <Link to={`/training/session/${session.id}`} className="flex items-center">
+                                          <Eye className="mr-2 h-4 w-4" />
+                                          Visualizza Sessione
+                                        </Link>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Elimina Sessione
+                                          </DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              Questa azione non può essere annullata. Verranno eliminati anche tutti i dati delle presenze e delle formazioni collegati a questa sessione.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                            <AlertDialogAction
+                                              onClick={() => handleDelete(session.id)}
+                                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            >
+                                              Elimina
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-center py-8">
                     <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -362,11 +498,37 @@ const Training = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 <p className="mt-2 text-muted-foreground">Caricamento sessioni...</p>
               </div>
-            ) : trainingSessions && trainingSessions.length > 0 ? (
-              <div className="space-y-4">
-                {trainingSessions.map((session) => (
-                  <TrainingSessionCard key={session.id} session={session} />
-                ))}
+            ) : separatedSessions.active.length > 0 || separatedSessions.archived.length > 0 ? (
+              <div className="space-y-6">
+                {/* Sessioni Attive Mobile */}
+                {separatedSessions.active.length > 0 && (
+                  <div className="space-y-4">
+                    {separatedSessions.active.map((session) => (
+                      <TrainingSessionCard key={session.id} session={session} />
+                    ))}
+                  </div>
+                )}
+
+                {/* Sessioni Archiviate Mobile */}
+                {separatedSessions.archived.length > 0 && (
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-base font-semibold text-muted-foreground">
+                        Archiviate ({separatedSessions.archived.length})
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Sessioni chiuse o terminate da più di 48 ore
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      {separatedSessions.archived.map((session) => (
+                        <div key={session.id} className="opacity-75">
+                          <TrainingSessionCard session={session} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-8">
