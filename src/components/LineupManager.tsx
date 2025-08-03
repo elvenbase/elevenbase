@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Trash2, Save, Users } from 'lucide-react'
+import { Trash2, Save, Users, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLineupManager } from '@/hooks/useLineupManager'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
+import FormationExporter from '@/components/FormationExporter'
+import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
+import html2canvas from 'html2canvas'
 
 interface Player {
   id: string
@@ -78,6 +81,7 @@ const formations = {
 const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
+  const [exporting, setExporting] = useState(false)
   
   const { 
     lineup, 
@@ -88,6 +92,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   } = useLineupManager(sessionId)
 
   const { formations: customFormations } = useCustomFormations()
+  const { defaultJersey } = useJerseyTemplates()
 
   // Carica formazione esistente quando cambia la sessione
   useEffect(() => {
@@ -188,6 +193,57 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
 
   const handleClear = () => {
     setPlayerPositions({})
+  }
+
+  const downloadFormation = async () => {
+    if (!lineup || Object.keys(playerPositions).length === 0) {
+      toast.error('Nessuna formazione da esportare')
+      return
+    }
+
+    setExporting(true)
+    
+    try {
+      const exportElement = document.getElementById('formation-export-lineup')
+      if (!exportElement) {
+        toast.error('Errore nel preparare l\'immagine')
+        return
+      }
+
+      toast.loading('Generando immagine...')
+      
+      // Forza il refresh dell'elemento
+      exportElement.style.display = 'none'
+      exportElement.offsetHeight // Trigger reflow
+      exportElement.style.display = 'block'
+      
+      // Piccolo delay per assicurarsi che il DOM sia aggiornato
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      const canvas = await html2canvas(exportElement, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
+      })
+
+      // Create download link
+      const link = document.createElement('a')
+      const timestamp = new Date().getTime()
+      link.download = `formazione-${currentFormation.name.replace(/\s+/g, '-').toLowerCase()}-${timestamp}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+
+      toast.dismiss()
+      toast.success('Formazione scaricata con successo!')
+    } catch (error) {
+      console.error('Error downloading formation:', error)
+      toast.dismiss()
+      toast.error('Errore nel scaricare la formazione')
+    } finally {
+      setExporting(false)
+    }
   }
 
   const currentFormation = getCurrentFormation()
@@ -439,8 +495,39 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
             <Trash2 className="mr-2 h-4 w-4" />
             Cancella Tutto
           </Button>
+          <Button 
+            variant="outline" 
+            onClick={downloadFormation} 
+            disabled={exporting || Object.keys(playerPositions).length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {exporting ? 'Generando...' : 'Scarica PNG'}
+          </Button>
         </div>
       </CardContent>
+
+      {/* Hidden Formation Exporter for PNG generation */}
+      {lineup && Object.keys(playerPositions).length > 0 && (
+        <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+          <div id="formation-export-lineup">
+            <FormationExporter
+              lineup={currentFormation.positions.map(position => ({
+                player_id: playerPositions[position.id] || '',
+                position_x: position.x,
+                position_y: position.y,
+                player: playerPositions[position.id] ? presentPlayers.find(p => p.id === playerPositions[position.id]) : undefined
+              })).filter(item => item.player)}
+              formation={{
+                name: currentFormation.name,
+                positions: currentFormation.positions.map(pos => ({ x: pos.x, y: pos.y }))
+              }}
+              sessionTitle="Sessione di allenamento"
+              teamName="Team"
+              jerseyUrl={defaultJersey?.image_url}
+            />
+          </div>
+        </div>
+      )}
     </Card>
   )
 }

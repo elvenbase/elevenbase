@@ -1,23 +1,17 @@
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Edit, Trash2, Users, Download } from 'lucide-react'
+import { Plus, Edit, Trash2, Users } from 'lucide-react'
 import { useCustomFormations, CustomFormation } from '@/hooks/useCustomFormations'
 import { FormationBuilder } from '@/components/FormationBuilder'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { JerseyManager } from '@/components/JerseyManager'
-import FormationExporter from '@/components/FormationExporter'
-import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
-import html2canvas from 'html2canvas'
-import { toast } from 'sonner'
 
 export default function Formations() {
   const { formations, loading, createFormation, updateFormation, deleteFormation } = useCustomFormations()
-  const { defaultJersey } = useJerseyTemplates()
   const [editingFormation, setEditingFormation] = useState<CustomFormation | null>(null)
   const [isCreating, setIsCreating] = useState(false)
-  const [exportingFormation, setExportingFormation] = useState<string | null>(null)
 
   const handleSave = async (formationData: Omit<CustomFormation, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
     try {
@@ -36,76 +30,6 @@ export default function Formations() {
   const handleCancel = () => {
     setEditingFormation(null)
     setIsCreating(false)
-  }
-
-  // Giocatori di esempio per l'esportazione
-  const getSamplePlayers = (formation: CustomFormation) => {
-    const samplePlayers = [
-      { id: '1', first_name: 'Marco', last_name: 'Rossi', jersey_number: 1 },
-      { id: '2', first_name: 'Luca', last_name: 'Bianchi', jersey_number: 2 },
-      { id: '3', first_name: 'Giuseppe', last_name: 'Verdi', jersey_number: 3 },
-      { id: '4', first_name: 'Antonio', last_name: 'Neri', jersey_number: 4 },
-      { id: '5', first_name: 'Roberto', last_name: 'Gialli', jersey_number: 5 },
-      { id: '6', first_name: 'Paolo', last_name: 'Blu', jersey_number: 6 },
-      { id: '7', first_name: 'Carlo', last_name: 'Rosa', jersey_number: 7 },
-      { id: '8', first_name: 'Mario', last_name: 'Arancio', jersey_number: 8 },
-      { id: '9', first_name: 'Franco', last_name: 'Viola', jersey_number: 9 },
-      { id: '10', first_name: 'Alberto', last_name: 'Grigio', jersey_number: 10 },
-      { id: '11', first_name: 'Davide', last_name: 'Marrone', jersey_number: 11 }
-    ]
-    
-    return formation.positions.slice(0, 11).map((position, index) => ({
-      player_id: samplePlayers[index]?.id || `player-${index}`,
-      position_x: position.x,
-      position_y: position.y,
-      player: samplePlayers[index] || { id: `player-${index}`, first_name: 'Giocatore', last_name: `${index + 1}`, jersey_number: index + 1 }
-    }))
-  }
-
-  const downloadFormation = async (formation: CustomFormation) => {
-    setExportingFormation(formation.id)
-    
-    try {
-      const exportElement = document.getElementById(`formation-export-${formation.id}`)
-      if (!exportElement) {
-        toast.error('Errore nel preparare l\'immagine')
-        return
-      }
-
-      toast.loading('Generando immagine...')
-      
-      // Forza il refresh dell'elemento
-      exportElement.style.display = 'none'
-      exportElement.offsetHeight // Trigger reflow
-      exportElement.style.display = 'block'
-      
-      // Piccolo delay per assicurarsi che il DOM sia aggiornato
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      const canvas = await html2canvas(exportElement, {
-        backgroundColor: null,
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false
-      })
-
-      // Create download link
-      const link = document.createElement('a')
-      const timestamp = new Date().getTime()
-      link.download = `formazione-${formation.name.replace(/\s+/g, '-').toLowerCase()}-${timestamp}.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
-
-      toast.dismiss()
-      toast.success('Formazione scaricata con successo!')
-    } catch (error) {
-      console.error('Error downloading formation:', error)
-      toast.dismiss()
-      toast.error('Errore nel scaricare la formazione')
-    } finally {
-      setExportingFormation(null)
-    }
   }
 
   const FormationPreview: React.FC<{ formation: CustomFormation }> = ({ formation }) => (
@@ -204,14 +128,6 @@ export default function Formations() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => downloadFormation(formation)}
-                      disabled={exportingFormation === formation.id}
-                    >
-                      <Download className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
                       onClick={() => setEditingFormation(formation)}
                     >
                       <Edit className="w-4 h-4" />
@@ -258,24 +174,6 @@ export default function Formations() {
 
       {/* Gestione Maglie */}
       <JerseyManager />
-
-      {/* Hidden Formation Exporters for PNG generation */}
-      {formations.map((formation) => (
-        <div key={`export-${formation.id}`} style={{ position: 'absolute', left: '-9999px', top: '0' }}>
-          <div id={`formation-export-${formation.id}`}>
-            <FormationExporter
-              lineup={getSamplePlayers(formation)}
-              formation={{
-                name: formation.name,
-                positions: formation.positions.map(pos => ({ x: pos.x, y: pos.y }))
-              }}
-              sessionTitle="Sessione di allenamento"
-              teamName="Team"
-              jerseyUrl={defaultJersey?.image_url}
-            />
-          </div>
-        </div>
-      ))}
     </div>
   )
 }
