@@ -19,7 +19,8 @@ export const JerseyManager = () => {
     createJerseyTemplate, 
     deleteJerseyTemplate, 
     uploadJerseyImage, 
-    setAsDefault 
+    setAsDefault,
+    checkTableAndLoadJerseys
   } = useJerseyTemplates()
 
   // Debug info
@@ -219,6 +220,18 @@ export const JerseyManager = () => {
           <p>Loading: {loading ? '⏳ Yes' : '✅ No'}</p>
           <p>Jerseys found: {jerseyTemplates.length}</p>
           <p>Default jersey: {defaultJersey?.name || 'None'}</p>
+          <div className="mt-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => {
+                console.log('🔄 Ricaricamento manuale...')
+                checkTableAndLoadJerseys()
+              }}
+            >
+              🔄 Ricarica
+            </Button>
+          </div>
         </div>
 
         {!tableExists ? (

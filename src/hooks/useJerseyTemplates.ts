@@ -23,6 +23,14 @@ export const useJerseyTemplates = () => {
     checkTableAndLoadJerseys()
   }, [])
 
+  // Forza un ricaricamento quando il componente viene montato
+  useEffect(() => {
+    if (tableExists && !loading) {
+      console.log('🔄 Forzando ricaricamento delle maglie...')
+      loadJerseyTemplates()
+    }
+  }, [tableExists, loading])
+
   const checkTableAndLoadJerseys = async () => {
     try {
       console.log('🔍 Controllo esistenza tabella jersey_templates...')
@@ -337,6 +345,7 @@ export const useJerseyTemplates = () => {
     deleteJerseyTemplate,
     uploadJerseyImage,
     setAsDefault,
-    reload: checkTableAndLoadJerseys
+    reload: checkTableAndLoadJerseys,
+    checkTableAndLoadJerseys
   }
 }
