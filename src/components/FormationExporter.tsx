@@ -233,20 +233,39 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                 style={{
                   backgroundColor: '#000',
                   color: '#fff',
-                  padding: '5px 8px', // 5px alto e basso, 8px laterali
+                  padding: '0px 8px',
                   borderRadius: '4px',
-                  fontSize: '12px', // Font proporzionato per maglia più piccola
+                  fontSize: '12px',
                   fontWeight: 'bold',
                   textAlign: 'center',
-                  width: '110px', // Stesso width della maglia per perfetta centratura
+                  width: '110px',
+                  height: '32px',
                   border: '1px solid #000',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   lineHeight: '1.1'
                 }}
               >
-                <div>
+                <div style={{ 
+                  margin: '0', 
+                  padding: '0',
+                  height: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
                   {player.first_name.toUpperCase()}
                 </div>
-                <div>
+                <div style={{ 
+                  margin: '0', 
+                  padding: '0',
+                  height: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
                   {player.last_name.toUpperCase()}
                 </div>
               </div>
