@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { QrCode, Copy, ExternalLink, Clock, Users, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import QRCode from 'qrcode'
+import { WhatsAppInviteBox } from './WhatsAppInviteBox'
 
 interface Session {
   id: string
