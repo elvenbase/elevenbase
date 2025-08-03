@@ -34,10 +34,10 @@ export const useAppSettings = () => {
 
       const { data: roles } = await supabase
         .from('user_roles')
-        .select('role_name')
+        .select('role')
         .eq('user_id', user.id)
 
-      const hasAdminRole = roles?.some(role => role.role_name === 'admin')
+      const hasAdminRole = roles?.some(role => role.role === 'admin' || role.role === 'superadmin')
       setIsAdmin(!!hasAdminRole)
     } catch (error) {
       console.error('Error checking user role:', error)
