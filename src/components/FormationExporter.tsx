@@ -186,8 +186,8 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
               {/* Maglietta */}
               <div 
                 style={{
-                  width: '150px', // Maglia quadrata 150x150px
-                  height: '150px', // Maglia quadrata 150x150px
+                  width: '110px', // Maglia quadrata 110x110px
+                  height: '110px', // Maglia quadrata 110x110px
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
@@ -221,7 +221,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   zIndex: 2, 
                   color: '#fff',
                   fontWeight: 'bold',
-                  fontSize: '36px', // Font più grande per maglia più grande
+                  fontSize: '28px', // Font proporzionato per maglia 110px
                   textShadow: '2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9), 1px -1px 2px rgba(0,0,0,0.9), -1px 1px 2px rgba(0,0,0,0.9)'
                 }}>
                   {player.jersey_number || '?'}
@@ -233,14 +233,19 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                 style={{
                   backgroundColor: '#000',
                   color: '#fff',
-                  padding: '6px 10px',
+                  padding: '4px 8px',
                   borderRadius: '4px',
-                  fontSize: '14px', // Font più grande per le maglie più grandi
+                  fontSize: '12px', // Font proporzionato per maglia più piccola
                   fontWeight: 'bold',
                   textAlign: 'center',
-                  width: '150px', // Stesso width della maglia per perfetta centratura
+                  width: '110px', // Stesso width della maglia per perfetta centratura
+                  height: '32px', // Altezza fissa per centratura verticale
                   border: '1px solid #000',
-                  lineHeight: '1.2'
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center', // Centra verticalmente il contenuto
+                  lineHeight: '1.1'
                 }}
               >
                 <div>
