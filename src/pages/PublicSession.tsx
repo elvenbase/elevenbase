@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, Clock, MapPin, Calendar, CheckCircle, XCircle, Users, Target } from 'lucide-react'
+import { Loader2, Clock, MapPin, Calendar, CheckCircle, XCircle, Users, Target, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
+import FormationExporter from '@/components/FormationExporter'
+import html2canvas from 'html2canvas'
 
 interface Player {
   id: string
@@ -39,6 +41,18 @@ interface AttendanceRecord {
 interface Lineup {
   formation: string
   players_data: any
+}
+
+interface LineupPlayer {
+  player_id: string
+  position_x: number
+  position_y: number
+  player?: Player
+}
+
+interface Formation {
+  name: string
+  positions: Array<{ x: number; y: number }>
 }
 
 const PublicSession = () => {
@@ -182,6 +196,44 @@ const PublicSession = () => {
       toast.error('Errore nella registrazione')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const downloadFormation = async () => {
+    if (!lineup || !getFormationFromLineup(lineup.formation)) {
+      toast.error('Nessuna formazione disponibile per il download')
+      return
+    }
+
+    try {
+      const exportElement = document.getElementById('formation-export')
+      if (!exportElement) {
+        toast.error('Errore nel preparare l\'immagine')
+        return
+      }
+
+      toast.loading('Generando immagine...')
+      
+      const canvas = await html2canvas(exportElement, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
+      })
+
+      // Create download link
+      const link = document.createElement('a')
+      link.download = `formazione-${session?.title?.replace(/\s+/g, '-').toLowerCase() || 'sessione'}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+
+      toast.dismiss()
+      toast.success('Formazione scaricata con successo!')
+    } catch (error) {
+      console.error('Error downloading formation:', error)
+      toast.dismiss()
+      toast.error('Errore nel scaricare la formazione')
     }
   }
 
@@ -376,9 +428,20 @@ const PublicSession = () => {
         {lineup && (
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}
+              <CardTitle className="flex items-center gap-2 justify-between">
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}
+                </div>
+                <Button 
+                  onClick={downloadFormation} 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Scarica PNG
+                </Button>
               </CardTitle>
               <CardDescription>
                 La formazione ufficiale per questa sessione di allenamento
@@ -692,6 +755,23 @@ const PublicSession = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Hidden Formation Exporter for PNG generation */}
+        {lineup && getFormationFromLineup(lineup.formation) && (
+          <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+            <FormationExporter
+              lineup={lineup.players_data?.positions ? Object.entries(lineup.players_data.positions).map(([positionId, playerId]) => ({
+                player_id: playerId as string,
+                position_x: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.x || 50,
+                position_y: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.y || 50,
+                player: players.find(p => p.id === playerId)
+              })) : []}
+              formation={getFormationFromLineup(lineup.formation)!}
+              sessionTitle={session?.title || 'Sessione di allenamento'}
+              teamName="Team"
+            />
+          </div>
         )}
       </div>
     </div>
