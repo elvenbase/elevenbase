@@ -365,12 +365,12 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
         </div>
 
         {/* Statistiche */}
-        <div className="flex gap-4">
-          <Badge variant="outline">
+        <div className="flex gap-2 sm:gap-4">
+          <Badge variant="outline" className="text-xs sm:text-sm">
             <Users className="mr-1 h-3 w-3" />
             Presenti: {presentPlayers.length}
           </Badge>
-          <Badge variant="outline">
+          <Badge variant="outline" className="text-xs sm:text-sm">
             Assegnati: {assignedCount}/11
           </Badge>
         </div>
@@ -378,8 +378,8 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
         {/* Campo da calcio con proporzioni realistiche */}
         <div className="w-full max-w-2xl mx-auto">
           <div 
-            className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden" 
-            style={{ aspectRatio: '2/3', minHeight: '500px' }}
+            className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 sm:border-4 border-white rounded-lg shadow-lg overflow-hidden" 
+            style={{ aspectRatio: '2/3', minHeight: '400px', maxHeight: '70vh' }}
           >
             {/* Sfondo erba con pattern */}
             <div 
@@ -441,38 +441,44 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                         {assignedPlayer ? (
                           <div className="relative">
                             <Avatar 
-                              className="w-12 h-12 border-3 border-white shadow-lg group-hover:scale-110 transition-transform"
+                              className="w-10 h-10 sm:w-12 sm:h-12 border-2 sm:border-3 border-white shadow-lg group-hover:scale-110 transition-transform"
                               style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
                             >
                               <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                               <AvatarFallback 
-                                className="text-white font-bold text-sm"
+                                className="text-white font-bold text-xs sm:text-sm"
                               >
                                 {getPlayerInitials(assignedPlayer)}
                               </AvatarFallback>
                             </Avatar>
                             {assignedPlayer.jersey_number && (
-                              <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow">
+                              <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center border-2 border-white shadow">
                                 {assignedPlayer.jersey_number}
                               </div>
                             )}
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-full border-3 border-dashed border-black bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors formation-position-empty">
-                            <Users className="w-6 h-6 text-black/70" />
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-dashed border-black bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors formation-position-empty">
+                            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-black/70" />
                           </div>
                         )}
-                        <div className="text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
+                        {/* Desktop: Mostra ruolo e nome */}
+                        <div className="hidden sm:block text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
                           {position.role || position.name}
                           {position.roleShort && (
                             <div className="text-xs opacity-75">({position.roleShort})</div>
                           )}
                         </div>
                         {assignedPlayer && (
-                          <div className="text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
+                          <div className="hidden sm:block text-xs text-white/90 text-center px-2 py-0.5 bg-black/30 rounded backdrop-blur-sm max-w-24 truncate">
                             {assignedPlayer.first_name} {assignedPlayer.last_name.charAt(0)}.
                           </div>
                         )}
+                        
+                        {/* Mobile: Mostra solo ruolo ridotto come badge minimo */}
+                        <div className="sm:hidden text-xs text-white font-medium px-1.5 py-0.5 bg-black/60 rounded backdrop-blur-sm">
+                          {position.roleShort || position.role?.substring(0, 3) || position.name.substring(0, 3)}
+                        </div>
                       </div>
                     </div>
                   </PopoverTrigger>
