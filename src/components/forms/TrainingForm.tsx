@@ -76,7 +76,7 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
     session_date: getTomorrowDate(),
     start_time: '21:00',
     end_time: '23:00',
-    location: ''
+    max_participants: undefined as number | undefined
   });
 
   const [communicationType, setCommunicationType] = useState('');
@@ -94,7 +94,7 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
         session_date: session.session_date,
         start_time: session.start_time,
         end_time: session.end_time,
-        location: session.location || ''
+        max_participants: session.max_participants
       });
       setCommunicationType(parsed.type);
       setCommunicationDetails(parsed.details);
@@ -105,15 +105,14 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
     e.preventDefault();
     
     const sessionData = {
-      ...formData,
+      title: formData.title,
+      description: formData.description || undefined,
+      session_date: formData.session_date,
+      start_time: formData.start_time,
+      end_time: formData.end_time,
       communication_type: communicationType || null,
       communication_details: communicationDetails || null,
-      // Mantieni location per retrocompatibilità display
-      location: communicationType ? (
-        communicationType === 'party' ? 'Party' :
-        communicationType === 'discord' ? (communicationDetails || 'Discord') :
-        communicationDetails || 'Altro'
-      ) : ''
+      max_participants: formData.max_participants
     };
 
     try {
@@ -138,7 +137,7 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
       session_date: getTomorrowDate(),
       start_time: '21:00',
       end_time: '23:00',
-      location: ''
+      max_participants: undefined
     });
     setCommunicationType('');
     setCommunicationDetails('');

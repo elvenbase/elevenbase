@@ -264,7 +264,6 @@ export const useCreateTrainingSession = () => {
       session_date: string;
       start_time: string;
       end_time: string;
-      location?: string;
       communication_type?: string | null;
       communication_details?: string | null;
       max_participants?: number;
@@ -349,7 +348,6 @@ export const useUpdateTrainingSession = () => {
         session_date?: string;
         start_time?: string;
         end_time?: string;
-        location?: string;
         communication_type?: string | null;
         communication_details?: string | null;
         max_participants?: number;
