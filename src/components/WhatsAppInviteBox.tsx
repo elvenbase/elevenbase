@@ -43,7 +43,7 @@ export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({
           
           <div className="bg-white p-3 rounded-lg border border-green-200">
             <p className="text-sm text-gray-600 mb-2">Messaggio che verrà inviato:</p>
-            <p className="text-sm italic bg-gray-50 p-2 rounded border-l-3 border-green-400">
+            <p className="text-sm italic bg-gray-50 p-2 rounded border-l-3 border-green-400" style={{ wordWrap: 'break-word' }}>
               "Ciao ragazzi! Sessione di allenamento "{sessionTitle}" preparata, registratevi qui {publicLink}"
             </p>
           </div>
