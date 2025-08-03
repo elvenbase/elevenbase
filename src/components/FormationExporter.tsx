@@ -31,6 +31,7 @@ interface FormationExporterProps {
   fieldLinesThickness?: number
   jerseyNumbersColor?: string
   jerseyNumbersShadow?: string
+  usePlayerAvatars?: boolean
   nameBoxColor?: string
   nameTextColor?: string
 }
@@ -45,6 +46,7 @@ const FormationExporter = ({
   fieldLinesThickness = 2,
   jerseyNumbersColor = '#000000',
   jerseyNumbersShadow = '2px 2px 4px rgba(0,0,0,0.9)',
+  usePlayerAvatars = false,
   nameBoxColor = '#ffffff',
   nameTextColor = '#000000'
 }: FormationExporterProps) => {
@@ -52,6 +54,21 @@ const FormationExporter = ({
   
   // Usa jerseyUrl se fornito, altrimenti la maglia di default, altrimenti fallback
   const currentJerseyUrl = jerseyUrl || defaultJersey?.image_url || '/lovable-uploads/jersey-example.png'
+
+  // Funzione per generare colore dell'avatar basato sul nome
+  const getAvatarColor = (name: string) => {
+    let hash = 0
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash)
+    }
+    const hue = hash % 360
+    return `hsl(${hue}, 70%, 50%)`
+  }
+
+  // Funzione per ottenere le iniziali del giocatore
+  const getPlayerInitials = (player: Player) => {
+    return `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`
+  }
   return (
     <div 
       id="formation-export"
@@ -201,11 +218,11 @@ const FormationExporter = ({
                 gap: '6px'
               }}
             >
-              {/* Maglietta */}
+              {/* Maglietta o Avatar */}
               <div 
                 style={{
-                  width: '110px', // Maglia quadrata 110x110px
-                  height: '110px', // Maglia quadrata 110x110px
+                  width: '110px', // Quadrato 110x110px
+                  height: '110px', // Quadrato 110x110px
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
@@ -217,34 +234,85 @@ const FormationExporter = ({
                   filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))'
                 }}
               >
-                <img
-                  src={currentJerseyUrl}
-                  alt="Maglia"
-                  style={{
-                    position: 'absolute',
-                    top: '0',
-                    left: '0',
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    zIndex: 1
-                  }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = '/lovable-uploads/jersey-example.png'
-                  }}
-                />
-                <span style={{ 
-                  position: 'relative', 
-                  zIndex: 2, 
-                  color: jerseyNumbersColor,
-                  fontWeight: 'bold',
-                  fontSize: '28px', // Font proporzionato per maglia 110px
-                  textShadow: jerseyNumbersShadow,
-                  marginTop: '-30px'
-                }}>
-                  {player.jersey_number || '?'}
-                </span>
+                {usePlayerAvatars && (player as any).avatar_url ? (
+                  // Avatar del giocatore
+                  <img
+                    src={(player as any).avatar_url}
+                    alt={`${player.first_name} ${player.last_name}`}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      border: '3px solid white',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                    }}
+                    onError={(e) => {
+                      // Se l'avatar non carica, mostra il fallback
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                      const fallback = target.nextElementSibling as HTMLElement
+                      if (fallback) fallback.style.display = 'flex'
+                    }}
+                  />
+                ) : null}
+                
+                {usePlayerAvatars && !(player as any).avatar_url ? (
+                  // Fallback avatar con iniziali
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      backgroundColor: getAvatarColor(player.first_name + player.last_name),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '3px solid white',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      fontSize: '32px',
+                      fontWeight: 'bold',
+                      color: 'white',
+                      textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+                    }}
+                  >
+                    {getPlayerInitials(player)}
+                  </div>
+                ) : null}
+
+                {!usePlayerAvatars && (
+                  // Maglia tradizionale
+                  <>
+                    <img
+                      src={currentJerseyUrl}
+                      alt="Maglia"
+                      style={{
+                        position: 'absolute',
+                        top: '0',
+                        left: '0',
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        zIndex: 1
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.src = '/lovable-uploads/jersey-example.png'
+                      }}
+                    />
+                    <span style={{ 
+                      position: 'relative', 
+                      zIndex: 2, 
+                      color: jerseyNumbersColor,
+                      fontWeight: 'bold',
+                      fontSize: '28px', // Font proporzionato per maglia 110px
+                      textShadow: jerseyNumbersShadow,
+                      marginTop: '-30px'
+                    }}>
+                      {player.jersey_number || '?'}
+                    </span>
+                  </>
+                )}
               </div>
 
               {/* Nome giocatore su due righe */}

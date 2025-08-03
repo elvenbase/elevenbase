@@ -29,6 +29,7 @@ export const PngExportSettingsManager = () => {
     field_lines_thickness: 2,
     jersey_numbers_color: '#000000',
     jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
+    use_player_avatars: false,
     name_box_color: '#ffffff',
     name_text_color: '#000000',
     is_default: false
@@ -46,6 +47,7 @@ export const PngExportSettingsManager = () => {
         field_lines_thickness: formData.field_lines_thickness,
         jersey_numbers_color: formData.jersey_numbers_color,
         jersey_numbers_shadow: formData.jersey_numbers_shadow,
+        use_player_avatars: formData.use_player_avatars,
         name_box_color: formData.name_box_color,
         name_text_color: formData.name_text_color,
         is_default: formData.is_default
@@ -59,6 +61,7 @@ export const PngExportSettingsManager = () => {
         field_lines_thickness: 2,
         jersey_numbers_color: '#000000',
         jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
+        use_player_avatars: false,
         name_box_color: '#ffffff',
         name_text_color: '#000000',
         is_default: false
@@ -182,6 +185,21 @@ export const PngExportSettingsManager = () => {
                             <SelectItem value="none">Nessuna ombra</SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Utilizza avatar giocatori</Label>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="use_avatars"
+                            checked={formData.use_player_avatars}
+                            onChange={(e) => setFormData(prev => ({ ...prev, use_player_avatars: e.target.checked }))}
+                            className="rounded border-gray-300"
+                          />
+                          <label htmlFor="use_avatars" className="text-xs text-muted-foreground">
+                            Mostra avatar dei giocatori invece delle maglie (se disponibili)
+                          </label>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-xs text-muted-foreground">Box nomi</Label>
@@ -319,6 +337,11 @@ export const PngExportSettingsManager = () => {
                           />
                           <span className="text-xs text-muted-foreground">Numeri</span>
                           <span className="text-xs text-muted-foreground">({setting.jersey_numbers_shadow === 'none' ? 'no shadow' : 'shadow'})</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground">
+                            {setting.use_player_avatars ? 'Avatar' : 'Maglie'}
+                          </span>
                         </div>
                        <div className="flex items-center gap-1">
                          <div 

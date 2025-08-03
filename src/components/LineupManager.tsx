@@ -148,6 +148,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const [fieldLinesThickness, setFieldLinesThickness] = useState(2)
   const [jerseyNumbersColor, setJerseyNumbersColor] = useState('#000000')
   const [jerseyNumbersShadow, setJerseyNumbersShadow] = useState('2px 2px 4px rgba(0,0,0,0.9)')
+  const [usePlayerAvatars, setUsePlayerAvatars] = useState(false)
   const [nameBoxColor, setNameBoxColor] = useState('#ffffff')
   const [nameTextColor, setNameTextColor] = useState('#000000')
 
@@ -163,6 +164,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
       setFieldLinesThickness(defaultSetting.field_lines_thickness)
       setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
       setJerseyNumbersShadow(defaultSetting.jersey_numbers_shadow)
+      setUsePlayerAvatars(defaultSetting.use_player_avatars)
       setNameBoxColor(defaultSetting.name_box_color)
       setNameTextColor(defaultSetting.name_text_color)
     }
@@ -610,24 +612,39 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                     </div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground">Ombra numeri</label>
-                  <Select 
-                    value={jerseyNumbersShadow}
-                    onValueChange={setJerseyNumbersShadow}
-                  >
-                    <SelectTrigger className="w-full h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2px 2px 4px rgba(0,0,0,0.9)">Ombra scura (default)</SelectItem>
-                      <SelectItem value="2px 2px 4px rgba(255,255,255,0.9)">Ombra chiara</SelectItem>
-                      <SelectItem value="1px 1px 2px rgba(0,0,0,0.8)">Ombra sottile</SelectItem>
-                      <SelectItem value="3px 3px 6px rgba(0,0,0,0.9)">Ombra spessa</SelectItem>
-                      <SelectItem value="none">Nessuna ombra</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Ombra numeri</label>
+                    <Select 
+                      value={jerseyNumbersShadow}
+                      onValueChange={setJerseyNumbersShadow}
+                    >
+                      <SelectTrigger className="w-full h-10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2px 2px 4px rgba(0,0,0,0.9)">Ombra scura (default)</SelectItem>
+                        <SelectItem value="2px 2px 4px rgba(255,255,255,0.9)">Ombra chiara</SelectItem>
+                        <SelectItem value="1px 1px 2px rgba(0,0,0,0.8)">Ombra sottile</SelectItem>
+                        <SelectItem value="3px 3px 6px rgba(0,0,0,0.9)">Ombra spessa</SelectItem>
+                        <SelectItem value="none">Nessuna ombra</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Utilizza avatar giocatori</label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="use_avatars_lineup"
+                        checked={usePlayerAvatars}
+                        onChange={(e) => setUsePlayerAvatars(e.target.checked)}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="use_avatars_lineup" className="text-xs text-muted-foreground">
+                        Mostra avatar invece delle maglie
+                      </label>
+                    </div>
+                  </div>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground">Box nomi</label>
                   <div className="flex items-center gap-2">
@@ -699,6 +716,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                   setFieldLinesThickness(defaultSetting.field_lines_thickness)
                   setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
                   setJerseyNumbersShadow(defaultSetting.jersey_numbers_shadow)
+                  setUsePlayerAvatars(defaultSetting.use_player_avatars)
                   setNameBoxColor(defaultSetting.name_box_color)
                   setNameTextColor(defaultSetting.name_text_color)
                 }
@@ -742,6 +760,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               fieldLinesThickness={fieldLinesThickness}
               jerseyNumbersColor={jerseyNumbersColor}
               jerseyNumbersShadow={jerseyNumbersShadow}
+              usePlayerAvatars={usePlayerAvatars}
               nameBoxColor={nameBoxColor}
               nameTextColor={nameTextColor}
             />
