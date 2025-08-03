@@ -31,6 +31,15 @@ export const JerseyManager = () => {
     jerseyTemplates: jerseyTemplates.map(j => ({ id: j.id, name: j.name, is_default: j.is_default }))
   })
 
+  // Debug visibile
+  if (loading) {
+    console.log('⏳ JerseyManager: Loading...')
+  } else if (!tableExists) {
+    console.log('❌ JerseyManager: Table does not exist')
+  } else {
+    console.log(`✅ JerseyManager: Table exists, found ${jerseyTemplates.length} jerseys`)
+  }
+
   const [isCreating, setIsCreating] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [formData, setFormData] = useState({
@@ -203,6 +212,15 @@ export const JerseyManager = () => {
         </div>
       </CardHeader>
       <CardContent>
+        {/* Debug info visibile */}
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+          <p><strong>Debug Info:</strong></p>
+          <p>Table exists: {tableExists ? '✅ Yes' : '❌ No'}</p>
+          <p>Loading: {loading ? '⏳ Yes' : '✅ No'}</p>
+          <p>Jerseys found: {jerseyTemplates.length}</p>
+          <p>Default jersey: {defaultJersey?.name || 'None'}</p>
+        </div>
+
         {!tableExists ? (
           <div className="text-center py-8 text-muted-foreground">
             <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
