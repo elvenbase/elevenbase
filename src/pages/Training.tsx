@@ -75,24 +75,24 @@ const Training = () => {
             {/* Header with title and status */}
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-lg leading-tight">{session.title}</h3>
+                <h3 className="font-semibold text-base sm:text-lg leading-tight">{session.title}</h3>
                 {session.description && (
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{session.description}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">{session.description}</p>
                 )}
               </div>
-              <div className="ml-3 flex-shrink-0">
+              <div className="ml-2 sm:ml-3 flex-shrink-0">
                 {getStatusBadge(session)}
               </div>
             </div>
 
             {/* Date and time info */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>{format(new Date(session.session_date), 'EEE d MMM', { locale: it })}</span>
+            <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex items-center gap-1 min-w-0">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="truncate">{format(new Date(session.session_date), 'EEE d MMM', { locale: it })}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{session.start_time}</span>
               </div>
             </div>
@@ -105,21 +105,21 @@ const Training = () => {
               </Button>
             </Link>
 
-            {/* Expand/collapse button */}
-            <Button
-              variant="ghost"
-              onClick={() => toggleExpanded(session.id)}
-              className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <span className="text-sm">
-                {isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}
-              </span>
-              {isExpanded ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </Button>
+                          {/* Expand/collapse button */}
+              <Button
+                variant="ghost"
+                onClick={() => toggleExpanded(session.id)}
+                className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <span className="text-xs sm:text-sm">
+                  {isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}
+                </span>
+                {isExpanded ? (
+                  <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                ) : (
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                )}
+              </Button>
           </div>
 
           {/* Expandable section */}
@@ -159,14 +159,14 @@ const Training = () => {
 
               {/* Additional session info */}
               <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                <div className="text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Data completa:</span>
-                    <span>{format(new Date(session.session_date), 'EEEE d MMMM yyyy', { locale: it })}</span>
+                <div className="text-xs sm:text-sm">
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-muted-foreground flex-shrink-0">Data completa:</span>
+                    <span className="text-right text-xs sm:text-sm break-words">{format(new Date(session.session_date), 'EEEE d MMMM yyyy', { locale: it })}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Orario:</span>
-                    <span>{session.start_time} - {session.end_time}</span>
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-muted-foreground flex-shrink-0">Orario:</span>
+                    <span className="text-xs sm:text-sm">{session.start_time} - {session.end_time}</span>
                   </div>
                 </div>
               </div>
@@ -351,8 +351,8 @@ const Training = () => {
           {/* Mobile card view */}
           <div className="lg:hidden">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-2">Sessioni di Allenamento</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="text-base sm:text-lg font-semibold mb-2">Sessioni di Allenamento</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Tocca "Gestisci Sessione" per accedere rapidamente alla gestione
               </p>
             </div>
