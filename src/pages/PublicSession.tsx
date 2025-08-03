@@ -582,7 +582,7 @@ const PublicSession = () => {
                                     {player.jersey_number && (
                                       <>
                                         <span>•</span>
-                                        <span>#${player.jersey_number}</span>
+                                        <span>#{player.jersey_number}</span>
                                       </>
                                     )}
                                   </div>
