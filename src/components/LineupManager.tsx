@@ -582,7 +582,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
       </CardContent>
 
       {/* Hidden Formation Exporter for PNG generation */}
-      {lineup && Object.keys(playerPositions).length > 0 && (
+      {lineup && Object.keys(playerPositions).length > 0 && defaultJersey && (
         <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
           <div id="formation-export-lineup">
             <FormationExporter
@@ -598,7 +598,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               }}
               sessionTitle="Sessione di allenamento"
               teamName="Team"
-              jerseyUrl={defaultJersey?.image_url}
+              jerseyUrl={defaultJersey.image_url}
               fieldLinesColor={fieldLinesColor}
               jerseyNumbersColor={jerseyNumbersColor}
               nameBoxColor={nameBoxColor}
