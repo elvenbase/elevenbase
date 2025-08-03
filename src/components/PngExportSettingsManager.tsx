@@ -26,6 +26,7 @@ export const PngExportSettingsManager = () => {
     name: '',
     description: '',
     field_lines_color: '#ffffff',
+    field_lines_thickness: 2,
     jersey_numbers_color: '#000000',
     name_box_color: '#ffffff',
     name_text_color: '#000000',
@@ -41,6 +42,7 @@ export const PngExportSettingsManager = () => {
         name: formData.name,
         description: formData.description || undefined,
         field_lines_color: formData.field_lines_color,
+        field_lines_thickness: formData.field_lines_thickness,
         jersey_numbers_color: formData.jersey_numbers_color,
         name_box_color: formData.name_box_color,
         name_text_color: formData.name_text_color,
@@ -52,6 +54,7 @@ export const PngExportSettingsManager = () => {
         name: '',
         description: '',
         field_lines_color: '#ffffff',
+        field_lines_thickness: 2,
         jersey_numbers_color: '#000000',
         name_box_color: '#ffffff',
         name_text_color: '#000000',
@@ -180,6 +183,33 @@ export const PngExportSettingsManager = () => {
                     </div>
                   </div>
 
+                  {/* Spessore linee campo */}
+                  <div className="border-t pt-4">
+                    <Label className="text-sm font-medium">Spessore linee campo</Label>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Configura lo spessore delle linee del campo da calcio
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min="1"
+                          max="8"
+                          value={formData.field_lines_thickness}
+                          onChange={(e) => setFormData(prev => ({ ...prev, field_lines_thickness: parseInt(e.target.value) }))}
+                          className="flex-1"
+                        />
+                        <span className="text-sm font-medium min-w-[2rem] text-center">
+                          {formData.field_lines_thickness}px
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Sottile</span>
+                        <span>Spesso</span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -252,36 +282,37 @@ export const PngExportSettingsManager = () => {
                     {setting.description && (
                       <p className="text-sm text-muted-foreground">{setting.description}</p>
                     )}
-                    <div className="flex gap-2 mt-2">
-                      <div className="flex items-center gap-1">
-                        <div 
-                          className="w-3 h-3 rounded border"
-                          style={{ backgroundColor: setting.field_lines_color }}
-                        />
-                        <span className="text-xs text-muted-foreground">Righe</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div 
-                          className="w-3 h-3 rounded border"
-                          style={{ backgroundColor: setting.jersey_numbers_color }}
-                        />
-                        <span className="text-xs text-muted-foreground">Numeri</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div 
-                          className="w-3 h-3 rounded border"
-                          style={{ backgroundColor: setting.name_box_color }}
-                        />
-                        <span className="text-xs text-muted-foreground">Box</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div 
-                          className="w-3 h-3 rounded border"
-                          style={{ backgroundColor: setting.name_text_color }}
-                        />
-                        <span className="text-xs text-muted-foreground">Testo</span>
-                      </div>
-                    </div>
+                                         <div className="flex gap-2 mt-2">
+                       <div className="flex items-center gap-1">
+                         <div 
+                           className="w-3 h-3 rounded border"
+                           style={{ backgroundColor: setting.field_lines_color }}
+                         />
+                         <span className="text-xs text-muted-foreground">Righe</span>
+                         <span className="text-xs text-muted-foreground">({setting.field_lines_thickness}px)</span>
+                       </div>
+                       <div className="flex items-center gap-1">
+                         <div 
+                           className="w-3 h-3 rounded border"
+                           style={{ backgroundColor: setting.jersey_numbers_color }}
+                         />
+                         <span className="text-xs text-muted-foreground">Numeri</span>
+                       </div>
+                       <div className="flex items-center gap-1">
+                         <div 
+                           className="w-3 h-3 rounded border"
+                           style={{ backgroundColor: setting.name_box_color }}
+                         />
+                         <span className="text-xs text-muted-foreground">Box</span>
+                       </div>
+                       <div className="flex items-center gap-1">
+                         <div 
+                           className="w-3 h-3 rounded border"
+                           style={{ backgroundColor: setting.name_text_color }}
+                         />
+                         <span className="text-xs text-muted-foreground">Testo</span>
+                       </div>
+                     </div>
                   </div>
                 </div>
                 <div className="flex space-x-1">

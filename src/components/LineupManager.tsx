@@ -98,6 +98,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   
   // Stati per la personalizzazione PNG - inizializzati dopo l'hook
   const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
+  const [fieldLinesThickness, setFieldLinesThickness] = useState(2)
   const [jerseyNumbersColor, setJerseyNumbersColor] = useState('#000000')
   const [nameBoxColor, setNameBoxColor] = useState('#ffffff')
   const [nameTextColor, setNameTextColor] = useState('#000000')
@@ -111,6 +112,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   useEffect(() => {
     if (defaultSetting) {
       setFieldLinesColor(defaultSetting.field_lines_color)
+      setFieldLinesThickness(defaultSetting.field_lines_thickness)
       setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
       setNameBoxColor(defaultSetting.name_box_color)
       setNameTextColor(defaultSetting.name_text_color)
@@ -544,6 +546,28 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               />
             </div>
           </div>
+          
+          {/* Spessore linee campo */}
+          <div className="mt-4 pt-4 border-t">
+            <label className="text-xs text-muted-foreground block mb-2">Spessore linee campo</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="1"
+                max="8"
+                value={fieldLinesThickness}
+                onChange={(e) => setFieldLinesThickness(parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm font-medium min-w-[2rem] text-center">
+                {fieldLinesThickness}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>Sottile</span>
+              <span>Spesso</span>
+            </div>
+          </div>
           <div className="mt-3">
             <Button 
               variant="outline" 
@@ -551,6 +575,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               onClick={() => {
                 if (defaultSetting) {
                   setFieldLinesColor(defaultSetting.field_lines_color)
+                  setFieldLinesThickness(defaultSetting.field_lines_thickness)
                   setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
                   setNameBoxColor(defaultSetting.name_box_color)
                   setNameTextColor(defaultSetting.name_text_color)
@@ -602,6 +627,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               teamName="Team"
               jerseyUrl={defaultJersey.image_url}
               fieldLinesColor={fieldLinesColor}
+              fieldLinesThickness={fieldLinesThickness}
               jerseyNumbersColor={jerseyNumbersColor}
               nameBoxColor={nameBoxColor}
               nameTextColor={nameTextColor}

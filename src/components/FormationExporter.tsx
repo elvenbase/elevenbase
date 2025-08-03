@@ -28,6 +28,7 @@ interface FormationExporterProps {
   teamName?: string
   jerseyUrl?: string
   fieldLinesColor?: string
+  fieldLinesThickness?: number
   jerseyNumbersColor?: string
   nameBoxColor?: string
   nameTextColor?: string
@@ -40,6 +41,7 @@ const FormationExporter = ({
   teamName, 
   jerseyUrl,
   fieldLinesColor = '#000000',
+  fieldLinesThickness = 2,
   jerseyNumbersColor = '#000000',
   nameBoxColor = '#ffffff',
   nameTextColor = '#000000'
@@ -77,7 +79,7 @@ const FormationExporter = ({
             left: '0',
             right: '0',
             top: '50%',
-            height: '2px',
+            height: `${fieldLinesThickness}px`,
             backgroundColor: fieldLinesColor,
             transform: 'translateY(-50%)'
           }}
@@ -91,7 +93,7 @@ const FormationExporter = ({
             top: '50%',
             width: '120px',
             height: '120px',
-            border: `2px solid ${fieldLinesColor}`,
+            border: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
             borderRadius: '50%',
             transform: 'translate(-50%, -50%)',
             background: 'transparent'
@@ -106,7 +108,7 @@ const FormationExporter = ({
             top: '0',
             width: '200px',
             height: '80px',
-            border: `2px solid ${fieldLinesColor}`,
+            border: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
             borderTop: 'none',
             transform: 'translateX(-50%)',
             background: 'transparent'
@@ -121,7 +123,7 @@ const FormationExporter = ({
             bottom: '0',
             width: '200px',
             height: '80px',
-            border: `2px solid ${fieldLinesColor}`,
+            border: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
             borderBottom: 'none',
             transform: 'translateX(-50%)',
             background: 'transparent'
@@ -136,7 +138,7 @@ const FormationExporter = ({
             top: '0',
             width: '100px',
             height: '40px',
-            border: `2px solid ${fieldLinesColor}`,
+            border: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
             borderTop: 'none',
             transform: 'translateX(-50%)',
             background: 'transparent'
@@ -151,7 +153,7 @@ const FormationExporter = ({
             bottom: '0',
             width: '100px',
             height: '40px',
-            border: `2px solid ${fieldLinesColor}`,
+            border: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
             borderBottom: 'none',
             transform: 'translateX(-50%)',
             background: 'transparent'

@@ -7,6 +7,7 @@ export interface PngExportSetting {
   name: string
   description?: string
   field_lines_color: string
+  field_lines_thickness: number
   jersey_numbers_color: string
   name_box_color: string
   name_text_color: string
@@ -42,6 +43,7 @@ export const usePngExportSettings = () => {
           name: 'Impostazioni Default',
           description: 'Impostazioni di default per l\'esportazione PNG',
           field_lines_color: '#ffffff',
+          field_lines_thickness: 2,
           jersey_numbers_color: '#000000',
           name_box_color: '#ffffff',
           name_text_color: '#000000',
@@ -64,6 +66,7 @@ export const usePngExportSettings = () => {
         name: 'Impostazioni Default',
         description: 'Impostazioni di default per l\'esportazione PNG',
         field_lines_color: '#ffffff',
+        field_lines_thickness: 2,
         jersey_numbers_color: '#000000',
         name_box_color: '#ffffff',
         name_text_color: '#000000',
@@ -112,6 +115,7 @@ export const usePngExportSettings = () => {
     name: string
     description?: string
     field_lines_color: string
+    field_lines_thickness: number
     jersey_numbers_color: string
     name_box_color: string
     name_text_color: string
