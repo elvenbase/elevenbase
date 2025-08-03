@@ -341,8 +341,8 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                             )}
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-full border-3 border-dashed border-black bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
-                            <Users className="w-6 h-6 text-white/70" />
+                          <div className="w-12 h-12 rounded-full border-3 border-dashed border-black bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors" style={{ borderWidth: 'thin' }}>
+                            <Users className="w-6 h-6 text-black/70" />
                           </div>
                         )}
                         <div className="text-xs text-white font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
