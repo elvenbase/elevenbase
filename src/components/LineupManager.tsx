@@ -147,6 +147,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
   const [fieldLinesThickness, setFieldLinesThickness] = useState(2)
   const [jerseyNumbersColor, setJerseyNumbersColor] = useState('#000000')
+  const [jerseyNumbersShadow, setJerseyNumbersShadow] = useState('2px 2px 4px rgba(0,0,0,0.9)')
   const [nameBoxColor, setNameBoxColor] = useState('#ffffff')
   const [nameTextColor, setNameTextColor] = useState('#000000')
 
@@ -161,6 +162,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
       setFieldLinesColor(defaultSetting.field_lines_color)
       setFieldLinesThickness(defaultSetting.field_lines_thickness)
       setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
+      setJerseyNumbersShadow(defaultSetting.jersey_numbers_shadow)
       setNameBoxColor(defaultSetting.name_box_color)
       setNameTextColor(defaultSetting.name_text_color)
     }
@@ -609,6 +611,24 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                   </div>
                 </div>
                 <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Ombra numeri</label>
+                  <Select 
+                    value={jerseyNumbersShadow}
+                    onValueChange={setJerseyNumbersShadow}
+                  >
+                    <SelectTrigger className="w-full h-10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2px 2px 4px rgba(0,0,0,0.9)">Ombra scura (default)</SelectItem>
+                      <SelectItem value="2px 2px 4px rgba(255,255,255,0.9)">Ombra chiara</SelectItem>
+                      <SelectItem value="1px 1px 2px rgba(0,0,0,0.8)">Ombra sottile</SelectItem>
+                      <SelectItem value="3px 3px 6px rgba(0,0,0,0.9)">Ombra spessa</SelectItem>
+                      <SelectItem value="none">Nessuna ombra</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground">Box nomi</label>
                   <div className="flex items-center gap-2">
                     <input 
@@ -673,15 +693,16 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => {
-                  if (defaultSetting) {
-                    setFieldLinesColor(defaultSetting.field_lines_color)
-                    setFieldLinesThickness(defaultSetting.field_lines_thickness)
-                    setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
-                    setNameBoxColor(defaultSetting.name_box_color)
-                    setNameTextColor(defaultSetting.name_text_color)
-                  }
-                }}
+                              onClick={() => {
+                if (defaultSetting) {
+                  setFieldLinesColor(defaultSetting.field_lines_color)
+                  setFieldLinesThickness(defaultSetting.field_lines_thickness)
+                  setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
+                  setJerseyNumbersShadow(defaultSetting.jersey_numbers_shadow)
+                  setNameBoxColor(defaultSetting.name_box_color)
+                  setNameTextColor(defaultSetting.name_text_color)
+                }
+              }}
                 className="text-primary hover:text-primary/80"
               >
                 Reset ai colori di default
@@ -720,6 +741,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               fieldLinesColor={fieldLinesColor}
               fieldLinesThickness={fieldLinesThickness}
               jerseyNumbersColor={jerseyNumbersColor}
+              jerseyNumbersShadow={jerseyNumbersShadow}
               nameBoxColor={nameBoxColor}
               nameTextColor={nameTextColor}
             />

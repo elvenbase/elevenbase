@@ -9,6 +9,7 @@ export interface PngExportSetting {
   field_lines_color: string
   field_lines_thickness: number
   jersey_numbers_color: string
+  jersey_numbers_shadow: string
   name_box_color: string
   name_text_color: string
   is_default: boolean
@@ -45,6 +46,7 @@ export const usePngExportSettings = () => {
           field_lines_color: '#ffffff',
           field_lines_thickness: 2,
           jersey_numbers_color: '#000000',
+          jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
           name_box_color: '#ffffff',
           name_text_color: '#000000',
           is_default: true,
@@ -68,6 +70,7 @@ export const usePngExportSettings = () => {
         field_lines_color: '#ffffff',
         field_lines_thickness: 2,
         jersey_numbers_color: '#000000',
+        jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
         name_box_color: '#ffffff',
         name_text_color: '#000000',
         is_default: true,
@@ -117,6 +120,7 @@ export const usePngExportSettings = () => {
     field_lines_color: string
     field_lines_thickness: number
     jersey_numbers_color: string
+    jersey_numbers_shadow: string
     name_box_color: string
     name_text_color: string
     is_default?: boolean

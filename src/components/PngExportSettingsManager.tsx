@@ -28,6 +28,7 @@ export const PngExportSettingsManager = () => {
     field_lines_color: '#ffffff',
     field_lines_thickness: 2,
     jersey_numbers_color: '#000000',
+    jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
     name_box_color: '#ffffff',
     name_text_color: '#000000',
     is_default: false
@@ -44,6 +45,7 @@ export const PngExportSettingsManager = () => {
         field_lines_color: formData.field_lines_color,
         field_lines_thickness: formData.field_lines_thickness,
         jersey_numbers_color: formData.jersey_numbers_color,
+        jersey_numbers_shadow: formData.jersey_numbers_shadow,
         name_box_color: formData.name_box_color,
         name_text_color: formData.name_text_color,
         is_default: formData.is_default
@@ -56,6 +58,7 @@ export const PngExportSettingsManager = () => {
         field_lines_color: '#ffffff',
         field_lines_thickness: 2,
         jersey_numbers_color: '#000000',
+        jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
         name_box_color: '#ffffff',
         name_text_color: '#000000',
         is_default: false
@@ -161,6 +164,24 @@ export const PngExportSettingsManager = () => {
                           value={formData.jersey_numbers_color}
                           onChange={(e) => setFormData(prev => ({ ...prev, jersey_numbers_color: e.target.value }))}
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Ombra numeri</Label>
+                        <Select 
+                          value={formData.jersey_numbers_shadow}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, jersey_numbers_shadow: value }))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2px 2px 4px rgba(0,0,0,0.9)">Ombra scura (default)</SelectItem>
+                            <SelectItem value="2px 2px 4px rgba(255,255,255,0.9)">Ombra chiara</SelectItem>
+                            <SelectItem value="1px 1px 2px rgba(0,0,0,0.8)">Ombra sottile</SelectItem>
+                            <SelectItem value="3px 3px 6px rgba(0,0,0,0.9)">Ombra spessa</SelectItem>
+                            <SelectItem value="none">Nessuna ombra</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-xs text-muted-foreground">Box nomi</Label>
@@ -291,13 +312,14 @@ export const PngExportSettingsManager = () => {
                          <span className="text-xs text-muted-foreground">Righe</span>
                          <span className="text-xs text-muted-foreground">({setting.field_lines_thickness}px)</span>
                        </div>
-                       <div className="flex items-center gap-1">
-                         <div 
-                           className="w-3 h-3 rounded border"
-                           style={{ backgroundColor: setting.jersey_numbers_color }}
-                         />
-                         <span className="text-xs text-muted-foreground">Numeri</span>
-                       </div>
+                                               <div className="flex items-center gap-1">
+                          <div 
+                            className="w-3 h-3 rounded border"
+                            style={{ backgroundColor: setting.jersey_numbers_color }}
+                          />
+                          <span className="text-xs text-muted-foreground">Numeri</span>
+                          <span className="text-xs text-muted-foreground">({setting.jersey_numbers_shadow === 'none' ? 'no shadow' : 'shadow'})</span>
+                        </div>
                        <div className="flex items-center gap-1">
                          <div 
                            className="w-3 h-3 rounded border"

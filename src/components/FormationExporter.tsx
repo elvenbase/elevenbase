@@ -30,6 +30,7 @@ interface FormationExporterProps {
   fieldLinesColor?: string
   fieldLinesThickness?: number
   jerseyNumbersColor?: string
+  jerseyNumbersShadow?: string
   nameBoxColor?: string
   nameTextColor?: string
 }
@@ -43,6 +44,7 @@ const FormationExporter = ({
   fieldLinesColor = '#000000',
   fieldLinesThickness = 2,
   jerseyNumbersColor = '#000000',
+  jerseyNumbersShadow = '2px 2px 4px rgba(0,0,0,0.9)',
   nameBoxColor = '#ffffff',
   nameTextColor = '#000000'
 }: FormationExporterProps) => {
@@ -238,7 +240,7 @@ const FormationExporter = ({
                   color: jerseyNumbersColor,
                   fontWeight: 'bold',
                   fontSize: '28px', // Font proporzionato per maglia 110px
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9), 1px -1px 2px rgba(0,0,0,0.9), -1px 1px 2px rgba(0,0,0,0.9)',
+                  textShadow: jerseyNumbersShadow,
                   marginTop: '-30px'
                 }}>
                   {player.jersey_number || '?'}
