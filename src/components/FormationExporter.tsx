@@ -235,11 +235,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   color: '#000',
                   fontSize: '12px',
                   fontWeight: 'bold',
-                  border: '1px solid #000',
-                  textAlign: 'center',
-                  padding: '10%',
-                  alignItems: 'center',
-                  justifyContent: 'center'
+                  border: '1px solid #000'
                 }}
               >
                 {player.first_name.toUpperCase()}<br/>{player.last_name.toUpperCase()}
