@@ -25,10 +25,9 @@ interface FormationExporterProps {
   formation: Formation
   sessionTitle: string
   teamName?: string
-  jerseyImage?: string | null
 }
 
-const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyImage }: FormationExporterProps) => {
+const FormationExporter = ({ lineup, formation, sessionTitle, teamName }: FormationExporterProps) => {
   return (
     <div 
       id="formation-export"
@@ -183,7 +182,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyIm
                 style={{
                   width: '50px',
                   height: '55px',
-                  backgroundColor: jerseyImage ? 'transparent' : '#1e40af',
+                  backgroundColor: '#1e40af',
                   border: '2px solid #000',
                   borderRadius: '8px 8px 0 0',
                   display: 'flex',
@@ -192,11 +191,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyIm
                   color: '#fff',
                   fontWeight: 'bold',
                   fontSize: '18px',
-                  position: 'relative',
-                  backgroundImage: jerseyImage ? `url(${jerseyImage})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
+                  position: 'relative'
                 }}
               >
                 {/* Collo della maglietta */}
@@ -208,13 +203,10 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyIm
                     transform: 'translateX(-50%)',
                     width: '16px',
                     height: '8px',
-                    backgroundColor: jerseyImage ? 'transparent' : '#1e40af',
+                    backgroundColor: '#1e40af',
                     border: '2px solid #000',
                     borderBottom: 'none',
-                    borderRadius: '4px 4px 0 0',
-                    backgroundImage: jerseyImage ? `url(${jerseyImage})` : 'none',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
+                    borderRadius: '4px 4px 0 0'
                   }}
                 />
                 {/* Maniche */}
@@ -225,13 +217,10 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyIm
                     left: '-8px',
                     width: '12px',
                     height: '20px',
-                    backgroundColor: jerseyImage ? 'transparent' : '#1e40af',
+                    backgroundColor: '#1e40af',
                     border: '2px solid #000',
                     borderRight: 'none',
-                    borderRadius: '6px 0 0 6px',
-                    backgroundImage: jerseyImage ? `url(${jerseyImage})` : 'none',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
+                    borderRadius: '6px 0 0 6px'
                   }}
                 />
                 <div
@@ -241,27 +230,13 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyIm
                     right: '-8px',
                     width: '12px',
                     height: '20px',
-                    backgroundColor: jerseyImage ? 'transparent' : '#1e40af',
+                    backgroundColor: '#1e40af',
                     border: '2px solid #000',
                     borderLeft: 'none',
-                    borderRadius: '0 6px 6px 0',
-                    backgroundImage: jerseyImage ? `url(${jerseyImage})` : 'none',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
+                    borderRadius: '0 6px 6px 0'
                   }}
                 />
-                {/* Numero con outline per leggibilità */}
-                <div
-                  style={{
-                    color: jerseyImage ? '#fff' : '#fff',
-                    textShadow: jerseyImage ? '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000' : 'none',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    zIndex: 1
-                  }}
-                >
-                  {player.jersey_number || '?'}
-                </div>
+                {player.jersey_number || '?'}
               </div>
 
               {/* Nome giocatore su due righe */}
