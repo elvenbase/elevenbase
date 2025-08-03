@@ -57,6 +57,7 @@ interface Formation {
 }
 
 const PublicSession = () => {
+  console.log('🔍 PublicSession component loaded, Avatar component available:', typeof Avatar !== 'undefined')
   const { token } = useParams<{ token: string }>()
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -125,6 +126,14 @@ const PublicSession = () => {
       setPlayers(data.players)
       setExistingAttendance(data.existingAttendance)
       setDeadline(new Date(data.deadline))
+
+      // Log dei dati dei giocatori per debug
+      console.log('🔍 Players data loaded:', {
+        totalPlayers: data.players?.length,
+        playersWithAvatars: data.players?.filter((p: any) => p.avatar_url)?.length,
+        samplePlayer: data.players?.[0],
+        allPlayers: data.players
+      })
 
       // Carica anche la formazione se disponibile
       if (data.session?.id) {
@@ -503,6 +512,13 @@ const PublicSession = () => {
                         >
                           {player ? (
                             <div className="relative">
+                              {console.log('🔍 Rendering player avatar:', {
+                                playerName: `${player.first_name} ${player.last_name}`,
+                                hasAvatar: !!player.avatar_url,
+                                avatarUrl: player.avatar_url,
+                                jerseyNumber: player.jersey_number,
+                                initials: getPlayerInitials(player)
+                              })}
                               <Avatar className="w-12 h-12 border-3 border-white shadow-lg hover:scale-110 transition-transform">
                                 <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
@@ -572,6 +588,13 @@ const PublicSession = () => {
                                 key={position.id}
                                 className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
                               >
+                                {console.log('🔍 Rendering player list avatar:', {
+                                  playerName: `${player.first_name} ${player.last_name}`,
+                                  hasAvatar: !!player.avatar_url,
+                                  avatarUrl: player.avatar_url,
+                                  jerseyNumber: player.jersey_number,
+                                  initials: getPlayerInitials(player)
+                                })}
                                 <Avatar className="w-8 h-8 border-2 border-white">
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
