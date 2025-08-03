@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
@@ -77,7 +78,10 @@ export const PngExportSettingsManager = () => {
       name: '',
       description: '',
       field_lines_color: '#ffffff',
+      field_lines_thickness: 2,
       jersey_numbers_color: '#000000',
+      jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
+      use_player_avatars: false,
       name_box_color: '#ffffff',
       name_text_color: '#000000',
       is_default: false
