@@ -204,8 +204,14 @@ export const JerseyManager = () => {
         ) : jerseyTemplates.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Nessuna maglia caricata.</p>
-            <p className="text-sm">Clicca su "Nuova Maglia" per iniziare.</p>
+            <p>Nessuna maglia personalizzata caricata.</p>
+            <p className="text-sm">Clicca su "Nuova Maglia" per creare la tua prima maglia personalizzata.</p>
+            {defaultJersey && (
+              <div className="mt-4 p-3 bg-muted rounded-lg">
+                <p className="text-sm font-medium">Maglia di sistema attiva:</p>
+                <p className="text-xs text-muted-foreground">{defaultJersey.name}</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

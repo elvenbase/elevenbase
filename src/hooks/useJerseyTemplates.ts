@@ -50,6 +50,20 @@ export const useJerseyTemplates = () => {
         // Tabella esiste - carica i dati
         setTableExists(true)
         await loadJerseyTemplates()
+        
+        // Se non ci sono maglie degli utenti, usa la maglia di sistema come fallback
+        if (jerseyTemplates.length === 0) {
+          const { data: systemJersey } = await supabase
+            .from('jersey_templates')
+            .select('*')
+            .is('created_by', null)
+            .eq('is_default', true)
+            .single()
+          
+          if (systemJersey) {
+            setDefaultJersey(systemJersey)
+          }
+        }
       }
     } catch (error) {
       console.error('Errore nel controllo della tabella:', error)
@@ -77,6 +91,7 @@ export const useJerseyTemplates = () => {
       const { data, error } = await supabase
         .from('jersey_templates')
         .select('*')
+        .not('created_by', 'is', null) // Escludi la maglia di sistema (created_by = NULL)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false })
 
@@ -84,7 +99,7 @@ export const useJerseyTemplates = () => {
 
       setJerseyTemplates(data || [])
       
-      // Trova la maglia di default
+      // Trova la maglia di default tra quelle degli utenti
       const defaultTemplate = data?.find(template => template.is_default)
       setDefaultJersey(defaultTemplate || null)
     } catch (error) {
@@ -113,22 +128,41 @@ export const useJerseyTemplates = () => {
         await supabase
           .from('jersey_templates')
           .update({ is_default: false })
-          .neq('id', '')
+          .not('created_by', 'is', null) // Solo dalle maglie degli utenti
+      }
+
+      // Se è la prima maglia dell'utente, impostala automaticamente come default
+      const { data: existingJerseys } = await supabase
+        .from('jersey_templates')
+        .select('id')
+        .not('created_by', 'is', null)
+        .limit(1)
+
+      const isFirstJersey = !existingJerseys || existingJerseys.length === 0
+      const finalTemplateData = {
+        ...templateData,
+        created_by: userData.user.id,
+        is_default: isFirstJersey || templateData.is_default
+      }
+
+      // Se questa diventa default, rimuovi il flag dalle altre
+      if (finalTemplateData.is_default) {
+        await supabase
+          .from('jersey_templates')
+          .update({ is_default: false })
+          .not('created_by', 'is', null)
       }
 
       const { data, error } = await supabase
         .from('jersey_templates')
-        .insert({
-          ...templateData,
-          created_by: userData.user.id
-        })
+        .insert(finalTemplateData)
         .select()
         .single()
 
       if (error) throw error
 
       await loadJerseyTemplates()
-      toast.success('Maglia creata con successo!')
+      toast.success(`Maglia creata con successo${isFirstJersey ? ' e impostata come default' : ''}!`)
       return data
     } catch (error) {
       console.error('Errore nella creazione della maglia:', error)
