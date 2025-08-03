@@ -233,18 +233,13 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                 style={{
                   backgroundColor: '#000',
                   color: '#fff',
-                  padding: '4px 8px',
+                  padding: '5px 8px', // 5px alto e basso, 8px laterali
                   borderRadius: '4px',
                   fontSize: '12px', // Font proporzionato per maglia più piccola
                   fontWeight: 'bold',
                   textAlign: 'center',
                   width: '110px', // Stesso width della maglia per perfetta centratura
-                  height: '32px', // Altezza fissa per centratura verticale
                   border: '1px solid #000',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center', // Centra verticalmente il contenuto
                   lineHeight: '1.1'
                 }}
               >
