@@ -74,8 +74,39 @@ const SessionManagement = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
+          {/* Mobile layout - stacked */}
+          <div className="flex flex-col space-y-3 sm:hidden">
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/training">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Torna agli Allenamenti
+                </Link>
+              </Button>
+              <TrainingForm 
+                session={session} 
+                mode="edit"
+              >
+                <Button variant="outline" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Modifica
+                </Button>
+              </TrainingForm>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="text-lg font-bold">{session.title}</h1>
+                {getStatusBadge(session)}
+              </div>
+              {session.description && (
+                <p className="text-sm text-muted-foreground">{session.description}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop layout - horizontal */}
+          <div className="hidden sm:flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/training">
@@ -108,15 +139,15 @@ const SessionManagement = () => {
       </div>
 
       {/* Session Details */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="p-3 sm:pt-6">
               <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Data e Ora</p>
-                  <p className="text-xs text-muted-foreground">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-medium">Data e Ora</p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {formatDateTime(session.session_date, session.start_time)}
                   </p>
                 </div>
@@ -125,12 +156,12 @@ const SessionManagement = () => {
           </Card>
 
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="p-3 sm:pt-6">
               <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Durata</p>
-                  <p className="text-xs text-muted-foreground">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-medium">Durata</p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {session.start_time} - {session.end_time}
                   </p>
                 </div>
@@ -140,12 +171,12 @@ const SessionManagement = () => {
 
           {session.location && (
             <Card>
-              <CardContent className="pt-6">
+              <CardContent className="p-3 sm:pt-6">
                 <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Luogo</p>
-                    <p className="text-xs text-muted-foreground">{session.location}</p>
+                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-medium">Luogo</p>
+                    <p className="text-xs text-muted-foreground truncate">{session.location}</p>
                   </div>
                 </div>
               </CardContent>
@@ -153,12 +184,12 @@ const SessionManagement = () => {
           )}
 
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="p-3 sm:pt-6">
               <div className="flex items-center space-x-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Presenze</p>
-                  <p className="text-xs text-muted-foreground">
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-medium">Presenze</p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {attendanceStats.present} presenti, {attendanceStats.absent} assenti
                   </p>
                 </div>
