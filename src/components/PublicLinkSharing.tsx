@@ -3,9 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { QrCode, Copy, ExternalLink, Clock, Users, CheckCircle, XCircle } from 'lucide-react'
+import { Copy, ExternalLink, Clock, Users, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import QRCode from 'qrcode'
 import { WhatsAppInviteBox } from './WhatsAppInviteBox'
 
 interface Session {
@@ -31,7 +30,6 @@ interface PublicLinkSharingProps {
 }
 
 const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSharingProps) => {
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [isExpired, setIsExpired] = useState(false)
   const sessionUrl = session.public_link_token 
@@ -40,21 +38,6 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
   
   console.log('Session URL generated:', sessionUrl)
   console.log('Session token:', session.public_link_token)
-
-
-  // Genera QR Code
-  useEffect(() => {
-    if (sessionUrl) {
-      QRCode.toDataURL(sessionUrl, {
-        width: 200,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      }).then(setQrCodeUrl).catch(console.error)
-    }
-  }, [sessionUrl])
 
   // Countdown timer
   useEffect(() => {
@@ -98,8 +81,6 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
       window.open(sessionUrl, '_blank')
     }
   }
-
-
 
   if (!session.public_link_token) {
     return (
@@ -182,18 +163,6 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
             </div>
           </div>
         </div>
-
-        {/* QR Code */}
-        {qrCodeUrl && (
-          <div className="text-center">
-            <div className="inline-block p-4 bg-white rounded-lg border">
-              <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48 mx-auto" />
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Scansiona il QR Code per accedere al link di registrazione
-            </p>
-          </div>
-        )}
 
         {/* Link copiabile */}
         <div className="space-y-2">
