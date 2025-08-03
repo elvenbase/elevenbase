@@ -570,30 +570,30 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
 
         {/* Personalizza export di questa formazione */}
         <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Download className="h-5 w-5 text-primary" />
-              Personalizza export di questa formazione
+          <CardHeader className="pb-3 px-3 sm:px-6">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Download className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              Personalizza export PNG
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Configura l'aspetto del PNG della formazione prima di scaricarlo
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6">
             {/* Colori */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <h4 className="text-sm font-medium text-primary">Colori</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground">Righe campo</label>
                   <div className="flex items-center gap-2">
                     <input 
                       type="color" 
-                      className="w-full h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                      className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
                       value={fieldLinesColor}
                       onChange={(e) => setFieldLinesColor(e.target.value)}
                     />
-                    <div className="text-xs text-muted-foreground min-w-[3rem]">
+                    <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
                       {fieldLinesColor}
                     </div>
                   </div>
@@ -603,11 +603,11 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                   <div className="flex items-center gap-2">
                     <input 
                       type="color" 
-                      className="w-full h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                      className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
                       value={jerseyNumbersColor}
                       onChange={(e) => setJerseyNumbersColor(e.target.value)}
                     />
-                    <div className="text-xs text-muted-foreground min-w-[3rem]">
+                    <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
                       {jerseyNumbersColor}
                     </div>
                   </div>
@@ -618,7 +618,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                       value={jerseyNumbersShadow}
                       onValueChange={setJerseyNumbersShadow}
                     >
-                      <SelectTrigger className="w-full h-10">
+                      <SelectTrigger className="w-full h-8 sm:h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -650,11 +650,11 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                   <div className="flex items-center gap-2">
                     <input 
                       type="color" 
-                      className="w-full h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                      className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
                       value={nameBoxColor}
                       onChange={(e) => setNameBoxColor(e.target.value)}
                     />
-                    <div className="text-xs text-muted-foreground min-w-[3rem]">
+                    <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
                       {nameBoxColor}
                     </div>
                   </div>
@@ -664,11 +664,11 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                   <div className="flex items-center gap-2">
                     <input 
                       type="color" 
-                      className="w-full h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                      className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
                       value={nameTextColor}
                       onChange={(e) => setNameTextColor(e.target.value)}
                     />
-                    <div className="text-xs text-muted-foreground min-w-[3rem]">
+                    <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
                       {nameTextColor}
                     </div>
                   </div>
@@ -706,11 +706,11 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
             </div>
 
             {/* Azioni export */}
-            <div className="flex items-center justify-between pt-4 border-t border-primary/20">
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-4 border-t border-primary/20">
               <Button 
                 variant="ghost" 
                 size="sm"
-                              onClick={() => {
+                onClick={() => {
                 if (defaultSetting) {
                   setFieldLinesColor(defaultSetting.field_lines_color)
                   setFieldLinesThickness(defaultSetting.field_lines_thickness)
@@ -721,16 +721,16 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                   setNameTextColor(defaultSetting.name_text_color)
                 }
               }}
-                className="text-primary hover:text-primary/80"
+                className="text-primary hover:text-primary/80 text-xs sm:text-sm"
               >
                 Reset ai colori di default
               </Button>
               <Button 
                 onClick={downloadFormation} 
                 disabled={exporting || Object.keys(playerPositions).length === 0}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm sm:text-base"
               >
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 {exporting ? 'Generando PNG...' : 'Scarica PNG'}
               </Button>
             </div>
