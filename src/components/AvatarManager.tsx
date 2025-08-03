@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAvatarBackgrounds, AvatarBackground } from '@/hooks/useAvatarBackgrounds'
 
 export const AvatarManager: React.FC = () => {
-  const { backgrounds, loading, createBackground, updateBackground, deleteBackground, setDefaultBackground, uploadImage } = useAvatarBackgrounds()
+  const { backgrounds, loading, createBackground, updateBackground, deleteBackground, setAsDefaultBackground, uploadImage } = useAvatarBackgrounds()
   const [editingBackground, setEditingBackground] = useState<AvatarBackground | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [formData, setFormData] = useState({
@@ -109,7 +109,7 @@ export const AvatarManager: React.FC = () => {
 
   const setDefault = async (background: AvatarBackground) => {
     try {
-      await setDefaultBackground(background.id)
+      await setAsDefaultBackground(background.id)
     } catch (error) {
       console.error('Error setting default:', error)
     }

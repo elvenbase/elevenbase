@@ -155,7 +155,7 @@ export const useAvatarBackgrounds = () => {
     }
   }
 
-  const setDefaultBackground = async (id: string) => {
+  const setAsDefaultBackground = async (id: string) => {
     try {
       // Remove default from all backgrounds
       await supabase
@@ -222,7 +222,7 @@ export const useAvatarBackgrounds = () => {
     createBackground,
     updateBackground,
     deleteBackground,
-    setDefaultBackground,
+    setAsDefaultBackground,
     uploadImage
   }
 }
