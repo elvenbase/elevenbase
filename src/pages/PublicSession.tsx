@@ -216,6 +216,14 @@ const PublicSession = () => {
 
       toast.loading('Generando immagine...')
       
+      // Forza il refresh dell'elemento
+      exportElement.style.display = 'none'
+      exportElement.offsetHeight // Trigger reflow
+      exportElement.style.display = 'block'
+      
+      // Piccolo delay per assicurarsi che il DOM sia aggiornato
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       const canvas = await html2canvas(exportElement, {
         backgroundColor: null,
         scale: 2,
@@ -226,7 +234,8 @@ const PublicSession = () => {
 
       // Create download link
       const link = document.createElement('a')
-      link.download = `formazione-${session?.title?.replace(/\s+/g, '-').toLowerCase() || 'sessione'}.png`
+      const timestamp = new Date().getTime()
+      link.download = `formazione-${session?.title?.replace(/\s+/g, '-').toLowerCase() || 'sessione'}-${timestamp}.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
 
