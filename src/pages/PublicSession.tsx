@@ -385,44 +385,44 @@ const PublicSession = () => {
   const isExpired = deadline && new Date() > deadline
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="text-center py-8">
-          <h1 className="text-4xl font-bold mb-2">Registrazione Allenamento</h1>
-          <p className="text-muted-foreground">Conferma la tua presenza per la sessione</p>
+        <div className="text-center py-4 sm:py-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Registrazione Allenamento</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Conferma la tua presenza per la sessione</p>
         </div>
 
         {/* Session Info */}
         <Card className="border-primary/20 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <Calendar className="h-6 w-6 text-primary" />
-              {session.title}
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl lg:text-2xl">
+              <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+              <span className="break-words">{session.title}</span>
             </CardTitle>
             {session.description && (
-              <CardDescription className="text-base">{session.description}</CardDescription>
+              <CardDescription className="text-sm sm:text-base">{session.description}</CardDescription>
             )}
           </CardHeader>
-          <CardContent className="space-y-6 pt-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 text-lg">
-                <Clock className="h-5 w-5 text-primary" />
-                <span>{formatSessionDateTime(session.session_date, session.start_time)}</span>
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <div className="space-y-3 sm:grid sm:grid-cols-1 md:grid-cols-2 sm:gap-4 sm:space-y-0">
+              <div className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <span className="break-words">{formatSessionDateTime(session.session_date, session.start_time)}</span>
               </div>
               
               {session.location && (
-                <div className="flex items-center gap-3 text-lg">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <span>{session.location}</span>
+                <div className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg">
+                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                  <span className="break-words">{session.location}</span>
                 </div>
               )}
             </div>
 
             {deadline && (
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                <span className="font-medium">Tempo per registrarsi:</span>
-                <Badge variant={isExpired ? "destructive" : "default"} className="text-sm px-3 py-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 sm:p-4 bg-muted/50 rounded-lg">
+                <span className="font-medium text-sm sm:text-base">Tempo per registrarsi:</span>
+                <Badge variant={isExpired ? "destructive" : "default"} className="text-xs sm:text-sm px-2 sm:px-3 py-1 self-start sm:self-center">
                   {isExpired ? 'Tempo scaduto' : timeLeft}
                 </Badge>
               </div>
@@ -433,36 +433,42 @@ const PublicSession = () => {
         {/* Formazione */}
         {lineup && (
           <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 justify-between">
-                <div className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}
+            <CardHeader className="p-4 sm:p-6">
+              <div className="space-y-3">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Target className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="break-words">Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}</span>
+                </CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <CardDescription className="text-sm sm:text-base">
+                    La formazione ufficiale per questa sessione di allenamento
+                  </CardDescription>
+                  <Button 
+                    onClick={downloadFormation} 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-2 self-start sm:self-center"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">Scarica PNG</span>
+                    <span className="sm:hidden">Scarica</span>
+                  </Button>
                 </div>
-                <Button 
-                  onClick={downloadFormation} 
-                  variant="outline" 
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Scarica PNG
-                </Button>
-              </CardTitle>
-              <CardDescription>
-                La formazione ufficiale per questa sessione di allenamento
-              </CardDescription>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col xl:grid xl:grid-cols-3 gap-6">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
                 {/* Campo da calcio - più compatto */}
-                <div className="xl:col-span-2">
+                <div className="lg:col-span-2">
                   <div 
                     className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 border-white rounded-lg shadow-lg overflow-hidden mx-auto" 
                     style={{ 
                       aspectRatio: '2/3', 
-                      maxWidth: '400px',
-                      height: '600px'
+                      maxWidth: '350px',
+                      width: '100%',
+                      height: 'auto',
+                      minHeight: '400px',
+                      maxHeight: '500px'
                     }}
                   >
                     {/* Sfondo erba con pattern */}
@@ -601,20 +607,20 @@ const PublicSession = () => {
           </Card>
         )}
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {/* Registrazione */}
           {!isExpired && (
             <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                   Conferma la tua presenza
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm sm:text-base">
                   Seleziona il tuo nome e indica se sarai presente all'allenamento
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Giocatore</label>
                   <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
@@ -699,31 +705,31 @@ const PublicSession = () => {
 
           {/* Riepilogo registrazioni */}
           <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                 Riepilogo Registrazioni
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="space-y-2">
-                  <div className="text-3xl font-bold text-green-600">
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">
                     {existingAttendance.filter(a => a.status === 'present').length}
                   </div>
-                  <div className="text-sm text-muted-foreground font-medium">Presenti</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Presenti</div>
                 </div>
-                <div className="space-y-2">
-                  <div className="text-3xl font-bold text-red-600">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">
                     {existingAttendance.filter(a => a.status === 'absent').length}
                   </div>
-                  <div className="text-sm text-muted-foreground font-medium">Assenti</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Assenti</div>
                 </div>
-                <div className="space-y-2">
-                  <div className="text-3xl font-bold text-muted-foreground">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-muted-foreground">
                     {players.length - existingAttendance.length}
                   </div>
-                  <div className="text-sm text-muted-foreground font-medium">Non risposto</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Non risposto</div>
                 </div>
               </div>
 
