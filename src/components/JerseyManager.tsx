@@ -15,6 +15,7 @@ export const JerseyManager = () => {
     jerseyTemplates, 
     defaultJersey, 
     loading, 
+    tableExists,
     createJerseyTemplate, 
     deleteJerseyTemplate, 
     uploadJerseyImage, 
@@ -100,13 +101,14 @@ export const JerseyManager = () => {
             <Upload className="h-5 w-5" />
             Gestione Maglie
           </CardTitle>
-          <Dialog open={isCreating} onOpenChange={setIsCreating}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuova Maglia
-              </Button>
-            </DialogTrigger>
+          {tableExists && (
+            <Dialog open={isCreating} onOpenChange={setIsCreating}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuova Maglia
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Aggiungi Nuova Maglia</DialogTitle>
@@ -187,11 +189,19 @@ export const JerseyManager = () => {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          )}
         </div>
       </CardHeader>
       <CardContent>
-        {jerseyTemplates.length === 0 ? (
+        {!tableExists ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="font-medium mb-2">Funzionalità in arrivo!</p>
+            <p className="text-sm">Il sistema di gestione maglie personalizzate sarà disponibile presto.</p>
+            <p className="text-sm mt-2">Per ora viene utilizzata la maglia di default.</p>
+          </div>
+        ) : jerseyTemplates.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Nessuna maglia caricata.</p>

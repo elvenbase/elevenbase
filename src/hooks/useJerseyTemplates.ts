@@ -17,12 +17,62 @@ export const useJerseyTemplates = () => {
   const [jerseyTemplates, setJerseyTemplates] = useState<JerseyTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [defaultJersey, setDefaultJersey] = useState<JerseyTemplate | null>(null)
+  const [tableExists, setTableExists] = useState(false)
 
   useEffect(() => {
-    loadJerseyTemplates()
+    checkTableAndLoadJerseys()
   }, [])
 
+  const checkTableAndLoadJerseys = async () => {
+    try {
+      // Prima verifichiamo se la tabella esiste
+      const { data, error } = await supabase
+        .from('jersey_templates')
+        .select('count')
+        .limit(1)
+
+      if (error && error.code === '42P01') {
+        // Tabella non esiste - usa jersey di default
+        console.log('Tabella jersey_templates non esiste ancora, usando jersey di default')
+        setTableExists(false)
+        setDefaultJersey({
+          id: 'default',
+          name: 'Maglia Default',
+          description: 'Maglia di default del sistema',
+          image_url: '/lovable-uploads/jersey-example.png',
+          is_default: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          created_by: null
+        })
+        setJerseyTemplates([])
+      } else {
+        // Tabella esiste - carica i dati
+        setTableExists(true)
+        await loadJerseyTemplates()
+      }
+    } catch (error) {
+      console.error('Errore nel controllo della tabella:', error)
+      // In caso di errore, usa jersey di default
+      setDefaultJersey({
+        id: 'default',
+        name: 'Maglia Default',
+        description: 'Maglia di default del sistema',
+        image_url: '/lovable-uploads/jersey-example.png',
+        is_default: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        created_by: null
+      })
+      setJerseyTemplates([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const loadJerseyTemplates = async () => {
+    if (!tableExists) return
+
     try {
       const { data, error } = await supabase
         .from('jersey_templates')
@@ -40,8 +90,6 @@ export const useJerseyTemplates = () => {
     } catch (error) {
       console.error('Errore nel caricamento delle maglie:', error)
       toast.error('Errore nel caricamento delle maglie')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -51,6 +99,11 @@ export const useJerseyTemplates = () => {
     image_url: string
     is_default?: boolean
   }) => {
+    if (!tableExists) {
+      toast.error('La funzionalità maglie personalizzate non è ancora disponibile')
+      return
+    }
+
     try {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('Utente non autenticato')
@@ -88,6 +141,11 @@ export const useJerseyTemplates = () => {
     id: string, 
     updates: Partial<Omit<JerseyTemplate, 'id' | 'created_at' | 'updated_at' | 'created_by'>>
   ) => {
+    if (!tableExists) {
+      toast.error('La funzionalità maglie personalizzate non è ancora disponibile')
+      return
+    }
+
     try {
       // Se questa diventa la nuova maglia di default, rimuovi il flag da tutte le altre
       if (updates.is_default) {
@@ -117,6 +175,11 @@ export const useJerseyTemplates = () => {
   }
 
   const deleteJerseyTemplate = async (id: string) => {
+    if (!tableExists) {
+      toast.error('La funzionalità maglie personalizzate non è ancora disponibile')
+      return
+    }
+
     try {
       // Verifica se è la maglia di default
       const template = jerseyTemplates.find(t => t.id === id)
@@ -176,11 +239,12 @@ export const useJerseyTemplates = () => {
     jerseyTemplates,
     defaultJersey,
     loading,
+    tableExists,
     createJerseyTemplate,
     updateJerseyTemplate,
     deleteJerseyTemplate,
     uploadJerseyImage,
     setAsDefault,
-    reload: loadJerseyTemplates
+    reload: checkTableAndLoadJerseys
   }
 }
