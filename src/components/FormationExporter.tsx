@@ -242,8 +242,8 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '0px 8px',
+                  justifyContent: 'flex-start', // Allinea in alto invece che al centro
+                  padding: '2px 8px 0px 8px', // 2px in alto, 0px in basso
                   lineHeight: '1.1'
                 }}
               >
