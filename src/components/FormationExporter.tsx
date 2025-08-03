@@ -239,20 +239,15 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   width: '110px',
                   height: '32px',
                   border: '1px solid #000',
+                  textAlign: 'center',
+                  padding: '10%',
+                  lineHeight: '1.1',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'flex-start', // Allinea in alto invece che al centro
-                  padding: '2px 8px 0px 8px', // 2px in alto, 0px in basso
-                  lineHeight: '1.1'
+                  justifyContent: 'center'
                 }}
               >
-                <div style={{ margin: '0', padding: '0' }}>
-                  {player.first_name.toUpperCase()}
-                </div>
-                <div style={{ margin: '0', padding: '0' }}>
-                  {player.last_name.toUpperCase()}
-                </div>
+                {player.first_name.toUpperCase()}<br/>{player.last_name.toUpperCase()}
               </div>
             </div>
           )
