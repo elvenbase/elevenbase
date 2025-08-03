@@ -69,6 +69,25 @@ const FormationExporter = ({
   const getPlayerInitials = (player: Player) => {
     return `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`
   }
+
+  // Funzione per estrarre il colore di sfondo dall'ombra
+  const getShadowBackgroundColor = (shadow: string) => {
+    if (shadow === 'none') return 'rgba(0,0,0,0.9)'
+    
+    // Estrai il colore dall'ombra
+    const colorMatch = shadow.match(/rgba?\([^)]+\)/)
+    if (colorMatch) {
+      return colorMatch[0]
+    }
+    
+    // Fallback per ombre non standard
+    if (shadow.includes('rgba(0,0,0')) return 'rgba(0,0,0,0.9)'
+    if (shadow.includes('rgba(255,255,255')) return 'rgba(255,255,255,0.9)'
+    if (shadow.includes('rgb(0,0,0')) return 'rgba(0,0,0,0.9)'
+    if (shadow.includes('rgb(255,255,255')) return 'rgba(255,255,255,0.9)'
+    
+    return 'rgba(0,0,0,0.9)' // Fallback default
+  }
   return (
     <div 
       id="formation-export"
@@ -236,47 +255,101 @@ const FormationExporter = ({
               >
                 {usePlayerAvatars && (player as any).avatar_url ? (
                   // Avatar del giocatore
-                  <img
-                    src={(player as any).avatar_url}
-                    alt={`${player.first_name} ${player.last_name}`}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: '50%',
-                      border: '3px solid white',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                    }}
-                    onError={(e) => {
-                      // Se l'avatar non carica, mostra il fallback
-                      const target = e.target as HTMLImageElement
-                      target.style.display = 'none'
-                      const fallback = target.nextElementSibling as HTMLElement
-                      if (fallback) fallback.style.display = 'flex'
-                    }}
-                  />
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <img
+                      src={(player as any).avatar_url}
+                      alt={`${player.first_name} ${player.last_name}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '50%',
+                        border: '3px solid white',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                      }}
+                      onError={(e) => {
+                        // Se l'avatar non carica, mostra il fallback
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                        const fallback = target.nextElementSibling as HTMLElement
+                        if (fallback) fallback.style.display = 'flex'
+                      }}
+                    />
+                    {/* Cerchietto con numero di maglia */}
+                    {player.jersey_number && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '5px',
+                          right: '5px',
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          backgroundColor: getShadowBackgroundColor(jerseyNumbersShadow),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '2px solid white',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          color: jerseyNumbersColor,
+                          zIndex: 10
+                        }}
+                      >
+                        {player.jersey_number}
+                      </div>
+                    )}
+                  </div>
                 ) : null}
                 
                 {usePlayerAvatars && !(player as any).avatar_url ? (
                   // Fallback avatar con iniziali
-                  <div
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: '50%',
-                      backgroundColor: getAvatarColor(player.first_name + player.last_name),
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '3px solid white',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                      fontSize: '32px',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
-                    }}
-                  >
-                    {getPlayerInitials(player)}
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        backgroundColor: getAvatarColor(player.first_name + player.last_name),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '3px solid white',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        fontSize: '32px',
+                        fontWeight: 'bold',
+                        color: 'white',
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+                      }}
+                    >
+                      {getPlayerInitials(player)}
+                    </div>
+                    {/* Cerchietto con numero di maglia */}
+                    {player.jersey_number && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '5px',
+                          right: '5px',
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          backgroundColor: getShadowBackgroundColor(jerseyNumbersShadow),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '2px solid white',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          color: jerseyNumbersColor,
+                          zIndex: 10
+                        }}
+                      >
+                        {player.jersey_number}
+                      </div>
+                    )}
                   </div>
                 ) : null}
 
