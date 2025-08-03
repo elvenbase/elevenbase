@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Edit, Trash2, BarChart3, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Edit, Trash2, BarChart3, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -30,12 +31,29 @@ const Squad = () => {
     to: new Date()
   });
   
+  // Stato per la modale dell'immagine del giocatore
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedPlayerImage, setSelectedPlayerImage] = useState<{
+    src: string;
+    name: string;
+    fallback: string;
+  } | null>(null);
+  
   const { data: players = [], isLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
   const deletePlayer = useDeletePlayer();
 
   const formatWhatsAppLink = (phone: string, firstName: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     return `https://wa.me/${cleanPhone}?text=Ciao%20${firstName}`;
+  };
+
+  const openImageModal = (player: any) => {
+    setSelectedPlayerImage({
+      src: player.avatar_url || '',
+      name: `${player.first_name} ${player.last_name}`,
+      fallback: `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`
+    });
+    setImageModalOpen(true);
   };
 
   const handleSort = (field: SortField) => {
@@ -241,7 +259,10 @@ const Squad = () => {
                     <TableRow key={player.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
+                          <Avatar 
+                            className="h-10 w-10 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
+                            onClick={() => openImageModal(player)}
+                          >
                             <AvatarImage 
                               src={(player as any).avatar_url || undefined} 
                               alt={`${player.first_name} ${player.last_name}`} 
@@ -355,6 +376,50 @@ const Squad = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Modale per visualizzare l'immagine del giocatore */}
+      <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center justify-between">
+              <span>{selectedPlayerImage?.name}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setImageModalOpen(false)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-6 pt-2">
+            <div className="flex justify-center">
+              {selectedPlayerImage?.src ? (
+                <img
+                  src={selectedPlayerImage.src}
+                  alt={selectedPlayerImage.name}
+                  className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg"
+                  onError={(e) => {
+                    // Se l'immagine non carica, mostra il fallback
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div 
+                className={`max-w-full max-h-[60vh] w-64 h-64 rounded-lg shadow-lg flex items-center justify-center text-6xl font-bold text-white bg-gradient-to-br from-primary to-primary/80 ${
+                  selectedPlayerImage?.src ? 'hidden' : 'flex'
+                }`}
+              >
+                {selectedPlayerImage?.fallback}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
