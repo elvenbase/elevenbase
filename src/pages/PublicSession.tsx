@@ -14,7 +14,6 @@ import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import { useAvatarColor } from '@/hooks/useAvatarColor'
 import FormationExporter from '@/components/FormationExporter'
-import { WhatsAppInviteBox } from '@/components/WhatsAppInviteBox'
 import html2canvas from 'html2canvas'
 
 interface Player {
@@ -430,12 +429,6 @@ const PublicSession = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* WhatsApp Invite Box */}
-        <WhatsAppInviteBox 
-          sessionTitle={session.title}
-          publicLink={window.location.href}
-        />
 
         {/* Formazione */}
         {lineup && (

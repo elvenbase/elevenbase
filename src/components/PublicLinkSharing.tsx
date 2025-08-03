@@ -209,6 +209,14 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
           </div>
         </div>
 
+        {/* WhatsApp Invite Box */}
+        <div className="mt-4">
+          <WhatsAppInviteBox 
+            sessionTitle={session.title}
+            publicLink={sessionUrl}
+          />
+        </div>
+
         {/* Pulsante di aggiornamento */}
         {onRefresh && (
           <Button onClick={onRefresh} variant="outline" size="sm">
