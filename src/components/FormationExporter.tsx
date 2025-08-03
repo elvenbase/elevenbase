@@ -67,7 +67,7 @@ const FormationExporter = ({
         style={{
           width: '100%',
           height: '100%',
-          border: '3px solid #000',
+          border: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
           borderRadius: '8px',
           background: 'transparent'
         }}
