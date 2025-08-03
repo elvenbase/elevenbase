@@ -95,8 +95,7 @@ export const useJerseyTemplates = () => {
         .from('jersey_templates')
         .select('*')
         .not('created_by', 'is', null) // Escludi la maglia di sistema (created_by = NULL)
-        .order('is_default', { ascending: false })
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false }) // Ordina per data di creazione (più recenti prima)
 
       if (error) throw error
 
@@ -111,6 +110,8 @@ export const useJerseyTemplates = () => {
       } else {
         setDefaultJersey(defaultTemplate || null)
       }
+      
+
     } catch (error) {
       console.error('Errore nel caricamento delle maglie:', error)
       toast.error('Errore nel caricamento delle maglie')
