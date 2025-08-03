@@ -98,13 +98,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
     }
   }
 
-  const navigateToSession = () => {
-    if (session.public_link_token) {
-      const url = `/session/${session.public_link_token}`
-      console.log('Navigating to:', url)
-      window.location.href = url
-    }
-  }
+
 
   if (!session.public_link_token) {
     return (
@@ -220,11 +214,6 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
             Aggiorna Statistiche
           </Button>
         )}
-
-        {/* Test button per debug */}
-        <Button onClick={navigateToSession} variant="secondary" size="sm">
-          🔗 Apri Pagina Sessione (Test)
-        </Button>
 
         {/* Avviso scadenza */}
         {isExpired && (
