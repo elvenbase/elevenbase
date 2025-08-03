@@ -186,8 +186,8 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
               {/* Maglietta */}
               <div 
                 style={{
-                  width: '50px',
-                  height: '55px',
+                  width: '75px', // Ingrandita di 1.5x (da 50px a 75px)
+                  height: '82px', // Ingrandita di 1.5x (da 55px a 82px)
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
@@ -221,7 +221,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   zIndex: 2, 
                   color: '#fff',
                   fontWeight: 'bold',
-                  fontSize: '16px',
+                  fontSize: '24px', // Ingrandito di 1.5x (da 16px a 24px)
                   textShadow: '2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9), 1px -1px 2px rgba(0,0,0,0.9), -1px 1px 2px rgba(0,0,0,0.9)'
                 }}>
                   {player.jersey_number || '?'}
@@ -235,17 +235,30 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   color: '#fff',
                   padding: '4px 8px',
                   borderRadius: '4px',
-                  fontSize: '10px',
+                  fontSize: '12px', // Leggermente più grande per le maglie più grandi
                   fontWeight: 'bold',
                   textAlign: 'center',
-                  minWidth: '60px',
-                  border: '1px solid #000'
+                  minWidth: '75px', // Allargato per centrare meglio con le maglie più grandi
+                  maxWidth: '90px', // Limite massimo per evitare sovrapposizioni
+                  border: '1px solid #000',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center', // Centra orizzontalmente il contenuto
+                  justifyContent: 'center' // Centra verticalmente il contenuto
                 }}
               >
-                <div style={{ lineHeight: '1.1' }}>
+                <div style={{ 
+                  lineHeight: '1.1',
+                  textAlign: 'center',
+                  width: '100%'
+                }}>
                   {player.first_name.toUpperCase()}
                 </div>
-                <div style={{ lineHeight: '1.1' }}>
+                <div style={{ 
+                  lineHeight: '1.1',
+                  textAlign: 'center',
+                  width: '100%'
+                }}>
                   {player.last_name.toUpperCase()}
                 </div>
               </div>
