@@ -440,11 +440,13 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                       <div className="flex flex-col items-center space-y-1">
                         {assignedPlayer ? (
                           <div className="relative">
-                            <Avatar className="w-12 h-12 border-3 border-white shadow-lg group-hover:scale-110 transition-transform">
+                            <Avatar 
+                              className="w-12 h-12 border-3 border-white shadow-lg group-hover:scale-110 transition-transform"
+                              style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
+                            >
                               <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                               <AvatarFallback 
                                 className="text-white font-bold text-sm"
-                                style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
                               >
                                 {getPlayerInitials(assignedPlayer)}
                               </AvatarFallback>
@@ -489,11 +491,13 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                           {getAvailablePlayers(position.id).map(player => (
                             <SelectItem key={player.id} value={player.id}>
                               <div className="flex items-center gap-3">
-                                <Avatar className="w-8 h-8">
+                                <Avatar 
+                                  className="w-8 h-8"
+                                  style={getAvatarBackground(player.first_name + player.last_name)}
+                                >
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
                                     className="text-white text-xs font-bold"
-                                    style={getAvatarBackground(player.first_name + player.last_name)}
                                   >
                                     {getPlayerInitials(player)}
                                   </AvatarFallback>
@@ -516,11 +520,13 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                       </Select>
                       {assignedPlayer && (
                         <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                          <Avatar className="w-10 h-10">
+                          <Avatar 
+                            className="w-10 h-10"
+                            style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
+                          >
                             <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                             <AvatarFallback 
                               className="text-white font-bold"
-                              style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
                             >
                               {getPlayerInitials(assignedPlayer)}
                             </AvatarFallback>

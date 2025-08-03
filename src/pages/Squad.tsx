@@ -264,6 +264,7 @@ const Squad = () => {
                           <Avatar 
                             className="h-10 w-10 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
                             onClick={() => openImageModal(player)}
+                            style={getAvatarBackground(player.first_name + player.last_name)}
                           >
                             <AvatarImage 
                               src={(player as any).avatar_url || undefined} 
@@ -271,7 +272,6 @@ const Squad = () => {
                             />
                             <AvatarFallback 
                               className="text-white font-bold"
-                              style={getAvatarBackground(player.first_name + player.last_name)}
                             >
                               {player.first_name.charAt(0)}{player.last_name.charAt(0)}
                             </AvatarFallback>

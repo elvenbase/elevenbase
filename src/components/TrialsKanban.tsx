@@ -35,14 +35,16 @@ const TrialistCard = ({
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8">
+          <Avatar 
+            className="h-8 w-8"
+            style={getAvatarBackground(trialist.first_name + trialist.last_name)}
+          >
             <AvatarImage 
               src={trialist.avatar_url || undefined} 
               alt={`${trialist.first_name} ${trialist.last_name}`} 
             />
             <AvatarFallback 
               className="text-white font-bold"
-              style={getAvatarBackground(trialist.first_name + trialist.last_name)}
             >
               {trialist.first_name[0]}{trialist.last_name[0]}
             </AvatarFallback>

@@ -498,11 +498,13 @@ const PublicSession = () => {
                         >
                           {player ? (
                             <div className="relative">
-                              <Avatar className="w-12 h-12 border-3 border-white shadow-lg hover:scale-110 transition-transform">
+                              <Avatar 
+                                className="w-12 h-12 border-3 border-white shadow-lg hover:scale-110 transition-transform"
+                                style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
+                              >
                                 <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
                                   className="text-white font-bold text-sm"
-                                  style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
                                 >
                                   {getPlayerInitials(player)}
                                 </AvatarFallback>
@@ -567,11 +569,13 @@ const PublicSession = () => {
                                 key={position.id}
                                 className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
                               >
-                                <Avatar className="w-8 h-8 border-2 border-white">
+                                <Avatar 
+                                  className="w-8 h-8 border-2 border-white"
+                                  style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
+                                >
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
                                     className="text-white font-bold text-xs"
-                                    style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
                                   >
                                     {getPlayerInitials(player)}
                                   </AvatarFallback>
@@ -627,11 +631,13 @@ const PublicSession = () => {
                             disabled={!!registration}
                           >
                             <div className="flex items-center gap-3 w-full">
-                              <Avatar className="w-8 h-8">
+                              <Avatar 
+                                className="w-8 h-8"
+                                style={getAvatarBackground(player.first_name + player.last_name)}
+                              >
                                 <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
                                   className="text-white text-xs font-bold"
-                                  style={getAvatarBackground(player.first_name + player.last_name)}
                                 >
                                   {getPlayerInitials(player)}
                                 </AvatarFallback>
