@@ -630,14 +630,18 @@ const PublicSession = () => {
                             disabled={!!registration}
                           >
                             <div className="flex items-center gap-3 w-full">
+                              <Avatar className="w-8 h-8">
+                                <AvatarImage src={player.avatar_url || undefined} />
+                                <AvatarFallback 
+                                  className="text-white text-xs font-bold"
+                                  style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
+                                >
+                                  {getPlayerInitials(player)}
+                                </AvatarFallback>
+                              </Avatar>
                               <span className="font-medium">
                                 {player.first_name} {player.last_name}
                               </span>
-                              {player.jersey_number && (
-                                <Badge variant="outline" className="text-xs">
-                                  #{player.jersey_number}
-                                </Badge>
-                              )}
                               {registration && (
                                 <Badge 
                                   variant={registration.status === 'present' ? "default" : "secondary"}
