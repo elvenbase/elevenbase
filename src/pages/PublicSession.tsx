@@ -12,6 +12,7 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
+import { useAvatarColor } from '@/hooks/useAvatarColor'
 import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
 
@@ -71,6 +72,7 @@ const PublicSession = () => {
   const [lineup, setLineup] = useState<Lineup | null>(null)
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
+  const { getAvatarBackground } = useAvatarColor()
 
   useEffect(() => {
     if (!token) {
@@ -261,14 +263,7 @@ const PublicSession = () => {
     return `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`
   }
 
-  const getAvatarColor = (name: string) => {
-    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
-    let hash = 0
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    return colors[Math.abs(hash) % colors.length]
-  }
+
 
   // Formazioni predefinite
   const predefinedFormations: Record<string, { name: string; positions: { id: string; name: string; x: number; y: number; roleShort?: string }[] }> = {
@@ -507,7 +502,7 @@ const PublicSession = () => {
                                 <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
                                   className="text-white font-bold text-sm"
-                                  style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
+                                  style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
                                 >
                                   {getPlayerInitials(player)}
                                 </AvatarFallback>
@@ -576,7 +571,7 @@ const PublicSession = () => {
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
                                     className="text-white font-bold text-xs"
-                                    style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
+                                    style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
                                   >
                                     {getPlayerInitials(player)}
                                   </AvatarFallback>
@@ -636,7 +631,7 @@ const PublicSession = () => {
                                 <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
                                   className="text-white text-xs font-bold"
-                                  style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
+                                  style={getAvatarBackground(player.first_name + player.last_name)}
                                 >
                                   {getPlayerInitials(player)}
                                 </AvatarFallback>

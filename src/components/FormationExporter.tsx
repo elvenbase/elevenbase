@@ -1,6 +1,7 @@
 
 import React from 'react'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
+import { useAvatarColor } from '@/hooks/useAvatarColor'
 
 interface Player {
   id: string
@@ -51,19 +52,12 @@ const FormationExporter = ({
   nameTextColor = '#000000'
 }: FormationExporterProps) => {
   const { defaultJersey } = useJerseyTemplates()
+  const { getAvatarBackground } = useAvatarColor()
   
   // Usa jerseyUrl se fornito, altrimenti la maglia di default, altrimenti fallback
   const currentJerseyUrl = jerseyUrl || defaultJersey?.image_url || '/lovable-uploads/jersey-example.png'
 
-  // Funzione per generare colore dell'avatar basato sul nome
-  const getAvatarColor = (name: string) => {
-    let hash = 0
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    const hue = hash % 360
-    return `hsl(${hue}, 70%, 50%)`
-  }
+
 
   // Funzione per ottenere le iniziali del giocatore
   const getPlayerInitials = (player: Player) => {
@@ -311,7 +305,7 @@ const FormationExporter = ({
                         width: '100%',
                         height: '100%',
                         borderRadius: '50%',
-                        backgroundColor: getAvatarColor(player.first_name + player.last_name),
+                        ...getAvatarBackground(player.first_name + player.last_name),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

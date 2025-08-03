@@ -12,6 +12,7 @@ import { useCustomFormations } from '@/hooks/useCustomFormations'
 import FormationExporter from '@/components/FormationExporter'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import { usePngExportSettings } from '@/hooks/usePngExportSettings'
+import { useAvatarColor } from '@/hooks/useAvatarColor'
 import html2canvas from 'html2canvas'
 
 // Stili CSS personalizzati per il range slider
@@ -142,6 +143,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
   const { defaultSetting } = usePngExportSettings()
+  const { getAvatarBackground } = useAvatarColor()
   
   // Stati per la personalizzazione PNG - inizializzati dopo l'hook
   const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
@@ -320,21 +322,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const currentFormation = getCurrentFormation()
   const assignedCount = Object.keys(playerPositions).length
 
-  // Funzione per generare colori avatar basati sulle iniziali
-  const getAvatarColor = (name: string) => {
-    const colors = [
-      'hsl(var(--primary))',
-      'hsl(var(--secondary))', 
-      'hsl(var(--accent))',
-      'hsl(210, 100%, 60%)',
-      'hsl(330, 80%, 60%)',
-      'hsl(120, 70%, 50%)',
-      'hsl(30, 90%, 60%)',
-      'hsl(270, 70%, 60%)'
-    ]
-    const hash = name.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
-    return colors[hash % colors.length]
-  }
+
 
   // Funzione per ottenere iniziali del giocatore
   const getPlayerInitials = (player: Player) => {
@@ -456,7 +444,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                               <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                               <AvatarFallback 
                                 className="text-white font-bold text-sm"
-                                style={{ backgroundColor: getAvatarColor(assignedPlayer.first_name + assignedPlayer.last_name) }}
+                                style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
                               >
                                 {getPlayerInitials(assignedPlayer)}
                               </AvatarFallback>
@@ -505,7 +493,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
                                     className="text-white text-xs font-bold"
-                                    style={{ backgroundColor: getAvatarColor(player.first_name + player.last_name) }}
+                                    style={getAvatarBackground(player.first_name + player.last_name)}
                                   >
                                     {getPlayerInitials(player)}
                                   </AvatarFallback>
@@ -532,7 +520,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                             <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                             <AvatarFallback 
                               className="text-white font-bold"
-                              style={{ backgroundColor: getAvatarColor(assignedPlayer.first_name + assignedPlayer.last_name) }}
+                              style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
                             >
                               {getPlayerInitials(assignedPlayer)}
                             </AvatarFallback>
