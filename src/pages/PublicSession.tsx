@@ -502,11 +502,16 @@ const PublicSession = () => {
                           title={player ? `${player.first_name} ${player.last_name} - ${position.roleShort || position.name}` : position.roleShort || position.name}
                         >
                           {player ? (
-                            <div 
-                              className="w-12 h-12 rounded-full border-3 border-white flex items-center justify-center text-white font-bold text-sm shadow-lg hover:scale-110 transition-transform"
-                              style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
-                            >
-                              {player.jersey_number || getPlayerInitials(player)}
+                            <div className="relative">
+                              <Avatar className="w-12 h-12 border-3 border-white shadow-lg hover:scale-110 transition-transform">
+                                <AvatarImage src={player.avatar_url || undefined} />
+                                <AvatarFallback 
+                                  className="text-white font-bold text-sm"
+                                  style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
+                                >
+                                  {getPlayerInitials(player)}
+                                </AvatarFallback>
+                              </Avatar>
                             </div>
                           ) : (
                             <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
@@ -567,24 +572,21 @@ const PublicSession = () => {
                                 key={position.id}
                                 className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
                               >
-                                <div 
-                                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs border-2 border-white"
-                                  style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
-                                >
-                                  {player.jersey_number || getPlayerInitials(player)}
-                                </div>
+                                <Avatar className="w-8 h-8 border-2 border-white">
+                                  <AvatarImage src={player.avatar_url || undefined} />
+                                  <AvatarFallback 
+                                    className="text-white font-bold text-xs"
+                                    style={{ backgroundColor: getAvatarColor(player.first_name + ' ' + player.last_name) }}
+                                  >
+                                    {getPlayerInitials(player)}
+                                  </AvatarFallback>
+                                </Avatar>
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium text-sm truncate">
                                     {player.first_name} {player.last_name}
                                   </div>
                                   <div className="text-xs text-muted-foreground flex items-center gap-1">
                                     <span className="font-medium">{position.roleShort || position.name}</span>
-                                    {player.jersey_number && (
-                                      <>
-                                        <span>•</span>
-                                        <span>#{player.jersey_number}</span>
-                                      </>
-                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -739,7 +741,6 @@ const PublicSession = () => {
                         <div key={attendance.player_id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
                           <span className="text-sm">
                             {player.first_name} {player.last_name}
-                            {player.jersey_number && ` (#${player.jersey_number})`}
                           </span>
                           <Badge 
                             variant={attendance.status === 'present' ? "default" : "secondary"}
