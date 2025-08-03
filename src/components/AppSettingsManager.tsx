@@ -3,56 +3,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { toast } from 'sonner'
-import { Settings, Save, MessageCircle } from 'lucide-react'
-
-interface AppSettings {
-  whatsapp_group_code: string
-}
+import { Badge } from '@/components/ui/badge'
+import { useAppSettings } from '@/hooks/useAppSettings'
+import { Settings, Save, MessageCircle, Shield, Database } from 'lucide-react'
 
 export const AppSettingsManager: React.FC = () => {
-  const [settings, setSettings] = useState<AppSettings>({
+  const { settings, loading, isAdmin, updateSetting, getSetting } = useAppSettings()
+  const [localSettings, setLocalSettings] = useState({
     whatsapp_group_code: ''
   })
-  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    loadSettings()
-  }, [])
-
-  const loadSettings = () => {
-    // Carica dalle localStorage per ora, poi potremmo spostare su Supabase
-    const savedCode = localStorage.getItem('whatsapp_group_code') || ''
-    setSettings({
-      whatsapp_group_code: savedCode
-    })
-  }
+    if (!loading) {
+      setLocalSettings({
+        whatsapp_group_code: getSetting('whatsapp_group_code', '')
+      })
+    }
+  }, [settings, loading, getSetting])
 
   const saveSettings = async () => {
     try {
-      setLoading(true)
+      setSaving(true)
       
-      // Salva in localStorage per ora
-      localStorage.setItem('whatsapp_group_code', settings.whatsapp_group_code)
-      
-      toast({
-        title: "Impostazioni salvate",
-        description: "Le impostazioni dell'app sono state salvate con successo"
-      })
+      await updateSetting(
+        'whatsapp_group_code',
+        localSettings.whatsapp_group_code,
+        'Codice del gruppo WhatsApp per gli inviti automatici',
+        true
+      )
     } catch (error) {
       console.error('Error saving app settings:', error)
-      toast({
-        title: "Errore",
-        description: "Impossibile salvare le impostazioni",
-        variant: "destructive"
-      })
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
-  const handleInputChange = (field: keyof AppSettings, value: string) => {
-    setSettings(prev => ({
+  const handleInputChange = (field: string, value: string) => {
+    setLocalSettings(prev => ({
       ...prev,
       [field]: value
     }))
@@ -63,18 +51,47 @@ export const AppSettingsManager: React.FC = () => {
     return code.length > 10 && /^[a-zA-Z0-9]+$/.test(code)
   }
 
+  if (loading) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="text-center">Caricamento impostazioni...</div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="mb-6">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="h-5 w-5" />
           Impostazioni App
+          <div className="flex gap-2 ml-auto">
+            <Badge variant={isAdmin ? "default" : "secondary"} className="flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              {isAdmin ? 'Admin' : 'Utente'}
+            </Badge>
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Database className="h-3 w-3" />
+              Database
+            </Badge>
+          </div>
         </CardTitle>
         <CardDescription>
-          Configura le impostazioni generali dell'applicazione
+          Configura le impostazioni generali dell'applicazione salvate nel database
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {!isAdmin && (
+          <div className="p-4 bg-muted/50 rounded-lg border border-amber-200">
+            <p className="text-sm text-muted-foreground">
+              ⚠️ Solo gli amministratori possono modificare le impostazioni dell'app.
+              Le impostazioni vengono caricate dal database.
+            </p>
+          </div>
+        )}
+        
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="whatsapp-code" className="flex items-center gap-2">
@@ -85,9 +102,10 @@ export const AppSettingsManager: React.FC = () => {
               <Input
                 id="whatsapp-code"
                 placeholder="Inserisci il codice del gruppo (es. ABC123XYZ456)"
-                value={settings.whatsapp_group_code}
+                value={localSettings.whatsapp_group_code}
                 onChange={(e) => handleInputChange('whatsapp_group_code', e.target.value)}
                 className="font-mono"
+                disabled={!isAdmin}
               />
               <p className="text-sm text-muted-foreground">
                 Il codice si trova nel link di invito del gruppo: 
@@ -95,7 +113,7 @@ export const AppSettingsManager: React.FC = () => {
                   https://chat.whatsapp.com/<strong>ABC123XYZ456</strong>
                 </code>
               </p>
-              {settings.whatsapp_group_code && !validateGroupCode(settings.whatsapp_group_code) && (
+              {localSettings.whatsapp_group_code && !validateGroupCode(localSettings.whatsapp_group_code) && (
                 <p className="text-sm text-destructive">
                   ⚠️ Il codice inserito potrebbe non essere valido
                 </p>
@@ -107,11 +125,11 @@ export const AppSettingsManager: React.FC = () => {
         <div className="flex gap-2">
           <Button 
             onClick={saveSettings} 
-            disabled={loading}
+            disabled={saving || !isAdmin}
             className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
-            {loading ? 'Salvataggio...' : 'Salva Impostazioni'}
+            {saving ? 'Salvataggio...' : 'Salva Impostazioni'}
           </Button>
         </div>
       </CardContent>

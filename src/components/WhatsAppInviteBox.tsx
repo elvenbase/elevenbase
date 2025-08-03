@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, ExternalLink } from 'lucide-react'
+import { useAppSettings } from '@/hooks/useAppSettings'
 
 interface WhatsAppInviteBoxProps {
   sessionTitle: string
@@ -12,10 +13,7 @@ export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({
   sessionTitle, 
   publicLink 
 }) => {
-  const getWhatsAppGroupCode = (): string => {
-    // Recupera il codice gruppo dalle localStorage
-    return localStorage.getItem('whatsapp_group_code') || ''
-  }
+  const { getWhatsAppGroupCode, loading } = useAppSettings()
 
   const generateWhatsAppMessage = (): string => {
     const message = `Ciao ragazzi! Sessione di allenamento "${sessionTitle}" preparata, registratevi qui ${publicLink}`
@@ -49,6 +47,21 @@ export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({
   }
 
   const groupCode = getWhatsAppGroupCode()
+
+  if (loading) {
+    return (
+      <Card className="border-gray-200 bg-gray-50 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 text-gray-600">
+            <MessageCircle className="h-5 w-5" />
+            <div>
+              <p className="font-medium">Caricamento impostazioni WhatsApp...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (!groupCode) {
     return (
