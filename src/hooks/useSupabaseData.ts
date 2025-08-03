@@ -265,6 +265,8 @@ export const useCreateTrainingSession = () => {
       start_time: string;
       end_time: string;
       location?: string;
+      communication_type?: string | null;
+      communication_details?: string | null;
       max_participants?: number;
     }) => {
       const { data, error } = await supabase
@@ -339,27 +341,29 @@ export const useUpdateTrainingSession = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ sessionId, updates }: {
-      sessionId: string;
-      updates: {
+    mutationFn: async ({ id, data }: {
+      id: string;
+      data: {
         title?: string;
         description?: string;
         session_date?: string;
         start_time?: string;
         end_time?: string;
         location?: string;
+        communication_type?: string | null;
+        communication_details?: string | null;
         max_participants?: number;
       };
     }) => {
-      const { data, error } = await supabase
+      const { data: result, error } = await supabase
         .from('training_sessions')
-        .update(updates)
-        .eq('id', sessionId)
+        .update(data)
+        .eq('id', id)
         .select()
         .single();
       
       if (error) throw error;
-      return data;
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['training-sessions'] });

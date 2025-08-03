@@ -169,14 +169,41 @@ const SessionManagement = () => {
             </CardContent>
           </Card>
 
-          {session.location && (
+          {(session.communication_type || session.location) && (
             <Card>
               <CardContent className="p-3 sm:pt-6">
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0">
                     <p className="text-xs sm:text-sm font-medium">Comunicazioni</p>
-                    <p className="text-xs text-muted-foreground truncate">{session.location}</p>
+                    <div className="text-xs text-muted-foreground">
+                      {(() => {
+                        // Usa i nuovi campi strutturati se disponibili
+                        if (session.communication_type) {
+                          const type = session.communication_type.charAt(0).toUpperCase() + session.communication_type.slice(1);
+                          if (session.communication_type === 'discord' && session.communication_details) {
+                            return (
+                              <div className="space-y-1">
+                                <div>{type}</div>
+                                <a 
+                                  href={session.communication_details} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 underline truncate block"
+                                >
+                                  {session.communication_details}
+                                </a>
+                              </div>
+                            );
+                          } else if (session.communication_type === 'altro' && session.communication_details) {
+                            return <span className="truncate">{session.communication_details}</span>;
+                          }
+                          return <span>{type}</span>;
+                        }
+                        // Fallback per retrocompatibilità
+                        return <span className="truncate">{session.location}</span>;
+                      })()}
+                    </div>
                   </div>
                 </div>
               </CardContent>

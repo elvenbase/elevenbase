@@ -15,7 +15,9 @@ interface TrainingSession {
   session_date: string;
   start_time: string;
   end_time: string;
-  location?: string;
+  location?: string; // Deprecato - mantenuto per retrocompatibilità
+  communication_type?: 'party' | 'discord' | 'altro';
+  communication_details?: string;
   max_participants?: number;
 }
 
@@ -39,8 +41,20 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
     return `${year}-${month}-${day}`;
   };
 
-  // Parse existing location into communication type and details
-  const parseLocation = (location?: string) => {
+  // Parse communication data from session
+  const parseCommunication = (session?: TrainingSession) => {
+    if (!session) return { type: '', details: '' };
+    
+    // Usa i nuovi campi se disponibili
+    if (session.communication_type) {
+      return { 
+        type: session.communication_type, 
+        details: session.communication_details || '' 
+      };
+    }
+    
+    // Fallback per retrocompatibilità con il campo location
+    const location = session.location;
     if (!location) return { type: '', details: '' };
     
     if (location.toLowerCase().includes('party')) {
@@ -73,7 +87,7 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
 
   useEffect(() => {
     if (session && mode === 'edit') {
-      const parsed = parseLocation(session.location);
+      const parsed = parseCommunication(session);
       setFormData({
         title: session.title,
         description: session.description || '',
@@ -87,25 +101,19 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
     }
   }, [session, mode]);
 
-  const formatCommunicationLocation = () => {
-    switch (communicationType) {
-      case 'party':
-        return 'Party';
-      case 'discord':
-        return communicationDetails || 'Discord';
-      case 'altro':
-        return communicationDetails || 'Altro';
-      default:
-        return '';
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const sessionData = {
       ...formData,
-      location: formatCommunicationLocation()
+      communication_type: communicationType || null,
+      communication_details: communicationDetails || null,
+      // Mantieni location per retrocompatibilità display
+      location: communicationType ? (
+        communicationType === 'party' ? 'Party' :
+        communicationType === 'discord' ? (communicationDetails || 'Discord') :
+        communicationDetails || 'Altro'
+      ) : ''
     };
 
     try {
