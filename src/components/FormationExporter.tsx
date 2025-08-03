@@ -186,8 +186,8 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
               {/* Maglietta */}
               <div 
                 style={{
-                  width: '75px', // Ingrandita di 1.5x (da 50px a 75px)
-                  height: '82px', // Ingrandita di 1.5x (da 55px a 82px)
+                  width: '150px', // Maglia quadrata 150x150px
+                  height: '150px', // Maglia quadrata 150x150px
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
@@ -221,7 +221,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   zIndex: 2, 
                   color: '#fff',
                   fontWeight: 'bold',
-                  fontSize: '24px', // Ingrandito di 1.5x (da 16px a 24px)
+                  fontSize: '36px', // Font più grande per maglia più grande
                   textShadow: '2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9), 1px -1px 2px rgba(0,0,0,0.9), -1px 1px 2px rgba(0,0,0,0.9)'
                 }}>
                   {player.jersey_number || '?'}
@@ -233,32 +233,20 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                 style={{
                   backgroundColor: '#000',
                   color: '#fff',
-                  padding: '4px 8px',
+                  padding: '6px 10px',
                   borderRadius: '4px',
-                  fontSize: '12px', // Leggermente più grande per le maglie più grandi
+                  fontSize: '14px', // Font più grande per le maglie più grandi
                   fontWeight: 'bold',
                   textAlign: 'center',
-                  minWidth: '75px', // Allargato per centrare meglio con le maglie più grandi
-                  maxWidth: '90px', // Limite massimo per evitare sovrapposizioni
+                  width: '150px', // Stesso width della maglia per perfetta centratura
                   border: '1px solid #000',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center', // Centra orizzontalmente il contenuto
-                  justifyContent: 'center' // Centra verticalmente il contenuto
+                  lineHeight: '1.2'
                 }}
               >
-                <div style={{ 
-                  lineHeight: '1.1',
-                  textAlign: 'center',
-                  width: '100%'
-                }}>
+                <div>
                   {player.first_name.toUpperCase()}
                 </div>
-                <div style={{ 
-                  lineHeight: '1.1',
-                  textAlign: 'center',
-                  width: '100%'
-                }}>
+                <div>
                   {player.last_name.toUpperCase()}
                 </div>
               </div>
