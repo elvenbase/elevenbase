@@ -83,12 +83,6 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
   const [exporting, setExporting] = useState(false)
   
-  // Stati per la personalizzazione PNG
-  const [fieldLinesColor, setFieldLinesColor] = useState(defaultJersey?.png_field_lines_color || '#ffffff')
-  const [jerseyNumbersColor, setJerseyNumbersColor] = useState(defaultJersey?.png_jersey_numbers_color || '#000000')
-  const [nameBoxColor, setNameBoxColor] = useState(defaultJersey?.png_name_box_color || '#ffffff')
-  const [nameTextColor, setNameTextColor] = useState(defaultJersey?.png_name_text_color || '#000000')
-  
   const { 
     lineup, 
     loading, 
@@ -99,6 +93,12 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
 
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
+  
+  // Stati per la personalizzazione PNG - inizializzati dopo l'hook
+  const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
+  const [jerseyNumbersColor, setJerseyNumbersColor] = useState('#000000')
+  const [nameBoxColor, setNameBoxColor] = useState('#ffffff')
+  const [nameTextColor, setNameTextColor] = useState('#000000')
 
   // Carica formazione esistente quando cambia la sessione
   useEffect(() => {
