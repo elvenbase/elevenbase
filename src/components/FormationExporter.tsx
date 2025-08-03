@@ -1,5 +1,6 @@
 
 import React from 'react'
+import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 
 interface Player {
   id: string
@@ -25,9 +26,14 @@ interface FormationExporterProps {
   formation: Formation
   sessionTitle: string
   teamName?: string
+  jerseyUrl?: string
 }
 
-const FormationExporter = ({ lineup, formation, sessionTitle, teamName }: FormationExporterProps) => {
+const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUrl }: FormationExporterProps) => {
+  const { defaultJersey } = useJerseyTemplates()
+  
+  // Usa jerseyUrl se fornito, altrimenti la maglia di default, altrimenti fallback
+  const currentJerseyUrl = jerseyUrl || defaultJersey?.image_url || '/lovable-uploads/jersey-example.png'
   return (
     <div 
       id="formation-export"
@@ -182,61 +188,44 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName }: Format
                 style={{
                   width: '50px',
                   height: '55px',
-                  backgroundColor: '#1e40af',
-                  border: '2px solid #000',
-                  borderRadius: '8px 8px 0 0',
+                  position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#fff',
                   fontWeight: 'bold',
                   fontSize: '18px',
-                  position: 'relative'
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                  filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))'
                 }}
               >
-                {/* Collo della maglietta */}
-                <div
+                <img
+                  src={currentJerseyUrl}
+                  alt="Maglia"
                   style={{
                     position: 'absolute',
-                    top: '-2px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '16px',
-                    height: '8px',
-                    backgroundColor: '#1e40af',
-                    border: '2px solid #000',
-                    borderBottom: 'none',
-                    borderRadius: '4px 4px 0 0'
+                    top: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    zIndex: 1
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    target.src = '/lovable-uploads/jersey-example.png'
                   }}
                 />
-                {/* Maniche */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '8px',
-                    left: '-8px',
-                    width: '12px',
-                    height: '20px',
-                    backgroundColor: '#1e40af',
-                    border: '2px solid #000',
-                    borderRight: 'none',
-                    borderRadius: '6px 0 0 6px'
-                  }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '-8px',
-                    width: '12px',
-                    height: '20px',
-                    backgroundColor: '#1e40af',
-                    border: '2px solid #000',
-                    borderLeft: 'none',
-                    borderRadius: '0 6px 6px 0'
-                  }}
-                />
-                {player.jersey_number || '?'}
+                <span style={{ 
+                  position: 'relative', 
+                  zIndex: 2, 
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9), 1px -1px 2px rgba(0,0,0,0.9), -1px 1px 2px rgba(0,0,0,0.9)'
+                }}>
+                  {player.jersey_number || '?'}
+                </span>
               </div>
 
               {/* Nome giocatore su due righe */}

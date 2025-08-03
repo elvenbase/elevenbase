@@ -6,6 +6,7 @@ import { useCustomFormations, CustomFormation } from '@/hooks/useCustomFormation
 import { FormationBuilder } from '@/components/FormationBuilder'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { JerseyManager } from '@/components/JerseyManager'
 
 export default function Formations() {
   const { formations, loading, createFormation, updateFormation, deleteFormation } = useCustomFormations()
@@ -170,6 +171,9 @@ export default function Formations() {
           ))}
         </div>
       )}
+
+      {/* Gestione Maglie */}
+      <JerseyManager />
     </div>
   )
 }

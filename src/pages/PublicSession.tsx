@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
+import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
 
@@ -69,6 +70,7 @@ const PublicSession = () => {
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [lineup, setLineup] = useState<Lineup | null>(null)
   const { formations: customFormations } = useCustomFormations()
+  const { defaultJersey } = useJerseyTemplates()
 
   useEffect(() => {
     if (!token) {
@@ -769,6 +771,7 @@ const PublicSession = () => {
               formation={getFormationFromLineup(lineup.formation)!}
               sessionTitle={session?.title || 'Sessione di allenamento'}
               teamName="Team"
+              jerseyUrl={defaultJersey?.image_url}
             />
           </div>
         )}
