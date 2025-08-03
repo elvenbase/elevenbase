@@ -29,7 +29,11 @@ export const JerseyManager = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    image_url: ''
+    image_url: '',
+    png_field_lines_color: '#ffffff',
+    png_jersey_numbers_color: '#000000',
+    png_name_box_color: '#ffffff',
+    png_name_text_color: '#000000'
   })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
@@ -65,11 +69,23 @@ export const JerseyManager = () => {
       await createJerseyTemplate({
         name: formData.name,
         description: formData.description || undefined,
-        image_url: formData.image_url
+        image_url: formData.image_url,
+        png_field_lines_color: formData.png_field_lines_color,
+        png_jersey_numbers_color: formData.png_jersey_numbers_color,
+        png_name_box_color: formData.png_name_box_color,
+        png_name_text_color: formData.png_name_text_color
       })
       
       // Reset form
-      setFormData({ name: '', description: '', image_url: '' })
+      setFormData({ 
+        name: '', 
+        description: '', 
+        image_url: '',
+        png_field_lines_color: '#ffffff',
+        png_jersey_numbers_color: '#000000',
+        png_name_box_color: '#ffffff',
+        png_name_text_color: '#000000'
+      })
       setSelectedFile(null)
       setPreviewUrl('')
       setIsCreating(false)
@@ -79,7 +95,15 @@ export const JerseyManager = () => {
   }
 
   const handleCancel = () => {
-    setFormData({ name: '', description: '', image_url: '' })
+    setFormData({ 
+      name: '', 
+      description: '', 
+      image_url: '',
+      png_field_lines_color: '#ffffff',
+      png_jersey_numbers_color: '#000000',
+      png_name_box_color: '#ffffff',
+      png_name_text_color: '#000000'
+    })
     setSelectedFile(null)
     setPreviewUrl('')
     setIsCreating(false)
@@ -170,6 +194,52 @@ export const JerseyManager = () => {
                         </Button>
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* Colori PNG di default */}
+                <div className="border-t pt-4">
+                  <Label className="text-sm font-medium">Colori PNG di default</Label>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Colori utilizzati per l'esportazione PNG delle formazioni
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Righe campo</Label>
+                      <input 
+                        type="color" 
+                        className="w-full h-8 rounded border cursor-pointer"
+                        value={formData.png_field_lines_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, png_field_lines_color: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Numeri maglie</Label>
+                      <input 
+                        type="color" 
+                        className="w-full h-8 rounded border cursor-pointer"
+                        value={formData.png_jersey_numbers_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, png_jersey_numbers_color: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Box nomi</Label>
+                      <input 
+                        type="color" 
+                        className="w-full h-8 rounded border cursor-pointer"
+                        value={formData.png_name_box_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, png_name_box_color: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Testo nomi</Label>
+                      <input 
+                        type="color" 
+                        className="w-full h-8 rounded border cursor-pointer"
+                        value={formData.png_name_text_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, png_name_text_color: e.target.value }))}
+                      />
+                    </div>
                   </div>
                 </div>
 

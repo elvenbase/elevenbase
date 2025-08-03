@@ -84,10 +84,10 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const [exporting, setExporting] = useState(false)
   
   // Stati per la personalizzazione PNG
-  const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
-  const [jerseyNumbersColor, setJerseyNumbersColor] = useState('#000000')
-  const [nameBoxColor, setNameBoxColor] = useState('#ffffff')
-  const [nameTextColor, setNameTextColor] = useState('#000000')
+  const [fieldLinesColor, setFieldLinesColor] = useState(defaultJersey?.png_field_lines_color || '#ffffff')
+  const [jerseyNumbersColor, setJerseyNumbersColor] = useState(defaultJersey?.png_jersey_numbers_color || '#000000')
+  const [nameBoxColor, setNameBoxColor] = useState(defaultJersey?.png_name_box_color || '#ffffff')
+  const [nameTextColor, setNameTextColor] = useState(defaultJersey?.png_name_text_color || '#000000')
   
   const { 
     lineup, 
@@ -104,6 +104,16 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   useEffect(() => {
     loadLineup()
   }, [sessionId])
+
+  // Aggiorna colori quando cambia la maglia di default
+  useEffect(() => {
+    if (defaultJersey) {
+      setFieldLinesColor(defaultJersey.png_field_lines_color || '#ffffff')
+      setJerseyNumbersColor(defaultJersey.png_jersey_numbers_color || '#000000')
+      setNameBoxColor(defaultJersey.png_name_box_color || '#ffffff')
+      setNameTextColor(defaultJersey.png_name_text_color || '#000000')
+    }
+  }, [defaultJersey])
 
   // Aggiorna stato locale quando viene caricata la formazione
   useEffect(() => {
@@ -500,7 +510,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               <input 
                 type="color" 
                 className="w-full h-8 rounded border cursor-pointer"
-                defaultValue="#ffffff"
+                value={fieldLinesColor}
                 onChange={(e) => setFieldLinesColor(e.target.value)}
               />
             </div>
@@ -509,7 +519,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               <input 
                 type="color" 
                 className="w-full h-8 rounded border cursor-pointer"
-                defaultValue="#000000"
+                value={jerseyNumbersColor}
                 onChange={(e) => setJerseyNumbersColor(e.target.value)}
               />
             </div>
@@ -518,7 +528,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               <input 
                 type="color" 
                 className="w-full h-8 rounded border cursor-pointer"
-                defaultValue="#ffffff"
+                value={nameBoxColor}
                 onChange={(e) => setNameBoxColor(e.target.value)}
               />
             </div>
@@ -527,10 +537,26 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               <input 
                 type="color" 
                 className="w-full h-8 rounded border cursor-pointer"
-                defaultValue="#000000"
+                value={nameTextColor}
                 onChange={(e) => setNameTextColor(e.target.value)}
               />
             </div>
+          </div>
+          <div className="mt-3">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (defaultJersey) {
+                  setFieldLinesColor(defaultJersey.png_field_lines_color || '#ffffff')
+                  setJerseyNumbersColor(defaultJersey.png_jersey_numbers_color || '#000000')
+                  setNameBoxColor(defaultJersey.png_name_box_color || '#ffffff')
+                  setNameTextColor(defaultJersey.png_name_text_color || '#000000')
+                }
+              }}
+            >
+              Reset ai colori di default
+            </Button>
           </div>
         </div>
 
