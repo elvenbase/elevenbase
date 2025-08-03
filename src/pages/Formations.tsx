@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { JerseyManager } from '@/components/JerseyManager'
 import { PngExportSettingsManager } from '@/components/PngExportSettingsManager'
+import { AvatarManager } from '@/components/AvatarManager'
 
 export default function Formations() {
   const { formations, loading, createFormation, updateFormation, deleteFormation } = useCustomFormations()
@@ -175,6 +176,11 @@ export default function Formations() {
 
       {/* Gestione Maglie */}
       <JerseyManager />
+
+      {/* Gestione Sfondi Avatar */}
+      <div className="mt-8">
+        <AvatarManager />
+      </div>
 
       {/* Impostazioni PNG */}
       <div className="mt-8">
