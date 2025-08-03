@@ -99,11 +99,43 @@ export const useJerseyTemplates = () => {
     try {
       console.log('🔍 Caricamento maglie utente...')
       
+      // Prima proviamo a vedere tutte le maglie per debug
+      const { data: allJerseys, error: allError } = await supabase
+        .from('jersey_templates')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      console.log('🔍 Tutte le maglie nel database:', allJerseys)
+
+      // Poi filtriamo per quelle degli utenti
       const { data, error } = await supabase
         .from('jersey_templates')
         .select('*')
         .not('created_by', 'is', null) // Escludi la maglia di sistema (created_by = NULL)
         .order('created_at', { ascending: false }) // Ordina per data di creazione (più recenti prima)
+
+      console.log('🔍 Maglie filtrate (solo utenti):', data)
+      
+      // Se il filtro non funziona, filtriamo manualmente
+      if (!data || data.length === 0) {
+        console.log('🔄 Filtro non ha funzionato, filtro manualmente...')
+        const userJerseys = allJerseys?.filter(jersey => jersey.created_by !== null) || []
+        console.log('👤 Maglie utente (filtro manuale):', userJerseys)
+        setJerseyTemplates(userJerseys)
+        
+        // Trova la maglia di default tra quelle degli utenti
+        const defaultTemplate = userJerseys.find(template => template.is_default)
+        console.log('⭐ Maglia di default trovata (manuale):', defaultTemplate)
+        
+        // Se non c'è una default tra le maglie degli utenti, usa la prima
+        if (!defaultTemplate && userJerseys.length > 0) {
+          console.log('🎯 Usando la prima maglia come default (manuale):', userJerseys[0])
+          setDefaultJersey(userJerseys[0])
+        } else {
+          setDefaultJersey(defaultTemplate || null)
+        }
+        return
+      }
 
       if (error) {
         console.error('❌ Errore nel caricamento:', error)
