@@ -106,6 +106,12 @@
   }
 }
 
+@layer components {
+  .formation-position-empty {
+    border-width: thin;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
