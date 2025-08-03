@@ -22,6 +22,15 @@ export const JerseyManager = () => {
     setAsDefault 
   } = useJerseyTemplates()
 
+  // Debug info
+  console.log('🎨 JerseyManager render:', {
+    tableExists,
+    loading,
+    jerseyTemplatesCount: jerseyTemplates.length,
+    defaultJersey: defaultJersey?.name,
+    jerseyTemplates: jerseyTemplates.map(j => ({ id: j.id, name: j.name, is_default: j.is_default }))
+  })
+
   const [isCreating, setIsCreating] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [formData, setFormData] = useState({

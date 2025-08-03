@@ -25,6 +25,8 @@ export const useJerseyTemplates = () => {
 
   const checkTableAndLoadJerseys = async () => {
     try {
+      console.log('🔍 Controllo esistenza tabella jersey_templates...')
+      
       // Prima verifichiamo se la tabella esiste
       const { data, error } = await supabase
         .from('jersey_templates')
@@ -33,7 +35,7 @@ export const useJerseyTemplates = () => {
 
       if (error && error.code === '42P01') {
         // Tabella non esiste - usa jersey di default
-        console.log('Tabella jersey_templates non esiste ancora, usando jersey di default')
+        console.log('❌ Tabella jersey_templates non esiste ancora, usando jersey di default')
         setTableExists(false)
         setDefaultJersey({
           id: 'default',
@@ -48,11 +50,13 @@ export const useJerseyTemplates = () => {
         setJerseyTemplates([])
       } else {
         // Tabella esiste - carica i dati
+        console.log('✅ Tabella jersey_templates esiste, caricamento dati...')
         setTableExists(true)
         await loadJerseyTemplates()
         
         // Se non ci sono maglie degli utenti, usa la maglia di sistema come fallback
         if (jerseyTemplates.length === 0) {
+          console.log('🔄 Nessuna maglia utente trovata, cercando maglia di sistema...')
           const { data: systemJersey } = await supabase
             .from('jersey_templates')
             .select('*')
@@ -61,10 +65,12 @@ export const useJerseyTemplates = () => {
             .single()
           
           if (systemJersey) {
+            console.log('🏠 Usando maglia di sistema:', systemJersey.name)
             setDefaultJersey(systemJersey)
           }
         } else if (jerseyTemplates.length > 0 && !defaultJersey) {
           // Se ci sono maglie ma nessuna è default, usa la prima
+          console.log('🎯 Usando prima maglia come default:', jerseyTemplates[0].name)
           setDefaultJersey(jerseyTemplates[0])
         }
       }
@@ -91,21 +97,31 @@ export const useJerseyTemplates = () => {
     if (!tableExists) return
 
     try {
+      console.log('🔍 Caricamento maglie utente...')
+      
       const { data, error } = await supabase
         .from('jersey_templates')
         .select('*')
         .not('created_by', 'is', null) // Escludi la maglia di sistema (created_by = NULL)
         .order('created_at', { ascending: false }) // Ordina per data di creazione (più recenti prima)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Errore nel caricamento:', error)
+        throw error
+      }
 
+      console.log('📦 Dati caricati:', data)
+      console.log('📊 Numero maglie trovate:', data?.length || 0)
+      
       setJerseyTemplates(data || [])
       
       // Trova la maglia di default tra quelle degli utenti
       const defaultTemplate = data?.find(template => template.is_default)
+      console.log('⭐ Maglia di default trovata:', defaultTemplate)
       
       // Se non c'è una default tra le maglie degli utenti, usa la prima
       if (!defaultTemplate && data && data.length > 0) {
+        console.log('🎯 Usando la prima maglia come default:', data[0])
         setDefaultJersey(data[0])
       } else {
         setDefaultJersey(defaultTemplate || null)
