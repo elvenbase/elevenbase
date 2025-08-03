@@ -67,7 +67,7 @@ const Navigation = () => {
           </NavLink>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden nav:flex items-center space-x-1">
             {/* Dashboard first */}
             <NavLink
               to="/"
@@ -136,7 +136,7 @@ const Navigation = () => {
           </div>
 
           {/* User Menu */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden nav:flex items-center space-x-3">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -150,7 +150,7 @@ const Navigation = () => {
               <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
                 {user?.email?.charAt(0).toUpperCase()}
               </div>
-              <span className="text-sm font-medium text-foreground hidden lg:block">
+              <span className="text-sm font-medium text-foreground hidden xl:block">
                 {user?.email}
               </span>
             </div>
@@ -160,7 +160,7 @@ const Navigation = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="nav:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -169,7 +169,7 @@ const Navigation = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-slide-in">
+          <div className="nav:hidden py-4 border-t border-border animate-slide-in">
             <div className="space-y-2">
               {/* Dashboard first */}
               <NavLink
