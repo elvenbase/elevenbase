@@ -83,6 +83,12 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
   const [exporting, setExporting] = useState(false)
   
+  // Stati per la personalizzazione PNG
+  const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
+  const [jerseyNumbersColor, setJerseyNumbersColor] = useState('#000000')
+  const [nameBoxColor, setNameBoxColor] = useState('#ffffff')
+  const [nameTextColor, setNameTextColor] = useState('#000000')
+  
   const { 
     lineup, 
     loading, 
@@ -485,6 +491,49 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
           </div>
         </div>
 
+        {/* Personalizzazione PNG */}
+        <div className="border rounded-lg p-4 bg-muted/30">
+          <h3 className="text-sm font-medium mb-3">Personalizzazione PNG</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">Righe campo</label>
+              <input 
+                type="color" 
+                className="w-full h-8 rounded border cursor-pointer"
+                defaultValue="#ffffff"
+                onChange={(e) => setFieldLinesColor(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">Numeri maglie</label>
+              <input 
+                type="color" 
+                className="w-full h-8 rounded border cursor-pointer"
+                defaultValue="#000000"
+                onChange={(e) => setJerseyNumbersColor(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">Box nomi</label>
+              <input 
+                type="color" 
+                className="w-full h-8 rounded border cursor-pointer"
+                defaultValue="#ffffff"
+                onChange={(e) => setNameBoxColor(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">Testo nomi</label>
+              <input 
+                type="color" 
+                className="w-full h-8 rounded border cursor-pointer"
+                defaultValue="#000000"
+                onChange={(e) => setNameTextColor(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Azioni */}
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={loading}>
@@ -524,6 +573,10 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
               sessionTitle="Sessione di allenamento"
               teamName="Team"
               jerseyUrl={defaultJersey?.image_url}
+              fieldLinesColor={fieldLinesColor}
+              jerseyNumbersColor={jerseyNumbersColor}
+              nameBoxColor={nameBoxColor}
+              nameTextColor={nameTextColor}
             />
           </div>
         </div>

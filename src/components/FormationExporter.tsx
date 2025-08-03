@@ -27,9 +27,23 @@ interface FormationExporterProps {
   sessionTitle: string
   teamName?: string
   jerseyUrl?: string
+  fieldLinesColor?: string
+  jerseyNumbersColor?: string
+  nameBoxColor?: string
+  nameTextColor?: string
 }
 
-const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUrl }: FormationExporterProps) => {
+const FormationExporter = ({ 
+  lineup, 
+  formation, 
+  sessionTitle, 
+  teamName, 
+  jerseyUrl,
+  fieldLinesColor = '#000000',
+  jerseyNumbersColor = '#000000',
+  nameBoxColor = '#ffffff',
+  nameTextColor = '#000000'
+}: FormationExporterProps) => {
   const { defaultJersey } = useJerseyTemplates()
   
   // Usa jerseyUrl se fornito, altrimenti la maglia di default, altrimenti fallback
@@ -64,7 +78,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
             right: '0',
             top: '50%',
             height: '2px',
-            backgroundColor: '#000',
+            backgroundColor: fieldLinesColor,
             transform: 'translateY(-50%)'
           }}
         />
@@ -77,7 +91,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
             top: '50%',
             width: '120px',
             height: '120px',
-            border: '2px solid #000',
+            border: `2px solid ${fieldLinesColor}`,
             borderRadius: '50%',
             transform: 'translate(-50%, -50%)',
             background: 'transparent'
@@ -92,7 +106,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
             top: '0',
             width: '200px',
             height: '80px',
-            border: '2px solid #000',
+            border: `2px solid ${fieldLinesColor}`,
             borderTop: 'none',
             transform: 'translateX(-50%)',
             background: 'transparent'
@@ -107,7 +121,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
             bottom: '0',
             width: '200px',
             height: '80px',
-            border: '2px solid #000',
+            border: `2px solid ${fieldLinesColor}`,
             borderBottom: 'none',
             transform: 'translateX(-50%)',
             background: 'transparent'
@@ -122,7 +136,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
             top: '0',
             width: '100px',
             height: '40px',
-            border: '2px solid #000',
+            border: `2px solid ${fieldLinesColor}`,
             borderTop: 'none',
             transform: 'translateX(-50%)',
             background: 'transparent'
@@ -137,7 +151,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
             bottom: '0',
             width: '100px',
             height: '40px',
-            border: '2px solid #000',
+            border: `2px solid ${fieldLinesColor}`,
             borderBottom: 'none',
             transform: 'translateX(-50%)',
             background: 'transparent'
@@ -219,7 +233,7 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                 <span style={{ 
                   position: 'relative', 
                   zIndex: 2, 
-                  color: '#fff',
+                  color: jerseyNumbersColor,
                   fontWeight: 'bold',
                   fontSize: '28px', // Font proporzionato per maglia 110px
                   textShadow: '2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9), 1px -1px 2px rgba(0,0,0,0.9), -1px 1px 2px rgba(0,0,0,0.9)',
@@ -232,8 +246,8 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
               {/* Nome giocatore su due righe */}
               <div 
                 style={{
-                  backgroundColor: '#fff',
-                  color: '#000',
+                  backgroundColor: nameBoxColor,
+                  color: nameTextColor,
                   fontSize: '12px',
                   fontWeight: 'bold',
                   fontFamily: 'sans-serif',
