@@ -22,6 +22,9 @@ ALTER TABLE avatar_backgrounds ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own avatar backgrounds" ON avatar_backgrounds
   FOR SELECT USING (auth.uid() = created_by);
 
+CREATE POLICY "Public can view default avatar backgrounds" ON avatar_backgrounds
+  FOR SELECT USING (is_default = true);
+
 CREATE POLICY "Users can insert their own avatar backgrounds" ON avatar_backgrounds
   FOR INSERT WITH CHECK (auth.uid() = created_by);
 
@@ -62,6 +65,10 @@ BEGIN
   DROP POLICY IF EXISTS "Users can view their own avatar backgrounds" ON avatar_backgrounds;
   CREATE POLICY "Users can view their own avatar backgrounds" ON avatar_backgrounds
     FOR SELECT USING (auth.uid() = created_by);
+
+  DROP POLICY IF EXISTS "Public can view default avatar backgrounds" ON avatar_backgrounds;
+  CREATE POLICY "Public can view default avatar backgrounds" ON avatar_backgrounds
+    FOR SELECT USING (is_default = true);
 
   DROP POLICY IF EXISTS "Users can insert their own avatar backgrounds" ON avatar_backgrounds;
   CREATE POLICY "Users can insert their own avatar backgrounds" ON avatar_backgrounds

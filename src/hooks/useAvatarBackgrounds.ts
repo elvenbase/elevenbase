@@ -33,6 +33,11 @@ export const useAvatarBackgrounds = () => {
           await createTable()
           setBackgrounds([])
           setDefaultBackground(null)
+        } else if (error.code === 'PGRST116' || error.message.includes('permission')) {
+          // Permission error (likely public context), silently handle
+          console.log('No avatar backgrounds available in public context')
+          setBackgrounds([])
+          setDefaultBackground(null)
         } else {
           throw error
         }
@@ -43,11 +48,18 @@ export const useAvatarBackgrounds = () => {
       }
     } catch (error) {
       console.error('Error loading avatar backgrounds:', error)
-      toast({
-        title: "Errore",
-        description: "Impossibile caricare gli sfondi avatar",
-        variant: "destructive"
-      })
+      // Only show toast error in authenticated context
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        toast({
+          title: "Errore",
+          description: "Impossibile caricare gli sfondi avatar",
+          variant: "destructive"
+        })
+      }
+      // Set empty state for public context
+      setBackgrounds([])
+      setDefaultBackground(null)
     } finally {
       setLoading(false)
     }
