@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateTrainingSession, useUpdateTrainingSession } from '@/hooks/useSupabaseData';
 import { Plus, Edit } from 'lucide-react';
 
@@ -38,6 +39,23 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
     return `${year}-${month}-${day}`;
   };
 
+  // Parse existing location into communication type and details
+  const parseLocation = (location?: string) => {
+    if (!location) return { type: '', details: '' };
+    
+    if (location.toLowerCase().includes('party')) {
+      return { type: 'party', details: '' };
+    } else if (location.includes('discord.gg') || location.includes('discord.com')) {
+      return { type: 'discord', details: location };
+    } else if (location.toLowerCase() === 'discord') {
+      return { type: 'discord', details: '' };
+    } else if (location.toLowerCase() !== 'party' && location.toLowerCase() !== 'discord') {
+      return { type: 'altro', details: location };
+    }
+    
+    return { type: '', details: '' };
+  };
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -47,12 +65,15 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
     location: ''
   });
 
+  const [communicationType, setCommunicationType] = useState('');
+  const [communicationDetails, setCommunicationDetails] = useState('');
+
   const createTrainingSession = useCreateTrainingSession();
   const updateTrainingSession = useUpdateTrainingSession();
 
-  // Popola il form con i dati della sessione se in modalità edit
   useEffect(() => {
-    if (mode === 'edit' && session) {
+    if (session && mode === 'edit') {
+      const parsed = parseLocation(session.location);
       setFormData({
         title: session.title,
         description: session.description || '',
@@ -61,41 +82,58 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
         end_time: session.end_time,
         location: session.location || ''
       });
+      setCommunicationType(parsed.type);
+      setCommunicationDetails(parsed.details);
     }
-  }, [mode, session]);
+  }, [session, mode]);
+
+  const formatCommunicationLocation = () => {
+    switch (communicationType) {
+      case 'party':
+        return 'Party';
+      case 'discord':
+        return communicationDetails || 'Discord';
+      case 'altro':
+        return communicationDetails || 'Altro';
+      default:
+        return '';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const sessionData = {
-      title: formData.title,
-      description: formData.description || undefined,
-      session_date: formData.session_date,
-      start_time: formData.start_time,
-      end_time: formData.end_time,
-      location: formData.location || undefined
+      ...formData,
+      location: formatCommunicationLocation()
     };
 
-    if (mode === 'edit' && session) {
-      await updateTrainingSession.mutateAsync({
-        sessionId: session.id,
-        updates: sessionData
-      });
-    } else {
-      await createTrainingSession.mutateAsync(sessionData);
+    try {
+      if (mode === 'edit' && session) {
+        await updateTrainingSession.mutateAsync({
+          id: session.id,
+          data: sessionData
+        });
+      } else {
+        await createTrainingSession.mutateAsync(sessionData);
+      }
+      handleOpenChange(false);
+    } catch (error) {
+      console.error('Error submitting form:', error);
     }
+  };
 
-    if (mode === 'create') {
-      setFormData({
-        title: '',
-        description: '',
-        session_date: getTomorrowDate(),
-        start_time: '21:00',
-        end_time: '23:00',
-        location: ''
-      });
-    }
-    
+  const handleClose = () => {
+    setFormData({
+      title: '',
+      description: '',
+      session_date: getTomorrowDate(),
+      start_time: '21:00',
+      end_time: '23:00',
+      location: ''
+    });
+    setCommunicationType('');
+    setCommunicationDetails('');
     setOpen(false);
     onOpenChange?.(false);
   };
@@ -176,14 +214,47 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="location">Luogo</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              placeholder="es. Campo principale"
-            />
+          <div className="space-y-3">
+            <Label>Comunicazioni</Label>
+            <Select value={communicationType} onValueChange={setCommunicationType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleziona dove avverranno le comunicazioni" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="party">Party</SelectItem>
+                <SelectItem value="discord">Discord</SelectItem>
+                <SelectItem value="altro">Altro</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {communicationType === 'discord' && (
+              <div>
+                <Label htmlFor="discord_url" className="text-sm text-muted-foreground">
+                  URL canale Discord (opzionale)
+                </Label>
+                <Input
+                  id="discord_url"
+                  value={communicationDetails}
+                  onChange={(e) => setCommunicationDetails(e.target.value)}
+                  placeholder="https://discord.gg/... oppure link canale"
+                />
+              </div>
+            )}
+            
+            {communicationType === 'altro' && (
+              <div>
+                <Label htmlFor="other_communication" className="text-sm text-muted-foreground">
+                  Specifica dove
+                </Label>
+                <Input
+                  id="other_communication"
+                  value={communicationDetails}
+                  onChange={(e) => setCommunicationDetails(e.target.value)}
+                  placeholder="es. TeamSpeak, Telegram, etc."
+                  required
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-2">

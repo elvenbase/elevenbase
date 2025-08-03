@@ -175,7 +175,7 @@ const SessionManagement = () => {
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-medium">Luogo</p>
+                    <p className="text-xs sm:text-sm font-medium">Comunicazioni</p>
                     <p className="text-xs text-muted-foreground truncate">{session.location}</p>
                   </div>
                 </div>

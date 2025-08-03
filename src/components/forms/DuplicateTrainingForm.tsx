@@ -132,12 +132,12 @@ export const DuplicateTrainingForm = ({ session }: DuplicateTrainingFormProps) =
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="location">Luogo</Label>
+            <Label htmlFor="location">Comunicazioni</Label>
             <Input
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Inserisci il luogo dell'allenamento"
+              placeholder="es. Party, Discord, TeamSpeak..."
             />
           </div>
           
