@@ -529,8 +529,7 @@ const PublicSession = () => {
                         // Prova prima con roleShort, poi con role come fallback, infine con name
                         const roleToCheck = position.roleShort || (position as any).role || position.name || ''
                         const matchesRole = sector.roles.some(role => 
-                          roleToCheck.toLowerCase().includes(role.toLowerCase()) ||
-                          role.toLowerCase().includes(roleToCheck.toLowerCase())
+                          roleToCheck.toLowerCase() === role.toLowerCase()
                         )
                         return hasPlayer && matchesRole
                       }) || []
