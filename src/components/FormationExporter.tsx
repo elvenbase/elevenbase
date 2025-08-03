@@ -222,7 +222,8 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   color: '#fff',
                   fontWeight: 'bold',
                   fontSize: '28px', // Font proporzionato per maglia 110px
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9), 1px -1px 2px rgba(0,0,0,0.9), -1px 1px 2px rgba(0,0,0,0.9)'
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9), 1px -1px 2px rgba(0,0,0,0.9), -1px 1px 2px rgba(0,0,0,0.9)',
+                  marginTop: '-30px'
                 }}>
                   {player.jersey_number || '?'}
                 </span>
@@ -239,7 +240,8 @@ const FormationExporter = ({ lineup, formation, sessionTitle, teamName, jerseyUr
                   paddingTop: '0px',
                   paddingRight: '15px',
                   paddingBottom: '15px',
-                  paddingLeft: '15px'
+                  paddingLeft: '15px',
+                  textAlign: 'center'
                 }}
               >
                 {player.first_name.toUpperCase()}<br/>{player.last_name.toUpperCase()}
