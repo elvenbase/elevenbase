@@ -14,6 +14,42 @@ import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import { usePngExportSettings } from '@/hooks/usePngExportSettings'
 import html2canvas from 'html2canvas'
 
+// Stili CSS personalizzati per il range slider
+const rangeSliderStyles = `
+  .slider::-webkit-slider-thumb {
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  
+  .slider::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  
+  .slider:focus {
+    outline: none;
+  }
+  
+  .slider:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.3);
+  }
+  
+  .slider:focus::-moz-range-thumb {
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.3);
+  }
+`
+
 interface Player {
   id: string
   first_name: string
@@ -83,6 +119,17 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
   const [exporting, setExporting] = useState(false)
+  
+  // Inietta gli stili CSS personalizzati
+  useEffect(() => {
+    const styleElement = document.createElement('style')
+    styleElement.textContent = rangeSliderStyles
+    document.head.appendChild(styleElement)
+    
+    return () => {
+      document.head.removeChild(styleElement)
+    }
+  }, [])
   
   const { 
     lineup, 
@@ -505,89 +552,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
           </div>
         </div>
 
-        {/* Personalizzazione PNG */}
-        <div className="border rounded-lg p-4 bg-muted/30">
-          <h3 className="text-sm font-medium mb-3">Personalizzazione PNG</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Righe campo</label>
-              <input 
-                type="color" 
-                className="w-full h-8 rounded border cursor-pointer"
-                value={fieldLinesColor}
-                onChange={(e) => setFieldLinesColor(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Numeri maglie</label>
-              <input 
-                type="color" 
-                className="w-full h-8 rounded border cursor-pointer"
-                value={jerseyNumbersColor}
-                onChange={(e) => setJerseyNumbersColor(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Box nomi</label>
-              <input 
-                type="color" 
-                className="w-full h-8 rounded border cursor-pointer"
-                value={nameBoxColor}
-                onChange={(e) => setNameBoxColor(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Testo nomi</label>
-              <input 
-                type="color" 
-                className="w-full h-8 rounded border cursor-pointer"
-                value={nameTextColor}
-                onChange={(e) => setNameTextColor(e.target.value)}
-              />
-            </div>
-          </div>
-          
-          {/* Spessore linee campo */}
-          <div className="mt-4 pt-4 border-t">
-            <label className="text-xs text-muted-foreground block mb-2">Spessore linee campo</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min="1"
-                max="8"
-                value={fieldLinesThickness}
-                onChange={(e) => setFieldLinesThickness(parseInt(e.target.value))}
-                className="flex-1"
-              />
-              <span className="text-sm font-medium min-w-[2rem] text-center">
-                {fieldLinesThickness}px
-              </span>
-            </div>
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>Sottile</span>
-              <span>Spesso</span>
-            </div>
-          </div>
-          <div className="mt-3">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                if (defaultSetting) {
-                  setFieldLinesColor(defaultSetting.field_lines_color)
-                  setFieldLinesThickness(defaultSetting.field_lines_thickness)
-                  setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
-                  setNameBoxColor(defaultSetting.name_box_color)
-                  setNameTextColor(defaultSetting.name_text_color)
-                }
-              }}
-            >
-              Reset ai colori di default
-            </Button>
-          </div>
-        </div>
-
-        {/* Azioni */}
+        {/* Azioni formazione */}
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={loading}>
             <Save className="mr-2 h-4 w-4" />
@@ -597,15 +562,141 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
             <Trash2 className="mr-2 h-4 w-4" />
             Cancella Tutto
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={downloadFormation} 
-            disabled={exporting || Object.keys(playerPositions).length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {exporting ? 'Generando...' : 'Scarica PNG'}
-          </Button>
         </div>
+
+        {/* Personalizza export di questa formazione */}
+        <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Download className="h-5 w-5 text-primary" />
+              Personalizza export di questa formazione
+            </CardTitle>
+            <CardDescription>
+              Configura l'aspetto del PNG della formazione prima di scaricarlo
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Colori */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-primary">Colori</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Righe campo</label>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="color" 
+                      className="w-full h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                      value={fieldLinesColor}
+                      onChange={(e) => setFieldLinesColor(e.target.value)}
+                    />
+                    <div className="text-xs text-muted-foreground min-w-[3rem]">
+                      {fieldLinesColor}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Numeri maglie</label>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="color" 
+                      className="w-full h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                      value={jerseyNumbersColor}
+                      onChange={(e) => setJerseyNumbersColor(e.target.value)}
+                    />
+                    <div className="text-xs text-muted-foreground min-w-[3rem]">
+                      {jerseyNumbersColor}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Box nomi</label>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="color" 
+                      className="w-full h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                      value={nameBoxColor}
+                      onChange={(e) => setNameBoxColor(e.target.value)}
+                    />
+                    <div className="text-xs text-muted-foreground min-w-[3rem]">
+                      {nameBoxColor}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Testo nomi</label>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="color" 
+                      className="w-full h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                      value={nameTextColor}
+                      onChange={(e) => setNameTextColor(e.target.value)}
+                    />
+                    <div className="text-xs text-muted-foreground min-w-[3rem]">
+                      {nameTextColor}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Spessore linee campo */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-primary">Spessore linee campo</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="1"
+                    max="8"
+                    value={fieldLinesThickness}
+                    onChange={(e) => setFieldLinesThickness(parseInt(e.target.value))}
+                    className="flex-1 h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer slider"
+                    style={{
+                      background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(fieldLinesThickness - 1) / 7 * 100}%, hsl(var(--primary) / 0.2) ${(fieldLinesThickness - 1) / 7 * 100}%, hsl(var(--primary) / 0.2) 100%)`
+                    }}
+                  />
+                  <div className="flex items-center gap-2 min-w-[4rem]">
+                    <span className="text-sm font-bold text-primary">
+                      {fieldLinesThickness}px
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground px-1">
+                  <span>Sottile</span>
+                  <span>Spesso</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Azioni export */}
+            <div className="flex items-center justify-between pt-4 border-t border-primary/20">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  if (defaultSetting) {
+                    setFieldLinesColor(defaultSetting.field_lines_color)
+                    setFieldLinesThickness(defaultSetting.field_lines_thickness)
+                    setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
+                    setNameBoxColor(defaultSetting.name_box_color)
+                    setNameTextColor(defaultSetting.name_text_color)
+                  }
+                }}
+                className="text-primary hover:text-primary/80"
+              >
+                Reset ai colori di default
+              </Button>
+              <Button 
+                onClick={downloadFormation} 
+                disabled={exporting || Object.keys(playerPositions).length === 0}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {exporting ? 'Generando PNG...' : 'Scarica PNG'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </CardContent>
 
       {/* Hidden Formation Exporter for PNG generation */}
