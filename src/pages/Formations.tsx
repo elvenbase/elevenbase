@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { JerseyManager } from '@/components/JerseyManager'
 import { PngExportSettingsManager } from '@/components/PngExportSettingsManager'
 import { AvatarManager } from '@/components/AvatarManager'
-import { AppSettingsManager } from '@/components/AppSettingsManager'
+
 
 export default function Formations() {
   const { formations, loading, createFormation, updateFormation, deleteFormation } = useCustomFormations()
@@ -174,11 +174,6 @@ export default function Formations() {
           ))}
         </div>
       )}
-
-      {/* Impostazioni App */}
-      <div className="mt-8">
-        <AppSettingsManager />
-      </div>
 
       {/* Gestione Maglie */}
       <JerseyManager />
