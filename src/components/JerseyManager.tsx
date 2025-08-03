@@ -214,7 +214,14 @@ export const JerseyManager = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium">Le tue maglie personalizzate</h3>
+              <p className="text-sm text-muted-foreground">
+                {jerseyTemplates.length} maglia{jerseyTemplates.length !== 1 ? 'e' : ''} caricata{jerseyTemplates.length !== 1 ? 'e' : ''}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {jerseyTemplates.map((jersey) => (
               <div key={jersey.id} className="relative group">
                 <Card className={`transition-all ${jersey.is_default ? 'ring-2 ring-primary' : ''}`}>
@@ -293,6 +300,7 @@ export const JerseyManager = () => {
                 </Card>
               </div>
             ))}
+            </div>
           </div>
         )}
       </CardContent>

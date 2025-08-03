@@ -63,6 +63,9 @@ export const useJerseyTemplates = () => {
           if (systemJersey) {
             setDefaultJersey(systemJersey)
           }
+        } else if (jerseyTemplates.length > 0 && !defaultJersey) {
+          // Se ci sono maglie ma nessuna è default, usa la prima
+          setDefaultJersey(jerseyTemplates[0])
         }
       }
     } catch (error) {
@@ -101,7 +104,13 @@ export const useJerseyTemplates = () => {
       
       // Trova la maglia di default tra quelle degli utenti
       const defaultTemplate = data?.find(template => template.is_default)
-      setDefaultJersey(defaultTemplate || null)
+      
+      // Se non c'è una default tra le maglie degli utenti, usa la prima
+      if (!defaultTemplate && data && data.length > 0) {
+        setDefaultJersey(data[0])
+      } else {
+        setDefaultJersey(defaultTemplate || null)
+      }
     } catch (error) {
       console.error('Errore nel caricamento delle maglie:', error)
       toast.error('Errore nel caricamento delle maglie')
