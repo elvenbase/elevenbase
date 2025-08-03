@@ -126,7 +126,11 @@ const PublicSession = () => {
       setSession(data.session)
       setPlayers(data.players)
       setExistingAttendance(data.existingAttendance)
-      setDeadline(new Date(data.deadline))
+      
+      // Calcola deadline: 4 ore prima dell'inizio della sessione
+      const sessionDateTime = new Date(`${data.session.session_date}T${data.session.start_time}`)
+      const registrationDeadline = new Date(sessionDateTime.getTime() - (4 * 60 * 60 * 1000)) // 4 ore prima
+      setDeadline(registrationDeadline)
 
       // Carica anche la formazione se disponibile
       if (data.session?.id) {
@@ -421,7 +425,9 @@ const PublicSession = () => {
 
             {deadline && (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 sm:p-4 bg-muted/50 rounded-lg">
-                <span className="font-medium text-sm sm:text-base">Tempo per registrarsi:</span>
+                <span className="font-medium text-sm sm:text-base">
+                  {isExpired ? 'Registrazioni chiuse' : 'Tempo per registrarsi (chiude 4h prima):'}
+                </span>
                 <Badge variant={isExpired ? "destructive" : "default"} className="text-xs sm:text-sm px-2 sm:px-3 py-1 self-start sm:self-center">
                   {isExpired ? 'Tempo scaduto' : timeLeft}
                 </Badge>
@@ -609,7 +615,7 @@ const PublicSession = () => {
 
         <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {/* Registrazione */}
-          {!isExpired && (
+          {!isExpired ? (
             <Card className="shadow-lg">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -699,6 +705,32 @@ const PublicSession = () => {
                   {submitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                   Conferma Registrazione
                 </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="shadow-lg border-amber-200 bg-amber-50">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-amber-800">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  Registrazioni chiuse
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base text-amber-700">
+                  Il tempo per registrarsi è scaduto (4 ore prima dell'inizio)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-amber-800">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      Le registrazioni si sono chiuse {deadline && format(deadline, "EEEE d MMMM 'alle' HH:mm", { locale: it })}
+                    </span>
+                  </div>
+                  <p className="text-sm text-amber-700">
+                    Le informazioni sulla sessione rimangono visibili per tua consultazione. 
+                    Per ulteriori comunicazioni contatta direttamente lo staff.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           )}
