@@ -109,13 +109,24 @@ const PublicSession = () => {
   const loadSessionData = async () => {
     console.log('Loading session data for token:', token)
     try {
-      const { data, error } = await supabase.functions.invoke('public-registration', {
-        body: { token, method: 'GET' }
+      // Use fetch directly to handle HTTP errors better
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/public-registration`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.supabaseKey}`
+        },
+        body: JSON.stringify({ token, method: 'GET' })
       })
 
-      console.log('Edge function response:', { data, error })
+      const data = await response.json()
+      console.log('Edge function response:', { status: response.status, data })
 
-      if (error) throw error
+      if (!response.ok) {
+        // Handle HTTP errors (403, 404, etc.)
+        setError(data.error || `Errore HTTP ${response.status}`)
+        return
+      }
 
       if (data.error) {
         console.error('Data error:', data.error)
