@@ -15,7 +15,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { subMonths } from 'date-fns';
 import { PlayerForm } from '@/components/forms/PlayerForm';
-import EditPlayerForm from '@/components/forms/EditPlayerForm';
+import { EditPlayerForm } from '@/components/forms/EditPlayerForm';
 import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 
 type SortField = 'name' | 'jersey_number' | 'position' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';

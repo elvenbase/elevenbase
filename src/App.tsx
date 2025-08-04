@@ -10,7 +10,7 @@ import { useState, useEffect, Suspense, lazy } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 // Import components
-import AdminSetup from "@/components/AdminSetup";
+import { AdminSetup } from "@/components/AdminSetup";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import Navigation from "@/components/Navigation";
