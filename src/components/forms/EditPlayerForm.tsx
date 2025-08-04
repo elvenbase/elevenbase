@@ -52,7 +52,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
     last_name: player.last_name,
     jersey_number: player.jersey_number || '',
     position: player.position || '',
-    status: player.status,
+    status: player.status || 'active',
     phone: player.phone || '',
     ea_sport_id: player.ea_sport_id || '',
     gaming_platform: player.gaming_platform || '',
@@ -332,7 +332,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'injured' | 'suspended') => setFormData({ ...formData, status: value })}>
+            <Select value={formData.status || 'active'} onValueChange={(value: 'active' | 'inactive' | 'injured' | 'suspended') => setFormData({ ...formData, status: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
