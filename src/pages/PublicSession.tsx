@@ -182,7 +182,23 @@ const PublicSession = () => {
   }
 
   const loadConvocati = async (sessionId: string) => {
+    console.log('🔍 Loading convocati for session:', sessionId)
+    console.log('🔍 Supabase client config:', {
+      url: supabase.supabaseUrl,
+      hasKey: !!supabase.supabaseKey,
+      isAnonymous: !supabase.auth.getUser()
+    })
+    
     try {
+      // Prima prova una query semplice senza JOIN
+      const { data: simpleData, error: simpleError } = await supabase
+        .from('training_convocati')
+        .select('*')
+        .eq('session_id', sessionId)
+
+      console.log('🔍 Simple query result:', { simpleData, simpleError, count: simpleData?.length || 0 })
+
+      // Poi prova la query completa con JOIN
       const { data, error } = await supabase
         .from('training_convocati')
         .select(`
@@ -198,14 +214,33 @@ const PublicSession = () => {
         `)
         .eq('session_id', sessionId)
 
+      console.log('🔍 Full query result:', { 
+        data, 
+        error, 
+        count: data?.length || 0,
+        errorDetails: error ? {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        } : null
+      })
+
       if (error) {
-        console.error('Errore nel caricare i convocati:', error)
+        console.error('❌ Errore nel caricare i convocati:', error)
+        console.error('❌ Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
         return
       }
       
       setConvocati(data || [])
+      console.log('✅ Convocati set in state:', data?.length || 0)
     } catch (error) {
-      console.error('Errore nel caricare i convocati:', error)
+      console.error('❌ Catch error nel caricare i convocati:', error)
     }
   }
 
