@@ -44,10 +44,11 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   // Combina le classi di dimensione con quelle personalizzate
   const avatarClasses = `${sizeClasses[size]} ${className}`.trim();
   
-  // Logica per lo style del componente Avatar
-  const avatarStyle = hasAvatar 
-    ? { ...getAvatarBackground(fullName, hasAvatar), ...style }
-    : style;
+  // Logica per lo style del componente Avatar - sempre applicare il background
+  const avatarStyle = { 
+    ...getAvatarBackground(fullName, hasAvatar), 
+    ...style 
+  };
 
   return (
     <Avatar 
