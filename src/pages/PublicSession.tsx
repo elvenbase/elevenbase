@@ -376,13 +376,14 @@ const PublicSession = () => {
   }
 
   if (error) {
+    const isSessionClosed = error.includes('chiusa') || error.includes('Chiusa')
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-destructive flex items-center gap-2">
               <XCircle className="h-5 w-5" />
-              Errore
+              {isSessionClosed ? 'Sessione Chiusa' : 'Errore'}
             </CardTitle>
           </CardHeader>
           <CardContent>
