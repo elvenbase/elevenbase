@@ -310,7 +310,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                     <div className="flex items-center gap-3">
                       <Avatar 
                         className="w-8 h-8"
-                        style={getAvatarBackground(player.first_name + player.last_name)}
+                        style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                       >
                         <AvatarImage src={player.avatar_url || undefined} />
                         <AvatarFallback className="text-xs text-white">
@@ -422,7 +422,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                     />
                     <Avatar 
                       className="w-10 h-10"
-                      style={getAvatarBackground(player.first_name + player.last_name)}
+                      style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                     >
                       <AvatarImage src={player.avatar_url || undefined} />
                       <AvatarFallback className="text-xs text-white">

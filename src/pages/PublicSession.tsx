@@ -531,7 +531,7 @@ const PublicSession = () => {
                             <div className="relative">
                               <Avatar 
                                 className="w-12 h-12 border-3 border-white shadow-lg hover:scale-110 transition-transform"
-                                style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
+                                style={getAvatarBackground(player.first_name + " " + player.last_name, !!player.avatar_url)}
                               >
                                 <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 
@@ -602,7 +602,7 @@ const PublicSession = () => {
                               >
                                 <Avatar 
                                   className="w-8 h-8 border-2 border-white"
-                                  style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
+                                  style={getAvatarBackground(player.first_name + " " + player.last_name, !!player.avatar_url)}
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
@@ -654,7 +654,7 @@ const PublicSession = () => {
                     >
                       <Avatar 
                         className="w-10 h-10 mb-2"
-                        style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
+                        style={getAvatarBackground(player.first_name + " " + player.last_name, !!player.avatar_url)}
                       >
                         <AvatarImage src={player.avatar_url || undefined} />
                         <AvatarFallback className="text-xs font-medium text-white">
@@ -724,7 +724,7 @@ const PublicSession = () => {
                             <div className="flex items-center gap-3 w-full">
                               <Avatar 
                                 className="w-8 h-8"
-                                style={getAvatarBackground(player.first_name + player.last_name)}
+                                style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                               >
                                 <AvatarImage src={player.avatar_url || undefined} />
                                 <AvatarFallback 

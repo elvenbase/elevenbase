@@ -328,7 +328,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
                   />
                   <Avatar 
                     className="h-8 w-8"
-                    style={getAvatarBackground(player.first_name + player.last_name)}
+                    style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                   >
                     <AvatarImage src={player.avatar_url || undefined} />
                     <AvatarFallback className="text-xs text-white">
@@ -394,7 +394,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
                   >
                     <Avatar 
                       className="h-10 w-10"
-                      style={getAvatarBackground(player.first_name + player.last_name)}
+                      style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                     >
                       <AvatarImage src={player.avatar_url || undefined} />
                       <AvatarFallback className="text-white">

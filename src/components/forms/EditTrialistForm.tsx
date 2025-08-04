@@ -182,7 +182,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
             <div className="flex items-center gap-4">
               <Avatar 
                 className="h-16 w-16"
-                style={getAvatarBackground(trialist.first_name + trialist.last_name)}
+                style={getAvatarBackground(trialist.first_name + trialist.last_name, !!avatarUrl)}
               >
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
                 <AvatarFallback className="text-white font-bold">

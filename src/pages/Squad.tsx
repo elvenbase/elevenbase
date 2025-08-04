@@ -71,7 +71,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
           <Avatar 
             className="h-12 w-12 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg flex-shrink-0"
             onClick={() => onImageClick(player)}
-            style={getAvatarBackground(player.first_name + player.last_name)}
+            style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
           >
             <AvatarImage 
               src={player.avatar_url || undefined} 
@@ -533,7 +533,7 @@ const Squad = () => {
                             <Avatar 
                               className="h-10 w-10 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
                               onClick={() => openImageModal(player)}
-                              style={getAvatarBackground(player.first_name + player.last_name)}
+                              style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                             >
                               <AvatarImage 
                                 src={player.avatar_url || undefined} 

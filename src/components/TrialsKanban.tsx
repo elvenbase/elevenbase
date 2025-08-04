@@ -37,7 +37,7 @@ const TrialistCard = ({
         <div className="flex items-center space-x-3">
           <Avatar 
             className="h-8 w-8"
-            style={getAvatarBackground(trialist.first_name + trialist.last_name)}
+            style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
           >
             <AvatarImage 
               src={trialist.avatar_url || undefined} 

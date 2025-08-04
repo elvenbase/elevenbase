@@ -305,7 +305,7 @@ const FormationExporter = ({
                         width: '100%',
                         height: '100%',
                         borderRadius: '50%',
-                        ...getAvatarBackground(player.first_name + player.last_name),
+                        ...getAvatarBackground(player.first_name + player.last_name, false),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

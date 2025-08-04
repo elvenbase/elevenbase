@@ -34,10 +34,16 @@ export const useAvatarColor = () => {
     return colors[hash % colors.length]
   }
 
-  const getAvatarBackground = (name: string): { 
+  const getAvatarBackground = (name: string, hasAvatar: boolean = false): { 
     backgroundColor?: string; 
     backgroundImage?: string;
   } => {
+    // Se il giocatore NON ha avatar caricato, usa sempre il colore scuro per buon contrasto
+    if (!hasAvatar) {
+      return { backgroundColor: '#0D1B2A' }
+    }
+
+    // Se il giocatore ha un avatar caricato, usa il sistema personalizzato
     if (defaultBackground) {
       if (defaultBackground.type === 'color') {
         return { backgroundColor: defaultBackground.value }

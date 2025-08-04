@@ -405,7 +405,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
             <div className="flex items-center gap-4">
               <Avatar 
                 className="h-16 w-16"
-                style={getAvatarBackground(player.first_name + player.last_name)}
+                style={getAvatarBackground(player.first_name + player.last_name, !!avatarUrl)}
               >
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
                 <AvatarFallback className="text-white font-bold">

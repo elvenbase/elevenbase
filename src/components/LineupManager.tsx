@@ -443,7 +443,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                           <div className="relative">
                             <Avatar 
                               className="w-10 h-10 border-2 border-white shadow-lg group-hover:scale-110 transition-transform"
-                              style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
+                              style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name, !!assignedPlayer.avatar_url)}
                             >
                               <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                               <AvatarFallback 
@@ -487,7 +487,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                               <div className="flex items-center gap-3">
                                 <Avatar 
                                   className="w-8 h-8"
-                                  style={getAvatarBackground(player.first_name + player.last_name)}
+                                  style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
@@ -516,7 +516,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                         <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                           <Avatar 
                             className="w-10 h-10"
-                            style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
+                            style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name, !!assignedPlayer.avatar_url)}
                           >
                             <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                             <AvatarFallback 
@@ -612,7 +612,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                           <div className="relative">
                             <Avatar 
                               className="w-16 h-16 border-3 border-white shadow-lg group-hover:scale-110 transition-transform"
-                              style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
+                              style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name, !!assignedPlayer.avatar_url)}
                             >
                               <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                               <AvatarFallback 
@@ -658,7 +658,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                               <div className="flex items-center gap-3">
                                 <Avatar 
                                   className="w-8 h-8"
-                                  style={getAvatarBackground(player.first_name + player.last_name)}
+                                  style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
@@ -687,7 +687,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                         <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                           <Avatar 
                             className="w-10 h-10"
-                            style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name)}
+                            style={getAvatarBackground(assignedPlayer.first_name + assignedPlayer.last_name, !!assignedPlayer.avatar_url)}
                           >
                             <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                             <AvatarFallback 
