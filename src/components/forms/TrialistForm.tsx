@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { useCreateTrialist } from '@/hooks/useSupabaseData';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Upload, X } from 'lucide-react';
@@ -33,6 +34,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createTrialist = useCreateTrialist();
   const { toast } = useToast();
+  const { getAvatarBackground } = useAvatarColor();
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -157,9 +159,12 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           <div className="space-y-2">
             <Label>Foto Profilo</Label>
             <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
+              <Avatar 
+                className="h-16 w-16"
+                style={getAvatarBackground(formData.first_name + formData.last_name)}
+              >
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
-                <AvatarFallback>
+                <AvatarFallback className="text-white font-bold">
                   {formData.first_name.charAt(0) || 'U'}{formData.last_name.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>

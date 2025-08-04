@@ -652,12 +652,12 @@ const PublicSession = () => {
                       key={convocato.id}
                       className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
                     >
-                      <Avatar className="w-10 h-10 mb-2">
+                      <Avatar 
+                        className="w-10 h-10 mb-2"
+                        style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
+                      >
                         <AvatarImage src={player.avatar_url || undefined} />
-                        <AvatarFallback 
-                          className="text-xs font-medium"
-                          style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
-                        >
+                        <AvatarFallback className="text-xs font-medium text-white">
                           {player.first_name.charAt(0)}{player.last_name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>

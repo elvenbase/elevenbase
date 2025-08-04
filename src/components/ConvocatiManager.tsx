@@ -326,12 +326,12 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
                     checked={selectedPlayers.includes(player.id)}
                     onChange={() => togglePlayerSelection(player.id)}
                   />
-                  <Avatar className="h-8 w-8">
+                  <Avatar 
+                    className="h-8 w-8"
+                    style={getAvatarBackground(player.first_name + player.last_name)}
+                  >
                     <AvatarImage src={player.avatar_url || undefined} />
-                    <AvatarFallback 
-                      className="text-xs"
-                      style={getAvatarBackground(player.first_name + player.last_name)}
-                    >
+                    <AvatarFallback className="text-xs text-white">
                       {player.first_name.charAt(0)}{player.last_name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
@@ -392,11 +392,12 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
                         : 'border-border'
                     }`}
                   >
-                    <Avatar className="h-10 w-10">
+                    <Avatar 
+                      className="h-10 w-10"
+                      style={getAvatarBackground(player.first_name + player.last_name)}
+                    >
                       <AvatarImage src={player.avatar_url || undefined} />
-                      <AvatarFallback 
-                        style={getAvatarBackground(player.first_name + player.last_name)}
-                      >
+                      <AvatarFallback className="text-white">
                         {player.first_name.charAt(0)}{player.last_name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>

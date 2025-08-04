@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { useUpdatePlayer } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X } from "lucide-react";
@@ -67,6 +68,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updatePlayer = useUpdatePlayer();
   const { toast } = useToast();
+  const { getAvatarBackground } = useAvatarColor();
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -401,9 +403,12 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
           <div className="space-y-2">
             <Label>Foto Profilo</Label>
             <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
+              <Avatar 
+                className="h-16 w-16"
+                style={getAvatarBackground(player.first_name + player.last_name)}
+              >
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
-                <AvatarFallback>
+                <AvatarFallback className="text-white font-bold">
                   {player.first_name.charAt(0)}{player.last_name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
