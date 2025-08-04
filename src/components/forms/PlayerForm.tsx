@@ -137,8 +137,8 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
           </div>
 
           {/* Gaming Section - Updated */}
-          <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h3>
+          <div className="space-y-4 pt-4 border-t" style={{ backgroundColor: '#f0f9ff', padding: '1rem', border: '2px solid #3b82f6' }}>
+            <h3 className="text-sm font-semibold text-muted-foreground">🎮 Dati Gaming (TEST VISIBILITÀ)</h3>
             
             <div className="space-y-2">
               <label className="text-sm font-medium">ID EA Sports</label>
