@@ -38,36 +38,40 @@ export const useAvatarColor = () => {
     backgroundColor?: string; 
     backgroundImage?: string;
   } => {
-    console.log(`🔍 Avatar debug for ${name}: hasAvatar=${hasAvatar}, defaultBackground=`, defaultBackground);
-    
-    // Se il giocatore ha un avatar caricato, usa il sistema personalizzato
-    if (hasAvatar && defaultBackground) {
+    // Se il giocatore ha un avatar caricato, non applicare background personalizzati
+    // L'immagine deve essere visibile senza interferenze
+    if (hasAvatar) {
+      return {}
+    }
+
+    // Se non ha avatar, usa il background predefinito dall'admin se disponibile
+    if (defaultBackground) {
       if (defaultBackground.type === 'color') {
-        console.log(`🎨 Using custom color ${defaultBackground.value} for ${name}`);
         return { backgroundColor: defaultBackground.value }
       } else if (defaultBackground.type === 'image') {
-        console.log(`🖼️ Using custom image for ${name}`);
         return { 
-          backgroundImage: `url(${defaultBackground.value})`
+          backgroundImage: `url(${defaultBackground.value})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
         }
       }
     }
 
-    // Se non ha avatar O non ci sono custom background, usa il fallback
-    if (!hasAvatar) {
-      console.log(`⚫ Using #0D1B2A for ${name} (no avatar)`);
-      return { backgroundColor: '#0D1B2A' }
-    }
-
-    // Fallback: usa il colore generato
-    const fallbackColor = getAvatarColor(name);
-    console.log(`🔄 Using fallback color ${fallbackColor} for ${name}`);
-    return { backgroundColor: fallbackColor }
+    // Fallback: usa il colore generato basato sul nome
+    return { backgroundColor: getAvatarColor(name) }
   }
 
   const getAvatarFallbackStyle = (name: string, hasAvatar: boolean = false): React.CSSProperties => {
-    // Il background viene sempre gestito dal componente Avatar, qui solo il colore del testo
-    return { color: 'white' }
+    // Se il giocatore ha un avatar, non applicare stili al fallback (non dovrebbe essere visibile)
+    if (hasAvatar) {
+      return { color: 'white' }
+    }
+
+    // Per i fallback (iniziali), sempre testo bianco per buon contrasto
+    return { 
+      color: 'white',
+      fontWeight: 'bold'
+    }
   }
 
   return {
