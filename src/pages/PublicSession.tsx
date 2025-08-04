@@ -182,6 +182,7 @@ const PublicSession = () => {
   }
 
   const loadConvocati = async (sessionId: string) => {
+    console.log('🔍 Loading convocati for session:', sessionId)
     try {
       const { data, error } = await supabase
         .from('training_convocati')
@@ -198,14 +199,17 @@ const PublicSession = () => {
         `)
         .eq('session_id', sessionId)
 
+      console.log('🔍 Convocati query result:', { data, error, count: data?.length || 0 })
+
       if (error) {
-        console.error('Errore nel caricare i convocati:', error)
+        console.error('❌ Errore nel caricare i convocati:', error)
         return
       }
       
       setConvocati(data || [])
+      console.log('✅ Convocati caricati:', data?.length || 0)
     } catch (error) {
-      console.error('Errore nel caricare i convocati:', error)
+      console.error('❌ Errore nel caricare i convocati:', error)
     }
   }
 
@@ -656,7 +660,14 @@ const PublicSession = () => {
         )}
 
         {/* Box Convocati - Semplice visualizzazione sotto la formazione */}
-        {convocati.length > 0 && (
+        {(() => {
+          console.log('🔍 Rendering convocati check:', { 
+            convocatiLength: convocati.length, 
+            convocati: convocati,
+            shouldShow: convocati.length > 0 
+          })
+          return convocati.length > 0
+        })() && (
           <Card className="shadow-lg">
             <CardHeader className="p-4">
               <CardTitle className="flex items-center gap-2 text-lg">
