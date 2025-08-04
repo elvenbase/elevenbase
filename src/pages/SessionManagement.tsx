@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,22 @@ import { TrainingForm } from '@/components/forms/TrainingForm'
 import LineupManager from '@/components/LineupManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
 
+interface TrainingSession {
+  id: string;
+  title: string;
+  description?: string;
+  session_date: string;
+  start_time: string;
+  end_time: string;
+  location?: string;
+  communication_type?: 'party' | 'discord' | 'altro' | null;
+  communication_details?: string;
+  max_participants?: number;
+  is_closed: boolean;
+  public_link_token?: string;
+  allow_responses_until?: string;
+}
+
 const SessionManagement = () => {
   const { sessionId } = useParams<{ sessionId: string }>()
   const [refreshKey, setRefreshKey] = useState(0)
@@ -21,14 +38,14 @@ const SessionManagement = () => {
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
   const { data: players } = usePlayers()
 
-  const session = sessions?.find(s => s.id === sessionId)
+  const session = sessions?.find(s => s.id === sessionId) as TrainingSession | undefined
 
   const formatDateTime = (date: string, time: string) => {
     const sessionDate = new Date(date + 'T' + time)
     return format(sessionDate, "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
   }
 
-  const getStatusBadge = (session: any) => {
+  const getStatusBadge = (session: TrainingSession) => {
     if (session.is_closed) {
       return <Badge variant="secondary">Chiusa</Badge>
     }
@@ -201,7 +218,7 @@ const SessionManagement = () => {
                           return <span>{type}</span>;
                         }
                         // Fallback per retrocompatibilità
-                        return <span className="truncate">{session.location}</span>;
+                        return <span className="truncate">{session.location || 'Non specificato'}</span>;
                       })()}
                     </div>
                   </div>

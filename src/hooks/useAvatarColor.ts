@@ -1,3 +1,4 @@
+
 import { useAvatarBackgrounds } from './useAvatarBackgrounds'
 
 export const useAvatarColor = () => {
@@ -29,15 +30,16 @@ export const useAvatarColor = () => {
     return colors[hash % colors.length]
   }
 
-  const getAvatarBackground = (name: string): { backgroundColor?: string; backgroundImage?: string } => {
+  const getAvatarBackground = (name: string): { 
+    backgroundColor?: string; 
+    backgroundImage?: string;
+  } => {
     if (defaultBackground) {
       if (defaultBackground.type === 'color') {
         return { backgroundColor: defaultBackground.value }
       } else if (defaultBackground.type === 'image') {
         return { 
-          backgroundImage: `url(${defaultBackground.value})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundImage: `url(${defaultBackground.value})`
         }
       }
     }
