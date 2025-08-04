@@ -235,7 +235,7 @@ const PublicSession = () => {
       
       // Forza il refresh dell'elemento
       exportElement.style.display = 'none'
-      exportElement.offsetHeight // Trigger reflow
+      void exportElement.offsetHeight // Trigger reflow
       exportElement.style.display = 'block'
       
       // Piccolo delay per assicurarsi che il DOM sia aggiornato

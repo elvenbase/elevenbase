@@ -157,7 +157,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
   // Carica formazione esistente quando cambia la sessione
   useEffect(() => {
     loadLineup()
-  }, [sessionId])
+  }, [sessionId, loadLineup])
 
   // Aggiorna colori quando cambiano le impostazioni PNG di default
   useEffect(() => {
@@ -287,7 +287,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
       
       // Forza il refresh dell'elemento
       exportElement.style.display = 'none'
-      exportElement.offsetHeight // Trigger reflow
+      void exportElement.offsetHeight // Trigger reflow
       exportElement.style.display = 'block'
       
       // Piccolo delay per assicurarsi che il DOM sia aggiornato

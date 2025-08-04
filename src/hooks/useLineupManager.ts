@@ -1,12 +1,24 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+
+interface FormationData {
+  name: string
+  positions: Array<{
+    id: string
+    name: string
+    x: number
+    y: number
+    role: string
+    roleShort: string
+  }>
+}
 
 interface LineupData {
   formation: string
   players_data: {
     positions: Record<string, string>
-    formation_data?: any
+    formation_data?: FormationData
   }
 }
 
@@ -14,7 +26,7 @@ interface Lineup {
   id: string
   session_id: string
   formation: string
-  players_data: any
+  players_data: LineupData['players_data']
   created_at: string
   updated_at: string
 }
@@ -23,7 +35,7 @@ export const useLineupManager = (sessionId: string) => {
   const [lineup, setLineup] = useState<Lineup | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const loadLineup = async () => {
+  const loadLineup = useCallback(async () => {
     if (!sessionId) return
 
     setLoading(true)
@@ -43,7 +55,7 @@ export const useLineupManager = (sessionId: string) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [sessionId])
 
   const createLineup = async (lineupData: LineupData) => {
     setLoading(true)

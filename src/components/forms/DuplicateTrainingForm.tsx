@@ -10,8 +10,19 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface TrainingSession {
+  id: string;
+  title: string;
+  description?: string;
+  session_date: string;
+  start_time: string;
+  end_time: string;
+  location?: string;
+  max_participants?: number;
+}
+
 interface DuplicateTrainingFormProps {
-  session: any;
+  session: TrainingSession;
 }
 
 export const DuplicateTrainingForm = ({ session }: DuplicateTrainingFormProps) => {

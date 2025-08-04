@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,9 +30,9 @@ const AdminSetup = ({ onSetupComplete }: AdminSetupProps) => {
 
   useEffect(() => {
     checkAdminSetup();
-  }, []);
+  }, [checkAdminSetup]);
 
-  const checkAdminSetup = async () => {
+  const checkAdminSetup = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -75,7 +75,7 @@ const AdminSetup = ({ onSetupComplete }: AdminSetupProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [onSetupComplete, toast]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();

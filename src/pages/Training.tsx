@@ -15,8 +15,21 @@ import { DuplicateTrainingForm } from '@/components/forms/DuplicateTrainingForm'
 import StatsCard from '@/components/StatsCard';
 import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSession } from '@/hooks/useSupabaseData';
 
+interface TrainingSession {
+  id: string;
+  title: string;
+  session_date: string;
+  start_time: string;
+  end_time: string;
+  is_closed: boolean;
+  description?: string;
+  location?: string;
+  max_participants?: number;
+  current_participants?: number;
+}
+
 const Training = () => {
-  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
   
@@ -29,7 +42,7 @@ const Training = () => {
     refetchSessions();
   };
 
-  const openSessionDetails = (session: any) => {
+  const openSessionDetails = (session: TrainingSession) => {
     setSelectedSession(session);
     setModalOpen(true);
   };
@@ -49,7 +62,7 @@ const Training = () => {
   };
 
   // Funzione per determinare se una sessione è archiviata
-  const isSessionArchived = (session: any) => {
+  const isSessionArchived = (session: TrainingSession) => {
     if (session.is_closed) return true;
     
     const sessionDateTime = new Date(session.session_date + 'T' + session.end_time);
@@ -60,7 +73,7 @@ const Training = () => {
     return hoursSinceEnd > 48;
   };
 
-  const getStatusBadge = (session: any) => {
+  const getStatusBadge = (session: TrainingSession) => {
     if (session.is_closed) {
       return <Badge variant="destructive">Chiusa</Badge>;
     }
@@ -105,7 +118,7 @@ const Training = () => {
   } : { active: [], archived: [] };
 
   // Mobile card component for training sessions
-  const TrainingSessionCard = ({ session }: { session: any }) => {
+  const TrainingSessionCard = ({ session }: { session: TrainingSession }) => {
     const isExpanded = expandedSessions.has(session.id);
     
     return (

@@ -22,13 +22,36 @@ import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 type SortField = 'name' | 'jersey_number' | 'position' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
 
+interface Player {
+  id: string;
+  first_name: string;
+  last_name: string;
+  jersey_number?: number;
+  position?: string;
+  phone?: string;
+  status: 'active' | 'inactive' | 'injured' | 'suspended';
+  avatar_url?: string;
+  presences?: number;
+  tardiness?: number;
+  attendanceRate?: number;
+  totalEvents?: number;
+  ea_sports_id?: string;
+  gaming_platform?: string;
+  platform_id?: string;
+}
+
+interface AvatarBackground {
+  backgroundColor: string;
+  color: string;
+}
+
 // Mobile Player Card Component
 interface MobilePlayerCardProps {
-  player: any;
-  onImageClick: (player: any) => void;
+  player: Player;
+  onImageClick: (player: Player) => void;
   onDelete: (playerId: string) => void;
   formatWhatsAppLink: (phone: string, name: string) => string;
-  getAvatarBackground: (name: string) => any;
+  getAvatarBackground: (name: string) => AvatarBackground;
 }
 
 const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({ 
@@ -301,7 +324,7 @@ const Squad = () => {
     return `https://wa.me/${cleanPhone}?text=Ciao%20${firstName}`;
   };
 
-  const openImageModal = (player: any) => {
+  const openImageModal = (player: Player) => {
     setSelectedPlayerImage({
       src: player.avatar_url || '',
       name: `${player.first_name} ${player.last_name}`,
@@ -325,7 +348,7 @@ const Squad = () => {
   };
 
   const filteredAndSortedPlayers = useMemo(() => {
-    let filtered = players.filter(player => {
+    const filtered = players.filter(player => {
       const matchesSearch = 
         player.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         player.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -338,8 +361,8 @@ const Squad = () => {
 
     // Sort the filtered results
     filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       switch (sortField) {
         case 'name':
@@ -359,16 +382,16 @@ const Squad = () => {
           bValue = b.phone || '';
           break;
         case 'presences':
-          aValue = (a as any).presences || 0;
-          bValue = (b as any).presences || 0;
+          aValue = a.presences || 0;
+          bValue = b.presences || 0;
           break;
         case 'tardiness':
-          aValue = (a as any).tardiness || 0;
-          bValue = (b as any).tardiness || 0;
+          aValue = a.tardiness || 0;
+          bValue = b.tardiness || 0;
           break;
         case 'attendanceRate':
-          aValue = (a as any).attendanceRate || 0;
-          bValue = (b as any).attendanceRate || 0;
+          aValue = a.attendanceRate || 0;
+          bValue = b.attendanceRate || 0;
           break;
         case 'status':
           aValue = a.status;
@@ -521,7 +544,7 @@ const Squad = () => {
                               style={getAvatarBackground(player.first_name + player.last_name)}
                             >
                               <AvatarImage 
-                                src={(player as any).avatar_url || undefined} 
+                                src={player.avatar_url || undefined} 
                                 alt={`${player.first_name} ${player.last_name}`} 
                               />
                               <AvatarFallback 
@@ -567,18 +590,18 @@ const Squad = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Badge variant="secondary">
-                              {(player as any).presences || 0}/{(player as any).totalEvents || 0}
+                              {player.presences || 0}/{player.totalEvents || 0}
                             </Badge>
-                            {(player as any).totalEvents > 0 && (
+                            {player.totalEvents > 0 && (
                               <span className="text-sm text-muted-foreground">
-                                ({(player as any).attendanceRate}%)
+                                ({player.attendanceRate}%)
                               </span>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={(player as any).tardiness > 0 ? "destructive" : "outline"}>
-                            {(player as any).tardiness || 0}
+                          <Badge variant={player.tardiness > 0 ? "destructive" : "outline"}>
+                            {player.tardiness || 0}
                           </Badge>
                         </TableCell>
                         <TableCell>
