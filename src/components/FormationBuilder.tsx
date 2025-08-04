@@ -211,27 +211,29 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
             <CardTitle>Campo da Calcio - Posiziona e Personalizza i Giocatori</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative w-full max-w-2xl mx-auto">
-            <div 
-              className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden field-container" 
-              style={{ aspectRatio: '2/3', minHeight: '500px' }}
-              onMouseMove={(e) => {
-                if (draggedPosition) {
-                  handlePositionDrag(draggedPosition, e)
-                }
-              }}
-              onMouseUp={() => setDraggedPosition(null)}
-              onMouseLeave={() => setDraggedPosition(null)}
-            >
+            {/* Mobile version (under 1100px) */}
+            <div className="block xl:hidden relative w-full max-w-md mx-auto">
+              <div 
+                className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden field-container" 
+                style={{ aspectRatio: '2/3', minHeight: '400px' }}
+                onMouseMove={(e) => {
+                  if (draggedPosition) {
+                    handlePositionDrag(draggedPosition, e)
+                  }
+                }}
+                onMouseUp={() => setDraggedPosition(null)}
+                onMouseLeave={() => setDraggedPosition(null)}
+              >
+                {/* Mobile field content */}
                 {/* Sfondo erba con pattern */}
                 <div 
                   className="absolute inset-0 opacity-20" 
                   style={{
-                    backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,100,0,0.1) 10px, rgba(0,100,0,0.1) 20px)'
+                    backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(0,100,0,0.1) 8px, rgba(0,100,0,0.1) 16px)'
                   }}
                 />
                 
-                {/* Linee del campo */}
+                {/* Linee del campo - mobile */}
                 <div className="absolute inset-0">
                   {/* Bordo campo */}
                   <div className="absolute inset-2 border-2 border-white rounded-sm" />
@@ -241,7 +243,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                   {/* Area piccola superiore */}
                   <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-2 border-white" />
                   {/* Dischetto superiore */}
-                  <div className="absolute top-[12%] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+                  <div className="absolute top-[12%] left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full" />
                   
                   {/* Linea di metà campo */}
                   <div className="absolute top-1/2 left-2 right-2 border-t-2 border-white" />
@@ -251,21 +253,21 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                     style={{ width: '25%', aspectRatio: '1' }}
                   />
                   {/* Punto del centrocampo */}
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full" />
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full" />
                   
                   {/* Area di rigore inferiore */}
                   <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-2 border-white" />
                   {/* Area piccola inferiore */}
                   <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-2 border-white" />
                   {/* Dischetto inferiore */}
-                  <div className="absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+                  <div className="absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full" />
                   
                   {/* Porte */}
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1 bg-white" />
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1 bg-white" />
                 </div>
 
-                {/* Positions */}
+                {/* Mobile Positions */}
                 {positions.map((position) => (
                   <div
                     key={position.id}
@@ -275,81 +277,197 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                       top: `${position.y}%`
                     }}
                   >
-                  <div className="flex flex-col items-center space-y-1">
-                    {/* Player pin */}
-                    <div
-                      className="w-8 h-8 bg-blue-600 rounded-full border-2 border-white cursor-move flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg"
-                      onMouseDown={(e) => {
-                        setDraggedPosition(position.id)
-                        e.preventDefault()
-                        e.stopPropagation()
-                      }}
-                      onTouchStart={(e) => {
-                        setDraggedPosition(position.id)
-                        e.preventDefault()
-                        e.stopPropagation()
-                      }}
-                      title={position.name}
-                    >
-                      <span className="text-white text-xs font-bold">
-                        {position.roleShort || position.id === 'gk' ? 'P' : position.id.split('-')[1] || '1'}
-                      </span>
-                    </div>
-                    
-                    {/* Role display/edit */}
-                    {editingRole === position.id ? (
-                      <div 
-                        className={`bg-white/95 backdrop-blur-sm rounded px-3 py-2 shadow-lg min-w-[120px] space-y-2 absolute z-50 ${
-                          position.x > 70 ? 'right-0' : position.x < 30 ? 'left-0' : 'left-1/2 -translate-x-1/2'
-                        } ${
-                          position.y < 30 ? 'top-full mt-2' : 'bottom-full mb-2'
-                        }`}
-                        onClick={(e) => e.stopPropagation()}
+                    <div className="flex flex-col items-center space-y-1">
+                      {/* Player pin - mobile size */}
+                      <div
+                        className="w-6 h-6 bg-blue-600 rounded-full border-2 border-white cursor-move flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg"
+                        onMouseDown={(e) => {
+                          setDraggedPosition(position.id)
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        onTouchStart={(e) => {
+                          setDraggedPosition(position.id)
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        title={position.name}
                       >
-                        <Input
-                          value={position.role || ''}
-                          onChange={(e) => updatePositionRole(position.id, e.target.value, position.roleShort)}
-                          placeholder="Ruolo esteso"
-                          className="text-xs h-7"
+                        <span className="text-white text-xs font-bold">
+                          {position.roleShort || position.id === 'gk' ? 'P' : position.id.split('-')[1] || '1'}
+                        </span>
+                      </div>
+                      
+                      {/* Role display/edit - mobile */}
+                      {editingRole === position.id ? (
+                        <input
+                          type="text"
+                          value={position.roleShort || ''}
+                          onChange={(e) => updatePositionRole(position.id, e.target.value)}
+                          onBlur={() => setEditingRole(null)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              setEditingRole(null)
+                            }
+                          }}
+                          className="text-xs bg-white border border-gray-300 rounded px-1 py-0.5 w-8 text-center"
                           autoFocus
                         />
-                        <Input
-                          value={position.roleShort || ''}
-                          onChange={(e) => updatePositionRole(position.id, position.role || '', e.target.value)}
-                          placeholder="Abbreviato"
-                          className="text-xs h-7"
-                          maxLength={3}
-                        />
-                        <div className="flex gap-1">
-                          <Button 
-                            size="sm" 
-                            className="h-6 text-xs" 
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setEditingRole(null)
-                            }}
-                          >
-                            OK
-                          </Button>
+                      ) : (
+                        <div
+                          className="text-xs font-semibold text-gray-800 bg-white bg-opacity-90 px-1 py-0.5 rounded cursor-pointer hover:bg-opacity-100 transition-all"
+                          onClick={() => setEditingRole(position.id)}
+                        >
+                          {position.roleShort || position.role || 'Ruolo'}
                         </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="text-xs text-white font-medium px-2 py-1 bg-black/60 rounded backdrop-blur-sm cursor-pointer hover:bg-black/80 transition-colors max-w-[80px] text-center"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setEditingRole(position.id)
-                        }}
-                        title="Clicca per modificare"
-                      >
-                        {position.role || position.name}
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Desktop version (1100px and above) */}
+            <div className="hidden xl:block relative w-full max-w-6xl mx-auto">
+              <div 
+                className="relative bg-gradient-to-b from-green-100 to-green-200 border-4 border-white rounded-lg shadow-lg overflow-hidden field-container" 
+                style={{ aspectRatio: '2/3', minHeight: '800px' }}
+              onMouseMove={(e) => {
+                if (draggedPosition) {
+                  handlePositionDrag(draggedPosition, e)
+                }
+              }}
+              onMouseUp={() => setDraggedPosition(null)}
+              onMouseLeave={() => setDraggedPosition(null)}
+            >
+                {/* Desktop field content */}
+                {/* Sfondo erba con pattern - desktop */}
+                <div 
+                  className="absolute inset-0 opacity-20" 
+                  style={{
+                    backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 15px, rgba(0,100,0,0.1) 15px, rgba(0,100,0,0.1) 30px)'
+                  }}
+                />
+                
+                {/* Linee del campo - desktop */}
+                <div className="absolute inset-0">
+                  {/* Bordo campo */}
+                  <div className="absolute inset-3 border-4 border-white rounded-sm" />
+                  
+                  {/* Area di rigore superiore */}
+                  <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-4 border-white" />
+                  {/* Area piccola superiore */}
+                  <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-4 border-white" />
+                  {/* Dischetto superiore */}
+                  <div className="absolute top-[12%] left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white rounded-full" />
+                  
+                  {/* Linea di metà campo */}
+                  <div className="absolute top-1/2 left-3 right-3 border-t-4 border-white" />
+                  {/* Cerchio di centrocampo */}
+                  <div 
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-4 border-white rounded-full"
+                    style={{ width: '25%', aspectRatio: '1' }}
+                  />
+                  {/* Punto del centrocampo */}
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full" />
+                  
+                  {/* Area di rigore inferiore */}
+                  <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-4 border-white" />
+                  {/* Area piccola inferiore */}
+                  <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 w-1/4 h-[8%] border-4 border-white" />
+                  {/* Dischetto inferiore */}
+                  <div className="absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white rounded-full" />
+                  
+                  {/* Porte */}
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1.5 bg-white" />
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/6 h-1.5 bg-white" />
+                </div>
+
+                {/* Desktop Positions */}
+                {positions.map((position) => (
+                  <div
+                    key={position.id}
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
+                    style={{
+                      left: `${position.x}%`,
+                      top: `${position.y}%`
+                    }}
+                  >
+                    <div className="flex flex-col items-center space-y-2">
+                      {/* Player pin - desktop size */}
+                      <div
+                        className="w-12 h-12 bg-blue-600 rounded-full border-3 border-white cursor-move flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg"
+                        onMouseDown={(e) => {
+                          setDraggedPosition(position.id)
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        onTouchStart={(e) => {
+                          setDraggedPosition(position.id)
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        title={position.name}
+                      >
+                        <span className="text-white text-sm font-bold">
+                          {position.roleShort || position.id === 'gk' ? 'P' : position.id.split('-')[1] || '1'}
+                        </span>
+                      </div>
+                      
+                                             {/* Role display/edit - desktop */}
+                       {editingRole === position.id ? (
+                         <div 
+                           className={`bg-white/95 backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg min-w-[150px] space-y-3 absolute z-50 ${
+                             position.x > 70 ? 'right-0' : position.x < 30 ? 'left-0' : 'left-1/2 -translate-x-1/2'
+                           } ${
+                             position.y < 30 ? 'top-full mt-3' : 'bottom-full mb-3'
+                           }`}
+                           onClick={(e) => e.stopPropagation()}
+                         >
+                           <Input
+                             value={position.role || ''}
+                             onChange={(e) => updatePositionRole(position.id, e.target.value, position.roleShort)}
+                             placeholder="Ruolo esteso"
+                             className="text-sm h-9"
+                             autoFocus
+                           />
+                           <Input
+                             value={position.roleShort || ''}
+                             onChange={(e) => updatePositionRole(position.id, position.role || '', e.target.value)}
+                             placeholder="Abbreviato"
+                             className="text-sm h-9"
+                             maxLength={3}
+                           />
+                           <div className="flex gap-2">
+                             <Button 
+                               size="sm" 
+                               className="h-8 text-sm flex-1" 
+                               onClick={(e) => {
+                                 e.stopPropagation()
+                                 setEditingRole(null)
+                               }}
+                             >
+                               OK
+                             </Button>
+                           </div>
+                         </div>
+                       ) : (
+                         <div
+                           className="text-sm text-white font-medium px-3 py-1.5 bg-black/60 rounded-lg backdrop-blur-sm cursor-pointer hover:bg-black/80 transition-colors max-w-[100px] text-center"
+                           onClick={(e) => {
+                             e.stopPropagation()
+                             setEditingRole(position.id)
+                           }}
+                           title="Clicca per modificare"
+                         >
+                           {position.role || position.name}
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
 
             {/* Position fine-tuning controls */}
             <div className="mt-4 space-y-3">
