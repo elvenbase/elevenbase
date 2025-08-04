@@ -54,7 +54,7 @@ const Navigation = () => {
               <img 
                 src="/lovable-uploads/logo_elevenBase.png" 
                 alt="Ca De Rissi SG Esport" 
-                className="h-10 w-10 rounded-lg shadow-glow group-hover:shadow-accent-glow transition-smooth"
+                className="h-10 w-10 rounded-lg group-hover:shadow-accent-glow transition-smooth"
               />
               <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 rounded-lg transition-smooth" />
             </div>
