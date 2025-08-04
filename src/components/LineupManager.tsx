@@ -126,7 +126,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   useEffect(() => {
     const playersInLineup = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
     onLineupChange?.(playersInLineup)
-  }, [playerPositions, onLineupChange])
+  }, [playerPositions]) // Rimossa onLineupChange dalle dipendenze
   
   // Inietta gli stili CSS personalizzati
   useEffect(() => {

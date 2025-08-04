@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,7 +13,7 @@ import { AttendanceForm } from '@/components/forms/AttendanceForm'
 import { TrainingForm } from '@/components/forms/TrainingForm'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
-import PublicLinkSharing from '@/components/PublicLinkSharing'
+import { PublicLinkSharing } from '@/components/PublicLinkSharing'
 
 interface TrainingSession {
   id: string;
@@ -66,9 +66,9 @@ const SessionManagement = () => {
     setRefreshKey(prev => prev + 1)
   }
 
-  const handleLineupChange = (playerIds: string[]) => {
+  const handleLineupChange = useCallback((playerIds: string[]) => {
     setPlayersInLineup(playerIds)
-  }
+  }, [])
 
   // Calcola statistiche presenze
   const attendanceStats = {
