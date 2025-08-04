@@ -89,9 +89,10 @@ const SessionManagement = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* Header */}
+        <div className="border-b bg-card rounded-lg mb-6 sm:mb-8">
+          <div className="px-4 sm:px-6 py-3 sm:py-6">
           {/* Mobile layout - stacked */}
           <div className="flex flex-col space-y-3 sm:hidden">
             <div className="flex items-center justify-between">
@@ -153,10 +154,8 @@ const SessionManagement = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Session Details */}
-      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
+        {/* Session Details */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card>
             <CardContent className="p-3 sm:pt-6">
