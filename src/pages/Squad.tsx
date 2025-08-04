@@ -71,13 +71,16 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
           <Avatar 
             className="h-12 w-12 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg flex-shrink-0"
             onClick={() => onImageClick(player)}
-            style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
+            style={!!player.avatar_url ? getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url) : undefined}
           >
             <AvatarImage 
               src={player.avatar_url || undefined} 
               alt={`${player.first_name} ${player.last_name}`} 
             />
-            <AvatarFallback className="text-white font-bold">
+            <AvatarFallback 
+              className="text-white font-bold"
+              style={getAvatarFallbackStyle(player.first_name + player.last_name, !!player.avatar_url)}
+            >
               {player.first_name.charAt(0)}{player.last_name.charAt(0)}
             </AvatarFallback>
           </Avatar>
@@ -302,7 +305,7 @@ const Squad = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const { getAvatarBackground } = useAvatarColor();
+  const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
     to: new Date()
@@ -533,7 +536,7 @@ const Squad = () => {
                             <Avatar 
                               className="h-10 w-10 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
                               onClick={() => openImageModal(player)}
-                              style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
+                              style={!!player.avatar_url ? getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url) : undefined}
                             >
                               <AvatarImage 
                                 src={player.avatar_url || undefined} 
@@ -541,6 +544,7 @@ const Squad = () => {
                               />
                               <AvatarFallback 
                                 className="text-white font-bold"
+                                style={getAvatarFallbackStyle(player.first_name + player.last_name, !!player.avatar_url)}
                               >
                                 {player.first_name.charAt(0)}{player.last_name.charAt(0)}
                               </AvatarFallback>

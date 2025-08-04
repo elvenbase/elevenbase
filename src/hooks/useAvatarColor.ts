@@ -40,14 +40,8 @@ export const useAvatarColor = () => {
   } => {
     console.log(`🔍 Avatar debug for ${name}: hasAvatar=${hasAvatar}, defaultBackground=`, defaultBackground);
     
-    // Se il giocatore NON ha avatar caricato, usa sempre il colore scuro per buon contrasto
-    if (!hasAvatar) {
-      console.log(`⚫ Using #0D1B2A for ${name} (no avatar)`);
-      return { backgroundColor: '#0D1B2A' }
-    }
-
     // Se il giocatore ha un avatar caricato, usa il sistema personalizzato
-    if (defaultBackground) {
+    if (hasAvatar && defaultBackground) {
       if (defaultBackground.type === 'color') {
         console.log(`🎨 Using custom color ${defaultBackground.value} for ${name}`);
         return { backgroundColor: defaultBackground.value }
@@ -59,15 +53,32 @@ export const useAvatarColor = () => {
       }
     }
 
+    // Se non ha avatar O non ci sono custom background, usa il fallback
+    if (!hasAvatar) {
+      console.log(`⚫ Using #0D1B2A for ${name} (no avatar)`);
+      return { backgroundColor: '#0D1B2A' }
+    }
+
     // Fallback: usa il colore generato
     const fallbackColor = getAvatarColor(name);
     console.log(`🔄 Using fallback color ${fallbackColor} for ${name}`);
     return { backgroundColor: fallbackColor }
   }
 
+  const getAvatarFallbackStyle = (name: string, hasAvatar: boolean = false): React.CSSProperties => {
+    // Se non ha avatar, applica sempre il background scuro direttamente al fallback
+    if (!hasAvatar) {
+      return { backgroundColor: '#0D1B2A', color: 'white' }
+    }
+    
+    // Se ha avatar, il background viene gestito dal componente Avatar
+    return { color: 'white' }
+  }
+
   return {
     getAvatarColor,
     getAvatarBackground,
+    getAvatarFallbackStyle,
     defaultBackground
   }
 }
