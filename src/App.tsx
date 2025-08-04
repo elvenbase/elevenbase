@@ -112,7 +112,7 @@ function App() {
                     <ProtectedRoute>
                       <Navigation />
                       <main className="ml-0 lg:ml-64 transition-all duration-200">
-                        <Index />
+                        <Dashboard />
                       </main>
                     </ProtectedRoute>
                   } />
