@@ -332,6 +332,7 @@ const SessionManagement = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </div>
   )
