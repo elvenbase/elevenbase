@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_setup: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          is_completed: boolean | null
+          setup_token: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          is_completed?: boolean | null
+          setup_token: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          is_completed?: boolean | null
+          setup_token?: string
+        }
+        Relationships: []
+      }
+      avatar_backgrounds: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          type: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          type: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          type?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       competitions: {
         Row: {
           created_at: string
@@ -86,6 +143,51 @@ export type Database = {
           name?: string
           positions?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      jersey_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string
+          is_default: boolean | null
+          name: string
+          png_field_lines_color: string | null
+          png_jersey_numbers_color: string | null
+          png_name_box_color: string | null
+          png_name_text_color: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url: string
+          is_default?: boolean | null
+          name: string
+          png_field_lines_color?: string | null
+          png_jersey_numbers_color?: string | null
+          png_name_box_color?: string | null
+          png_name_text_color?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string
+          is_default?: boolean | null
+          name?: string
+          png_field_lines_color?: string | null
+          png_jersey_numbers_color?: string | null
+          png_name_box_color?: string | null
+          png_name_text_color?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -282,6 +384,54 @@ export type Database = {
         }
         Relationships: []
       }
+      png_export_settings: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          field_lines_color: string | null
+          field_lines_thickness: number | null
+          id: string
+          is_default: boolean | null
+          jersey_numbers_color: string | null
+          jersey_numbers_shadow: string | null
+          name: string
+          name_box_color: string | null
+          name_text_color: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          field_lines_color?: string | null
+          field_lines_thickness?: number | null
+          id?: string
+          is_default?: boolean | null
+          jersey_numbers_color?: string | null
+          jersey_numbers_shadow?: string | null
+          name: string
+          name_box_color?: string | null
+          name_text_color?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          field_lines_color?: string | null
+          field_lines_thickness?: number | null
+          id?: string
+          is_default?: boolean | null
+          jersey_numbers_color?: string | null
+          jersey_numbers_shadow?: string | null
+          name?: string
+          name_box_color?: string | null
+          name_text_color?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -404,13 +554,14 @@ export type Database = {
       training_sessions: {
         Row: {
           allow_responses_until: string | null
+          communication_details: string | null
+          communication_type: string | null
           created_at: string
           created_by: string | null
           description: string | null
           end_time: string
           id: string
           is_closed: boolean | null
-          location: string | null
           max_participants: number | null
           public_link_token: string | null
           session_date: string
@@ -420,13 +571,14 @@ export type Database = {
         }
         Insert: {
           allow_responses_until?: string | null
+          communication_details?: string | null
+          communication_type?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           end_time: string
           id?: string
           is_closed?: boolean | null
-          location?: string | null
           max_participants?: number | null
           public_link_token?: string | null
           session_date: string
@@ -436,13 +588,14 @@ export type Database = {
         }
         Update: {
           allow_responses_until?: string | null
+          communication_details?: string | null
+          communication_type?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           end_time?: string
           id?: string
           is_closed?: boolean | null
-          location?: string | null
           max_participants?: number | null
           public_link_token?: string | null
           session_date?: string
@@ -583,6 +736,14 @@ export type Database = {
         Args: { session_date: string; start_time: string }
         Returns: string
       }
+      complete_admin_setup: {
+        Args: { _setup_token: string; _user_id: string }
+        Returns: boolean
+      }
+      create_avatar_backgrounds_table: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_fake_user: {
         Args: { _email: string; _password: string; _username: string }
         Returns: string
@@ -597,6 +758,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      initialize_admin_setup: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       is_user_active: {
         Args: { _user_id: string }
