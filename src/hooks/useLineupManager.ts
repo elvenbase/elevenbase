@@ -113,13 +113,10 @@ export const useLineupManager = (sessionId: string) => {
     }
   }
 
-  useEffect(() => {
-    loadLineup()
-  }, [sessionId])
-
   return {
     lineup,
     loading,
+    loadLineup,
     saveLineup,
     deleteLineup,
     reloadLineup: loadLineup
