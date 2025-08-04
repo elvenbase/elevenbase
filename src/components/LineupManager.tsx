@@ -474,7 +474,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                     <div className="space-y-3">
                       <div className="font-semibold text-center">{position.name}</div>
                       <Select 
-                        value={playerPositions[position.id] || ''} 
+                        value={playerPositions[position.id] || 'none'} 
                         onValueChange={(value) => handlePlayerAssignment(position.id, value)}
                       >
                         <SelectTrigger>
@@ -645,14 +645,14 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                     <div className="space-y-4">
                       <div className="font-semibold text-primary">{position.name}</div>
                       <Select 
-                        value={playerPositions[position.id] || ''} 
+                        value={playerPositions[position.id] || 'none'} 
                         onValueChange={(playerId) => handlePlayerAssignment(position.id, playerId)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleziona giocatore" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Nessun giocatore</SelectItem>
+                          <SelectItem value="none">Nessun giocatore</SelectItem>
                                                      {getAvailablePlayers(position.id).map(player => (
                             <SelectItem key={player.id} value={player.id}>
                               <div className="flex items-center gap-3">
