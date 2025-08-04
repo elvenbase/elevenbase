@@ -140,6 +140,14 @@ serve(async (req) => {
         })
       }
 
+      // Verifica se la sessione è stata chiusa manualmente
+      if (session.is_closed) {
+        return new Response(JSON.stringify({ error: 'La sessione di allenamento è stata chiusa' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
       // Calcola se il tempo limite è scaduto (ma non bloccare l'accesso)
       const now = new Date()
       const deadline = new Date(session.allow_responses_until)
@@ -237,6 +245,14 @@ serve(async (req) => {
       if (sessionError || !session) {
         return new Response(JSON.stringify({ error: 'Token non valido' }), {
           status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Verifica se la sessione è stata chiusa manualmente
+      if (session.is_closed) {
+        return new Response(JSON.stringify({ error: 'La sessione di allenamento è stata chiusa' }), {
+          status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
