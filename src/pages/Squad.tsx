@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Edit, Trash2, BarChart3, MessageSquare, X, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
+import { Edit, Trash2, BarChart3, MessageSquare, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -650,16 +650,8 @@ const Squad = () => {
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="flex items-center justify-between">
-              <span>{selectedPlayerImage?.name}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setImageModalOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+            <DialogTitle>
+              {selectedPlayerImage?.name}
             </DialogTitle>
           </DialogHeader>
           <div className="p-6 pt-2">
