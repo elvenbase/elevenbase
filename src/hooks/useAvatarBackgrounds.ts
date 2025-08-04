@@ -150,9 +150,13 @@ export const useAvatarBackgrounds = () => {
     loadBackgrounds()
   }, [])
 
+  // Calcola il background predefinito
+  const defaultBackground = backgrounds.find(bg => bg.is_default) || null
+
   return {
     backgrounds,
     loading,
+    defaultBackground,
     createBackground,
     updateBackground,
     deleteBackground,
