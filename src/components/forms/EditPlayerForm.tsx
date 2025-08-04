@@ -177,11 +177,12 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Modifica Giocatore</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex-1 overflow-y-auto pr-2">
+          <form id="edit-player-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="first_name">Nome</Label>
@@ -442,16 +443,16 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
               </p>
             )}
           </div>
-
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Annulla
-            </Button>
-            <Button type="submit" disabled={updatePlayer.isPending}>
-              {updatePlayer.isPending ? "Aggiornamento..." : "Salva Modifiche"}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </div>
+        <div className="flex-shrink-0 flex justify-end space-x-2 pt-4 border-t">
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            Annulla
+          </Button>
+          <Button type="submit" form="edit-player-form" disabled={updatePlayer.isPending}>
+            {updatePlayer.isPending ? "Aggiornamento..." : "Salva Modifiche"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

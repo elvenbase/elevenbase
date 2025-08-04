@@ -70,11 +70,12 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Aggiungi Nuovo Giocatore</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex-1 overflow-y-auto pr-2">
+          <form id="player-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Nome</label>
@@ -194,16 +195,16 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
               </SelectContent>
             </Select>
           </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Annulla
-            </Button>
-            <Button type="submit" disabled={createPlayer.isPending}>
-              {createPlayer.isPending ? 'Aggiungendo...' : 'Aggiungi Giocatore'}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </div>
+        <div className="flex-shrink-0 flex justify-end gap-3 pt-4 border-t">
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            Annulla
+          </Button>
+          <Button type="submit" form="player-form" disabled={createPlayer.isPending}>
+            {createPlayer.isPending ? 'Aggiungendo...' : 'Aggiungi Giocatore'}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
