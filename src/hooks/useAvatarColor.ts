@@ -38,16 +38,21 @@ export const useAvatarColor = () => {
     backgroundColor?: string; 
     backgroundImage?: string;
   } => {
+    console.log(`🔍 Avatar debug for ${name}: hasAvatar=${hasAvatar}, defaultBackground=`, defaultBackground);
+    
     // Se il giocatore NON ha avatar caricato, usa sempre il colore scuro per buon contrasto
     if (!hasAvatar) {
+      console.log(`⚫ Using #0D1B2A for ${name} (no avatar)`);
       return { backgroundColor: '#0D1B2A' }
     }
 
     // Se il giocatore ha un avatar caricato, usa il sistema personalizzato
     if (defaultBackground) {
       if (defaultBackground.type === 'color') {
+        console.log(`🎨 Using custom color ${defaultBackground.value} for ${name}`);
         return { backgroundColor: defaultBackground.value }
       } else if (defaultBackground.type === 'image') {
+        console.log(`🖼️ Using custom image for ${name}`);
         return { 
           backgroundImage: `url(${defaultBackground.value})`
         }
@@ -55,7 +60,9 @@ export const useAvatarColor = () => {
     }
 
     // Fallback: usa il colore generato
-    return { backgroundColor: getAvatarColor(name) }
+    const fallbackColor = getAvatarColor(name);
+    console.log(`🔄 Using fallback color ${fallbackColor} for ${name}`);
+    return { backgroundColor: fallbackColor }
   }
 
   return {
