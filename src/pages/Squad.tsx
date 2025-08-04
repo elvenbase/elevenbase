@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Edit, Trash2, BarChart3, MessageSquare, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Edit, Trash2, BarChart3, MessageSquare, X, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
 import { useAvatarColor } from '@/hooks/useAvatarColor';
@@ -19,7 +19,8 @@ import { PlayerForm } from '@/components/forms/PlayerForm';
 import EditPlayerForm from '@/components/forms/EditPlayerForm';
 import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 
-
+type SortField = 'name' | 'jersey_number' | 'position' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
+type SortDirection = 'asc' | 'desc';
 
 interface Player {
   id: string;
@@ -299,6 +300,8 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
 const Squad = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const { getAvatarBackground } = useAvatarColor();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
@@ -332,8 +335,8 @@ const Squad = () => {
 
 
 
-  const filteredPlayers = useMemo(() => {
-    return players.filter(player => {
+  const filteredAndSortedPlayers = useMemo(() => {
+    const filtered = players.filter(player => {
       const matchesSearch = 
         player.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         player.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -343,7 +346,57 @@ const Squad = () => {
       
       return matchesSearch && matchesStatus;
     });
-  }, [players, searchTerm, statusFilter]);
+
+    // Sort the filtered results
+    const sorted = [...filtered].sort((a, b) => {
+      let aValue: string | number;
+      let bValue: string | number;
+
+      switch (sortField) {
+        case 'name':
+          aValue = `${a.last_name} ${a.first_name}`.toLowerCase();
+          bValue = `${b.last_name} ${b.first_name}`.toLowerCase();
+          break;
+        case 'jersey_number':
+          aValue = a.jersey_number || 0;
+          bValue = b.jersey_number || 0;
+          break;
+        case 'position':
+          aValue = a.position || '';
+          bValue = b.position || '';
+          break;
+        case 'phone':
+          aValue = a.phone || '';
+          bValue = b.phone || '';
+          break;
+        case 'presences':
+          aValue = a.presences || 0;
+          bValue = b.presences || 0;
+          break;
+        case 'tardiness':
+          aValue = a.tardiness || 0;
+          bValue = b.tardiness || 0;
+          break;
+        case 'attendanceRate':
+          aValue = a.attendanceRate || 0;
+          bValue = b.attendanceRate || 0;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        default:
+          aValue = a.last_name;
+          bValue = b.last_name;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [players, searchTerm, statusFilter, sortField, sortDirection]);
 
   const handleDeletePlayer = async (playerId: string) => {
     console.log('🗑️ Attempting to delete player with ID:', playerId);
@@ -400,6 +453,38 @@ const Squad = () => {
               </Select>
             </div>
             
+            {/* Controlli di ordinamento */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Ordina per:</span>
+              </div>
+              <Select value={sortField} onValueChange={(value: SortField) => setSortField(value)}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Seleziona campo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Nome/Cognome</SelectItem>
+                  <SelectItem value="jersey_number">Numero di maglia</SelectItem>
+                  <SelectItem value="position">Posizione</SelectItem>
+                  <SelectItem value="phone">Telefono</SelectItem>
+                  <SelectItem value="presences">Presenze allenamenti</SelectItem>
+                  <SelectItem value="tardiness">Ritardi allenamenti</SelectItem>
+                  <SelectItem value="attendanceRate">Percentuale presenze</SelectItem>
+                  <SelectItem value="status">Stato</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortDirection} onValueChange={(value: SortDirection) => setSortDirection(value)}>
+                <SelectTrigger className="w-full sm:w-32">
+                  <SelectValue placeholder="Ordine" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Crescente</SelectItem>
+                  <SelectItem value="desc">Decrescente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div>
                 <label className="text-sm font-medium mb-2 block">Periodo di analisi presenze allenamenti:</label>
@@ -419,7 +504,7 @@ const Squad = () => {
 
           {isLoading ? (
             <div className="text-center py-8">Caricamento giocatori...</div>
-          ) : filteredPlayers.length === 0 ? (
+          ) : filteredAndSortedPlayers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm || statusFilter !== 'all' ? 'Nessun giocatore trovato con i filtri selezionati.' : 'Nessun giocatore presente. Aggiungi il primo giocatore!'}
             </div>
@@ -441,7 +526,7 @@ const Squad = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredPlayers.map((player) => (
+                    {filteredAndSortedPlayers.map((player) => (
                       <TableRow key={player.id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
@@ -565,7 +650,7 @@ const Squad = () => {
 
               {/* Mobile Cards (under 1100px) */}
               <div className="block xl:hidden space-y-3">
-                {filteredPlayers.map((player) => (
+                {filteredAndSortedPlayers.map((player) => (
                   <MobilePlayerCard 
                     key={player.id}
                     player={player}
