@@ -653,7 +653,7 @@ const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="">Nessun giocatore</SelectItem>
-                          {availablePlayersForPosition(position.id).map(player => (
+                                                     {getAvailablePlayers(position.id).map(player => (
                             <SelectItem key={player.id} value={player.id}>
                               <div className="flex items-center gap-3">
                                 <Avatar 
