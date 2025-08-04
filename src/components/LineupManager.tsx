@@ -63,6 +63,7 @@ interface Player {
 interface LineupManagerProps {
   sessionId: string
   presentPlayers: Player[]
+  onLineupChange?: (playersInLineup: string[]) => void
 }
 
 const formations = {
@@ -116,10 +117,16 @@ const formations = {
   }
 }
 
-const LineupManager = ({ sessionId, presentPlayers }: LineupManagerProps) => {
+const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupManagerProps) => {
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
   const [exporting, setExporting] = useState(false)
+  
+  // Notifica cambiamenti della formazione al componente padre
+  useEffect(() => {
+    const playersInLineup = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
+    onLineupChange?.(playersInLineup)
+  }, [playerPositions, onLineupChange])
   
   // Inietta gli stili CSS personalizzati
   useEffect(() => {

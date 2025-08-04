@@ -34,6 +34,7 @@ interface TrainingSession {
 const SessionManagement = () => {
   const { id: sessionId } = useParams<{ id: string }>()
   const [refreshKey, setRefreshKey] = useState(0)
+  const [playersInLineup, setPlayersInLineup] = useState<string[]>([])
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
@@ -63,6 +64,10 @@ const SessionManagement = () => {
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1)
+  }
+
+  const handleLineupChange = (playerIds: string[]) => {
+    setPlayersInLineup(playerIds)
   }
 
   // Calcola statistiche presenze
@@ -283,29 +288,6 @@ const SessionManagement = () => {
           </TabsContent>
 
           <TabsContent value="lineup" className="space-y-6">
-            {/* Convocati */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Convocati
-                </CardTitle>
-                <CardDescription>
-                  Gestisci i giocatori convocati per questa sessione di allenamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {sessionId && players && (
-                  <ConvocatiManager 
-                    sessionId={sessionId}
-                    allPlayers={players}
-                    attendance={attendance}
-                    key={`convocati-${refreshKey}`}
-                  />
-                )}
-              </CardContent>
-            </Card>
-
             {/* Formazione */}
             <Card>
               <CardHeader>
@@ -326,6 +308,31 @@ const SessionManagement = () => {
                       const playerAttendance = attendance?.find(a => a.player_id === player.id);
                       return playerAttendance?.status === 'present';
                     }) || []}
+                    onLineupChange={handleLineupChange}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Panchina */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Panchina
+                </CardTitle>
+                <CardDescription>
+                  Gestisci i giocatori in panchina per questa sessione di allenamento
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {sessionId && players && (
+                  <ConvocatiManager 
+                    sessionId={sessionId}
+                    allPlayers={players}
+                    attendance={attendance}
+                    playersInLineup={playersInLineup}
+                    key={`convocati-${refreshKey}`}
                   />
                 )}
               </CardContent>

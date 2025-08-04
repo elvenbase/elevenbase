@@ -40,16 +40,20 @@ interface ConvocatiManagerProps {
   sessionId: string
   allPlayers: Player[]
   attendance?: Attendance[]
+  playersInLineup?: string[]
   isReadOnly?: boolean
 }
 
-export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly = false }: ConvocatiManagerProps) => {
+export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInLineup = [], isReadOnly = false }: ConvocatiManagerProps) => {
   const [convocati, setConvocati] = useState<Convocato[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
 
-  // Usa lo stesso criterio delle formazioni: solo giocatori presenti
-  const presentPlayers = allPlayers.filter(player => {
+  // Filtra i giocatori escludendo quelli già nella formazione
+  const availablePlayers = allPlayers.filter(player => !playersInLineup.includes(player.id))
+
+  // Usa lo stesso criterio delle formazioni: solo giocatori presenti (e non nella formazione)
+  const presentPlayers = availablePlayers.filter(player => {
     const playerAttendance = attendance?.find(a => a.player_id === player.id);
     return playerAttendance?.status === 'present';
   })
