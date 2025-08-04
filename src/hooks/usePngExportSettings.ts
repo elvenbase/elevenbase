@@ -102,15 +102,21 @@ export const usePngExportSettings = () => {
         return
       }
 
-      setSettings(data || [])
+      // Ensure all required properties are present
+      const settingsWithDefaults = (data || []).map(setting => ({
+        ...setting,
+        use_player_avatars: setting.use_player_avatars ?? false
+      }))
+
+      setSettings(settingsWithDefaults)
 
       // Trova l'impostazione di default
-      const defaultData = data?.find(setting => setting.is_default)
+      const defaultData = settingsWithDefaults?.find(setting => setting.is_default)
       if (defaultData) {
         setDefaultSetting(defaultData)
-      } else if (data && data.length > 0) {
+      } else if (settingsWithDefaults && settingsWithDefaults.length > 0) {
         // Se non c'è un default, usa la prima
-        setDefaultSetting(data[0])
+        setDefaultSetting(settingsWithDefaults[0])
       }
     } catch (error) {
       console.error('Errore nel caricamento delle impostazioni:', error)

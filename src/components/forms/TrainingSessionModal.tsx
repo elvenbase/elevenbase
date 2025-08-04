@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +21,8 @@ interface TrainingSession {
   start_time: string;
   end_time: string;
   location?: string;
+  communication_type?: 'party' | 'discord' | 'altro' | null;
+  communication_details?: string;
   is_closed: boolean;
   public_link_token?: string;
   allow_responses_until?: string;
@@ -121,10 +124,16 @@ export const TrainingSessionModal = ({
               {session.end_time && ` - ${session.end_time}`}
             </div>
             
-            {session.location && (
+            {(session.communication_type || session.location) && (
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                {session.location}
+                {session.communication_type ? 
+                  (session.communication_type === 'altro' && session.communication_details ? 
+                    session.communication_details : 
+                    session.communication_type.charAt(0).toUpperCase() + session.communication_type.slice(1)
+                  ) : 
+                  session.location
+                }
               </div>
             )}
             
