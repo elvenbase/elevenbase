@@ -14,7 +14,6 @@ import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import { useAvatarColor } from '@/hooks/useAvatarColor'
 import FormationExporter from '@/components/FormationExporter'
-import { ConvocatiManager } from '@/components/ConvocatiManager'
 import html2canvas from 'html2canvas'
 
 interface Player {
@@ -656,6 +655,56 @@ const PublicSession = () => {
           </Card>
         )}
 
+        {/* Box Convocati - Semplice visualizzazione sotto la formazione */}
+        {convocati.length > 0 && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="h-4 w-4" />
+                Convocati ({convocati.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {convocati.map((convocato) => {
+                  const player = convocato.players
+                  if (!player) return null
+
+                  return (
+                    <div
+                      key={convocato.id}
+                      className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                    >
+                      <Avatar className="w-10 h-10 mb-2">
+                        <AvatarImage src={player.avatar_url || undefined} />
+                        <AvatarFallback 
+                          className="text-xs font-medium"
+                          style={getAvatarBackground(player.first_name + ' ' + player.last_name)}
+                        >
+                          {player.first_name.charAt(0)}{player.last_name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-center">
+                        <p className="text-xs font-medium leading-tight">
+                          {player.first_name}
+                        </p>
+                        <p className="text-xs font-medium leading-tight">
+                          {player.last_name}
+                        </p>
+                        {player.jersey_number && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            #{player.jersey_number}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {/* Registrazione */}
           {!isExpired ? (
@@ -839,25 +888,6 @@ const PublicSession = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Convocati */}
-        {convocati.length > 0 && (
-          <Card className="shadow-lg">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                Convocati
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <ConvocatiManager 
-                sessionId={session?.id || ''}
-                allPlayers={players}
-                isReadOnly={true}
-              />
-            </CardContent>
-          </Card>
-        )}
 
         {isExpired && (
           <Card className="border-destructive/20 bg-destructive/5">
