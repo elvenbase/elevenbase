@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Edit, Trash2, BarChart3, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
+import { Edit, Trash2, BarChart3, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
 import { useAvatarColor } from '@/hooks/useAvatarColor';
@@ -21,6 +21,226 @@ import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 
 type SortField = 'name' | 'jersey_number' | 'position' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
+
+// Mobile Player Card Component
+interface MobilePlayerCardProps {
+  player: any;
+  onImageClick: (player: any) => void;
+  onDelete: (playerId: string) => void;
+  formatWhatsAppLink: (phone: string, name: string) => string;
+  getAvatarBackground: (name: string) => any;
+}
+
+const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({ 
+  player, 
+  onImageClick, 
+  onDelete, 
+  formatWhatsAppLink, 
+  getAvatarBackground 
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <Card className="p-4 hover:shadow-md transition-shadow">
+      {/* Main Info - Always Visible */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <Avatar 
+            className="h-12 w-12 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg flex-shrink-0"
+            onClick={() => onImageClick(player)}
+            style={getAvatarBackground(player.first_name + player.last_name)}
+          >
+            <AvatarImage 
+              src={player.avatar_url || undefined} 
+              alt={`${player.first_name} ${player.last_name}`} 
+            />
+            <AvatarFallback className="text-white font-bold">
+              {player.first_name.charAt(0)}{player.last_name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-base truncate">
+                {player.first_name} {player.last_name}
+              </h3>
+              {player.jersey_number && (
+                <Badge variant="outline" className="text-xs">
+                  #{player.jersey_number}
+                </Badge>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="truncate">{player.position || 'Posizione non specificata'}</span>
+              <Badge 
+                variant={
+                  player.status === 'active' ? 'default' :
+                  player.status === 'injured' ? 'destructive' :
+                  player.status === 'suspended' ? 'secondary' : 'outline'
+                }
+                className="text-xs"
+              >
+                {player.status === 'active' ? 'Attivo' :
+                 player.status === 'inactive' ? 'Inattivo' :
+                 player.status === 'injured' ? 'Infortunato' :
+                 player.status === 'suspended' ? 'Squalificato' : player.status}
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Toggle Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex-shrink-0 h-8 w-8 p-0"
+        >
+          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </Button>
+      </div>
+
+      {/* Quick Stats - Always Visible */}
+      <div className="flex items-center justify-between mt-3 pt-3 border-t">
+        <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Presenze:</span>
+            <Badge variant="secondary" className="text-xs">
+              {player.presences || 0}/{player.totalEvents || 0}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Ritardi:</span>
+            <Badge variant={player.tardiness > 0 ? "destructive" : "outline"} className="text-xs">
+              {player.tardiness || 0}
+            </Badge>
+          </div>
+        </div>
+        
+        {/* Quick Actions */}
+        <div className="flex items-center gap-1">
+          <EditPlayerForm player={player}>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+              <Edit className="h-3 w-3" />
+            </Button>
+          </EditPlayerForm>
+          
+          <PlayerStatsModal player={player}>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+              <BarChart3 className="h-3 w-3" />
+            </Button>
+          </PlayerStatsModal>
+        </div>
+      </div>
+
+      {/* Expanded Details */}
+      {isExpanded && (
+        <div className="mt-4 pt-4 border-t space-y-3">
+          {/* Contact Info */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-muted-foreground">Contatti</h4>
+            {player.phone ? (
+              <div className="flex items-center justify-between">
+                <span className="text-sm">{player.phone}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="h-7 px-2"
+                >
+                  <a
+                    href={formatWhatsAppLink(player.phone, player.first_name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageSquare className="h-3 w-3 mr-1" />
+                    WhatsApp
+                  </a>
+                </Button>
+              </div>
+            ) : (
+              <span className="text-sm text-muted-foreground">Telefono non specificato</span>
+            )}
+          </div>
+
+          {/* Detailed Stats */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-muted-foreground">Statistiche Dettagliate</h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span className="text-muted-foreground">Presenze:</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="secondary">
+                    {player.presences || 0}/{player.totalEvents || 0}
+                  </Badge>
+                  {player.totalEvents > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      ({player.attendanceRate}%)
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Ritardi:</span>
+                <div className="mt-1">
+                  <Badge variant={player.tardiness > 0 ? "destructive" : "outline"}>
+                    {player.tardiness || 0}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center gap-2">
+              <EditPlayerForm player={player}>
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Modifica
+                </Button>
+              </EditPlayerForm>
+              
+              <PlayerStatsModal player={player}>
+                <Button variant="outline" size="sm">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Statistiche
+                </Button>
+              </PlayerStatsModal>
+            </div>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Elimina
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Elimina giocatore</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Questa azione rimuoverà definitivamente <strong>{player.first_name} {player.last_name}</strong> dalla rosa della squadra. Tutti i dati associati verranno eliminati.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => onDelete(player.id)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Elimina
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+};
 
 const Squad = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -214,170 +434,187 @@ const Squad = () => {
               {searchTerm || statusFilter !== 'all' ? 'Nessun giocatore trovato con i filtri selezionati.' : 'Nessun giocatore presente. Aggiungi il primo giocatore!'}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('name')} className="h-auto p-0 font-semibold">
-                        Nome/Cognome {getSortIcon('name')}
-                      </Button>
-                    </TableHead>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('jersey_number')} className="h-auto p-0 font-semibold">
-                        Numero {getSortIcon('jersey_number')}
-                      </Button>
-                    </TableHead>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('position')} className="h-auto p-0 font-semibold">
-                        Posizione {getSortIcon('position')}
-                      </Button>
-                    </TableHead>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('phone')} className="h-auto p-0 font-semibold">
-                        Telefono {getSortIcon('phone')}
-                      </Button>
-                    </TableHead>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('presences')} className="h-auto p-0 font-semibold">
-                        Presenze Allenamenti {getSortIcon('presences')}
-                      </Button>
-                    </TableHead>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('tardiness')} className="h-auto p-0 font-semibold">
-                        Ritardi Allenamenti {getSortIcon('tardiness')}
-                      </Button>
-                    </TableHead>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('status')} className="h-auto p-0 font-semibold">
-                        Stato {getSortIcon('status')}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="text-right">Azioni</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAndSortedPlayers.map((player) => (
-                    <TableRow key={player.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          <Avatar 
-                            className="h-10 w-10 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
-                            onClick={() => openImageModal(player)}
-                            style={getAvatarBackground(player.first_name + player.last_name)}
-                          >
-                            <AvatarImage 
-                              src={(player as any).avatar_url || undefined} 
-                              alt={`${player.first_name} ${player.last_name}`} 
-                            />
-                            <AvatarFallback 
-                              className="text-white font-bold"
-                            >
-                              {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div>{player.first_name} {player.last_name}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {player.jersey_number && (
-                          <Badge variant="outline">#{player.jersey_number}</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{player.position || '-'}</TableCell>
-                      <TableCell>
-                        {player.phone ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">{player.phone}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              asChild
-                              className="h-6 px-2"
-                            >
-                              <a
-                                href={formatWhatsAppLink(player.phone, player.first_name)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <MessageSquare className="h-3 w-3" />
-                              </a>
-                            </Button>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary">
-                            {(player as any).presences || 0}/{(player as any).totalEvents || 0}
-                          </Badge>
-                          {(player as any).totalEvents > 0 && (
-                            <span className="text-sm text-muted-foreground">
-                              ({(player as any).attendanceRate}%)
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={(player as any).tardiness > 0 ? "destructive" : "outline"}>
-                          {(player as any).tardiness || 0}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            player.status === 'active' ? 'default' :
-                            player.status === 'injured' ? 'destructive' :
-                            player.status === 'suspended' ? 'secondary' : 'outline'
-                          }
-                        >
-                          {player.status === 'active' ? 'Attivo' :
-                           player.status === 'inactive' ? 'Inattivo' :
-                           player.status === 'injured' ? 'Infortunato' :
-                           player.status === 'suspended' ? 'Squalificato' : player.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <EditPlayerForm player={player} />
-                          
-                          <PlayerStatsModal player={player} />
-
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Elimina giocatore</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Questa azione rimuoverà definitivamente <strong>{player.first_name} {player.last_name}</strong> dalla rosa della squadra. Tutti i dati associati verranno eliminati.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Annulla</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeletePlayer(player.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Elimina
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
+            <>
+              {/* Desktop Table (1100px and above) */}
+              <div className="hidden xl:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('name')} className="h-auto p-0 font-semibold">
+                          Nome/Cognome {getSortIcon('name')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('jersey_number')} className="h-auto p-0 font-semibold">
+                          Numero {getSortIcon('jersey_number')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('position')} className="h-auto p-0 font-semibold">
+                          Posizione {getSortIcon('position')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('phone')} className="h-auto p-0 font-semibold">
+                          Telefono {getSortIcon('phone')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('presences')} className="h-auto p-0 font-semibold">
+                          Presenze Allenamenti {getSortIcon('presences')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('tardiness')} className="h-auto p-0 font-semibold">
+                          Ritardi Allenamenti {getSortIcon('tardiness')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('status')} className="h-auto p-0 font-semibold">
+                          Stato {getSortIcon('status')}
+                        </Button>
+                      </TableHead>
+                      <TableHead className="text-right">Azioni</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAndSortedPlayers.map((player) => (
+                      <TableRow key={player.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <Avatar 
+                              className="h-10 w-10 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
+                              onClick={() => openImageModal(player)}
+                              style={getAvatarBackground(player.first_name + player.last_name)}
+                            >
+                              <AvatarImage 
+                                src={(player as any).avatar_url || undefined} 
+                                alt={`${player.first_name} ${player.last_name}`} 
+                              />
+                              <AvatarFallback 
+                                className="text-white font-bold"
+                              >
+                                {player.first_name.charAt(0)}{player.last_name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div>{player.first_name} {player.last_name}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {player.jersey_number && (
+                            <Badge variant="outline">#{player.jersey_number}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>{player.position || '-'}</TableCell>
+                        <TableCell>
+                          {player.phone ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">{player.phone}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="h-6 px-2"
+                              >
+                                <a
+                                  href={formatWhatsAppLink(player.phone, player.first_name)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <MessageSquare className="h-3 w-3" />
+                                </a>
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">
+                              {(player as any).presences || 0}/{(player as any).totalEvents || 0}
+                            </Badge>
+                            {(player as any).totalEvents > 0 && (
+                              <span className="text-sm text-muted-foreground">
+                                ({(player as any).attendanceRate}%)
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={(player as any).tardiness > 0 ? "destructive" : "outline"}>
+                            {(player as any).tardiness || 0}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              player.status === 'active' ? 'default' :
+                              player.status === 'injured' ? 'destructive' :
+                              player.status === 'suspended' ? 'secondary' : 'outline'
+                            }
+                          >
+                            {player.status === 'active' ? 'Attivo' :
+                             player.status === 'inactive' ? 'Inattivo' :
+                             player.status === 'injured' ? 'Infortunato' :
+                             player.status === 'suspended' ? 'Squalificato' : player.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <EditPlayerForm player={player} />
+                            
+                            <PlayerStatsModal player={player} />
+
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Elimina giocatore</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Questa azione rimuoverà definitivamente <strong>{player.first_name} {player.last_name}</strong> dalla rosa della squadra. Tutti i dati associati verranno eliminati.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeletePlayer(player.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Elimina
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Cards (under 1100px) */}
+              <div className="block xl:hidden space-y-3">
+                {filteredAndSortedPlayers.map((player) => (
+                  <MobilePlayerCard 
+                    key={player.id}
+                    player={player}
+                    onImageClick={openImageModal}
+                    onDelete={handleDeletePlayer}
+                    formatWhatsAppLink={formatWhatsAppLink}
+                    getAvatarBackground={getAvatarBackground}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
