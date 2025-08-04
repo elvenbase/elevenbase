@@ -38,11 +38,8 @@ export const useAvatarColor = () => {
     backgroundColor?: string; 
     backgroundImage?: string;
   } => {
-    console.log(`🔍 [DEBUG] Avatar for ${name}:`, { hasAvatar, defaultBackground });
-    
     // Se il giocatore ha un avatar caricato, usa il sistema personalizzato
     if (hasAvatar && defaultBackground) {
-      console.log(`🎨 [DEBUG] Applying admin background for ${name}:`, defaultBackground);
       if (defaultBackground.type === 'color') {
         return { backgroundColor: defaultBackground.value }
       } else if (defaultBackground.type === 'image') {
@@ -54,14 +51,11 @@ export const useAvatarColor = () => {
 
     // Se non ha avatar O non ci sono custom background, usa il fallback
     if (!hasAvatar) {
-      console.log(`⚫ [DEBUG] Using dark background for initials ${name}`);
       return { backgroundColor: '#0D1B2A' }
     }
 
     // Fallback: usa il colore generato
-    const fallbackColor = getAvatarColor(name);
-    console.log(`🔄 [DEBUG] Using fallback color for ${name}:`, fallbackColor);
-    return { backgroundColor: fallbackColor }
+    return { backgroundColor: getAvatarColor(name) }
   }
 
   const getAvatarFallbackStyle = (name: string, hasAvatar: boolean = false): React.CSSProperties => {
