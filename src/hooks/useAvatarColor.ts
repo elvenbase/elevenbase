@@ -38,40 +38,34 @@ export const useAvatarColor = () => {
     backgroundColor?: string; 
     backgroundImage?: string;
   } => {
-    // Se il giocatore ha un avatar caricato, non applicare background personalizzati
-    // L'immagine deve essere visibile senza interferenze
-    if (hasAvatar) {
-      return {}
-    }
-
-    // Se non ha avatar, usa il background predefinito dall'admin se disponibile
-    if (defaultBackground) {
+    // Se il giocatore ha un avatar caricato, usa il sistema personalizzato
+    if (hasAvatar && defaultBackground) {
       if (defaultBackground.type === 'color') {
         return { backgroundColor: defaultBackground.value }
       } else if (defaultBackground.type === 'image') {
         return { 
-          backgroundImage: `url(${defaultBackground.value})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundImage: `url(${defaultBackground.value})`
         }
       }
     }
 
-    // Fallback: usa il colore generato basato sul nome
+    // Se non ha avatar O non ci sono custom background, usa il fallback
+    if (!hasAvatar) {
+      return { backgroundColor: '#0D1B2A' }
+    }
+
+    // Fallback: usa il colore generato
     return { backgroundColor: getAvatarColor(name) }
   }
 
   const getAvatarFallbackStyle = (name: string, hasAvatar: boolean = false): React.CSSProperties => {
-    // Se il giocatore ha un avatar, non applicare stili al fallback (non dovrebbe essere visibile)
-    if (hasAvatar) {
-      return { color: 'white' }
+    // Se non ha avatar, applica sempre il background scuro direttamente al fallback
+    if (!hasAvatar) {
+      return { backgroundColor: '#0D1B2A', color: 'white' }
     }
-
-    // Per i fallback (iniziali), sempre testo bianco per buon contrasto
-    return { 
-      color: 'white',
-      fontWeight: 'bold'
-    }
+    
+    // Se ha avatar, il background viene gestito dal componente Avatar
+    return { color: 'white' }
   }
 
   return {
