@@ -111,7 +111,7 @@ function App() {
                   <Route path="/" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <Dashboard />
                       </main>
                     </ProtectedRoute>
@@ -119,7 +119,7 @@ function App() {
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <Dashboard />
                       </main>
                     </ProtectedRoute>
@@ -127,7 +127,7 @@ function App() {
                   <Route path="/squad" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <Squad />
                       </main>
                     </ProtectedRoute>
@@ -135,7 +135,7 @@ function App() {
                   <Route path="/training" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <Training />
                       </main>
                     </ProtectedRoute>
@@ -143,7 +143,7 @@ function App() {
                   <Route path="/sessions" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <SessionManagement />
                       </main>
                     </ProtectedRoute>
@@ -151,7 +151,7 @@ function App() {
                   <Route path="/training/session/:id" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <SessionManagement />
                       </main>
                     </ProtectedRoute>
@@ -159,7 +159,7 @@ function App() {
                   <Route path="/competitions" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <Competitions />
                       </main>
                     </ProtectedRoute>
@@ -167,7 +167,7 @@ function App() {
                   <Route path="/formations" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <Formations />
                       </main>
                     </ProtectedRoute>
@@ -175,7 +175,7 @@ function App() {
                   <Route path="/trials" element={
                     <ProtectedRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <Trials />
                       </main>
                     </ProtectedRoute>
@@ -183,7 +183,7 @@ function App() {
                   <Route path="/users" element={
                     <AdminRoute>
                       <Navigation />
-                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                      <main className="ml-0 transition-all duration-200">
                         <UserManagement />
                       </main>
                     </AdminRoute>
