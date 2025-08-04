@@ -351,7 +351,7 @@ export type Database = {
           created_at: string
           ea_sport_id: string | null
           first_name: string
-          gaming_platform: Database["public"]["Enums"]["gaming_platform"] | null
+          gaming_platform: string | null
           id: string
           jersey_number: number | null
           last_name: string
@@ -366,7 +366,7 @@ export type Database = {
           created_at?: string
           ea_sport_id?: string | null
           first_name: string
-          gaming_platform?: Database["public"]["Enums"]["gaming_platform"] | null
+          gaming_platform?: string | null
           id?: string
           jersey_number?: number | null
           last_name: string
@@ -381,7 +381,7 @@ export type Database = {
           created_at?: string
           ea_sport_id?: string | null
           first_name?: string
-          gaming_platform?: Database["public"]["Enums"]["gaming_platform"] | null
+          gaming_platform?: string | null
           id?: string
           jersey_number?: number | null
           last_name?: string
@@ -518,6 +518,51 @@ export type Database = {
           },
           {
             foreignKeyName: "training_attendance_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_convocati: {
+        Row: {
+          confirmed: boolean | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          player_id: string
+          session_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          confirmed?: boolean | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          player_id: string
+          session_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          confirmed?: boolean | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          player_id?: string
+          session_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_convocati_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_convocati_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "training_sessions"
@@ -780,7 +825,6 @@ export type Database = {
     Enums: {
       app_role: "superadmin" | "admin" | "coach" | "player"
       competition_type: "championship" | "tournament" | "friendly"
-      gaming_platform: "PC" | "PS5" | "Xbox"
       match_status:
         | "scheduled"
         | "in_progress"

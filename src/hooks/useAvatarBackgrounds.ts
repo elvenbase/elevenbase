@@ -1,23 +1,21 @@
-
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
 export interface AvatarBackground {
-  id: string;
-  name: string;
-  type: 'color' | 'image';
-  value: string;
-  is_default: boolean;
-  created_at: string;
-  updated_at: string;
-  created_by: string | null;
+  id: string
+  name: string
+  type: 'color' | 'image'
+  value: string
+  is_default: boolean
+  created_at: string
+  updated_at: string
+  created_by: string
 }
 
 export const useAvatarBackgrounds = () => {
   const [backgrounds, setBackgrounds] = useState<AvatarBackground[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const loadBackgrounds = async () => {
     try {
@@ -25,81 +23,62 @@ export const useAvatarBackgrounds = () => {
       const { data, error } = await supabase
         .from('avatar_backgrounds')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: true })
 
       if (error) throw error
 
-      setBackgrounds(data || [])
-      setError(null)
-    } catch (err: any) {
-      console.error('Error loading avatar backgrounds:', err)
-      setError(err.message)
-      toast.error('Errore nel caricamento degli sfondi avatar')
+      // Type assertion per gestire il tipo string che arriva dal database
+      const typedData = (data || []).map(item => ({
+        ...item,
+        type: item.type as 'color' | 'image'
+      })) as AvatarBackground[]
+
+      setBackgrounds(typedData)
+    } catch (error) {
+      console.error('Error loading avatar backgrounds:', error)
+      toast.error('Impossibile caricare gli sfondi avatar')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadBackgrounds()
-  }, [])
-
-  const createBackground = async (data: Partial<AvatarBackground>) => {
+  const createBackground = async (background: Omit<AvatarBackground, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
     try {
-      const { data: result, error } = await supabase
+      const { data: user } = await supabase.auth.getUser()
+      if (!user.user) throw new Error('User not authenticated')
+
+      const { error } = await supabase
         .from('avatar_backgrounds')
-        .insert([{
-          name: data.name!,
-          type: data.type!,
-          value: data.value!,
-          is_default: data.is_default || false
-        }])
-        .select()
-        .single()
+        .insert({
+          ...background,
+          created_by: user.user.id
+        })
 
       if (error) throw error
 
       await loadBackgrounds()
-      toast.success('Sfondo avatar creato con successo!')
-      return result
-    } catch (err: any) {
-      console.error('Error creating background:', err)
+      toast.success('Sfondo avatar creato con successo')
+    } catch (error) {
+      console.error('Error creating background:', error)
       toast.error('Errore nella creazione dello sfondo')
-      throw err
     }
   }
 
-  const updateBackground = async (id: string, data: Partial<AvatarBackground>) => {
+  const updateBackground = async (id: string, updates: Partial<Pick<AvatarBackground, 'name' | 'type' | 'value'>>) => {
     try {
-      // Se questo diventa il nuovo default, rimuovi il flag da tutti gli altri
-      if (data.is_default) {
-        await supabase
-          .from('avatar_backgrounds')
-          .update({ is_default: false })
-          .neq('id', id)
-      }
-
-      const { data: result, error } = await supabase
+      const { error } = await supabase
         .from('avatar_backgrounds')
-        .update({
-          name: data.name,
-          type: data.type,
-          value: data.value,
-          is_default: data.is_default
-        })
+        .update(updates)
         .eq('id', id)
-        .select()
-        .single()
 
       if (error) throw error
 
       await loadBackgrounds()
-      toast.success('Sfondo avatar aggiornato con successo!')
-      return result
-    } catch (err: any) {
-      console.error('Error updating background:', err)
+      toast.success('Sfondo aggiornato con successo')
+    } catch (error) {
+      console.error('Error updating background:', error)
       toast.error('Errore nell\'aggiornamento dello sfondo')
-      throw err
     }
   }
 
@@ -113,23 +92,22 @@ export const useAvatarBackgrounds = () => {
       if (error) throw error
 
       await loadBackgrounds()
-      toast.success('Sfondo avatar eliminato con successo!')
-    } catch (err: any) {
-      console.error('Error deleting background:', err)
+      toast.success('Sfondo eliminato con successo')
+    } catch (error) {
+      console.error('Error deleting background:', error)
       toast.error('Errore nell\'eliminazione dello sfondo')
-      throw err
     }
   }
 
   const setAsDefaultBackground = async (id: string) => {
     try {
-      // Rimuovi il default da tutti gli altri
+      // Reset all to non-default
       await supabase
         .from('avatar_backgrounds')
         .update({ is_default: false })
         .neq('id', id)
 
-      // Imposta questo come default
+      // Set selected as default
       const { error } = await supabase
         .from('avatar_backgrounds')
         .update({ is_default: true })
@@ -138,50 +116,47 @@ export const useAvatarBackgrounds = () => {
       if (error) throw error
 
       await loadBackgrounds()
-      toast.success('Sfondo predefinito aggiornato!')
-    } catch (err: any) {
-      console.error('Error setting default background:', err)
-      toast.error('Errore nell\'impostazione del default')
-      throw err
+      toast.success('Sfondo predefinito aggiornato')
+    } catch (error) {
+      console.error('Error setting default background:', error)
+      toast.error('Errore nell\'impostazione dello sfondo predefinito')
     }
   }
 
-  const uploadImage = async (file: File) => {
+  const uploadImage = async (file: File): Promise<string> => {
     try {
       const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random()}.${fileExt}`
-      const filePath = `avatar-backgrounds/${fileName}`
+      const fileName = `avatar-bg-${Date.now()}.${fileExt}`
+      const filePath = `${fileName}`
 
       const { error: uploadError } = await supabase.storage
-        .from('images')
+        .from('avatars')
         .upload(filePath, file)
 
       if (uploadError) throw uploadError
 
-      const { data } = supabase.storage
-        .from('images')
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
         .getPublicUrl(filePath)
 
-      return data.publicUrl
-    } catch (err: any) {
-      console.error('Error uploading image:', err)
-      toast.error('Errore nel caricamento dell\'immagine')
-      throw err
+      return publicUrl
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      throw new Error('Errore nel caricamento dell\'immagine')
     }
   }
 
-  const defaultBackground = backgrounds.find(bg => bg.is_default) || backgrounds[0] || null
+  useEffect(() => {
+    loadBackgrounds()
+  }, [])
 
   return {
     backgrounds,
-    defaultBackground,
     loading,
-    error,
     createBackground,
     updateBackground,
     deleteBackground,
     setAsDefaultBackground,
-    uploadImage,
-    reload: loadBackgrounds
-  };
-};
+    uploadImage
+  }
+}

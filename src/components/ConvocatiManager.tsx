@@ -48,7 +48,6 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
   const [loading, setLoading] = useState(false)
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
 
-
   // Usa lo stesso criterio delle formazioni: solo giocatori presenti
   const presentPlayers = allPlayers.filter(player => {
     const playerAttendance = attendance?.find(a => a.player_id === player.id);
@@ -65,25 +64,18 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
 
     setLoading(true)
     try {
+      // Query diretta senza join per evitare problemi con i types
       const { data, error } = await supabase
         .from('training_convocati')
-        .select(`
-          *,
-          players (
-            id,
-            first_name,
-            last_name,
-            jersey_number,
-            position,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('session_id', sessionId)
 
       if (error) throw error
       
-      setConvocati(data || [])
-      setSelectedPlayers(data?.map(c => c.player_id) || [])
+      // Type assertion per gestire il tipo che arriva dal database
+      const typedData = (data || []) as Convocato[]
+      setConvocati(typedData)
+      setSelectedPlayers(typedData.map(c => c.player_id) || [])
     } catch (error) {
       console.error('Errore nel caricare i convocati:', error)
       toast.error('Errore nel caricare i convocati')

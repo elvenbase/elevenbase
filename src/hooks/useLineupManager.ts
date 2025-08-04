@@ -1,32 +1,24 @@
-import { useState, useCallback } from 'react'
+
+import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
-interface FormationData {
+export interface FormationData {
   name: string
-  positions: Array<{
-    id: string
-    name: string
-    x: number
-    y: number
-    role: string
-    roleShort: string
-  }>
+  defenders: number
+  midfielders: number
+  forwards: number
+  positions: { x: number; y: number; role: string }[]
 }
 
-interface LineupData {
+export interface Lineup {
+  id: string
+  session_id: string
   formation: string
   players_data: {
     positions: Record<string, string>
     formation_data?: FormationData
   }
-}
-
-interface Lineup {
-  id: string
-  session_id: string
-  formation: string
-  players_data: LineupData['players_data']
   created_at: string
   updated_at: string
 }
@@ -35,7 +27,7 @@ export const useLineupManager = (sessionId: string) => {
   const [lineup, setLineup] = useState<Lineup | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const loadLineup = useCallback(async () => {
+  const loadLineup = async () => {
     if (!sessionId) return
 
     setLoading(true)
@@ -44,94 +36,92 @@ export const useLineupManager = (sessionId: string) => {
         .from('training_lineups')
         .select('*')
         .eq('session_id', sessionId)
-        .maybeSingle()
+        .single()
 
-      if (error) throw error
-      
-      setLineup(data)
+      if (error && error.code !== 'PGRST116') throw error
+
+      if (data) {
+        // Type assertion per gestire il tipo Json che arriva dal database
+        const typedLineup: Lineup = {
+          ...data,
+          players_data: typeof data.players_data === 'string' 
+            ? JSON.parse(data.players_data)
+            : (data.players_data as any) || { positions: {} }
+        }
+        setLineup(typedLineup)
+      }
     } catch (error) {
       console.error('Errore nel caricare la formazione:', error)
       toast.error('Errore nel caricare la formazione')
     } finally {
       setLoading(false)
     }
-  }, [sessionId])
+  }
 
-  const createLineup = async (lineupData: LineupData) => {
-    setLoading(true)
+  const saveLineup = async (formation: string, playersData: { positions: Record<string, string>; formation_data?: FormationData }) => {
+    if (!sessionId) return
+
     try {
+      const lineupData = {
+        formation,
+        players_data: playersData,
+        session_id: sessionId
+      }
+
       const { data, error } = await supabase
         .from('training_lineups')
-        .insert({
-          session_id: sessionId,
-          ...lineupData
+        .upsert(lineupData, { 
+          onConflict: 'session_id',
+          ignoreDuplicates: false 
         })
         .select()
         .single()
 
       if (error) throw error
+
+      const typedLineup: Lineup = {
+        ...data,
+        players_data: typeof data.players_data === 'string' 
+          ? JSON.parse(data.players_data)
+          : (data.players_data as any) || { positions: {} }
+      }
+      setLineup(typedLineup)
       
-      setLineup(data)
-      return data
+      toast.success('Formazione salvata con successo')
     } catch (error) {
-      console.error('Errore nella creazione della formazione:', error)
-      throw error
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateLineup = async (lineupData: LineupData) => {
-    if (!lineup) return
-
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('training_lineups')
-        .update(lineupData)
-        .eq('id', lineup.id)
-        .select()
-        .single()
-
-      if (error) throw error
-      
-      setLineup(data)
-      return data
-    } catch (error) {
-      console.error('Errore nell\'aggiornamento della formazione:', error)
-      throw error
-    } finally {
-      setLoading(false)
+      console.error('Errore nel salvare la formazione:', error)
+      toast.error('Errore nel salvare la formazione')
     }
   }
 
   const deleteLineup = async () => {
-    if (!lineup) return
+    if (!sessionId) return
 
-    setLoading(true)
     try {
       const { error } = await supabase
         .from('training_lineups')
         .delete()
-        .eq('id', lineup.id)
+        .eq('session_id', sessionId)
 
       if (error) throw error
-      
+
       setLineup(null)
+      toast.success('Formazione eliminata con successo')
     } catch (error) {
-      console.error('Errore nell\'eliminazione della formazione:', error)
-      throw error
-    } finally {
-      setLoading(false)
+      console.error('Errore nell\'eliminare la formazione:', error)
+      toast.error('Errore nell\'eliminare la formazione')
     }
   }
+
+  useEffect(() => {
+    loadLineup()
+  }, [sessionId])
 
   return {
     lineup,
     loading,
-    loadLineup,
-    createLineup,
-    updateLineup,
-    deleteLineup
+    saveLineup,
+    deleteLineup,
+    reloadLineup: loadLineup
   }
 }
