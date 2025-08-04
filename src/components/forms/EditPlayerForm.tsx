@@ -344,9 +344,9 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
             </Select>
           </div>
 
-                     {/* Gaming Section - Updated */}
+                     {/* Gaming Section */}
            <div className="space-y-4 pt-4 border-t">
-             <h3 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h3>
+             <h3 className="text-sm font-semibold text-muted-foreground">🎮 Dati Gaming</h3>
             
             <div className="space-y-2">
               <Label htmlFor="ea_sport_id">ID EA Sports</Label>
@@ -362,18 +362,18 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
             <div className="space-y-2">
               <Label htmlFor="gaming_platform">Piattaforma</Label>
               <Select 
-                value={formData.gaming_platform} 
-                onValueChange={(value: 'PC' | 'PS5' | 'Xbox' | '') => setFormData({ 
+                value={formData.gaming_platform || 'none'} 
+                onValueChange={(value: 'PC' | 'PS5' | 'Xbox' | 'none') => setFormData({ 
                   ...formData, 
-                  gaming_platform: value,
-                  platform_id: value === 'PC' ? '' : formData.platform_id
+                  gaming_platform: value === 'none' ? '' : value,
+                  platform_id: (value === 'PC' || value === 'none') ? '' : formData.platform_id
                 })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleziona piattaforma" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nessuna</SelectItem>
+                  <SelectItem value="none">Nessuna</SelectItem>
                   <SelectItem value="PC">PC</SelectItem>
                   <SelectItem value="PS5">PlayStation 5</SelectItem>
                   <SelectItem value="Xbox">Xbox</SelectItem>

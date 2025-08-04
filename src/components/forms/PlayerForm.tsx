@@ -136,9 +136,9 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
             )}
           </div>
 
-          {/* Gaming Section - Updated */}
-          <div className="space-y-4 pt-4 border-t" style={{ backgroundColor: '#f0f9ff', padding: '1rem', border: '2px solid #3b82f6' }}>
-            <h3 className="text-sm font-semibold text-muted-foreground">🎮 Dati Gaming (TEST VISIBILITÀ)</h3>
+          {/* Gaming Section */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-sm font-semibold text-muted-foreground">🎮 Dati Gaming</h3>
             
             <div className="space-y-2">
               <label className="text-sm font-medium">ID EA Sports</label>
@@ -152,12 +152,12 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Piattaforma</label>
-              <Select value={formData.gaming_platform} onValueChange={(value) => setFormData(prev => ({ ...prev, gaming_platform: value, platform_id: value === 'PC' ? '' : prev.platform_id }))}>
+              <Select value={formData.gaming_platform || 'none'} onValueChange={(value) => setFormData(prev => ({ ...prev, gaming_platform: value === 'none' ? '' : value, platform_id: (value === 'PC' || value === 'none') ? '' : prev.platform_id }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleziona piattaforma" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nessuna</SelectItem>
+                  <SelectItem value="none">Nessuna</SelectItem>
                   <SelectItem value="PC">PC</SelectItem>
                   <SelectItem value="PS5">PlayStation 5</SelectItem>
                   <SelectItem value="Xbox">Xbox</SelectItem>
