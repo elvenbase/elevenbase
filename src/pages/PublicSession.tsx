@@ -139,15 +139,20 @@ const PublicSession = () => {
       setPlayers(data.players)
       setExistingAttendance(data.existingAttendance)
       
+      // Imposta i convocati dalla edge function
+      if (data.convocati) {
+        console.log('✅ Setting convocati from edge function:', data.convocati.length)
+        setConvocati(data.convocati)
+      }
+      
       // Calcola deadline: 4 ore prima dell'inizio della sessione
       const sessionDateTime = new Date(`${data.session.session_date}T${data.session.start_time}`)
       const registrationDeadline = new Date(sessionDateTime.getTime() - (4 * 60 * 60 * 1000)) // 4 ore prima
       setDeadline(registrationDeadline)
 
-      // Carica anche la formazione se disponibile
+      // Carica solo la formazione (i convocati arrivano già dalla edge function)
       if (data.session?.id) {
         await loadLineup(data.session.id)
-        await loadConvocati(data.session.id)
       }
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
@@ -178,69 +183,6 @@ const PublicSession = () => {
       }
     } catch (error) {
       console.error('Errore nel caricare la formazione:', error)
-    }
-  }
-
-  const loadConvocati = async (sessionId: string) => {
-    console.log('🔍 Loading convocati for session:', sessionId)
-    console.log('🔍 Supabase client config:', {
-      url: supabase.supabaseUrl,
-      hasKey: !!supabase.supabaseKey,
-      isAnonymous: !supabase.auth.getUser()
-    })
-    
-    try {
-      // Prima prova una query semplice senza JOIN
-      const { data: simpleData, error: simpleError } = await supabase
-        .from('training_convocati')
-        .select('*')
-        .eq('session_id', sessionId)
-
-      console.log('🔍 Simple query result:', { simpleData, simpleError, count: simpleData?.length || 0 })
-
-      // Poi prova la query completa con JOIN
-      const { data, error } = await supabase
-        .from('training_convocati')
-        .select(`
-          *,
-          players (
-            id,
-            first_name,
-            last_name,
-            jersey_number,
-            position,
-            avatar_url
-          )
-        `)
-        .eq('session_id', sessionId)
-
-      console.log('🔍 Full query result:', { 
-        data, 
-        error, 
-        count: data?.length || 0,
-        errorDetails: error ? {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        } : null
-      })
-
-      if (error) {
-        console.error('❌ Errore nel caricare i convocati:', error)
-        console.error('❌ Error details:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        })
-        return
-      }
-      
-      setConvocati(data || [])
-      console.log('✅ Convocati set in state:', data?.length || 0)
-    } catch (error) {
-      console.error('❌ Catch error nel caricare i convocati:', error)
     }
   }
 

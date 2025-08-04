@@ -180,10 +180,39 @@ serve(async (req) => {
         throw attendanceError
       }
 
+      // Prendi i convocati per questa sessione
+      console.log('Fetching convocati for session:', session.id)
+      const { data: convocati, error: convocatiError } = await supabase
+        .from('training_convocati')
+        .select(`
+          id,
+          session_id,
+          player_id,
+          confirmed,
+          notes,
+          created_at,
+          players (
+            id,
+            first_name,
+            last_name,
+            jersey_number,
+            position,
+            avatar_url
+          )
+        `)
+        .eq('session_id', session.id)
+
+      console.log('Convocati query result:', { convocati, error: convocatiError, count: convocati?.length || 0 })
+      if (convocatiError) {
+        console.error('Convocati error:', convocatiError)
+        // Non bloccare se i convocati falliscono, è solo visualizzazione
+      }
+
       return new Response(JSON.stringify({
         session,
         players,
         existingAttendance,
+        convocati: convocati || [],
         deadline: deadline.toISOString(),
         isRegistrationExpired
       }), {
