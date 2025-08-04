@@ -307,8 +307,18 @@ export const useJerseyTemplates = () => {
     }
   }
 
-  const setAsDefault = async (id: string) => {
-    await updateJerseyTemplate(id, { is_default: true })
+  const setAsDefault = async (id: string | null) => {
+    if (id === null) {
+      // Rimuovi il default da tutte le maglie
+      for (const jersey of jerseyTemplates) {
+        if (jersey.is_default) {
+          await updateJerseyTemplate(jersey.id, { is_default: false })
+        }
+      }
+    } else {
+      // Imposta una maglia come default
+      await updateJerseyTemplate(id, { is_default: true })
+    }
   }
 
   return {

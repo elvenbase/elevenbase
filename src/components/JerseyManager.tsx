@@ -268,7 +268,17 @@ export const JerseyManager = () => {
                     </div>
 
                     <div className="flex gap-2 mt-3">
-                      {!jersey.is_default && (
+                      {jersey.is_default ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAsDefault(null)}
+                          className="flex-1"
+                        >
+                          <Star className="h-3 w-3 mr-1" />
+                          Rimuovi Default
+                        </Button>
+                      ) : (
                         <Button
                           variant="outline"
                           size="sm"
@@ -280,33 +290,32 @@ export const JerseyManager = () => {
                         </Button>
                       )}
                       
-                      {!jersey.is_default && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Conferma eliminazione</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Sei sicuro di voler eliminare la maglia "{jersey.name}"? 
-                                Questa azione non può essere annullata.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Annulla</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteJerseyTemplate(jersey.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Elimina
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="sm">
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Conferma eliminazione</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Sei sicuro di voler eliminare la maglia "{jersey.name}"? 
+                              {jersey.is_default && " Questa è la maglia di default, verrà rimossa anche da tale impostazione."}
+                              {" "}Questa azione non può essere annullata.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annulla</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteJerseyTemplate(jersey.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Elimina
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </CardContent>
                 </Card>
