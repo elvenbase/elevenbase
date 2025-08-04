@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { Loader2, Clock, MapPin, Calendar, CheckCircle, XCircle, Users, Target, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
@@ -12,7 +12,6 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
-import { useAvatarColor } from '@/hooks/useAvatarColor'
 import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
 
@@ -73,7 +72,7 @@ const PublicSession = () => {
   const [convocati, setConvocati] = useState<any[]>([])
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
-  const { getAvatarBackground } = useAvatarColor()
+
 
   useEffect(() => {
     if (!token) {
@@ -529,17 +528,13 @@ const PublicSession = () => {
                         >
                           {player ? (
                             <div className="relative">
-                              <Avatar 
-                                className="w-12 h-12 border-3 border-white shadow-lg hover:scale-110 transition-transform"
-                                style={getAvatarBackground(player.first_name + " " + player.last_name, !!player.avatar_url)}
-                              >
-                                <AvatarImage src={player.avatar_url || undefined} />
-                                <AvatarFallback 
-                                  className="text-white font-bold text-sm"
-                                >
-                                  {getPlayerInitials(player)}
-                                </AvatarFallback>
-                              </Avatar>
+                              <PlayerAvatar
+                                firstName={player.first_name}
+                                lastName={player.last_name}
+                                avatarUrl={player.avatar_url}
+                                size="lg"
+                                className="border-3 border-white shadow-lg hover:scale-110 transition-transform"
+                              />
                             </div>
                           ) : (
                             <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
@@ -600,17 +595,13 @@ const PublicSession = () => {
                                 key={position.id}
                                 className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
                               >
-                                <Avatar 
-                                  className="w-8 h-8 border-2 border-white"
-                                  style={getAvatarBackground(player.first_name + " " + player.last_name, !!player.avatar_url)}
-                                >
-                                  <AvatarImage src={player.avatar_url || undefined} />
-                                  <AvatarFallback 
-                                    className="text-white font-bold text-xs"
-                                  >
-                                    {getPlayerInitials(player)}
-                                  </AvatarFallback>
-                                </Avatar>
+                                <PlayerAvatar
+                                  firstName={player.first_name}
+                                  lastName={player.last_name}
+                                  avatarUrl={player.avatar_url}
+                                  size="sm"
+                                  className="border-2 border-white"
+                                />
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium text-sm truncate">
                                     {player.first_name} {player.last_name}
@@ -652,15 +643,13 @@ const PublicSession = () => {
                       key={convocato.id}
                       className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
                     >
-                      <Avatar 
-                        className="w-10 h-10 mb-2"
-                        style={getAvatarBackground(player.first_name + " " + player.last_name, !!player.avatar_url)}
-                      >
-                        <AvatarImage src={player.avatar_url || undefined} />
-                        <AvatarFallback className="text-xs font-medium text-white">
-                          {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <PlayerAvatar
+                        firstName={player.first_name}
+                        lastName={player.last_name}
+                        avatarUrl={player.avatar_url}
+                        size="md"
+                        className="mb-2"
+                      />
                       <div className="text-center">
                         <p className="text-xs font-medium leading-tight">
                           {player.first_name}
@@ -722,17 +711,12 @@ const PublicSession = () => {
                             disabled={!!registration}
                           >
                             <div className="flex items-center gap-3 w-full">
-                              <Avatar 
-                                className="w-8 h-8"
-                                style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
-                              >
-                                <AvatarImage src={player.avatar_url || undefined} />
-                                <AvatarFallback 
-                                  className="text-white text-xs font-bold"
-                                >
-                                  {getPlayerInitials(player)}
-                                </AvatarFallback>
-                              </Avatar>
+                              <PlayerAvatar
+                                firstName={player.first_name}
+                                lastName={player.last_name}
+                                avatarUrl={player.avatar_url}
+                                size="sm"
+                              />
                               <span className="font-medium">
                                 {player.first_name} {player.last_name}
                               </span>

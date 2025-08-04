@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CheckCircle, XCircle, Users, Lock, Check, Clock } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAvatarColor } from '@/hooks/useAvatarColor';
+import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData';
@@ -23,7 +22,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   
   const { data: allPlayers = [], refetch: refetchPlayers } = usePlayers();
   const { data: existingAttendance = [], refetch } = useTrainingAttendance(sessionId);
-  const { getAvatarBackground } = useAvatarColor();
+
 
   const presentCount = existingAttendance.filter(a => a.status === 'present').length;
   const absentCount = existingAttendance.filter(a => a.status === 'absent').length;
@@ -308,15 +307,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                   {/* Giocatore */}
                   <div className="col-span-3">
                     <div className="flex items-center gap-3">
-                      <Avatar 
-                        className="w-8 h-8"
-                        style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
-                      >
-                        <AvatarImage src={player.avatar_url || undefined} />
-                        <AvatarFallback className="text-xs text-white">
-                          {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <PlayerAvatar
+                        firstName={player.first_name}
+                        lastName={player.last_name}
+                        avatarUrl={player.avatar_url}
+                        size="sm"
+                      />
                       <div>
                         <div className="font-medium">
                           {player.first_name} {player.last_name}
@@ -420,15 +416,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                       checked={selectedPlayers.includes(player.id)}
                       onCheckedChange={() => handleSelectPlayer(player.id)}
                     />
-                    <Avatar 
-                      className="w-10 h-10"
-                      style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
-                    >
-                      <AvatarImage src={player.avatar_url || undefined} />
-                      <AvatarFallback className="text-xs text-white">
-                        {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <PlayerAvatar
+                      firstName={player.first_name}
+                      lastName={player.last_name}
+                      avatarUrl={player.avatar_url}
+                      size="md"
+                    />
                     <div className="flex-1">
                       <div className="font-medium">
                         {player.first_name} {player.last_name}

@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
-import { useAvatarColor } from '@/hooks/useAvatarColor'
 
 interface Player {
   id: string
@@ -48,7 +47,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
   const [convocati, setConvocati] = useState<Convocato[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
-  const { getAvatarBackground } = useAvatarColor()
+
 
   // Usa lo stesso criterio delle formazioni: solo giocatori presenti
   const presentPlayers = allPlayers.filter(player => {
@@ -326,15 +325,12 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
                     checked={selectedPlayers.includes(player.id)}
                     onChange={() => togglePlayerSelection(player.id)}
                   />
-                  <Avatar 
-                    className="h-8 w-8"
-                    style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
-                  >
-                    <AvatarImage src={player.avatar_url || undefined} />
-                    <AvatarFallback className="text-xs text-white">
-                      {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <PlayerAvatar
+                    firstName={player.first_name}
+                    lastName={player.last_name}
+                    avatarUrl={player.avatar_url}
+                    size="sm"
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">
                       {player.first_name} {player.last_name}
@@ -392,15 +388,12 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
                         : 'border-border'
                     }`}
                   >
-                    <Avatar 
-                      className="h-10 w-10"
-                      style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
-                    >
-                      <AvatarImage src={player.avatar_url || undefined} />
-                      <AvatarFallback className="text-white">
-                        {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <PlayerAvatar
+                      firstName={player.first_name}
+                      lastName={player.last_name}
+                      avatarUrl={player.avatar_url}
+                      size="md"
+                    />
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
