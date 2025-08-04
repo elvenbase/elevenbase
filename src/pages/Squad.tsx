@@ -51,7 +51,8 @@ interface MobilePlayerCardProps {
   onImageClick: (player: Player) => void;
   onDelete: (playerId: string) => void;
   formatWhatsAppLink: (phone: string, name: string) => string;
-  getAvatarBackground: (name: string) => AvatarBackground;
+  getAvatarBackground: (name: string, hasAvatar?: boolean) => AvatarBackground;
+  getAvatarFallbackStyle: (name: string, hasAvatar?: boolean) => React.CSSProperties;
 }
 
 const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({ 
@@ -59,7 +60,8 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
   onImageClick, 
   onDelete, 
   formatWhatsAppLink, 
-  getAvatarBackground 
+  getAvatarBackground,
+  getAvatarFallbackStyle
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -662,6 +664,7 @@ const Squad = () => {
                     onDelete={handleDeletePlayer}
                     formatWhatsAppLink={formatWhatsAppLink}
                     getAvatarBackground={getAvatarBackground}
+                    getAvatarFallbackStyle={getAvatarFallbackStyle}
                   />
                 ))}
               </div>
