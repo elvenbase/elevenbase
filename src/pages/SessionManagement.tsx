@@ -31,7 +31,7 @@ interface TrainingSession {
 }
 
 const SessionManagement = () => {
-  const { sessionId } = useParams<{ sessionId: string }>()
+  const { id: sessionId } = useParams<{ id: string }>()
   const [refreshKey, setRefreshKey] = useState(0)
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
