@@ -1,9 +1,52 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// Enhanced security headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Content-Security-Policy': "default-src 'self'; script-src 'self'",
+}
+
+// Input validation helpers
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
+
+const validateName = (name: string): boolean => {
+  return typeof name === 'string' && name.trim().length > 0 && name.length <= 100;
+}
+
+const validateUuid = (uuid: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
+// Rate limiting (basic implementation)
+const requestCounts = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 10; // requests per minute
+const RATE_WINDOW = 60000; // 1 minute in milliseconds
+
+const checkRateLimit = (ip: string): boolean => {
+  const now = Date.now();
+  const userRequests = requestCounts.get(ip);
+  
+  if (!userRequests || now > userRequests.resetTime) {
+    requestCounts.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+    return true;
+  }
+  
+  if (userRequests.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  userRequests.count++;
+  return true;
 }
 
 serve(async (req) => {
@@ -11,11 +54,23 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Rate limiting
+  const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+  if (!checkRateLimit(clientIP)) {
+    return new Response(
+      JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+      { 
+        status: 429, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
+
   try {
     console.log('=== PUBLIC REGISTRATION REQUEST START ===')
     console.log('Method:', req.method)
     console.log('URL:', req.url)
-    console.log('Headers:', Object.fromEntries(req.headers.entries()))
+    console.log('Client IP:', clientIP)
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -142,12 +197,39 @@ serve(async (req) => {
       
       const { playerId, status } = requestBody
 
+      // Input validation
       if (!token || !playerId || !status) {
-        return new Response(JSON.stringify({ error: 'Parametri mancanti' }), {
+        return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
+
+      // Validate token format
+      if (typeof token !== 'string' || token.length < 10 || token.length > 64) {
+        return new Response(JSON.stringify({ error: 'Invalid token format' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Validate playerId UUID format
+      if (!validateUuid(playerId)) {
+        return new Response(JSON.stringify({ error: 'Invalid player ID format' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Validate status
+      if (!['present', 'absent', 'uncertain'].includes(status)) {
+        return new Response(JSON.stringify({ error: 'Invalid status value' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+
 
       // Trova la sessione
       const { data: session, error: sessionError } = await supabase

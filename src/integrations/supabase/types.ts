@@ -7,13 +7,49 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
-  }
   public: {
     Tables: {
+      avatar_backgrounds: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          is_default: boolean
+          name: string
+          type: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          is_default?: boolean
+          name: string
+          type: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          type?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avatar_backgrounds_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           created_at: string
@@ -51,349 +87,323 @@ export type Database = {
           type?: Database["public"]["Enums"]["competition_type"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "competitions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_formations: {
         Row: {
           created_at: string
-          created_by: string | null
-          defenders: number
-          forwards: number
+          created_by: string
+          formation_data: Json
           id: string
-          midfielders: number
           name: string
-          positions: Json
           updated_at: string
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
-          defenders?: number
-          forwards?: number
+          created_by: string
+          formation_data: Json
           id?: string
-          midfielders?: number
           name: string
-          positions: Json
           updated_at?: string
         }
         Update: {
           created_at?: string
-          created_by?: string | null
-          defenders?: number
-          forwards?: number
+          created_by?: string
+          formation_data?: Json
           id?: string
-          midfielders?: number
           name?: string
-          positions?: Json
           updated_at?: string
-        }
-        Relationships: []
-      }
-      match_attendance: {
-        Row: {
-          arrival_time: string | null
-          created_at: string
-          id: string
-          match_id: string
-          notes: string | null
-          player_id: string
-          status: string
-        }
-        Insert: {
-          arrival_time?: string | null
-          created_at?: string
-          id?: string
-          match_id: string
-          notes?: string | null
-          player_id: string
-          status?: string
-        }
-        Update: {
-          arrival_time?: string | null
-          created_at?: string
-          id?: string
-          match_id?: string
-          notes?: string | null
-          player_id?: string
-          status?: string
         }
         Relationships: [
           {
-            foreignKeyName: "match_attendance_match_id_fkey"
-            columns: ["match_id"]
+            foreignKeyName: "custom_formations_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "matches"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      jersey_templates: {
+        Row: {
+          created_at: string
+          created_by: string
+          field_lines_thickness: number | null
+          id: string
+          jersey_numbers_shadow: boolean | null
+          name: string
+          template_data: Json
+          updated_at: string
+          use_player_avatars: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          field_lines_thickness?: number | null
+          id?: string
+          jersey_numbers_shadow?: boolean | null
+          name: string
+          template_data: Json
+          updated_at?: string
+          use_player_avatars?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          field_lines_thickness?: number | null
+          id?: string
+          jersey_numbers_shadow?: boolean | null
+          name?: string
+          template_data?: Json
+          updated_at?: string
+          use_player_avatars?: boolean | null
+        }
+        Relationships: [
           {
-            foreignKeyName: "match_attendance_player_id_fkey"
-            columns: ["player_id"]
+            foreignKeyName: "jersey_templates_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "players"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       matches: {
         Row: {
-          competition_id: string | null
           created_at: string
           created_by: string | null
-          home_away: string | null
+          date: string
+          description: string | null
+          home_team: string
           id: string
+          is_home: boolean
           location: string | null
-          match_date: string
-          match_time: string
-          notes: string | null
-          opponent_name: string
-          opponent_score: number | null
-          our_score: number | null
-          status: Database["public"]["Enums"]["match_status"]
+          opponent: string
+          time: string
           updated_at: string
         }
         Insert: {
-          competition_id?: string | null
           created_at?: string
           created_by?: string | null
-          home_away?: string | null
+          date: string
+          description?: string | null
+          home_team: string
           id?: string
+          is_home?: boolean
           location?: string | null
-          match_date: string
-          match_time: string
-          notes?: string | null
-          opponent_name: string
-          opponent_score?: number | null
-          our_score?: number | null
-          status?: Database["public"]["Enums"]["match_status"]
+          opponent: string
+          time: string
           updated_at?: string
         }
         Update: {
-          competition_id?: string | null
           created_at?: string
           created_by?: string | null
-          home_away?: string | null
+          date?: string
+          description?: string | null
+          home_team?: string
           id?: string
+          is_home?: boolean
           location?: string | null
-          match_date?: string
-          match_time?: string
-          notes?: string | null
-          opponent_name?: string
-          opponent_score?: number | null
-          our_score?: number | null
-          status?: Database["public"]["Enums"]["match_status"]
+          opponent?: string
+          time?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "matches_competition_id_fkey"
-            columns: ["competition_id"]
+            foreignKeyName: "matches_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "competitions"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      player_statistics: {
+      player_stats: {
         Row: {
-          assists: number | null
           created_at: string
-          goals: number | null
           id: string
-          matches_played: number | null
+          match_id: string | null
           player_id: string
-          red_cards: number | null
-          season: string | null
-          training_attendance_rate: number | null
+          stat_type: Database["public"]["Enums"]["stat_type"]
+          stat_value: number
           updated_at: string
-          yellow_cards: number | null
         }
         Insert: {
-          assists?: number | null
           created_at?: string
-          goals?: number | null
           id?: string
-          matches_played?: number | null
+          match_id?: string | null
           player_id: string
-          red_cards?: number | null
-          season?: string | null
-          training_attendance_rate?: number | null
+          stat_type: Database["public"]["Enums"]["stat_type"]
+          stat_value?: number
           updated_at?: string
-          yellow_cards?: number | null
         }
         Update: {
-          assists?: number | null
           created_at?: string
-          goals?: number | null
           id?: string
-          matches_played?: number | null
+          match_id?: string | null
           player_id?: string
-          red_cards?: number | null
-          season?: string | null
-          training_attendance_rate?: number | null
+          stat_type?: Database["public"]["Enums"]["stat_type"]
+          stat_value?: number
           updated_at?: string
-          yellow_cards?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "player_statistics_player_id_fkey"
+            foreignKeyName: "player_stats_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_stats_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
-            referencedRelation: "players"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      players: {
+      png_export_settings: {
         Row: {
-          avatar_url: string | null
+          background_color: string
+          border_color: string
           created_at: string
-          first_name: string
+          created_by: string
+          field_color: string
           id: string
-          jersey_number: number | null
-          last_name: string
-          phone: string | null
-          position: string | null
-          status: Database["public"]["Enums"]["player_status"]
+          lines_color: string
+          numbers_color: string
           updated_at: string
+          use_player_avatars: boolean
         }
         Insert: {
-          avatar_url?: string | null
+          background_color?: string
+          border_color?: string
           created_at?: string
-          first_name: string
+          created_by: string
+          field_color?: string
           id?: string
-          jersey_number?: number | null
-          last_name: string
-          phone?: string | null
-          position?: string | null
-          status?: Database["public"]["Enums"]["player_status"]
+          lines_color?: string
+          numbers_color?: string
           updated_at?: string
+          use_player_avatars?: boolean
         }
         Update: {
-          avatar_url?: string | null
+          background_color?: string
+          border_color?: string
           created_at?: string
-          first_name?: string
+          created_by?: string
+          field_color?: string
           id?: string
-          jersey_number?: number | null
-          last_name?: string
-          phone?: string | null
-          position?: string | null
-          status?: Database["public"]["Enums"]["player_status"]
+          lines_color?: string
+          numbers_color?: string
           updated_at?: string
+          use_player_avatars?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "png_export_settings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          date_of_birth: string | null
+          email: string | null
           first_name: string | null
           id: string
+          jersey_number: number | null
           last_name: string | null
-          phone: string | null
-          status: string | null
+          position: Database["public"]["Enums"]["player_position"] | null
+          preferred_foot: Database["public"]["Enums"]["foot_preference"] | null
+          status: Database["public"]["Enums"]["user_status"]
           updated_at: string
-          username: string | null
+          username: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
           first_name?: string | null
-          id?: string
+          id: string
+          jersey_number?: number | null
           last_name?: string | null
-          phone?: string | null
-          status?: string | null
+          position?: Database["public"]["Enums"]["player_position"] | null
+          preferred_foot?: Database["public"]["Enums"]["foot_preference"] | null
+          status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
-          username?: string | null
+          username: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
           first_name?: string | null
           id?: string
+          jersey_number?: number | null
           last_name?: string | null
-          phone?: string | null
-          status?: string | null
+          position?: Database["public"]["Enums"]["player_position"] | null
+          preferred_foot?: Database["public"]["Enums"]["foot_preference"] | null
+          status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
-          username?: string | null
+          username?: string
         }
         Relationships: []
       }
       training_attendance: {
         Row: {
-          arrival_time: string | null
+          attended: boolean | null
           created_at: string
           id: string
           notes: string | null
           player_id: string
-          registration_time: string | null
-          self_registered: boolean | null
           session_id: string
-          status: string
+          updated_at: string
         }
         Insert: {
-          arrival_time?: string | null
+          attended?: boolean | null
           created_at?: string
           id?: string
           notes?: string | null
           player_id: string
-          registration_time?: string | null
-          self_registered?: boolean | null
           session_id: string
-          status?: string
+          updated_at?: string
         }
         Update: {
-          arrival_time?: string | null
+          attended?: boolean | null
           created_at?: string
           id?: string
           notes?: string | null
           player_id?: string
-          registration_time?: string | null
-          self_registered?: boolean | null
           session_id?: string
-          status?: string
+          updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "training_attendance_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
-            referencedRelation: "players"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "training_attendance_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "training_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      training_lineups: {
-        Row: {
-          created_at: string
-          formation: string
-          id: string
-          players_data: Json | null
-          session_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          formation: string
-          id?: string
-          players_data?: Json | null
-          session_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          formation?: string
-          id?: string
-          players_data?: Json | null
-          session_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "training_lineups_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "training_sessions"
@@ -410,7 +420,8 @@ export type Database = {
           end_time: string
           id: string
           is_closed: boolean | null
-          location: string | null
+          communication_type: 'party' | 'discord' | 'altro' | null
+          communication_details: string | null
           max_participants: number | null
           public_link_token: string | null
           session_date: string
@@ -426,7 +437,8 @@ export type Database = {
           end_time: string
           id?: string
           is_closed?: boolean | null
-          location?: string | null
+          communication_type?: 'party' | 'discord' | 'altro' | null
+          communication_details?: string | null
           max_participants?: number | null
           public_link_token?: string | null
           session_date: string
@@ -442,7 +454,8 @@ export type Database = {
           end_time?: string
           id?: string
           is_closed?: boolean | null
-          location?: string | null
+          communication_type?: 'party' | 'discord' | 'altro' | null
+          communication_details?: string | null
           max_participants?: number | null
           public_link_token?: string | null
           session_date?: string
@@ -450,105 +463,60 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
-      }
-      trial_evaluations: {
-        Row: {
-          attitude_score: number | null
-          created_at: string
-          evaluation_date: string
-          evaluator_id: string | null
-          id: string
-          notes: string | null
-          overall_rating: number | null
-          physical_score: number | null
-          tactical_score: number | null
-          technical_score: number | null
-          trialist_id: string
-        }
-        Insert: {
-          attitude_score?: number | null
-          created_at?: string
-          evaluation_date?: string
-          evaluator_id?: string | null
-          id?: string
-          notes?: string | null
-          overall_rating?: number | null
-          physical_score?: number | null
-          tactical_score?: number | null
-          technical_score?: number | null
-          trialist_id: string
-        }
-        Update: {
-          attitude_score?: number | null
-          created_at?: string
-          evaluation_date?: string
-          evaluator_id?: string | null
-          id?: string
-          notes?: string | null
-          overall_rating?: number | null
-          physical_score?: number | null
-          tactical_score?: number | null
-          technical_score?: number | null
-          trialist_id?: string
-        }
         Relationships: [
           {
-            foreignKeyName: "trial_evaluations_trialist_id_fkey"
-            columns: ["trialist_id"]
+            foreignKeyName: "training_sessions_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "trialists"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       trialists: {
         Row: {
-          avatar_url: string | null
-          birth_date: string | null
           created_at: string
-          created_by: string | null
+          date_of_birth: string | null
           email: string | null
+          evaluation: string | null
           first_name: string
           id: string
           last_name: string
           notes: string | null
           phone: string | null
-          position: string | null
-          status: Database["public"]["Enums"]["trial_status"]
-          trial_start_date: string
+          position: Database["public"]["Enums"]["player_position"] | null
+          status: Database["public"]["Enums"]["trialist_status"]
+          trial_date: string | null
           updated_at: string
         }
         Insert: {
-          avatar_url?: string | null
-          birth_date?: string | null
           created_at?: string
-          created_by?: string | null
+          date_of_birth?: string | null
           email?: string | null
+          evaluation?: string | null
           first_name: string
           id?: string
           last_name: string
           notes?: string | null
           phone?: string | null
-          position?: string | null
-          status?: Database["public"]["Enums"]["trial_status"]
-          trial_start_date?: string
+          position?: Database["public"]["Enums"]["player_position"] | null
+          status?: Database["public"]["Enums"]["trialist_status"]
+          trial_date?: string | null
           updated_at?: string
         }
         Update: {
-          avatar_url?: string | null
-          birth_date?: string | null
           created_at?: string
-          created_by?: string | null
+          date_of_birth?: string | null
           email?: string | null
+          evaluation?: string | null
           first_name?: string
           id?: string
           last_name?: string
           notes?: string | null
           phone?: string | null
-          position?: string | null
-          status?: Database["public"]["Enums"]["trial_status"]
-          trial_start_date?: string
+          position?: Database["public"]["Enums"]["player_position"] | null
+          status?: Database["public"]["Enums"]["trialist_status"]
+          trial_date?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -558,21 +526,32 @@ export type Database = {
           created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -580,11 +559,10 @@ export type Database = {
     }
     Functions: {
       calculate_response_deadline: {
-        Args: { session_date: string; start_time: string }
-        Returns: string
-      }
-      create_fake_user: {
-        Args: { _email: string; _password: string; _username: string }
+        Args: {
+          session_date: string
+          start_time: string
+        }
         Returns: string
       }
       generate_public_token: {
@@ -599,159 +577,34 @@ export type Database = {
         Returns: boolean
       }
       is_user_active: {
-        Args: { _user_id: string }
+        Args: {
+          _user_id: string
+        }
         Returns: boolean
       }
     }
     Enums: {
-      app_role: "superadmin" | "admin" | "coach" | "player"
-      competition_type: "championship" | "tournament" | "friendly"
-      match_status:
-        | "scheduled"
-        | "in_progress"
-        | "completed"
-        | "cancelled"
-        | "postponed"
-      player_status: "active" | "inactive" | "injured" | "suspended"
-      trial_status: "in_prova" | "promosso" | "archiviato"
+      app_role: "player" | "coach" | "admin" | "superadmin"
+      competition_type: "league" | "cup" | "friendly" | "tournament"
+      foot_preference: "left" | "right" | "both"
+      player_position: 
+        | "goalkeeper"
+        | "center_back"
+        | "left_back"
+        | "right_back"
+        | "defensive_midfielder"
+        | "central_midfielder"
+        | "attacking_midfielder"
+        | "left_winger"
+        | "right_winger"
+        | "striker"
+        | "center_forward"
+      stat_type: "goals" | "assists" | "yellow_cards" | "red_cards" | "minutes_played"
+      trialist_status: "pending" | "accepted" | "rejected" | "trial_scheduled"
+      user_status: "active" | "inactive" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
     }
   }
 }
-
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {
-      app_role: ["superadmin", "admin", "coach", "player"],
-      competition_type: ["championship", "tournament", "friendly"],
-      match_status: [
-        "scheduled",
-        "in_progress",
-        "completed",
-        "cancelled",
-        "postponed",
-      ],
-      player_status: ["active", "inactive", "injured", "suspended"],
-      trial_status: ["in_prova", "promosso", "archiviato"],
-    },
-  },
-} as const

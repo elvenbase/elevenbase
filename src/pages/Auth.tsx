@@ -132,11 +132,7 @@ const Auth = () => {
           </CardContent>
         </Card>
 
-        <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p>Credenziali admin predefinite:</p>
-          <p>Username: admin</p>
-          <p>Password: CarissiEsportSG2526</p>
-        </div>
+
       </div>
     </div>
   );
