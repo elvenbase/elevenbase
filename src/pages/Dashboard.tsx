@@ -21,6 +21,17 @@ const Dashboard = () => {
   const { data: stats, isLoading: statsLoading } = useStats();
   const { data: recentActivity = [], isLoading: activityLoading } = useRecentActivity();
   
+  // Debug logging
+  console.log('Dashboard Debug:', {
+    players: players,
+    playersCount: players.length,
+    playersLoading,
+    stats,
+    statsLoading,
+    recentActivity,
+    activityLoading
+  });
+  
   const activePlayers = players.filter(player => player.status === 'active');
   const totalPlayers = activePlayers.length;
 
