@@ -148,6 +148,14 @@ function App() {
                       </main>
                     </ProtectedRoute>
                   } />
+                  <Route path="/training/session/:id" element={
+                    <ProtectedRoute>
+                      <Navigation />
+                      <main className="ml-0 lg:ml-64 transition-all duration-200">
+                        <SessionManagement />
+                      </main>
+                    </ProtectedRoute>
+                  } />
                   <Route path="/competitions" element={
                     <ProtectedRoute>
                       <Navigation />
