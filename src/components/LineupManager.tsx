@@ -164,7 +164,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   // Carica formazione esistente quando cambia la sessione
   useEffect(() => {
     loadLineup()
-  }, [sessionId, loadLineup])
+  }, [sessionId]) // Rimossa loadLineup dalle dipendenze per evitare loop
 
   // Aggiorna colori quando cambiano le impostazioni PNG di default
   useEffect(() => {

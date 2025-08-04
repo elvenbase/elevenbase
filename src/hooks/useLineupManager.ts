@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
@@ -27,7 +27,7 @@ export const useLineupManager = (sessionId: string) => {
   const [lineup, setLineup] = useState<Lineup | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const loadLineup = async () => {
+  const loadLineup = useCallback(async () => {
     if (!sessionId) return
 
     setLoading(true)
@@ -56,7 +56,7 @@ export const useLineupManager = (sessionId: string) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [sessionId])
 
   const saveLineup = async (formation: string, playersData: { positions: Record<string, string>; formation_data?: FormationData }) => {
     if (!sessionId) return
