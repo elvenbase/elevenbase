@@ -299,6 +299,7 @@ const SessionManagement = () => {
                   <ConvocatiManager 
                     sessionId={sessionId}
                     allPlayers={players}
+                    attendance={attendance}
                     key={`convocati-${refreshKey}`}
                   />
                 )}
@@ -321,14 +322,10 @@ const SessionManagement = () => {
                   <LineupManager 
                     sessionId={sessionId} 
                     key={`lineup-${refreshKey}`} 
-                    presentPlayers={attendance?.filter(a => a.status === 'present').map(a => ({
-                      id: a.player_id,
-                      first_name: a.players?.first_name || '',
-                      last_name: a.players?.last_name || '',
-                      jersey_number: players?.find(p => p.id === a.player_id)?.jersey_number,
-                      position: players?.find(p => p.id === a.player_id)?.position,
-                      avatar_url: players?.find(p => p.id === a.player_id)?.avatar_url
-                    })) || []}
+                    presentPlayers={players?.filter(player => {
+                      const playerAttendance = attendance?.find(a => a.player_id === player.id);
+                      return playerAttendance?.status === 'present';
+                    }) || []}
                   />
                 )}
               </CardContent>
