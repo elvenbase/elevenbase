@@ -1,9 +1,12 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Users, Trophy, Star } from "lucide-react";
 import { useTrialists, useTrialistStats } from "@/hooks/useSupabaseData";
 import { TrialistForm } from "@/components/forms/TrialistForm";
 import TrialsKanban from "@/components/TrialsKanban";
+import TrialistsTable from "@/components/TrialistsTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Trials = () => {
   const { data: trialistStats, isLoading } = useTrialistStats();
@@ -68,7 +71,20 @@ const Trials = () => {
           </Card>
         </div>
 
-        <TrialsKanban />
+        <Tabs defaultValue="table" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="table">Vista Tabella</TabsTrigger>
+            <TabsTrigger value="kanban">Vista Kanban</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="table">
+            <TrialistsTable />
+          </TabsContent>
+          
+          <TabsContent value="kanban">
+            <TrialsKanban />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
