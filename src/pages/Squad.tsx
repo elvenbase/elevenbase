@@ -9,9 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Edit, Trash2, BarChart3, MessageSquare, X, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
-import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { subMonths } from 'date-fns';
@@ -40,10 +39,7 @@ interface Player {
   platform_id?: string;
 }
 
-interface AvatarBackground {
-  backgroundColor: string;
-  color: string;
-}
+
 
 // Mobile Player Card Component
 interface MobilePlayerCardProps {
@@ -51,17 +47,13 @@ interface MobilePlayerCardProps {
   onImageClick: (player: Player) => void;
   onDelete: (playerId: string) => void;
   formatWhatsAppLink: (phone: string, name: string) => string;
-  getAvatarBackground: (name: string, hasAvatar?: boolean) => AvatarBackground;
-  getAvatarFallbackStyle: (name: string, hasAvatar?: boolean) => React.CSSProperties;
 }
 
 const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({ 
   player, 
   onImageClick, 
   onDelete, 
-  formatWhatsAppLink, 
-  getAvatarBackground,
-  getAvatarFallbackStyle
+  formatWhatsAppLink
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -70,22 +62,14 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
       {/* Main Info - Always Visible */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Avatar 
-            className="h-12 w-12 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg flex-shrink-0"
+          <PlayerAvatar
+            firstName={player.first_name}
+            lastName={player.last_name}
+            avatarUrl={player.avatar_url}
+            size="lg"
+            className="cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg flex-shrink-0"
             onClick={() => onImageClick(player)}
-            style={!!player.avatar_url ? getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url) : undefined}
-          >
-            <AvatarImage 
-              src={player.avatar_url || undefined} 
-              alt={`${player.first_name} ${player.last_name}`} 
-            />
-            <AvatarFallback 
-              className="text-white font-bold"
-              style={getAvatarFallbackStyle(player.first_name + player.last_name, !!player.avatar_url)}
-            >
-              {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          />
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
@@ -307,7 +291,6 @@ const Squad = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
     to: new Date()
@@ -535,22 +518,14 @@ const Squad = () => {
                       <TableRow key={player.id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
-                            <Avatar 
-                              className="h-10 w-10 cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
+                            <PlayerAvatar
+                              firstName={player.first_name}
+                              lastName={player.last_name}
+                              avatarUrl={player.avatar_url}
+                              size="md"
+                              className="cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
                               onClick={() => openImageModal(player)}
-                              style={!!player.avatar_url ? getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url) : undefined}
-                            >
-                              <AvatarImage 
-                                src={player.avatar_url || undefined} 
-                                alt={`${player.first_name} ${player.last_name}`} 
-                              />
-                              <AvatarFallback 
-                                className="text-white font-bold"
-                                style={getAvatarFallbackStyle(player.first_name + player.last_name, !!player.avatar_url)}
-                              >
-                                {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
+                            />
                             <div>
                               <div>{player.first_name} {player.last_name}</div>
                             </div>
@@ -663,8 +638,6 @@ const Squad = () => {
                     onImageClick={openImageModal}
                     onDelete={handleDeletePlayer}
                     formatWhatsAppLink={formatWhatsAppLink}
-                    getAvatarBackground={getAvatarBackground}
-                    getAvatarFallbackStyle={getAvatarFallbackStyle}
                   />
                 ))}
               </div>
