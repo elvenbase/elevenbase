@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CheckCircle, XCircle, Users, Lock, Check } from 'lucide-react';
+import { CheckCircle, XCircle, Users, Lock, Check, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData';
@@ -356,13 +356,19 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                   {/* Conferma Presenza */}
                   <div className="col-span-2">
                     <Select 
-                      value={attendance?.status || ''} 
+                      value={attendance?.status || 'pending'} 
                       onValueChange={(value) => handleStatusChange(player.id, value)}
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue placeholder="Seleziona" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="pending">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            In attesa
+                          </div>
+                        </SelectItem>
                         <SelectItem value="present">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -449,13 +455,19 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                     <div>
                       <label className="text-xs text-muted-foreground block mb-1">Presenza</label>
                       <Select 
-                        value={attendance?.status || ''} 
+                        value={attendance?.status || 'pending'} 
                         onValueChange={(value) => handleStatusChange(player.id, value)}
                       >
                         <SelectTrigger className="h-8">
                           <SelectValue placeholder="Seleziona" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="pending">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-gray-500" />
+                              In attesa
+                            </div>
+                          </SelectItem>
                           <SelectItem value="present">
                             <div className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-600" />
