@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { Users, UserCheck, UserX, Plus, X, Info } from 'lucide-react'
+import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { useAvatarColor } from '@/hooks/useAvatarColor'
@@ -170,9 +170,19 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
     return allPlayers.find(p => p.id === playerId)
   }
 
+  const selectAllPresentPlayers = () => {
+    const allPresentIds = presentPlayers.map(player => player.id)
+    setSelectedPlayers(allPresentIds)
+  }
+
+  const deselectAllPlayers = () => {
+    setSelectedPlayers([])
+  }
+
   const confirmedCount = convocati.filter(c => c.confirmed).length
   const totalConvocati = convocati.length
   const totalPresentPlayers = presentPlayers.length
+  const allPresentSelected = presentPlayers.length > 0 && presentPlayers.every(player => selectedPlayers.includes(player.id))
 
   return (
     <div className="space-y-6">
@@ -266,6 +276,38 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, isReadOnly
                   <li>Confermano la presenza entro 4 ore dall'inizio dell'allenamento</li>
                   <li>Vengono segnati come presenti dall'allenatore nella sezione Presenze</li>
                 </ul>
+              </div>
+            )}
+
+            {/* Pulsanti di controllo selezione */}
+            {presentPlayers.length > 0 && (
+              <div className="mb-4 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={selectAllPresentPlayers}
+                    disabled={allPresentSelected}
+                    className="flex items-center gap-2"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    {allPresentSelected ? 'Tutti selezionati' : `Convoca tutti (${presentPlayers.length})`}
+                  </Button>
+                  {selectedPlayers.length > 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={deselectAllPlayers}
+                      className="flex items-center gap-2"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Deseleziona tutti
+                    </Button>
+                  )}
+                </div>
+                {selectedPlayers.length > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {selectedPlayers.length}/{presentPlayers.length} selezionati
+                  </span>
+                )}
               </div>
             )}
 
