@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CheckCircle, XCircle, Users, Lock, Check, Clock } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData';
@@ -21,6 +23,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   
   const { data: allPlayers = [], refetch: refetchPlayers } = usePlayers();
   const { data: existingAttendance = [], refetch } = useTrainingAttendance(sessionId);
+  const { getAvatarBackground } = useAvatarColor();
 
   const presentCount = existingAttendance.filter(a => a.status === 'present').length;
   const absentCount = existingAttendance.filter(a => a.status === 'absent').length;
@@ -305,17 +308,15 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                   {/* Giocatore */}
                   <div className="col-span-3">
                     <div className="flex items-center gap-3">
-                      {player.avatar_url ? (
-                        <img 
-                          src={player.avatar_url} 
-                          alt={`${player.first_name} ${player.last_name}`}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                          <Users className="w-4 h-4" />
-                        </div>
-                      )}
+                      <Avatar 
+                        className="w-8 h-8"
+                        style={getAvatarBackground(player.first_name + player.last_name)}
+                      >
+                        <AvatarImage src={player.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs text-white">
+                          {player.first_name.charAt(0)}{player.last_name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
                         <div className="font-medium">
                           {player.first_name} {player.last_name}
@@ -419,17 +420,15 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                       checked={selectedPlayers.includes(player.id)}
                       onCheckedChange={() => handleSelectPlayer(player.id)}
                     />
-                    {player.avatar_url ? (
-                      <img 
-                        src={player.avatar_url} 
-                        alt={`${player.first_name} ${player.last_name}`}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                        <Users className="w-5 h-5" />
-                      </div>
-                    )}
+                    <Avatar 
+                      className="w-10 h-10"
+                      style={getAvatarBackground(player.first_name + player.last_name)}
+                    >
+                      <AvatarImage src={player.avatar_url || undefined} />
+                      <AvatarFallback className="text-xs text-white">
+                        {player.first_name.charAt(0)}{player.last_name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1">
                       <div className="font-medium">
                         {player.first_name} {player.last_name}
