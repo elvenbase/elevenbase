@@ -18,7 +18,10 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
     jersey_number: '',
     position: '',
     status: 'active',
-    phone: ''
+    phone: '',
+    ea_sport_id: '',
+    gaming_platform: '',
+    platform_id: ''
   });
 
   const createPlayer = useCreatePlayer();
@@ -32,7 +35,10 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
       jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
       position: formData.position || undefined,
       status: formData.status as 'active' | 'inactive' | 'injured' | 'suspended',
-      phone: formData.phone || undefined
+      phone: formData.phone || undefined,
+      ea_sport_id: formData.ea_sport_id || undefined,
+      gaming_platform: formData.gaming_platform || undefined,
+      platform_id: formData.platform_id || undefined
     };
 
     try {
@@ -43,7 +49,10 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
         jersey_number: '',
         position: '',
         status: 'active',
-        phone: ''
+        phone: '',
+        ea_sport_id: '',
+        gaming_platform: '',
+        platform_id: ''
       });
       setOpen(false);
     } catch (error) {
@@ -124,6 +133,50 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
               <p className="text-xs text-muted-foreground">
                 WhatsApp: https://wa.me/{formData.phone.replace(/[^0-9]/g, '')}
               </p>
+            )}
+          </div>
+
+          {/* Gaming Section */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h3>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">ID EA Sports</label>
+              <Input
+                type="text"
+                placeholder="Es. EAPlayer123"
+                value={formData.ea_sport_id}
+                onChange={(e) => setFormData(prev => ({ ...prev, ea_sport_id: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Piattaforma</label>
+              <Select value={formData.gaming_platform} onValueChange={(value) => setFormData(prev => ({ ...prev, gaming_platform: value, platform_id: value === 'PC' ? '' : prev.platform_id }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleziona piattaforma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nessuna</SelectItem>
+                  <SelectItem value="PC">PC</SelectItem>
+                  <SelectItem value="PS5">PlayStation 5</SelectItem>
+                  <SelectItem value="Xbox">Xbox</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(formData.gaming_platform === 'PS5' || formData.gaming_platform === 'Xbox') && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {formData.gaming_platform === 'PS5' ? 'PSN ID' : 'Xbox Live ID'}
+                </label>
+                <Input
+                  type="text"
+                  placeholder={formData.gaming_platform === 'PS5' ? 'Es. PSNPlayer123' : 'Es. XboxPlayer123'}
+                  value={formData.platform_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, platform_id: e.target.value }))}
+                />
+              </div>
             )}
           </div>
 

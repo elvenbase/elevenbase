@@ -21,6 +21,9 @@ interface EditPlayerFormProps {
     status: 'active' | 'inactive' | 'injured' | 'suspended';
     phone?: string;
     avatar_url?: string;
+    ea_sport_id?: string;
+    gaming_platform?: 'PC' | 'PS5' | 'Xbox';
+    platform_id?: string;
   };
 }
 
@@ -50,7 +53,10 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
     jersey_number: player.jersey_number || '',
     position: player.position || '',
     status: player.status,
-    phone: player.phone || ''
+    phone: player.phone || '',
+    ea_sport_id: player.ea_sport_id || '',
+    gaming_platform: player.gaming_platform || '',
+    platform_id: player.platform_id || ''
   });
   
   const [phonePrefix, setPhonePrefix] = useState(initialPrefix);
@@ -152,7 +158,10 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         position: formData.position || undefined,
         status: formData.status,
         phone: formData.phone || undefined,
-        avatar_url: avatarUrl || undefined
+        avatar_url: avatarUrl || undefined,
+        ea_sport_id: formData.ea_sport_id || undefined,
+        gaming_platform: formData.gaming_platform || undefined,
+        platform_id: formData.platform_id || undefined
       });
       setOpen(false);
       console.log('Player updated successfully');
@@ -333,6 +342,59 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                 <SelectItem value="suspended">Squalificato</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Gaming Section */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="ea_sport_id">ID EA Sports</Label>
+              <Input
+                id="ea_sport_id"
+                type="text"
+                placeholder="Es. EAPlayer123"
+                value={formData.ea_sport_id}
+                onChange={(e) => setFormData({ ...formData, ea_sport_id: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gaming_platform">Piattaforma</Label>
+              <Select 
+                value={formData.gaming_platform} 
+                onValueChange={(value: 'PC' | 'PS5' | 'Xbox' | '') => setFormData({ 
+                  ...formData, 
+                  gaming_platform: value,
+                  platform_id: value === 'PC' ? '' : formData.platform_id
+                })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleziona piattaforma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nessuna</SelectItem>
+                  <SelectItem value="PC">PC</SelectItem>
+                  <SelectItem value="PS5">PlayStation 5</SelectItem>
+                  <SelectItem value="Xbox">Xbox</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(formData.gaming_platform === 'PS5' || formData.gaming_platform === 'Xbox') && (
+              <div className="space-y-2">
+                <Label htmlFor="platform_id">
+                  {formData.gaming_platform === 'PS5' ? 'PSN ID' : 'Xbox Live ID'}
+                </Label>
+                <Input
+                  id="platform_id"
+                  type="text"
+                  placeholder={formData.gaming_platform === 'PS5' ? 'Es. PSNPlayer123' : 'Es. XboxPlayer123'}
+                  value={formData.platform_id}
+                  onChange={(e) => setFormData({ ...formData, platform_id: e.target.value })}
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

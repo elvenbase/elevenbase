@@ -349,11 +349,14 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          ea_sport_id: string | null
           first_name: string
+          gaming_platform: Database["public"]["Enums"]["gaming_platform"] | null
           id: string
           jersey_number: number | null
           last_name: string
           phone: string | null
+          platform_id: string | null
           position: string | null
           status: Database["public"]["Enums"]["player_status"]
           updated_at: string
@@ -361,11 +364,14 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          ea_sport_id?: string | null
           first_name: string
+          gaming_platform?: Database["public"]["Enums"]["gaming_platform"] | null
           id?: string
           jersey_number?: number | null
           last_name: string
           phone?: string | null
+          platform_id?: string | null
           position?: string | null
           status?: Database["public"]["Enums"]["player_status"]
           updated_at?: string
@@ -373,11 +379,14 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          ea_sport_id?: string | null
           first_name?: string
+          gaming_platform?: Database["public"]["Enums"]["gaming_platform"] | null
           id?: string
           jersey_number?: number | null
           last_name?: string
           phone?: string | null
+          platform_id?: string | null
           position?: string | null
           status?: Database["public"]["Enums"]["player_status"]
           updated_at?: string
@@ -771,6 +780,7 @@ export type Database = {
     Enums: {
       app_role: "superadmin" | "admin" | "coach" | "player"
       competition_type: "championship" | "tournament" | "friendly"
+      gaming_platform: "PC" | "PS5" | "Xbox"
       match_status:
         | "scheduled"
         | "in_progress"

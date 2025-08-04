@@ -164,33 +164,65 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
             )}
           </div>
 
-          {/* Detailed Stats */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">Statistiche Dettagliate</h4>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="text-muted-foreground">Presenze:</span>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="secondary">
-                    {player.presences || 0}/{player.totalEvents || 0}
-                  </Badge>
-                  {player.totalEvents > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      ({player.attendanceRate}%)
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Ritardi:</span>
-                <div className="mt-1">
-                  <Badge variant={player.tardiness > 0 ? "destructive" : "outline"}>
-                    {player.tardiness || 0}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </div>
+                     {/* Detailed Stats */}
+           <div className="space-y-2">
+             <h4 className="text-sm font-medium text-muted-foreground">Statistiche Dettagliate</h4>
+             <div className="grid grid-cols-2 gap-3 text-sm">
+               <div>
+                 <span className="text-muted-foreground">Presenze:</span>
+                 <div className="flex items-center gap-2 mt-1">
+                   <Badge variant="secondary">
+                     {player.presences || 0}/{player.totalEvents || 0}
+                   </Badge>
+                   {player.totalEvents > 0 && (
+                     <span className="text-xs text-muted-foreground">
+                       ({player.attendanceRate}%)
+                     </span>
+                   )}
+                 </div>
+               </div>
+               <div>
+                 <span className="text-muted-foreground">Ritardi:</span>
+                 <div className="mt-1">
+                   <Badge variant={player.tardiness > 0 ? "destructive" : "outline"}>
+                     {player.tardiness || 0}
+                   </Badge>
+                 </div>
+               </div>
+             </div>
+           </div>
+
+           {/* Gaming Info */}
+           {(player.ea_sport_id || player.gaming_platform) && (
+             <div className="space-y-2">
+               <h4 className="text-sm font-medium text-muted-foreground">Dati Gaming</h4>
+               <div className="space-y-2 text-sm">
+                 {player.ea_sport_id && (
+                   <div>
+                     <span className="text-muted-foreground">EA Sports ID:</span>
+                     <div className="mt-1 font-mono text-xs bg-muted px-2 py-1 rounded">
+                       {player.ea_sport_id}
+                     </div>
+                   </div>
+                 )}
+                 {player.gaming_platform && (
+                   <div>
+                     <span className="text-muted-foreground">Piattaforma:</span>
+                     <div className="flex items-center gap-2 mt-1">
+                       <Badge variant="outline" className="text-xs">
+                         {player.gaming_platform}
+                       </Badge>
+                       {player.platform_id && (
+                         <span className="font-mono text-xs text-muted-foreground">
+                           {player.platform_id}
+                         </span>
+                       )}
+                     </div>
+                   </div>
+                 )}
+               </div>
+             </div>
+           )}
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-2">
