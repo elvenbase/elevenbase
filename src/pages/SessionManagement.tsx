@@ -13,7 +13,7 @@ import { AttendanceForm } from '@/components/forms/AttendanceForm'
 import { TrainingForm } from '@/components/forms/TrainingForm'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
-import { PublicLinkSharing } from '@/components/PublicLinkSharing'
+import PublicLinkSharing from '@/components/PublicLinkSharing'
 
 interface TrainingSession {
   id: string;
