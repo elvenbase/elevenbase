@@ -25,11 +25,9 @@ interface EditPlayerFormProps {
     gaming_platform?: 'PC' | 'PS5' | 'Xbox';
     platform_id?: string;
   };
-  // Per compatibilità con il nuovo pattern
-  children?: React.ReactNode;
 }
 
-const EditPlayerForm = ({ player, children }: EditPlayerFormProps) => {
+const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
   const [open, setOpen] = useState(false);
   
   // Parse existing phone number to extract prefix and number
@@ -209,16 +207,12 @@ const EditPlayerForm = ({ player, children }: EditPlayerFormProps) => {
     "Xbox"
   ];
 
-  const triggerButton = children ? children : (
-    <Button variant="outline" size="sm">
-      <Edit className="h-4 w-4" />
-    </Button>
-  );
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {triggerButton}
+        <Button variant="outline" size="sm">
+          <Edit className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -436,4 +430,4 @@ const EditPlayerForm = ({ player, children }: EditPlayerFormProps) => {
   );
 };
 
-export { EditPlayerForm };
+export default EditPlayerForm;

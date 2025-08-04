@@ -15,7 +15,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { subMonths } from 'date-fns';
 import { PlayerForm } from '@/components/forms/PlayerForm';
-import { EditPlayerForm } from '@/components/forms/EditPlayerForm';
+import EditPlayerForm from '@/components/forms/EditPlayerForm';
 import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 
 type SortField = 'name' | 'jersey_number' | 'position' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
@@ -132,11 +132,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
         
         {/* Quick Actions */}
         <div className="flex items-center gap-1">
-          <EditPlayerForm player={player}>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <Edit className="h-3 w-3" />
-            </Button>
-          </EditPlayerForm>
+          <EditPlayerForm player={player} />
           
           <PlayerStatsModal player={player}>
             <Button variant="outline" size="sm" className="h-8 w-8 p-0">
@@ -239,12 +235,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
           {/* Actions */}
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-2">
-              <EditPlayerForm player={player}>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Modifica
-                </Button>
-              </EditPlayerForm>
+              <EditPlayerForm player={player} />
               
               <PlayerStatsModal player={player}>
                 <Button variant="outline" size="sm">
