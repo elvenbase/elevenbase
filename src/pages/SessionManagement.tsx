@@ -12,6 +12,7 @@ import { useTrainingSessions, useTrainingAttendance, usePlayers } from '@/hooks/
 import { AttendanceForm } from '@/components/forms/AttendanceForm'
 import { TrainingForm } from '@/components/forms/TrainingForm'
 import LineupManager from '@/components/LineupManager'
+import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
 
 interface TrainingSession {
@@ -282,6 +283,29 @@ const SessionManagement = () => {
           </TabsContent>
 
           <TabsContent value="lineup" className="space-y-6">
+            {/* Convocati */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Convocati
+                </CardTitle>
+                <CardDescription>
+                  Gestisci i giocatori convocati per questa sessione di allenamento
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {sessionId && players && (
+                  <ConvocatiManager 
+                    sessionId={sessionId}
+                    allPlayers={players}
+                    key={`convocati-${refreshKey}`}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Formazione */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -296,7 +320,7 @@ const SessionManagement = () => {
                 {sessionId && (
                   <LineupManager 
                     sessionId={sessionId} 
-                    key={refreshKey} 
+                    key={`lineup-${refreshKey}`} 
                     presentPlayers={attendance?.filter(a => a.status === 'present').map(a => ({
                       id: a.player_id,
                       first_name: a.players?.first_name || '',

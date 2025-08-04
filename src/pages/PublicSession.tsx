@@ -14,6 +14,7 @@ import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import { useAvatarColor } from '@/hooks/useAvatarColor'
 import FormationExporter from '@/components/FormationExporter'
+import { ConvocatiManager } from '@/components/ConvocatiManager'
 import html2canvas from 'html2canvas'
 
 interface Player {
@@ -70,6 +71,7 @@ const PublicSession = () => {
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [lineup, setLineup] = useState<Lineup | null>(null)
+  const [convocati, setConvocati] = useState<any[]>([])
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
   const { getAvatarBackground } = useAvatarColor()
@@ -146,6 +148,7 @@ const PublicSession = () => {
       // Carica anche la formazione se disponibile
       if (data.session?.id) {
         await loadLineup(data.session.id)
+        await loadConvocati(data.session.id)
       }
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
@@ -176,6 +179,34 @@ const PublicSession = () => {
       }
     } catch (error) {
       console.error('Errore nel caricare la formazione:', error)
+    }
+  }
+
+  const loadConvocati = async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('training_convocati')
+        .select(`
+          *,
+          players (
+            id,
+            first_name,
+            last_name,
+            jersey_number,
+            position,
+            avatar_url
+          )
+        `)
+        .eq('session_id', sessionId)
+
+      if (error) {
+        console.error('Errore nel caricare i convocati:', error)
+        return
+      }
+      
+      setConvocati(data || [])
+    } catch (error) {
+      console.error('Errore nel caricare i convocati:', error)
     }
   }
 
@@ -808,6 +839,25 @@ const PublicSession = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Convocati */}
+        {convocati.length > 0 && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                Convocati
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <ConvocatiManager 
+                sessionId={session?.id || ''}
+                allPlayers={players}
+                isReadOnly={true}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {isExpired && (
           <Card className="border-destructive/20 bg-destructive/5">
