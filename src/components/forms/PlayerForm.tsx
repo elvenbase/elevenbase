@@ -136,7 +136,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
             )}
           </div>
 
-          {/* Gaming Section */}
+          {/* Gaming Section - Updated */}
           <div className="space-y-4 pt-4 border-t">
             <h3 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h3>
             

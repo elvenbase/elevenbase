@@ -344,9 +344,9 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
             </Select>
           </div>
 
-          {/* Gaming Section */}
-          <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h3>
+                     {/* Gaming Section - Updated */}
+           <div className="space-y-4 pt-4 border-t">
+             <h3 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h3>
             
             <div className="space-y-2">
               <Label htmlFor="ea_sport_id">ID EA Sports</Label>
