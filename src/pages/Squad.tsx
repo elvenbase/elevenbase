@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Edit, Trash2, BarChart3, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Edit, Trash2, BarChart3, MessageSquare, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
 import { useAvatarColor } from '@/hooks/useAvatarColor';
@@ -19,8 +19,7 @@ import { PlayerForm } from '@/components/forms/PlayerForm';
 import EditPlayerForm from '@/components/forms/EditPlayerForm';
 import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 
-type SortField = 'name' | 'jersey_number' | 'position' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
-type SortDirection = 'asc' | 'desc';
+
 
 interface Player {
   id: string;
@@ -300,8 +299,6 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
 const Squad = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [sortField, setSortField] = useState<SortField>('name');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const { getAvatarBackground } = useAvatarColor();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
@@ -333,22 +330,10 @@ const Squad = () => {
     setImageModalOpen(true);
   };
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
 
-  const getSortIcon = (field: SortField) => {
-    if (sortField !== field) return <ArrowUpDown className="h-4 w-4" />;
-    return sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
-  };
 
-  const filteredAndSortedPlayers = useMemo(() => {
-    const filtered = players.filter(player => {
+  const filteredPlayers = useMemo(() => {
+    return players.filter(player => {
       const matchesSearch = 
         player.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         player.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -358,57 +343,7 @@ const Squad = () => {
       
       return matchesSearch && matchesStatus;
     });
-
-    // Sort the filtered results
-    filtered.sort((a, b) => {
-      let aValue: string | number;
-      let bValue: string | number;
-
-      switch (sortField) {
-        case 'name':
-          aValue = `${a.last_name} ${a.first_name}`.toLowerCase();
-          bValue = `${b.last_name} ${b.first_name}`.toLowerCase();
-          break;
-        case 'jersey_number':
-          aValue = a.jersey_number || 0;
-          bValue = b.jersey_number || 0;
-          break;
-        case 'position':
-          aValue = a.position || '';
-          bValue = b.position || '';
-          break;
-        case 'phone':
-          aValue = a.phone || '';
-          bValue = b.phone || '';
-          break;
-        case 'presences':
-          aValue = a.presences || 0;
-          bValue = b.presences || 0;
-          break;
-        case 'tardiness':
-          aValue = a.tardiness || 0;
-          bValue = b.tardiness || 0;
-          break;
-        case 'attendanceRate':
-          aValue = a.attendanceRate || 0;
-          bValue = b.attendanceRate || 0;
-          break;
-        case 'status':
-          aValue = a.status;
-          bValue = b.status;
-          break;
-        default:
-          aValue = a.last_name;
-          bValue = b.last_name;
-      }
-
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return filtered;
-  }, [players, searchTerm, statusFilter, sortField, sortDirection]);
+  }, [players, searchTerm, statusFilter]);
 
   const handleDeletePlayer = async (playerId: string) => {
     console.log('🗑️ Attempting to delete player with ID:', playerId);
@@ -484,7 +419,7 @@ const Squad = () => {
 
           {isLoading ? (
             <div className="text-center py-8">Caricamento giocatori...</div>
-          ) : filteredAndSortedPlayers.length === 0 ? (
+          ) : filteredPlayers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm || statusFilter !== 'all' ? 'Nessun giocatore trovato con i filtri selezionati.' : 'Nessun giocatore presente. Aggiungi il primo giocatore!'}
             </div>
@@ -495,46 +430,18 @@ const Squad = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>
-                        <Button variant="ghost" onClick={() => handleSort('name')} className="h-auto p-0 font-semibold">
-                          Nome/Cognome {getSortIcon('name')}
-                        </Button>
-                      </TableHead>
-                      <TableHead>
-                        <Button variant="ghost" onClick={() => handleSort('jersey_number')} className="h-auto p-0 font-semibold">
-                          Numero {getSortIcon('jersey_number')}
-                        </Button>
-                      </TableHead>
-                      <TableHead>
-                        <Button variant="ghost" onClick={() => handleSort('position')} className="h-auto p-0 font-semibold">
-                          Posizione {getSortIcon('position')}
-                        </Button>
-                      </TableHead>
-                      <TableHead>
-                        <Button variant="ghost" onClick={() => handleSort('phone')} className="h-auto p-0 font-semibold">
-                          Telefono {getSortIcon('phone')}
-                        </Button>
-                      </TableHead>
-                      <TableHead>
-                        <Button variant="ghost" onClick={() => handleSort('presences')} className="h-auto p-0 font-semibold">
-                          Presenze Allenamenti {getSortIcon('presences')}
-                        </Button>
-                      </TableHead>
-                      <TableHead>
-                        <Button variant="ghost" onClick={() => handleSort('tardiness')} className="h-auto p-0 font-semibold">
-                          Ritardi Allenamenti {getSortIcon('tardiness')}
-                        </Button>
-                      </TableHead>
-                      <TableHead>
-                        <Button variant="ghost" onClick={() => handleSort('status')} className="h-auto p-0 font-semibold">
-                          Stato {getSortIcon('status')}
-                        </Button>
-                      </TableHead>
-                      <TableHead className="text-right">Azioni</TableHead>
+                      <TableHead className="font-semibold">Nome/Cognome</TableHead>
+                      <TableHead className="font-semibold">Numero</TableHead>
+                      <TableHead className="font-semibold">Posizione</TableHead>
+                      <TableHead className="font-semibold">Telefono</TableHead>
+                      <TableHead className="font-semibold">Presenze Allenamenti</TableHead>
+                      <TableHead className="font-semibold">Ritardi Allenamenti</TableHead>
+                      <TableHead className="font-semibold">Stato</TableHead>
+                      <TableHead className="text-right font-semibold">Azioni</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAndSortedPlayers.map((player) => (
+                    {filteredPlayers.map((player) => (
                       <TableRow key={player.id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
@@ -658,7 +565,7 @@ const Squad = () => {
 
               {/* Mobile Cards (under 1100px) */}
               <div className="block xl:hidden space-y-3">
-                {filteredAndSortedPlayers.map((player) => (
+                {filteredPlayers.map((player) => (
                   <MobilePlayerCard 
                     key={player.id}
                     player={player}
