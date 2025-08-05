@@ -126,10 +126,10 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
       }
 
       await loadConvocati()
-      toast.success('Convocati salvati con successo')
+      toast.success('Panchina salvata con successo')
     } catch (error) {
-      console.error('Errore nel salvare i convocati:', error)
-      toast.error('Errore nel salvare i convocati')
+      console.error('Errore nel salvare la panchina:', error)
+      toast.error('Errore nel salvare la panchina')
     } finally {
       setLoading(false)
     }
@@ -158,6 +158,32 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
     } catch (error) {
       console.error('Errore nell\'aggiornare la conferma:', error)
       toast.error('Errore nell\'aggiornare la conferma')
+    }
+  }
+
+  const removeConvocato = async (convocatoId: string) => {
+    if (isReadOnly) return
+
+    if (!confirm('Sei sicuro di voler rimuovere questo giocatore dalla panchina?')) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { error } = await supabase
+        .from('training_convocati')
+        .delete()
+        .eq('id', convocatoId)
+
+      if (error) throw error
+
+      setConvocati(prev => prev.filter(c => c.id !== convocatoId))
+      toast.success('Giocatore rimosso dalla panchina con successo')
+    } catch (error) {
+      console.error('Errore nella rimozione del giocatore:', error)
+      toast.error('Errore nella rimozione del giocatore')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -344,10 +370,11 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
             <div className="flex justify-end mt-4">
               <Button 
                 onClick={saveConvocati} 
-                disabled={loading}
-                className="flex items-center gap-2"
+                disabled={selectedPlayers.length === 0 || loading}
+                className="w-full"
               >
-                {loading ? 'Salvando...' : 'Salva Convocati'}
+                <Plus className="mr-2 h-4 w-4" />
+                {loading ? 'Salvando...' : 'Salva Panchina'}
               </Button>
             </div>
           </CardContent>
@@ -360,12 +387,12 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Lista Convocati
+              Lista Panchina
             </CardTitle>
             <CardDescription>
               {isReadOnly 
-                ? 'Giocatori convocati per questa sessione'
-                : 'Gestisci le conferme dei convocati'
+                ? 'Giocatori in panchina per questa sessione'
+                : 'Gestisci le conferme dei giocatori in panchina'
               }
             </CardDescription>
           </CardHeader>
@@ -410,24 +437,36 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     </div>
 
                     {!isReadOnly && (
-                      <Button
-                        variant={convocato.confirmed ? "outline" : "default"}
-                        size="sm"
-                        onClick={() => toggleConfirmation(convocato.id, convocato.confirmed)}
-                        className="flex items-center gap-2"
-                      >
-                        {convocato.confirmed ? (
-                          <>
-                            <UserCheck className="h-4 w-4" />
-                            Confermato
-                          </>
-                        ) : (
-                          <>
-                            <UserX className="h-4 w-4" />
-                            Conferma
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant={convocato.confirmed ? "outline" : "default"}
+                          size="sm"
+                          onClick={() => toggleConfirmation(convocato.id, convocato.confirmed)}
+                          className="flex items-center gap-2"
+                        >
+                          {convocato.confirmed ? (
+                            <>
+                              <UserCheck className="h-4 w-4" />
+                              Confermato
+                            </>
+                          ) : (
+                            <>
+                              <UserX className="h-4 w-4" />
+                              Conferma
+                            </>
+                          )}
+                        </Button>
+                        
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeConvocato(convocato.id)}
+                          className="flex items-center gap-1"
+                        >
+                          <X className="h-4 w-4" />
+                          Elimina
+                        </Button>
+                      </div>
                     )}
 
                     {isReadOnly && (
@@ -462,8 +501,8 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
               {isReadOnly 
-                ? 'Nessun giocatore convocato per questa sessione'
-                : 'Nessun giocatore selezionato. Seleziona i convocati sopra.'
+                ? 'Nessun giocatore in panchina per questa sessione'
+                : 'Nessun giocatore selezionato. Seleziona i giocatori per la panchina sopra.'
               }
             </p>
           </CardContent>

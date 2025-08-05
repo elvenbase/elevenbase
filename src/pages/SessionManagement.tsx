@@ -311,29 +311,40 @@ const SessionManagement = () => {
                     onLineupChange={handleLineupChange}
                   />
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Panchina */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Panchina
-                </CardTitle>
-                <CardDescription>
-                  Gestisci i giocatori in panchina per questa sessione di allenamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {sessionId && players && (
-                  <ConvocatiManager 
-                    sessionId={sessionId}
-                    allPlayers={players}
-                    attendance={attendance}
-                    playersInLineup={playersInLineup}
-                    key={`convocati-${refreshKey}`}
-                  />
+                
+                {/* Panchina - appare solo con formazione completa */}
+                {sessionId && players && playersInLineup.length === 11 && (
+                  <div className="mt-8 pt-8 border-t">
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        Panchina
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Gestisci i giocatori in panchina per questa sessione di allenamento
+                      </p>
+                    </div>
+                    <ConvocatiManager 
+                      sessionId={sessionId}
+                      allPlayers={players}
+                      attendance={attendance}
+                      playersInLineup={playersInLineup}
+                      key={`convocati-${refreshKey}`}
+                    />
+                  </div>
+                )}
+                
+                {/* Messaggio quando formazione non è completa */}
+                {playersInLineup.length < 11 && (
+                  <div className="mt-8 pt-8 border-t">
+                    <div className="text-center p-6 bg-muted/50 rounded-lg">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Completa la formazione</h3>
+                      <p className="text-muted-foreground">
+                        Seleziona tutti gli 11 titolari ({playersInLineup.length}/11) per accedere alla gestione della panchina
+                      </p>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
