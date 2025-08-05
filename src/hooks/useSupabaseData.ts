@@ -357,6 +357,7 @@ export const useUpdateTrainingSession = () => {
         communication_type?: string | null;
         communication_details?: string | null;
         max_participants?: number;
+        allow_responses_until?: string | null;
       };
     }) => {
       const { data: result, error } = await supabase

@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Copy, ExternalLink, Clock, Users, CheckCircle, XCircle } from 'lucide-react'
+import { Copy, ExternalLink, Clock, Users, CheckCircle, XCircle, Edit3, Save, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { WhatsAppInviteBox } from './WhatsAppInviteBox'
+import { useUpdateTrainingSession } from '@/hooks/useSupabaseData'
 
 interface Session {
   id: string
@@ -14,6 +15,7 @@ interface Session {
   allow_responses_until?: string
   session_date: string
   start_time: string
+  is_closed: boolean
 }
 
 interface AttendanceStats {
@@ -32,6 +34,10 @@ interface PublicLinkSharingProps {
 const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSharingProps) => {
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [isExpired, setIsExpired] = useState(false)
+  const [isEditingDeadline, setIsEditingDeadline] = useState(false)
+  const [newDeadline, setNewDeadline] = useState('')
+  const updateSession = useUpdateTrainingSession()
+  
   const sessionUrl = session.public_link_token 
     ? `${window.location.origin}/session/${session.public_link_token}`
     : ''
@@ -82,6 +88,55 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
     }
   }
 
+  // Gestione modifica deadline autoregistrazione
+  const startEditingDeadline = () => {
+    if (session.is_closed) {
+      toast.error('Non è possibile modificare una sessione chiusa')
+      return
+    }
+    
+    // Imposta il valore attuale come default
+    if (session.allow_responses_until) {
+      const deadline = new Date(session.allow_responses_until)
+      // Formato per datetime-local input: YYYY-MM-DDTHH:mm
+      const formatted = deadline.toISOString().slice(0, 16)
+      setNewDeadline(formatted)
+    } else {
+      // Default: 2 ore prima dell'allenamento
+      const sessionStart = new Date(session.session_date + 'T' + session.start_time)
+      sessionStart.setHours(sessionStart.getHours() - 2)
+      const formatted = sessionStart.toISOString().slice(0, 16)
+      setNewDeadline(formatted)
+    }
+    setIsEditingDeadline(true)
+  }
+
+  const saveDeadline = async () => {
+    if (!newDeadline) {
+      toast.error('Seleziona una data e ora valida')
+      return
+    }
+
+    try {
+      await updateSession.mutateAsync({
+        id: session.id,
+        data: { allow_responses_until: newDeadline }
+      })
+      
+      toast.success('Scadenza autoregistrazione aggiornata')
+      setIsEditingDeadline(false)
+      onRefresh?.()
+    } catch (error) {
+      console.error('Errore aggiornamento deadline:', error)
+      toast.error('Errore nel salvare la scadenza')
+    }
+  }
+
+  const cancelEditingDeadline = () => {
+    setIsEditingDeadline(false)
+    setNewDeadline('')
+  }
+
   if (!session.public_link_token) {
     return (
       <Card>
@@ -116,11 +171,51 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Clock className="h-4 w-4" />
-              <span className="text-sm font-medium">Tempo rimasto</span>
+              <span className="text-sm font-medium">Scadenza registrazioni</span>
+              {!session.is_closed && !isEditingDeadline && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={startEditingDeadline}
+                  className="h-6 w-6 p-0 ml-1"
+                >
+                  <Edit3 className="h-3 w-3" />
+                </Button>
+              )}
             </div>
-            <Badge variant={isExpired ? "destructive" : "secondary"} className="text-sm">
-              {timeLeft}
-            </Badge>
+            {isEditingDeadline ? (
+              <div className="space-y-2">
+                <Input
+                  type="datetime-local"
+                  value={newDeadline}
+                  onChange={(e) => setNewDeadline(e.target.value)}
+                  className="text-xs"
+                />
+                <div className="flex gap-1 justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={saveDeadline}
+                    disabled={updateSession.isPending}
+                    className="h-7 px-2"
+                  >
+                    <Save className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={cancelEditingDeadline}
+                    className="h-7 px-2"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Badge variant={isExpired ? "destructive" : "secondary"} className="text-sm">
+                {timeLeft || 'Non impostato'}
+              </Badge>
+            )}
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -193,11 +288,23 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
           </Button>
         )}
 
+        {/* Stato sessione e modificabilità */}
+        {session.is_closed && (
+          <div className="p-4 bg-muted/30 border rounded-lg">
+            <p className="text-sm text-muted-foreground font-medium">
+              🔒 Sessione chiusa - Le impostazioni autoregistrazione non sono più modificabili
+            </p>
+          </div>
+        )}
+
         {/* Avviso scadenza */}
-        {isExpired && (
+        {isExpired && !session.is_closed && (
           <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
             <p className="text-sm text-destructive font-medium">
               ⚠️ Il tempo per le registrazioni è scaduto. Le nuove registrazioni non sono più accettate.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Puoi modificare la scadenza cliccando l'icona di modifica sopra.
             </p>
           </div>
         )}
