@@ -106,7 +106,12 @@ export const usePngExportSettings = () => {
         // MODIFICA: Carica TUTTE le impostazioni (utente + system default)
         .order('created_at', { ascending: false })
       
-      console.log('📋 Query result:', { data: data?.length || 0, error: !!error })
+      console.log('📋 Query result DETTAGLIO:', { 
+        data: data, 
+        dataLength: data?.length || 0, 
+        error: error,
+        rawData: JSON.stringify(data) 
+      })
 
       if (error) {
         console.error('Errore nel caricamento delle impostazioni:', error)
