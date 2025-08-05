@@ -119,152 +119,152 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
         </Button>
       </div>
 
-              {/* Expanded Details */}
-        {isExpanded && (
-          <div className="mt-5 pt-5 border-t space-y-4">
-            {/* Info Giocatore */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-muted-foreground">Informazioni Giocatore</h4>
-              <div className="grid grid-cols-1 gap-3">
-                <div>
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Posizione</span>
-                  <div className="text-sm font-medium mt-1">
-                    {player.position || 'Non specificata'}
-                  </div>
+      {/* Expanded Details */}
+      {isExpanded && (
+        <div className="mt-5 pt-5 border-t space-y-4">
+          {/* Info Giocatore */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground">Informazioni Giocatore</h4>
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Posizione</span>
+                <div className="text-sm font-medium mt-1">
+                  {player.position || 'Non specificata'}
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Statistiche */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-muted-foreground">Statistiche Allenamenti</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Presenze</span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {player.presences || 0}/{player.totalEvents || 0}
-                    </Badge>
-                    {player.totalEvents > 0 && (
-                      <span className="text-xs text-muted-foreground">
-                        ({player.attendanceRate}%)
-                      </span>
-                    )}
-                  </div>
+          {/* Statistiche */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground">Statistiche Allenamenti</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Presenze</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="secondary" className="text-xs">
+                    {player.presences || 0}/{player.totalEvents || 0}
+                  </Badge>
+                  {player.totalEvents > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      ({player.attendanceRate}%)
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Ritardi</span>
-                  <div className="mt-1">
-                    <Badge variant={player.tardiness > 0 ? "destructive" : "outline"} className="text-xs">
-                      {player.tardiness || 0}
-                    </Badge>
-                  </div>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Ritardi</span>
+                <div className="mt-1">
+                  <Badge variant={player.tardiness > 0 ? "destructive" : "outline"} className="text-xs">
+                    {player.tardiness || 0}
+                  </Badge>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-muted-foreground">Contatti</h4>
-              {player.phone ? (
-                <div className="flex items-center justify-between bg-muted/30 rounded-lg p-3">
-                  <span className="text-sm font-medium">{player.phone}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="h-8 px-3"
+          {/* Contact Info */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground">Contatti</h4>
+            {player.phone ? (
+              <div className="flex items-center justify-between bg-muted/30 rounded-lg p-3">
+                <span className="text-sm font-medium">{player.phone}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="h-8 px-3"
+                >
+                  <a
+                    href={formatWhatsAppLink(player.phone, player.first_name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <a
-                      href={formatWhatsAppLink(player.phone, player.first_name)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <MessageSquare className="h-3 w-3 mr-1" />
-                      WhatsApp
-                    </a>
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-sm text-muted-foreground bg-muted/20 rounded-lg p-3">
-                  Telefono non specificato
-                </div>
-              )}
-                         </div>
-
-                        {/* Gaming Info */}
-            {(player.ea_sport_id || player.gaming_platform) && (
-              <div className="space-y-3">
-                <h4 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h4>
-                <div className="bg-muted/20 rounded-lg p-3 space-y-3">
-                  {player.ea_sport_id && (
-                    <div>
-                      <span className="text-xs text-muted-foreground uppercase tracking-wide">EA Sports ID</span>
-                      <div className="mt-1 font-mono text-sm bg-muted px-3 py-2 rounded border">
-                        {player.ea_sport_id}
-                      </div>
-                    </div>
-                  )}
-                  {player.gaming_platform && (
-                    <div>
-                      <span className="text-xs text-muted-foreground uppercase tracking-wide">Piattaforma</span>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {player.gaming_platform}
-                        </Badge>
-                        {player.platform_id && (
-                          <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                            {player.platform_id}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    <MessageSquare className="h-3 w-3 mr-1" />
+                    WhatsApp
+                  </a>
+                </Button>
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground bg-muted/20 rounded-lg p-3">
+                Telefono non specificato
               </div>
             )}
+          </div>
 
-            {/* Actions */}
+          {/* Gaming Info */}
+          {(player.ea_sport_id || player.gaming_platform) && (
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-muted-foreground">Azioni</h4>
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex items-center gap-3">
-                  <EditPlayerForm player={player} />
-                  <PlayerStatsModal player={player}>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Statistiche
-                    </Button>
-                  </PlayerStatsModal>
-                </div>
-                
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" className="w-full">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Elimina giocatore
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Elimina giocatore</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Questa azione rimuoverà definitivamente <strong>{player.first_name} {player.last_name}</strong> dalla rosa della squadra. Tutti i dati associati verranno eliminati.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Annulla</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={() => onDelete(player.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Elimina
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+              <h4 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h4>
+              <div className="bg-muted/20 rounded-lg p-3 space-y-3">
+                {player.ea_sport_id && (
+                  <div>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide">EA Sports ID</span>
+                    <div className="mt-1 font-mono text-sm bg-muted px-3 py-2 rounded border">
+                      {player.ea_sport_id}
+                    </div>
+                  </div>
+                )}
+                {player.gaming_platform && (
+                  <div>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Piattaforma</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-xs">
+                        {player.gaming_platform}
+                      </Badge>
+                      {player.platform_id && (
+                        <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                          {player.platform_id}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+          )}
+
+          {/* Actions */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground">Azioni</h4>
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex items-center gap-3">
+                <EditPlayerForm player={player} />
+                <PlayerStatsModal player={player}>
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Statistiche
+                  </Button>
+                </PlayerStatsModal>
+              </div>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="w-full">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Elimina giocatore
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Elimina giocatore</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Questa azione rimuoverà definitivamente <strong>{player.first_name} {player.last_name}</strong> dalla rosa della squadra. Tutti i dati associati verranno eliminati.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annulla</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={() => onDelete(player.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Elimina
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+                </AlertDialog>
+            </div>
+          </div>
         </div>
       )}
     </Card>
