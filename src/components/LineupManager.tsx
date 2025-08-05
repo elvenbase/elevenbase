@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Trash2, Save, Users, Download } from 'lucide-react'
+import { Trash2, Save, Users, Download, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLineupManager } from '@/hooks/useLineupManager'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
@@ -144,6 +144,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const [nameTextColor, setNameTextColor] = useState('#000000')
   const [avatarBackgroundColor, setAvatarBackgroundColor] = useState('#1a2332')
   const [exporting, setExporting] = useState(false)
+  const [isPngBoxOpen, setIsPngBoxOpen] = useState(false)
   
   // Smart auto-save: traccia se ci sono modifiche non salvate
   const [isDirty, setIsDirty] = useState(false)
@@ -863,9 +864,31 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                 <Download className="h-4 w-4 sm:h-5 sm:w-5" />
                 Personalizza Export PNG
               </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsPngBoxOpen(!isPngBoxOpen)}
+                className="p-2 h-8 w-8"
+              >
+                {isPngBoxOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
+            {!isPngBoxOpen && (
+              <div className="text-center py-4">
+                <p className="text-sm text-muted-foreground">
+                  Clicca sull'icona sopra per personalizzare l'export PNG
+                </p>
+              </div>
+            )}
+            
+            {isPngBoxOpen && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
               {/* Colore righe campo */}
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground">Righe campo</label>
@@ -1015,13 +1038,15 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
 
             {/* Azioni export */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-              <Button 
-                variant="outline" 
-                onClick={resetToDefault}
-                className="text-primary hover:text-primary/80 text-xs sm:text-sm"
-              >
-                Reset ai colori di default
-              </Button>
+              {isPngBoxOpen && (
+                <Button 
+                  variant="outline" 
+                  onClick={resetToDefault}
+                  className="text-primary hover:text-primary/80 text-xs sm:text-sm"
+                >
+                  Reset ai colori di default
+                </Button>
+              )}
               <Button 
                 onClick={downloadFormation} 
                 disabled={exporting || Object.keys(playerPositions).length === 0}
@@ -1031,6 +1056,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                 {exporting ? 'Generando PNG...' : 'Scarica PNG'}
               </Button>
             </div>
+              </>
+            )}
 
             {/* FormationExporter nascosto per il rendering ma visibile a html2canvas */}
             <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '800px', height: '600px' }}>
