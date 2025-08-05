@@ -62,7 +62,7 @@ export const useJerseyTemplates = () => {
           const { data: systemJersey } = await supabase
             .from('jersey_templates')
             .select('*')
-            .eq('created_by', null)
+            .is('created_by', null)
             .eq('is_default', true)
             .single()
           
@@ -107,7 +107,7 @@ export const useJerseyTemplates = () => {
       const { data, error } = await supabase
         .from('jersey_templates')
         .select('*')
-        .not('created_by', 'eq', null) // Escludi la maglia di sistema (created_by = NULL)
+        .not('created_by', 'is', null) // Escludi la maglia di sistema (created_by = NULL)
         .order('created_at', { ascending: false }) // Ordina per data di creazione (più recenti prima)
 
       // Se il filtro non funziona, filtriamo manualmente
@@ -170,14 +170,14 @@ export const useJerseyTemplates = () => {
         await supabase
           .from('jersey_templates')
           .update({ is_default: false })
-          .not('created_by', 'eq', null) // Solo dalle maglie degli utenti
+          .not('created_by', 'is', null) // Solo dalle maglie degli utenti
       }
 
       // Se è la prima maglia dell'utente, impostala automaticamente come default
       const { data: existingJerseys } = await supabase
         .from('jersey_templates')
         .select('id')
-        .not('created_by', 'eq', null)
+        .not('created_by', 'is', null)
         .limit(1)
 
       const isFirstJersey = !existingJerseys || existingJerseys.length === 0
@@ -192,7 +192,7 @@ export const useJerseyTemplates = () => {
         await supabase
           .from('jersey_templates')
           .update({ is_default: false })
-          .not('created_by', 'eq', null)
+          .not('created_by', 'is', null)
       }
 
       const { data, error } = await supabase
