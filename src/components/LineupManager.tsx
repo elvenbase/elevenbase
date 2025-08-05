@@ -904,14 +904,16 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
             <div className="hidden">
               <FormationExporter
                 id="formation-export"
-                players={Object.entries(playerPositions)
+                lineup={Object.entries(playerPositions)
                   .filter(([_, playerId]) => playerId && playerId !== 'none')
                   .map(([positionId, playerId]) => {
                     const player = getPlayerById(playerId)
                     const position = currentFormation.positions.find(p => p.id === positionId)
                     return player && position ? {
-                      ...player,
-                      position: { x: position.x, y: position.y }
+                      player_id: playerId,
+                      position_x: position.x,
+                      position_y: position.y,
+                      player: player
                     } : null
                   })
                   .filter(Boolean) as any[]
