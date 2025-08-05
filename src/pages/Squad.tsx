@@ -294,7 +294,7 @@ const Squad = () => {
     from: subMonths(new Date(), 1),
     to: new Date()
   });
-  const [selectedCaptain, setSelectedCaptain] = useState<string>('');
+  const [selectedCaptain, setSelectedCaptain] = useState<string>('none');
   
   // Stato per la modale dell'immagine del giocatore
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -313,7 +313,7 @@ const Squad = () => {
     if (currentCaptain) {
       setSelectedCaptain(currentCaptain.id);
     } else {
-      setSelectedCaptain('');
+      setSelectedCaptain('none');
     }
   }, [players]);
 
@@ -326,8 +326,8 @@ const Squad = () => {
         .update({ is_captain: false })
         .neq('id', '00000000-0000-0000-0000-000000000000'); // Update tutti
 
-      // Se selezionato un capitano, impostalo
-      if (newCaptainId) {
+      // Se selezionato un capitano (non "none"), impostalo
+      if (newCaptainId && newCaptainId !== 'none') {
         const { error } = await supabase
           .from('players')
           .update({ is_captain: true })
@@ -345,14 +345,14 @@ const Squad = () => {
       toast.error('Errore nell\'aggiornamento del capitano');
       // Revert UI state
       const currentCaptain = players.find(p => p.is_captain);
-      setSelectedCaptain(currentCaptain?.id || '');
+      setSelectedCaptain(currentCaptain?.id || 'none');
     }
   };
 
   // Salva quando cambia la selezione del capitano
   React.useEffect(() => {
     const currentCaptain = players.find(p => p.is_captain);
-    const currentCaptainId = currentCaptain?.id || '';
+    const currentCaptainId = currentCaptain?.id || 'none';
     
     // Solo se è cambiato davvero e non è il caricamento iniziale
     if (selectedCaptain !== currentCaptainId && players.length > 0) {
@@ -472,7 +472,7 @@ const Squad = () => {
                     <SelectValue placeholder="Seleziona capitano" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nessuno</SelectItem>
+                    <SelectItem value="none">Nessuno</SelectItem>
                     {players.filter(p => p.status === 'active').map(player => (
                       <SelectItem key={player.id} value={player.id}>
                         {player.first_name} {player.last_name}
