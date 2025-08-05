@@ -15,6 +15,12 @@ export const usePlayers = () => {
       
       if (error) {
         console.error('Error fetching players:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
       return data;

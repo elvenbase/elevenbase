@@ -45,12 +45,46 @@ const SessionManagement = () => {
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
-  const { data: players } = usePlayers()
+  const { data: players, error: playersError, isLoading: loadingPlayers } = usePlayers()
   
 
 
   const session = sessions?.find(s => s.id === sessionId) as TrainingSession | undefined
 
+  // Gestione errori players
+  if (playersError) {
+    console.error('Players fetch error details:', playersError)
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Users className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Errore caricamento giocatori</h3>
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              Non è possibile caricare l'elenco dei giocatori. Controlla la connessione e riprova.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Ricarica pagina
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Loading state per players
+  if (loadingPlayers || loadingSessions) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin mb-4" />
+            <p className="text-sm text-muted-foreground">Caricamento sessione...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
 
   const formatDateTime = (date: string, time: string) => {
