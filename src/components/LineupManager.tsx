@@ -216,6 +216,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
 
           await saveLineup(selectedFormation, { positions: playerPositions, formation_data: lineupData.players_data.formation_data })
           console.log(`✅ Auto-save completato per ${selectedFormation}`)
+          
+          // Toast discreto per confermare l'auto-save
+          const formationName = getCurrentFormation().name
+          toast.success(`💾 ${formationName} salvata automaticamente`, { duration: 2000 })
         } catch (error) {
           console.error('Errore nel salvataggio automatico:', error)
         }
