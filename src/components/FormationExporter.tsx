@@ -282,6 +282,8 @@ const FormationExporter = ({
                       <div
                         style={{
                           position: 'absolute',
+                          bottom: '15px',
+                          right: '5px',
                           width: '28px',
                           height: '28px',
                           borderRadius: '50%',
@@ -289,10 +291,7 @@ const FormationExporter = ({
                           border: '2px solid white',
                           boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                           fontSize: '14px',
-                          paddingTop: '5px',
-                          paddingRight: '5px',
-                          paddingBottom: '5px',
-                          paddingLeft: '5px',
+                          lineHeight: '24px',
                           textAlign: 'center',
                           fontWeight: 'bold',
                           color: jerseyNumbersColor,
@@ -332,6 +331,8 @@ const FormationExporter = ({
                       <div
                         style={{
                           position: 'absolute',
+                          bottom: '15px',
+                          right: '5px',
                           width: '28px',
                           height: '28px',
                           borderRadius: '50%',
@@ -339,10 +340,7 @@ const FormationExporter = ({
                           border: '2px solid white',
                           boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                           fontSize: '14px',
-                          paddingTop: '5px',
-                          paddingRight: '5px',
-                          paddingBottom: '5px',
-                          paddingLeft: '5px',
+                          lineHeight: '24px',
                           textAlign: 'center',
                           fontWeight: 'bold',
                           color: jerseyNumbersColor,
