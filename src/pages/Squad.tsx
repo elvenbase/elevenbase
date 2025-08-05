@@ -341,8 +341,14 @@ const Squad = () => {
         toast.success('Nessun capitano selezionato');
       }
     } catch (error) {
-      console.error('Errore nell\'aggiornamento del capitano:', error);
-      toast.error('Errore nell\'aggiornamento del capitano');
+      console.error('🔥 ERRORE DETTAGLIATO CAPITANO:', {
+        error,
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint
+      });
+      toast.error(`Errore nell'aggiornamento del capitano: ${error?.message || error}`);
       // Revert UI state
       const currentCaptain = players.find(p => p.is_captain);
       setSelectedCaptain(currentCaptain?.id || 'none');
