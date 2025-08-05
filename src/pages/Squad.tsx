@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Edit, Trash2, BarChart3, MessageSquare, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
+import { Edit, Trash2, BarChart3, MessageSquare, ChevronDown, ChevronUp, ArrowUpDown, Filter, Settings } from 'lucide-react';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -61,9 +61,9 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
-      {/* Main Info - Always Visible */}
-      <div className="flex items-center justify-between">
+    <Card className="p-4 sm:p-5 hover:shadow-md transition-shadow">
+      {/* Main Info - Always Visible - SIMPLIFIED */}
+      <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <PlayerAvatar
             firstName={player.first_name}
@@ -74,38 +74,36 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
             onClick={() => onImageClick(player)}
           />
           
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-base truncate">
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="space-y-1">
+              <h3 className="font-semibold text-lg leading-tight">
                 {player.first_name} {player.last_name}
               </h3>
-              {player.jersey_number && (
-                <Badge variant="outline" className="text-xs">
-                  #{player.jersey_number}
+              <div className="flex items-center gap-2 flex-wrap">
+                {player.jersey_number && (
+                  <Badge variant="outline" className="text-xs">
+                    #{player.jersey_number}
+                  </Badge>
+                )}
+                {player.is_captain && (
+                  <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">
+                    ⭐ Capitano
+                  </Badge>
+                )}
+                <Badge 
+                  variant={
+                    player.status === 'active' ? 'default' :
+                    player.status === 'injured' ? 'destructive' :
+                    player.status === 'suspended' ? 'secondary' : 'outline'
+                  }
+                  className="text-xs"
+                >
+                  {player.status === 'active' ? 'Attivo' :
+                   player.status === 'inactive' ? 'Inattivo' :
+                   player.status === 'injured' ? 'Infortunato' :
+                   player.status === 'suspended' ? 'Squalificato' : player.status}
                 </Badge>
-              )}
-              {player.is_captain && (
-                <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">
-                  ⭐ Capitano
-                </Badge>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="truncate">{player.position || 'Posizione non specificata'}</span>
-              <Badge 
-                variant={
-                  player.status === 'active' ? 'default' :
-                  player.status === 'injured' ? 'destructive' :
-                  player.status === 'suspended' ? 'secondary' : 'outline'
-                }
-                className="text-xs"
-              >
-                {player.status === 'active' ? 'Attivo' :
-                 player.status === 'inactive' ? 'Inattivo' :
-                 player.status === 'injured' ? 'Infortunato' :
-                 player.status === 'suspended' ? 'Squalificato' : player.status}
-              </Badge>
+              </div>
             </div>
           </div>
         </div>
@@ -115,170 +113,158 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
           variant="ghost"
           size="sm"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-shrink-0 h-8 w-8 p-0"
+          className="flex-shrink-0 h-10 w-10 p-0 mt-1"
         >
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
       </div>
 
-      {/* Quick Stats - Always Visible */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t">
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Presenze:</span>
-            <Badge variant="secondary" className="text-xs">
-              {player.presences || 0}/{player.totalEvents || 0}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Ritardi:</span>
-            <Badge variant={player.tardiness > 0 ? "destructive" : "outline"} className="text-xs">
-              {player.tardiness || 0}
-            </Badge>
-          </div>
-        </div>
-        
-        {/* Quick Actions */}
-        <div className="flex items-center gap-1">
-          <EditPlayerForm player={player} />
-          
-          <PlayerStatsModal player={player}>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <BarChart3 className="h-3 w-3" />
-            </Button>
-          </PlayerStatsModal>
-        </div>
-      </div>
-
-      {/* Expanded Details */}
-      {isExpanded && (
-        <div className="mt-4 pt-4 border-t space-y-3">
-          {/* Contact Info */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">Contatti</h4>
-            {player.phone ? (
-              <div className="flex items-center justify-between">
-                <span className="text-sm">{player.phone}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="h-7 px-2"
-                >
-                  <a
-                    href={formatWhatsAppLink(player.phone, player.first_name)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageSquare className="h-3 w-3 mr-1" />
-                    WhatsApp
-                  </a>
-                </Button>
+              {/* Expanded Details */}
+        {isExpanded && (
+          <div className="mt-5 pt-5 border-t space-y-4">
+            {/* Info Giocatore */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-muted-foreground">Informazioni Giocatore</h4>
+              <div className="grid grid-cols-1 gap-3">
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Posizione</span>
+                  <div className="text-sm font-medium mt-1">
+                    {player.position || 'Non specificata'}
+                  </div>
+                </div>
               </div>
-            ) : (
-              <span className="text-sm text-muted-foreground">Telefono non specificato</span>
-            )}
-          </div>
-
-                     {/* Detailed Stats */}
-           <div className="space-y-2">
-             <h4 className="text-sm font-medium text-muted-foreground">Statistiche Dettagliate</h4>
-             <div className="grid grid-cols-2 gap-3 text-sm">
-               <div>
-                 <span className="text-muted-foreground">Presenze:</span>
-                 <div className="flex items-center gap-2 mt-1">
-                   <Badge variant="secondary">
-                     {player.presences || 0}/{player.totalEvents || 0}
-                   </Badge>
-                   {player.totalEvents > 0 && (
-                     <span className="text-xs text-muted-foreground">
-                       ({player.attendanceRate}%)
-                     </span>
-                   )}
-                 </div>
-               </div>
-               <div>
-                 <span className="text-muted-foreground">Ritardi:</span>
-                 <div className="mt-1">
-                   <Badge variant={player.tardiness > 0 ? "destructive" : "outline"}>
-                     {player.tardiness || 0}
-                   </Badge>
-                 </div>
-               </div>
-             </div>
-           </div>
-
-           {/* Gaming Info */}
-           {(player.ea_sport_id || player.gaming_platform) && (
-             <div className="space-y-2">
-               <h4 className="text-sm font-medium text-muted-foreground">Dati Gaming</h4>
-               <div className="space-y-2 text-sm">
-                 {player.ea_sport_id && (
-                   <div>
-                     <span className="text-muted-foreground">EA Sports ID:</span>
-                     <div className="mt-1 font-mono text-xs bg-muted px-2 py-1 rounded">
-                       {player.ea_sport_id}
-                     </div>
-                   </div>
-                 )}
-                 {player.gaming_platform && (
-                   <div>
-                     <span className="text-muted-foreground">Piattaforma:</span>
-                     <div className="flex items-center gap-2 mt-1">
-                       <Badge variant="outline" className="text-xs">
-                         {player.gaming_platform}
-                       </Badge>
-                       {player.platform_id && (
-                         <span className="font-mono text-xs text-muted-foreground">
-                           {player.platform_id}
-                         </span>
-                       )}
-                     </div>
-                   </div>
-                 )}
-               </div>
-             </div>
-           )}
-
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-2">
-              <EditPlayerForm player={player} />
-              
-              <PlayerStatsModal player={player}>
-                <Button variant="outline" size="sm">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Statistiche
-                </Button>
-              </PlayerStatsModal>
             </div>
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Elimina
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Elimina giocatore</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Questa azione rimuoverà definitivamente <strong>{player.first_name} {player.last_name}</strong> dalla rosa della squadra. Tutti i dati associati verranno eliminati.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annulla</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={() => onDelete(player.id)}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            {/* Statistiche */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-muted-foreground">Statistiche Allenamenti</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Presenze</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary" className="text-xs">
+                      {player.presences || 0}/{player.totalEvents || 0}
+                    </Badge>
+                    {player.totalEvents > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        ({player.attendanceRate}%)
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Ritardi</span>
+                  <div className="mt-1">
+                    <Badge variant={player.tardiness > 0 ? "destructive" : "outline"} className="text-xs">
+                      {player.tardiness || 0}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-muted-foreground">Contatti</h4>
+              {player.phone ? (
+                <div className="flex items-center justify-between bg-muted/30 rounded-lg p-3">
+                  <span className="text-sm font-medium">{player.phone}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="h-8 px-3"
                   >
-                    Elimina
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+                    <a
+                      href={formatWhatsAppLink(player.phone, player.first_name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageSquare className="h-3 w-3 mr-1" />
+                      WhatsApp
+                    </a>
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground bg-muted/20 rounded-lg p-3">
+                  Telefono non specificato
+                </div>
+              )}
+                         </div>
+
+                        {/* Gaming Info */}
+            {(player.ea_sport_id || player.gaming_platform) && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-muted-foreground">Dati Gaming</h4>
+                <div className="bg-muted/20 rounded-lg p-3 space-y-3">
+                  {player.ea_sport_id && (
+                    <div>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wide">EA Sports ID</span>
+                      <div className="mt-1 font-mono text-sm bg-muted px-3 py-2 rounded border">
+                        {player.ea_sport_id}
+                      </div>
+                    </div>
+                  )}
+                  {player.gaming_platform && (
+                    <div>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wide">Piattaforma</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {player.gaming_platform}
+                        </Badge>
+                        {player.platform_id && (
+                          <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                            {player.platform_id}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-muted-foreground">Azioni</h4>
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex items-center gap-3">
+                  <EditPlayerForm player={player} />
+                  <PlayerStatsModal player={player}>
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Statistiche
+                    </Button>
+                  </PlayerStatsModal>
+                </div>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="w-full">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Elimina giocatore
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Elimina giocatore</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Questa azione rimuoverà definitivamente <strong>{player.first_name} {player.last_name}</strong> dalla rosa della squadra. Tutti i dati associati verranno eliminati.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annulla</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => onDelete(player.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Elimina
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
         </div>
       )}
     </Card>
@@ -295,6 +281,7 @@ const Squad = () => {
     to: new Date()
   });
   const [selectedCaptain, setSelectedCaptain] = useState<string>('none');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
   // Stato per la modale dell'immagine del giocatore
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -466,38 +453,32 @@ const Squad = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div className="flex gap-4">
-              <PlayerForm />
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="min-w-0 sm:min-w-[200px]">
-                <label className="text-sm font-medium block mb-2">Capitano squadra:</label>
-                <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="Seleziona capitano" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nessuno</SelectItem>
-                    {players.filter(p => p.status === 'active').map(player => (
-                      <SelectItem key={player.id} value={player.id}>
-                        {player.first_name} {player.last_name}
-                        {player.jersey_number ? ` (#${player.jersey_number})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
+          {/* Controlli principali - sempre visibili */}
           <div className="space-y-4 mb-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <PlayerForm />
+                <div className="w-full sm:w-auto">
+                  <label className="text-sm font-medium block mb-2">Capitano squadra:</label>
+                  <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
+                    <SelectTrigger className="w-full sm:w-48">
+                      <SelectValue placeholder="Seleziona capitano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nessuno</SelectItem>
+                      {players.filter(p => p.status === 'active').map(player => (
+                        <SelectItem key={player.id} value={player.id}>
+                          {player.first_name} {player.last_name}
+                          {player.jersey_number ? ` (#${player.jersey_number})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* Search - sempre visibile */}
+              <div>
                 <Input
                   placeholder="Cerca giocatore..."
                   value={searchTerm}
@@ -505,68 +486,101 @@ const Squad = () => {
                   className="w-full"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filtra per stato" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tutti gli stati</SelectItem>
-                  <SelectItem value="active">Attivo</SelectItem>
-                  <SelectItem value="inactive">Inattivo</SelectItem>
-                  <SelectItem value="injured">Infortunato</SelectItem>
-                  <SelectItem value="suspended">Squalificato</SelectItem>
-                </SelectContent>
-              </Select>
+              
+              {/* Toggle filtri avanzati */}
+              <div className="flex items-center justify-between pt-2 border-t">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {filteredAndSortedPlayers.length} giocatori
+                  {searchTerm && ` (filtrati)`}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="flex items-center gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  <span className="hidden sm:inline">Filtri avanzati</span>
+                  {showAdvancedFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
             
-            {/* Controlli di ordinamento */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex items-center gap-2">
-                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Ordina per:</span>
-              </div>
-              <Select value={sortField} onValueChange={(value: SortField) => setSortField(value)}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Seleziona campo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Nome/Cognome</SelectItem>
-                  <SelectItem value="jersey_number">Numero di maglia</SelectItem>
-                  <SelectItem value="position">Posizione</SelectItem>
-                  <SelectItem value="phone">Telefono</SelectItem>
-                  <SelectItem value="presences">Presenze allenamenti</SelectItem>
-                  <SelectItem value="tardiness">Ritardi allenamenti</SelectItem>
-                  <SelectItem value="attendanceRate">Percentuale presenze</SelectItem>
-                  <SelectItem value="status">Stato</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortDirection} onValueChange={(value: SortDirection) => setSortDirection(value)}>
-                <SelectTrigger className="w-full sm:w-32">
-                  <SelectValue placeholder="Ordine" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">Crescente</SelectItem>
-                  <SelectItem value="desc">Decrescente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Periodo di analisi presenze allenamenti:</label>
-                <DateRangePicker
-                  dateRange={dateRange}
-                  onDateRangeChange={setDateRange}
-                  placeholder="Seleziona periodo"
-                />
-              </div>
-              {dateRange?.from && dateRange?.to && (
-                <div className="text-sm text-muted-foreground pt-6">
-                  Statistiche allenamenti calcolate per il periodo selezionato
+            {/* Filtri avanzati - collassabili */}
+            {showAdvancedFilters && (
+              <div className="space-y-4 pt-4 border-t bg-muted/20 rounded-lg p-4">
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label className="text-sm font-medium block mb-2">Filtra per stato:</label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Filtra per stato" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tutti gli stati</SelectItem>
+                        <SelectItem value="active">Attivo</SelectItem>
+                        <SelectItem value="inactive">Inattivo</SelectItem>
+                        <SelectItem value="injured">Infortunato</SelectItem>
+                        <SelectItem value="suspended">Squalificato</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium block mb-2">Ordina per:</label>
+                      <Select value={sortField} onValueChange={(value: SortField) => setSortField(value)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Seleziona campo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="name">Nome/Cognome</SelectItem>
+                          <SelectItem value="jersey_number">Numero di maglia</SelectItem>
+                          <SelectItem value="position">Posizione</SelectItem>
+                          <SelectItem value="phone">Telefono</SelectItem>
+                          <SelectItem value="presences">Presenze allenamenti</SelectItem>
+                          <SelectItem value="tardiness">Ritardi allenamenti</SelectItem>
+                          <SelectItem value="attendanceRate">Percentuale presenze</SelectItem>
+                          <SelectItem value="status">Stato</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium block mb-2">Direzione:</label>
+                      <Select value={sortDirection} onValueChange={(value: SortDirection) => setSortDirection(value)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Ordine" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="asc">Crescente</SelectItem>
+                          <SelectItem value="desc">Decrescente</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium block mb-2">Periodo analisi presenze:</label>
+                    <DateRangePicker
+                      dateRange={dateRange}
+                      onDateRangeChange={setDateRange}
+                      placeholder="Seleziona periodo"
+                    />
+                    {dateRange?.from && dateRange?.to && (
+                      <div className="text-xs text-muted-foreground mt-2">
+                        Statistiche allenamenti calcolate per il periodo selezionato
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 sm:p-6">
 
           {isLoading ? (
             <div className="text-center py-8">Caricamento giocatori...</div>
@@ -715,7 +729,7 @@ const Squad = () => {
               </div>
 
               {/* Mobile Cards (under 1100px) */}
-              <div className="block xl:hidden space-y-3">
+              <div className="block xl:hidden space-y-4 sm:space-y-5">
                 {filteredAndSortedPlayers.map((player) => (
                   <MobilePlayerCard 
                     key={player.id}
