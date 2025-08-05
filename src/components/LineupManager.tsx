@@ -865,11 +865,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                 Personalizza Export PNG
               </h3>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => setIsPngBoxOpen(!isPngBoxOpen)}
-                className="p-2 h-8 w-8"
+                className="flex items-center gap-2 text-primary hover:bg-primary/10 border-primary/30"
               >
+                <span className="text-xs font-medium">
+                  {isPngBoxOpen ? 'Chiudi' : 'Personalizza'}
+                </span>
                 {isPngBoxOpen ? (
                   <ChevronUp className="h-4 w-4" />
                 ) : (
@@ -878,13 +881,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
               </Button>
             </div>
             
-            {!isPngBoxOpen && (
-              <div className="text-center py-4">
-                <p className="text-sm text-muted-foreground">
-                  Clicca sull'icona sopra per personalizzare l'export PNG
-                </p>
-              </div>
-            )}
+
             
             {isPngBoxOpen && (
               <>
