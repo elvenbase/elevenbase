@@ -125,8 +125,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const { 
     lineup, 
     loading, 
-    createLineup, 
-    updateLineup,
+    saveLineup,
     loadLineup 
   } = useLineupManager(sessionId)
 
@@ -198,28 +197,24 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         try {
           console.log(`🔄 Auto-save formazione ${selectedFormation} con ${playersInFormation.length} giocatori`)
           
-          const lineupData = {
-            formation: selectedFormation,
-            players_data: {
-              positions: playerPositions,
-              formation_data: {
-                field_lines_color: fieldLinesColor,
-                field_lines_thickness: fieldLinesThickness,
-                jersey_numbers_color: jerseyNumbersColor,
-                jersey_numbers_shadow: jerseyNumbersShadow,
-                use_player_avatars: usePlayerAvatars,
-                name_box_color: nameBoxColor,
-                name_text_color: nameTextColor
-              }
-            }
+          const formationData = {
+            field_lines_color: fieldLinesColor,
+            field_lines_thickness: fieldLinesThickness,
+            jersey_numbers_color: jerseyNumbersColor,
+            jersey_numbers_shadow: jerseyNumbersShadow,
+            use_player_avatars: usePlayerAvatars,
+            name_box_color: nameBoxColor,
+            name_text_color: nameTextColor
           }
 
-          await saveLineup(selectedFormation, { positions: playerPositions, formation_data: lineupData.players_data.formation_data })
+          await saveLineup(selectedFormation, { positions: playerPositions, formation_data: formationData })
           console.log(`✅ Auto-save completato per ${selectedFormation}`)
           
-          // Toast discreto per confermare l'auto-save
+          // Toast discreto per confermare l'auto-save (sostituisce quello del hook)
           const formationName = getCurrentFormation().name
-          toast.success(`💾 ${formationName} salvata automaticamente`, { duration: 2000 })
+          setTimeout(() => {
+            toast.success(`💾 ${formationName} salvata automaticamente`, { duration: 2000 })
+          }, 100) // Piccolo delay per evitare conflitti con toast del hook
         } catch (error) {
           console.error('Errore nel salvataggio automatico:', error)
         }
@@ -237,23 +232,17 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     // Se c'era una formazione salvata, aggiorna il tipo di formazione nel DB
     if (lineup?.id) {
       try {
-        const lineupData = {
-          formation: formation,
-          players_data: {
-            positions: {}, // Formazione vuota dopo il cambio
-            formation_data: {
-              field_lines_color: fieldLinesColor,
-              field_lines_thickness: fieldLinesThickness,
-              jersey_numbers_color: jerseyNumbersColor,
-              jersey_numbers_shadow: jerseyNumbersShadow,
-              use_player_avatars: usePlayerAvatars,
-              name_box_color: nameBoxColor,
-              name_text_color: nameTextColor
-            }
-          }
+        const formationData = {
+          field_lines_color: fieldLinesColor,
+          field_lines_thickness: fieldLinesThickness,
+          jersey_numbers_color: jerseyNumbersColor,
+          jersey_numbers_shadow: jerseyNumbersShadow,
+          use_player_avatars: usePlayerAvatars,
+          name_box_color: nameBoxColor,
+          name_text_color: nameTextColor
         }
         
-        await saveLineup(formation, { positions: {}, formation_data: lineupData.players_data.formation_data })
+        await saveLineup(formation, { positions: {}, formation_data: formationData })
       } catch (error) {
         console.error('Errore nell\'aggiornamento formazione:', error)
       }
@@ -320,29 +309,22 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   // QUARTO: Funzioni che usano 'lineup' - ORA SICURE
   const handleSave = async () => {
     try {
-      const lineupData = {
-        formation: selectedFormation,
-        players_data: {
-          positions: playerPositions,
-          formation_data: {
-            field_lines_color: fieldLinesColor,
-            field_lines_thickness: fieldLinesThickness,
-            jersey_numbers_color: jerseyNumbersColor,
-            jersey_numbers_shadow: jerseyNumbersShadow,
-            use_player_avatars: usePlayerAvatars,
-            name_box_color: nameBoxColor,
-            name_text_color: nameTextColor
-          }
-        }
+      const formationData = {
+        field_lines_color: fieldLinesColor,
+        field_lines_thickness: fieldLinesThickness,
+        jersey_numbers_color: jerseyNumbersColor,
+        jersey_numbers_shadow: jerseyNumbersShadow,
+        use_player_avatars: usePlayerAvatars,
+        name_box_color: nameBoxColor,
+        name_text_color: nameTextColor
       }
 
-      if (lineup && lineup.id) {
-        await updateLineup(lineupData)
-      } else {
-        await createLineup(lineupData)
-      }
+      await saveLineup(selectedFormation, { 
+        positions: playerPositions, 
+        formation_data: formationData 
+      })
       
-      toast.success('Formazione salvata con successo!')
+      toast.success('Formazione salvata manualmente!')
     } catch (error) {
       console.error('Errore nel salvataggio:', error)
       toast.error('Errore nel salvataggio della formazione')
