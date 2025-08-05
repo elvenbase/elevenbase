@@ -30,7 +30,6 @@ interface Convocato {
   id: string
   session_id: string
   player_id: string
-  confirmed: boolean
   notes?: string
   created_at: string
   players?: Player
@@ -110,12 +109,11 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         .delete()
         .eq('session_id', sessionId)
 
-      // Poi inserisce i nuovi convocati
+      // Poi inserisce i nuovi convocati (senza campo confirmed)
       if (selectedPlayers.length > 0) {
         const convocatiToInsert = selectedPlayers.map(playerId => ({
           session_id: sessionId,
-          player_id: playerId,
-          confirmed: false
+          player_id: playerId
         }))
 
         const { error } = await supabase
@@ -135,31 +133,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
     }
   }
 
-  const toggleConfirmation = async (convocatoId: string, confirmed: boolean) => {
-    if (isReadOnly) return
 
-    try {
-      const { error } = await supabase
-        .from('training_convocati')
-        .update({ confirmed: !confirmed })
-        .eq('id', convocatoId)
-
-      if (error) throw error
-
-      setConvocati(prev => 
-        prev.map(c => 
-          c.id === convocatoId 
-            ? { ...c, confirmed: !confirmed }
-            : c
-        )
-      )
-
-      toast.success(confirmed ? 'Conferma rimossa' : 'Presenza confermata')
-    } catch (error) {
-      console.error('Errore nell\'aggiornare la conferma:', error)
-      toast.error('Errore nell\'aggiornare la conferma')
-    }
-  }
 
   const removeConvocato = async (convocatoId: string) => {
     if (isReadOnly) return
@@ -400,7 +374,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
             <CardDescription>
               {isReadOnly 
                 ? 'Giocatori in panchina per questa sessione'
-                : 'Gestisci le conferme dei giocatori in panchina'
+                : 'Giocatori selezionati per la panchina (oltre agli 11 titolari)'
               }
             </CardDescription>
           </CardHeader>
@@ -413,11 +387,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                 return (
                   <div
                     key={convocato.id}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                      convocato.confirmed
-                        ? 'border-green-200 bg-green-50'
-                        : 'border-border'
-                    }`}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
                   >
                     <PlayerAvatar
                       firstName={player.first_name}
@@ -445,54 +415,21 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     </div>
 
                     {!isReadOnly && (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant={convocato.confirmed ? "outline" : "default"}
-                          size="sm"
-                          onClick={() => toggleConfirmation(convocato.id, convocato.confirmed)}
-                          className="flex items-center gap-2"
-                        >
-                          {convocato.confirmed ? (
-                            <>
-                              <UserCheck className="h-4 w-4" />
-                              Confermato
-                            </>
-                          ) : (
-                            <>
-                              <UserX className="h-4 w-4" />
-                              Conferma
-                            </>
-                          )}
-                        </Button>
-                        
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeConvocato(convocato.id)}
-                          className="flex items-center gap-1"
-                        >
-                          <X className="h-4 w-4" />
-                          Elimina
-                        </Button>
-                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeConvocato(convocato.id)}
+                        className="flex items-center gap-1"
+                      >
+                        <X className="h-4 w-4" />
+                        Elimina
+                      </Button>
                     )}
 
                     {isReadOnly && (
-                      <Badge 
-                        variant={convocato.confirmed ? "default" : "secondary"}
-                        className="flex items-center gap-1"
-                      >
-                        {convocato.confirmed ? (
-                          <>
-                            <UserCheck className="h-3 w-3" />
-                            Confermato
-                          </>
-                        ) : (
-                          <>
-                            <UserX className="h-3 w-3" />
-                            In attesa
-                          </>
-                        )}
+                      <Badge variant="default" className="flex items-center gap-1">
+                        <UserCheck className="h-3 w-3" />
+                        In Panchina
                       </Badge>
                     )}
                   </div>
