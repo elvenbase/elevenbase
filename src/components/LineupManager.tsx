@@ -299,7 +299,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   }
 
   const downloadFormation = async () => {
-    if (!lineup || Object.keys(playerPositions).length === 0) {
+    const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
+    if (playersInFormation.length === 0) {
       toast.error('Nessuna formazione da esportare')
       return
     }
