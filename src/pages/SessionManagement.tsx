@@ -51,6 +51,36 @@ const SessionManagement = () => {
 
   const session = sessions?.find(s => s.id === sessionId) as TrainingSession | undefined
 
+  const formatDateTime = (date: string, time: string) => {
+    const sessionDate = new Date(date + 'T' + time)
+    return format(sessionDate, "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
+  }
+
+  const getStatusBadge = (session: TrainingSession) => {
+    if (session.is_closed) {
+      return <Badge variant="secondary">Chiusa</Badge>
+    }
+    
+    const now = new Date()
+    const sessionDate = new Date(session.session_date + 'T' + session.start_time)
+    
+    if (sessionDate < now) {
+      return <Badge variant="outline">Passata</Badge>
+    }
+    
+    return <Badge variant="default">Programmata</Badge>
+  }
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1)
+  }
+
+  const handleLineupChange = useCallback((playerIds: string[]) => {
+    setPlayersInLineup(playerIds)
+  }, [])
+
+  // 🔧 FIX: Controlli condizionali DOPO tutti gli hooks per evitare "Rendered more hooks than during the previous render"
+  
   // Gestione errori players
   if (playersError) {
     console.error('Players fetch error details:', playersError)
@@ -85,35 +115,6 @@ const SessionManagement = () => {
       </div>
     )
   }
-
-
-  const formatDateTime = (date: string, time: string) => {
-    const sessionDate = new Date(date + 'T' + time)
-    return format(sessionDate, "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
-  }
-
-  const getStatusBadge = (session: TrainingSession) => {
-    if (session.is_closed) {
-      return <Badge variant="secondary">Chiusa</Badge>
-    }
-    
-    const now = new Date()
-    const sessionDate = new Date(session.session_date + 'T' + session.start_time)
-    
-    if (sessionDate < now) {
-      return <Badge variant="outline">Passata</Badge>
-    }
-    
-    return <Badge variant="default">Programmata</Badge>
-  }
-
-  const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1)
-  }
-
-  const handleLineupChange = useCallback((playerIds: string[]) => {
-    setPlayersInLineup(playerIds)
-  }, [])
 
 
 
