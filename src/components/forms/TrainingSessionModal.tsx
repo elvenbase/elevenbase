@@ -95,78 +95,85 @@ export const TrainingSessionModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              {session.title}
+      <DialogContent className="max-w-[95vw] w-full max-w-5xl max-h-[80vh] sm:max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="pb-2">
+          <div className="flex items-start justify-between gap-3">
+            <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl flex-1 min-w-0">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+              <span className="truncate">{session.title}</span>
             </DialogTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <TrainingForm 
                 session={session} 
                 mode="edit" 
                 onOpenChange={setEditModalOpen}
               >
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Modifica
+                <Button variant="outline" size="sm" className="px-2 sm:px-3">
+                  <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline ml-2">Modifica</span>
                 </Button>
               </TrainingForm>
               {getStatusBadge()}
             </div>
           </div>
           
-          <div className="text-sm text-muted-foreground space-y-1">
+          <div className="text-xs sm:text-sm text-muted-foreground space-y-1 mt-2">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              {formatDateTime(session.session_date, session.start_time)}
-              {session.end_time && ` - ${session.end_time}`}
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span className="text-xs sm:text-sm truncate">
+                {formatDateTime(session.session_date, session.start_time)}
+                {session.end_time && ` - ${session.end_time}`}
+              </span>
             </div>
             
             {(session.communication_type || session.location) && (
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                {session.communication_type ? 
-                  (session.communication_type === 'altro' && session.communication_details ? 
-                    session.communication_details : 
-                    session.communication_type.charAt(0).toUpperCase() + session.communication_type.slice(1)
-                  ) : 
-                  session.location
-                }
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="text-xs sm:text-sm truncate">
+                  {session.communication_type ? 
+                    (session.communication_type === 'altro' && session.communication_details ? 
+                      session.communication_details : 
+                      session.communication_type.charAt(0).toUpperCase() + session.communication_type.slice(1)
+                    ) : 
+                    session.location
+                  }
+                </span>
               </div>
             )}
             
             {session.description && (
-              <p className="mt-2">{session.description}</p>
+              <p className="mt-2 text-xs sm:text-sm line-clamp-2 sm:line-clamp-none">{session.description}</p>
             )}
           </div>
         </DialogHeader>
 
         <Tabs defaultValue="attendance" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="attendance" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Presenze
+          <TabsList className="grid w-full grid-cols-3 h-auto">
+            <TabsTrigger value="attendance" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span className="hidden xs:inline">Presenze</span>
+              <span className="xs:hidden">P</span>
             </TabsTrigger>
-            <TabsTrigger value="lineup" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Formazioni
+            <TabsTrigger value="lineup" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span className="hidden xs:inline">Formazioni</span>
+              <span className="xs:hidden">F</span>
             </TabsTrigger>
-            <TabsTrigger value="public-link" className="flex items-center gap-2">
-              <Link className="h-4 w-4" />
-              Link Pubblico
+            <TabsTrigger value="public-link" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm">
+              <Link className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span className="hidden xs:inline">Link Pubblico</span>
+              <span className="xs:hidden">L</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="attendance" className="mt-6">
+          <TabsContent value="attendance" className="mt-3 sm:mt-6">
             <AttendanceForm
               sessionId={session.id}
               sessionTitle={session.title}
             />
           </TabsContent>
 
-          <TabsContent value="lineup" className="mt-6">
+          <TabsContent value="lineup" className="mt-3 sm:mt-6">
             <LineupManager 
               sessionId={session.id}
               presentPlayers={players?.filter(player => {
@@ -176,7 +183,7 @@ export const TrainingSessionModal = ({
             />
           </TabsContent>
 
-          <TabsContent value="public-link" className="mt-6">
+          <TabsContent value="public-link" className="mt-3 sm:mt-6">
             <PublicLinkSharing
               session={session}
               attendanceStats={publicLinkStats}
