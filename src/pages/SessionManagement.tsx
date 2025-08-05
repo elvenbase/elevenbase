@@ -348,6 +348,38 @@ const SessionManagement = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Export Formazione - Sezione separata per creativi */}
+            {sessionId && playersInLineup.length === 11 && (
+              <Card className="border-2 border-dashed border-amber-300 bg-gradient-to-br from-amber-50 to-amber-100">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-amber-800">
+                    <Settings className="h-5 w-5" />
+                    Export Creativo - PNG Formazione
+                  </CardTitle>
+                  <CardDescription className="text-amber-700">
+                    Strumenti per grafici e social media manager - Personalizza e scarica la formazione in PNG
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-white/50 p-4 rounded-lg">
+                    <p className="text-sm text-amber-800 mb-2">
+                      💡 <strong>Questa sezione è dedicata al team creativo</strong> per la pubblicazione sui social e materiali grafici.
+                    </p>
+                    <p className="text-xs text-amber-700">
+                      L'allenatore può concentrarsi sulla gestione della formazione e panchina sopra, mentre qui il team creativo può personalizzare l'export per le pubblicazioni.
+                    </p>
+                  </div>
+                  
+                  {/* TODO: Qui andrà il componente di export che sposteremo da LineupManager */}
+                  <div className="mt-4 p-4 border-2 border-dashed border-amber-200 rounded-lg text-center">
+                    <p className="text-amber-600 text-sm">
+                      Export personalizzazione PNG - Da implementare
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="public-link" className="space-y-6">

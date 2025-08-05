@@ -5,51 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Trash2, Save, Users, Download } from 'lucide-react'
+import { Trash2, Save, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLineupManager } from '@/hooks/useLineupManager'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
-import FormationExporter from '@/components/FormationExporter'
-import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
-import { usePngExportSettings } from '@/hooks/usePngExportSettings'
 import { useAvatarColor } from '@/hooks/useAvatarColor'
-import html2canvas from 'html2canvas'
 
-// Stili CSS personalizzati per il range slider
-const rangeSliderStyles = `
-  .slider::-webkit-slider-thumb {
-    appearance: none;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: hsl(var(--primary));
-    cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-  
-  .slider::-moz-range-thumb {
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: hsl(var(--primary));
-    cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-  
-  .slider:focus {
-    outline: none;
-  }
-  
-  .slider:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.3);
-  }
-  
-  .slider:focus::-moz-range-thumb {
-    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.3);
-  }
-`
+// Stili CSS personalizzati per il range slider rimossi (ora nell'export separato)
 
 interface Player {
   id: string
@@ -120,7 +82,6 @@ const formations = {
 const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupManagerProps) => {
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
-  const [exporting, setExporting] = useState(false)
   
   // Notifica cambiamenti della formazione al componente padre
   useEffect(() => {
@@ -128,17 +89,19 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     onLineupChange?.(playersInLineup)
   }, [playerPositions]) // Rimossa onLineupChange dalle dipendenze
   
-  // Inietta gli stili CSS personalizzati
+  // Carica formazione esistente quando cambia la sessione
   useEffect(() => {
-    const styleElement = document.createElement('style')
-    styleElement.textContent = rangeSliderStyles
-    document.head.appendChild(styleElement)
-    
-    return () => {
-      document.head.removeChild(styleElement)
-    }
-  }, [])
+    loadLineup()
+  }, [sessionId]) // Rimossa loadLineup dalle dipendenze per evitare loop
   
+  // Aggiorna stato locale quando viene caricata la formazione
+  useEffect(() => {
+    if (lineup) {
+      setSelectedFormation(lineup.formation)
+      setPlayerPositions(lineup.players_data?.positions || {})
+    }
+  }, [lineup])
+
   const { 
     lineup, 
     loading, 
@@ -148,45 +111,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   } = useLineupManager(sessionId)
 
   const { formations: customFormations } = useCustomFormations()
-  const { defaultJersey } = useJerseyTemplates()
-  const { defaultSetting } = usePngExportSettings()
   const { getAvatarBackground } = useAvatarColor()
   
-  // Stati per la personalizzazione PNG - inizializzati dopo l'hook
-  const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
-  const [fieldLinesThickness, setFieldLinesThickness] = useState(2)
-  const [jerseyNumbersColor, setJerseyNumbersColor] = useState('#000000')
-  const [jerseyNumbersShadow, setJerseyNumbersShadow] = useState('2px 2px 4px rgba(0,0,0,0.9)')
-  const [usePlayerAvatars, setUsePlayerAvatars] = useState(false)
-  const [nameBoxColor, setNameBoxColor] = useState('#ffffff')
-  const [nameTextColor, setNameTextColor] = useState('#000000')
-
-  // Carica formazione esistente quando cambia la sessione
-  useEffect(() => {
-    loadLineup()
-  }, [sessionId]) // Rimossa loadLineup dalle dipendenze per evitare loop
-
-  // Aggiorna colori quando cambiano le impostazioni PNG di default
-  useEffect(() => {
-    if (defaultSetting) {
-      setFieldLinesColor(defaultSetting.field_lines_color)
-      setFieldLinesThickness(defaultSetting.field_lines_thickness)
-      setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
-      setJerseyNumbersShadow(defaultSetting.jersey_numbers_shadow)
-      setUsePlayerAvatars(defaultSetting.use_player_avatars)
-      setNameBoxColor(defaultSetting.name_box_color)
-      setNameTextColor(defaultSetting.name_text_color)
-    }
-  }, [defaultSetting])
-
-  // Aggiorna stato locale quando viene caricata la formazione
-  useEffect(() => {
-    if (lineup) {
-      setSelectedFormation(lineup.formation)
-      setPlayerPositions(lineup.players_data?.positions || {})
-    }
-  }, [lineup])
-
   const handleFormationChange = (formation: string) => {
     setSelectedFormation(formation)
     // Reset posizioni quando cambia formazione
@@ -254,7 +180,15 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         formation: selectedFormation,
         players_data: {
           positions: playerPositions,
-          formation_data: formations[selectedFormation as keyof typeof formations]
+          formation_data: {
+            field_lines_color: '#ffffff', // Default
+            field_lines_thickness: 2, // Default
+            jersey_numbers_color: '#000000', // Default
+            jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)', // Default
+            use_player_avatars: false, // Default
+            name_box_color: '#ffffff', // Default
+            name_text_color: '#000000' // Default
+          }
         }
       }
 
@@ -273,57 +207,6 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
 
   const handleClear = () => {
     setPlayerPositions({})
-  }
-
-  const downloadFormation = async () => {
-    if (!lineup || Object.keys(playerPositions).length === 0) {
-      toast.error('Nessuna formazione da esportare')
-      return
-    }
-
-    setExporting(true)
-    
-    try {
-      const exportElement = document.getElementById('formation-export-lineup')
-      if (!exportElement) {
-        toast.error('Errore nel preparare l\'immagine')
-        return
-      }
-
-      toast.loading('Generando immagine...')
-      
-      // Forza il refresh dell'elemento
-      exportElement.style.display = 'none'
-      void exportElement.offsetHeight // Trigger reflow
-      exportElement.style.display = 'block'
-      
-      // Piccolo delay per assicurarsi che il DOM sia aggiornato
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      const canvas = await html2canvas(exportElement, {
-        backgroundColor: null,
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false
-      })
-
-      // Create download link
-      const link = document.createElement('a')
-      const timestamp = new Date().getTime()
-      link.download = `formazione-${currentFormation.name.replace(/\s+/g, '-').toLowerCase()}-${timestamp}.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
-
-      toast.dismiss()
-      toast.success('Formazione scaricata con successo!')
-    } catch (error) {
-      console.error('Error downloading formation:', error)
-      toast.dismiss()
-      toast.error('Errore nel scaricare la formazione')
-    } finally {
-      setExporting(false)
-    }
   }
 
   const currentFormation = getCurrentFormation()
@@ -733,206 +616,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
             Cancella Tutto
           </Button>
         </div>
-
-        {/* Personalizza export di questa formazione */}
-        <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardHeader className="pb-3 px-3 sm:px-6">
-            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-              <Download className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              Personalizza export PNG
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm">
-              Configura l'aspetto del PNG della formazione prima di scaricarlo
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6">
-            {/* Colori */}
-            <div className="space-y-3 sm:space-y-4">
-              <h4 className="text-sm font-medium text-primary">Colori</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground">Righe campo</label>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="color" 
-                      className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
-                      value={fieldLinesColor}
-                      onChange={(e) => setFieldLinesColor(e.target.value)}
-                    />
-                    <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
-                      {fieldLinesColor}
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground">Numeri maglie</label>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="color" 
-                      className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
-                      value={jerseyNumbersColor}
-                      onChange={(e) => setJerseyNumbersColor(e.target.value)}
-                    />
-                    <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
-                      {jerseyNumbersColor}
-                    </div>
-                  </div>
-                </div>
-                                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">Ombra numeri</label>
-                    <Select 
-                      value={jerseyNumbersShadow}
-                      onValueChange={setJerseyNumbersShadow}
-                    >
-                      <SelectTrigger className="w-full h-8 sm:h-10">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="2px 2px 4px rgba(0,0,0,0.9)">Ombra scura (default)</SelectItem>
-                        <SelectItem value="2px 2px 4px rgba(255,255,255,0.9)">Ombra chiara</SelectItem>
-                        <SelectItem value="1px 1px 2px rgba(0,0,0,0.8)">Ombra sottile</SelectItem>
-                        <SelectItem value="3px 3px 6px rgba(0,0,0,0.9)">Ombra spessa</SelectItem>
-                        <SelectItem value="none">Nessuna ombra</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">Utilizza avatar giocatori</label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="use_avatars_lineup"
-                        checked={usePlayerAvatars}
-                        onChange={(e) => setUsePlayerAvatars(e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor="use_avatars_lineup" className="text-xs text-muted-foreground">
-                        Mostra avatar invece delle maglie
-                      </label>
-                    </div>
-                  </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground">Box nomi</label>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="color" 
-                      className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
-                      value={nameBoxColor}
-                      onChange={(e) => setNameBoxColor(e.target.value)}
-                    />
-                    <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
-                      {nameBoxColor}
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground">Testo nomi</label>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="color" 
-                      className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
-                      value={nameTextColor}
-                      onChange={(e) => setNameTextColor(e.target.value)}
-                    />
-                    <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
-                      {nameTextColor}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Spessore linee campo */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium text-primary">Spessore linee campo</h4>
-              <div className="space-y-3">
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min="1"
-                    max="8"
-                    value={fieldLinesThickness}
-                    onChange={(e) => setFieldLinesThickness(parseInt(e.target.value))}
-                    className="flex-1 h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer slider"
-                    style={{
-                      background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(fieldLinesThickness - 1) / 7 * 100}%, hsl(var(--primary) / 0.2) ${(fieldLinesThickness - 1) / 7 * 100}%, hsl(var(--primary) / 0.2) 100%)`
-                    }}
-                  />
-                  <div className="flex items-center gap-2 min-w-[4rem]">
-                    <span className="text-sm font-bold text-primary">
-                      {fieldLinesThickness}px
-                    </span>
-                  </div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground px-1">
-                  <span>Sottile</span>
-                  <span>Spesso</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Azioni export */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-4 border-t border-primary/20">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                if (defaultSetting) {
-                  setFieldLinesColor(defaultSetting.field_lines_color)
-                  setFieldLinesThickness(defaultSetting.field_lines_thickness)
-                  setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
-                  setJerseyNumbersShadow(defaultSetting.jersey_numbers_shadow)
-                  setUsePlayerAvatars(defaultSetting.use_player_avatars)
-                  setNameBoxColor(defaultSetting.name_box_color)
-                  setNameTextColor(defaultSetting.name_text_color)
-                }
-              }}
-                className="text-primary hover:text-primary/80 text-xs sm:text-sm"
-              >
-                Reset ai colori di default
-              </Button>
-              <Button 
-                onClick={downloadFormation} 
-                disabled={exporting || Object.keys(playerPositions).length === 0}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm sm:text-base"
-              >
-                <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                {exporting ? 'Generando PNG...' : 'Scarica PNG'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </CardContent>
-
-      {/* Hidden Formation Exporter for PNG generation */}
-      {lineup && Object.keys(playerPositions).length > 0 && defaultJersey && (
-        <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
-          <div id="formation-export-lineup">
-            <FormationExporter
-              lineup={currentFormation.positions.map(position => ({
-                player_id: playerPositions[position.id] || '',
-                position_x: position.x,
-                position_y: position.y,
-                player: playerPositions[position.id] ? presentPlayers.find(p => p.id === playerPositions[position.id]) : undefined
-              })).filter(item => item.player)}
-              formation={{
-                name: currentFormation.name,
-                positions: currentFormation.positions.map(pos => ({ x: pos.x, y: pos.y }))
-              }}
-              sessionTitle="Sessione di allenamento"
-              teamName="Team"
-              jerseyUrl={defaultJersey.image_url}
-              fieldLinesColor={fieldLinesColor}
-              fieldLinesThickness={fieldLinesThickness}
-              jerseyNumbersColor={jerseyNumbersColor}
-              jerseyNumbersShadow={jerseyNumbersShadow}
-              usePlayerAvatars={usePlayerAvatars}
-              nameBoxColor={nameBoxColor}
-              nameTextColor={nameTextColor}
-            />
-          </div>
-        </div>
-      )}
     </Card>
   )
 }
