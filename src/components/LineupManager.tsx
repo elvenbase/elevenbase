@@ -142,6 +142,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const [usePlayerAvatars, setUsePlayerAvatars] = useState(false)
   const [nameBoxColor, setNameBoxColor] = useState('#ffffff')
   const [nameTextColor, setNameTextColor] = useState('#000000')
+  const [avatarBackgroundColor, setAvatarBackgroundColor] = useState('#1a2332')
   const [exporting, setExporting] = useState(false)
   
   // Smart auto-save: traccia se ci sono modifiche non salvate
@@ -177,6 +178,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
       setUsePlayerAvatars(defaultSetting.use_player_avatars)
       setNameBoxColor(defaultSetting.name_box_color)
       setNameTextColor(defaultSetting.name_text_color)
+      setAvatarBackgroundColor(defaultSetting.avatar_background_color || '#1a2332')
     }
   }, [defaultSetting])
 
@@ -190,6 +192,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
       setUsePlayerAvatars(formationData.use_player_avatars || false)
       setNameBoxColor(formationData.name_box_color || '#ffffff')
       setNameTextColor(formationData.name_text_color || '#000000')
+      setAvatarBackgroundColor(formationData.avatar_background_color || '#1a2332')
     }
   }, [lineup])
 
@@ -223,7 +226,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
           jersey_numbers_shadow: jerseyNumbersShadow,
           use_player_avatars: usePlayerAvatars,
           name_box_color: nameBoxColor,
-          name_text_color: nameTextColor
+          name_text_color: nameTextColor,
+          avatar_background_color: avatarBackgroundColor
         }
 
         await saveLineup(selectedFormation, { positions: playerPositions, formation_data: formationData })
@@ -244,7 +248,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     }, 1500) // Debounce più breve, visto che salviamo meno spesso
 
     return () => clearTimeout(timeoutId)
-  }, [isDirty, selectedFormation, fieldLinesColor, fieldLinesThickness, jerseyNumbersColor, jerseyNumbersShadow, usePlayerAvatars, nameBoxColor, nameTextColor, saveLineup, isAutoSaving])
+  }, [isDirty, selectedFormation, fieldLinesColor, fieldLinesThickness, jerseyNumbersColor, jerseyNumbersShadow, usePlayerAvatars, nameBoxColor, nameTextColor, avatarBackgroundColor, saveLineup, isAutoSaving])
   
   // TERZO: Tutte le funzioni helper che NON usano 'lineup'
   const handleFormationChange = async (formation: string) => {
@@ -264,7 +268,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
           jersey_numbers_shadow: jerseyNumbersShadow,
           use_player_avatars: usePlayerAvatars,
           name_box_color: nameBoxColor,
-          name_text_color: nameTextColor
+          name_text_color: nameTextColor,
+          avatar_background_color: avatarBackgroundColor
         }
         
         await saveLineup(formation, { positions: {}, formation_data: formationData })
@@ -342,7 +347,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         jersey_numbers_shadow: jerseyNumbersShadow,
         use_player_avatars: usePlayerAvatars,
         name_box_color: nameBoxColor,
-        name_text_color: nameTextColor
+        name_text_color: nameTextColor,
+        avatar_background_color: avatarBackgroundColor
       }
 
       await saveLineup(selectedFormation, { 
@@ -377,6 +383,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     setUsePlayerAvatars(false)
     setNameBoxColor('#ffffff')
     setNameTextColor('#000000')
+    setAvatarBackgroundColor('#1a2332')
     toast.success('Colori ripristinati ai valori di default')
   }
 
@@ -959,6 +966,22 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                   </div>
                 </div>
               </div>
+
+              {/* Colore sfondo avatar */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Sfondo avatar</label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="color" 
+                    className="w-full h-8 sm:h-10 rounded-lg border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                    value={avatarBackgroundColor}
+                    onChange={(e) => setAvatarBackgroundColor(e.target.value)}
+                  />
+                  <div className="text-xs text-muted-foreground min-w-[3rem] hidden sm:block">
+                    {avatarBackgroundColor}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Spessore righe - slider separato */}
@@ -1048,6 +1071,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                 usePlayerAvatars={usePlayerAvatars}
                 nameBoxColor={nameBoxColor}
                 nameTextColor={nameTextColor}
+                avatarBackgroundColor={avatarBackgroundColor}
               />
             </div>
           </div>

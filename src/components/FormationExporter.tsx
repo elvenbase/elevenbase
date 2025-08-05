@@ -35,6 +35,7 @@ interface FormationExporterProps {
   usePlayerAvatars?: boolean
   nameBoxColor?: string
   nameTextColor?: string
+  avatarBackgroundColor?: string
 }
 
 const FormationExporter = ({ 
@@ -48,6 +49,7 @@ const FormationExporter = ({
   jerseyNumbersColor = '#000000',
   jerseyNumbersShadow = '2px 2px 4px rgba(0,0,0,0.9)',
   usePlayerAvatars = false,
+  avatarBackgroundColor = '#1a2332',
   nameBoxColor = '#ffffff',
   nameTextColor = '#000000'
 }: FormationExporterProps) => {
@@ -249,7 +251,15 @@ const FormationExporter = ({
               >
                 {usePlayerAvatars && (player as any).avatar_url ? (
                   // Avatar del giocatore
-                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                  <div style={{ 
+                    position: 'relative', 
+                    width: '100%', 
+                    height: '100%', 
+                    borderRadius: '50%',
+                    backgroundColor: avatarBackgroundColor,
+                    border: '3px solid white',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                  }}>
                     <img
                       src={(player as any).avatar_url}
                       alt={`${player.first_name} ${player.last_name}`}
@@ -257,9 +267,7 @@ const FormationExporter = ({
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        borderRadius: '50%',
-                        border: '3px solid white',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                        borderRadius: '50%'
                       }}
                       onError={(e) => {
                         // Se l'avatar non carica, mostra il fallback

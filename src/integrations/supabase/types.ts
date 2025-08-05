@@ -395,6 +395,7 @@ export type Database = {
       }
       png_export_settings: {
         Row: {
+          avatar_background_color: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -408,8 +409,10 @@ export type Database = {
           name_box_color: string | null
           name_text_color: string | null
           updated_at: string | null
+          use_player_avatars: boolean | null
         }
         Insert: {
+          avatar_background_color?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -423,8 +426,10 @@ export type Database = {
           name_box_color?: string | null
           name_text_color?: string | null
           updated_at?: string | null
+          use_player_avatars?: boolean | null
         }
         Update: {
+          avatar_background_color?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -438,6 +443,7 @@ export type Database = {
           name_box_color?: string | null
           name_text_color?: string | null
           updated_at?: string | null
+          use_player_avatars?: boolean | null
         }
         Relationships: []
       }
