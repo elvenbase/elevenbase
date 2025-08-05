@@ -308,7 +308,7 @@ export const PngExportSettingsManager = () => {
             <p className="text-sm">Il sistema di personalizzazione PNG sarà disponibile presto.</p>
             <p className="text-sm mt-2">Per ora vengono utilizzate le impostazioni di default.</p>
           </div>
-        ) : settings.length === 0 ? (
+        ) : settings.filter(setting => setting.created_by !== null).length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Palette className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Nessuna impostazione personalizzata creata.</p>
@@ -322,7 +322,7 @@ export const PngExportSettingsManager = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {settings.map((setting) => (
+            {settings.filter(setting => setting.created_by !== null).map((setting) => (
               <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col">

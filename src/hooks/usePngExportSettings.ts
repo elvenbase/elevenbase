@@ -186,12 +186,19 @@ export const usePngExportSettings = () => {
     }
 
     try {
-      // Se questa è l'impostazione di default, rimuovi il flag dalle altre
+      // Se questa è l'impostazione di default, rimuovi il flag dalle TUTTE le altre
       if (settingData.is_default) {
-        await supabase
+        console.log('🔄 Rimuovendo flag default da tutte le altre impostazioni...')
+        const { error: resetError } = await supabase
           .from('png_export_settings')
           .update({ is_default: false })
-          .not('created_by', 'is', null)
+          // 🔧 FIX: Rimuovi da TUTTE (non solo utente), incluso sistema
+        
+        if (resetError) {
+          console.error('❌ Errore nel reset default:', resetError)
+        } else {
+          console.log('✅ Flag default rimosso da tutte le impostazioni esistenti')
+        }
       }
 
       const { data, error } = await supabase
@@ -209,7 +216,8 @@ export const usePngExportSettings = () => {
         return
       }
 
-      await loadSettings()
+      console.log('✅ Nuova impostazione creata, ricaricando lista...')
+      await loadSettings(true) // 🔧 FIX: Ricarica con forceTableExists
       toast.success('Impostazioni create con successo!')
       return data
     } catch (error) {
@@ -225,13 +233,18 @@ export const usePngExportSettings = () => {
     if (!tableExists) return
 
     try {
-      // Se questa diventa l'impostazione di default, rimuovi il flag dalle altre
+      // Se questa diventa l'impostazione di default, rimuovi il flag da TUTTE le altre
       if (updates.is_default) {
-        await supabase
+        console.log('🔄 updateSetting: Rimuovendo flag default da tutte le altre impostazioni...')
+        const { error: resetError } = await supabase
           .from('png_export_settings')
           .update({ is_default: false })
-          .not('created_by', 'is', null)
-          .neq('id', id)
+          .neq('id', id) // Escludi solo l'impostazione corrente
+          // 🔧 FIX: Rimuovi da TUTTE, incluso sistema
+        
+        if (resetError) {
+          console.error('❌ Errore nel reset default (updateSetting):', resetError)
+        }
       }
 
       const { error } = await supabase
@@ -245,7 +258,7 @@ export const usePngExportSettings = () => {
         return
       }
 
-      await loadSettings()
+      await loadSettings(true) // 🔧 FIX: Ricarica con forceTableExists
       toast.success('Impostazioni aggiornate con successo!')
     } catch (error) {
       console.error('Errore nell\'aggiornamento:', error)
@@ -280,11 +293,16 @@ export const usePngExportSettings = () => {
     if (!tableExists) return
 
     try {
-      // Rimuovi il flag default da tutte le altre impostazioni
-      await supabase
+      // Rimuovi il flag default da TUTTE le altre impostazioni (incluso sistema)
+      console.log('🔄 setAsDefault: Rimuovendo flag default da tutte le impostazioni...')
+      const { error: resetError } = await supabase
         .from('png_export_settings')
         .update({ is_default: false })
-        .not('created_by', 'is', null)
+        // 🔧 FIX: Rimuovi da TUTTE, incluso sistema
+      
+      if (resetError) {
+        console.error('❌ Errore nel reset default (setAsDefault):', resetError)
+      }
 
       // Imposta questa come default
       const { error } = await supabase
@@ -298,7 +316,7 @@ export const usePngExportSettings = () => {
         return
       }
 
-      await loadSettings()
+      await loadSettings(true) // 🔧 FIX: Usa forceTableExists per evitare race condition
       toast.success('Impostazioni impostate come default!')
     } catch (error) {
       console.error('Errore nell\'impostazione del default:', error)
