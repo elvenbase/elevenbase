@@ -384,6 +384,12 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     // Con auto-save attivo, controlla sia lineup salvato che posizioni UI
     const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
     
+    console.log('🔍 DEBUG Export PNG:')
+    console.log('• playersInFormation:', playersInFormation.length)
+    console.log('• lineup esistente:', !!lineup)
+    console.log('• playerPositions:', playerPositions)
+    console.log('• currentFormation:', currentFormation)
+    
     if (!lineup && playersInFormation.length === 0) {
       toast.error('Nessuna formazione da esportare')
       return
@@ -398,8 +404,20 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     setExporting(true)
     try {
       const element = document.getElementById('formation-export')
+      console.log('🔍 Elemento export trovato:', !!element)
+      console.log('🔍 Dimensioni elemento:', element?.offsetWidth, 'x', element?.offsetHeight)
+      console.log('🔍 Contenuto elemento:', element?.innerHTML?.length || 0, 'caratteri')
+      console.log('🔍 Figli elemento:', element?.children?.length || 0)
+      
       if (!element) {
         toast.error('Elemento di export non trovato')
+        return
+      }
+      
+      // Verifica che l'elemento abbia contenuto renderizzato
+      if (!element.innerHTML || element.innerHTML.trim().length < 100) {
+        console.error('⚠️ Elemento export sembra vuoto o non renderizzato')
+        toast.error('Elemento di export non renderizzato correttamente')
         return
       }
 
@@ -998,28 +1016,37 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
               </Button>
             </div>
 
-            {/* FormationExporter nascosto per il rendering */}
-            <div className="hidden">
+            {/* FormationExporter nascosto per il rendering ma visibile a html2canvas */}
+            <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '800px', height: '600px' }}>
               <FormationExporter
                 id="formation-export"
-                lineup={Object.entries(playerPositions)
-                  .filter(([_, playerId]) => playerId && playerId !== 'none')
-                  .map(([positionId, playerId]) => {
-                    const player = getPlayerById(playerId)
-                    const position = currentFormation.positions.find(p => p.id === positionId)
-                    return player && position ? {
-                      player_id: playerId,
-                      position_x: position.x,
-                      position_y: position.y,
-                      player: player
-                    } : null
-                  })
-                  .filter(Boolean) as any[]
-                }
-                formation={{
-                  name: currentFormation.name,
-                  positions: currentFormation.positions.map(pos => ({ x: pos.x, y: pos.y }))
-                }}
+                lineup={(() => {
+                  const lineupData = Object.entries(playerPositions)
+                    .filter(([_, playerId]) => playerId && playerId !== 'none')
+                    .map(([positionId, playerId]) => {
+                      const player = getPlayerById(playerId)
+                      const position = currentFormation.positions.find(p => p.id === positionId)
+                      console.log(`🔍 DEBUG Player ${playerId}:`, { player: !!player, position: !!position, positionId })
+                      return player && position ? {
+                        player_id: playerId,
+                        position_x: position.x,
+                        position_y: position.y,
+                        player: player
+                      } : null
+                    })
+                    .filter(Boolean) as any[]
+                  
+                  console.log('🔍 DEBUG FormationExporter lineup:', lineupData)
+                  return lineupData
+                })()}
+                formation={(() => {
+                  const formationData = {
+                    name: currentFormation.name,
+                    positions: currentFormation.positions.map(pos => ({ x: pos.x, y: pos.y }))
+                  }
+                  console.log('🔍 DEBUG FormationExporter formation:', formationData)
+                  return formationData
+                })()}
                 sessionTitle="Sessione di allenamento"
                 teamName="Team"
                 jerseyUrl={defaultJersey?.image_url}
