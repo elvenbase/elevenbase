@@ -31,12 +31,15 @@ export const usePngExportSettings = () => {
   }, [])
 
   const checkTableAndLoadSettings = async () => {
+    console.log('🔍 Controllo tabella png_export_settings...')
     try {
       // Verifica se la tabella esiste
       const { data, error } = await supabase
         .from('png_export_settings')
         .select('count')
         .limit(1)
+      
+      console.log('📋 Check table result:', { data: !!data, error: error?.code || 'no error' })
 
       if (error && error.code === '42P01') {
         // Tabella non esiste - usa impostazioni di default
@@ -61,6 +64,7 @@ export const usePngExportSettings = () => {
         setSettings([])
       } else {
         // Tabella esiste - carica i dati
+        console.log('✅ Tabella png_export_settings trovata, caricamento...')
         setTableExists(true)
         await loadSettings()
       }
@@ -91,14 +95,18 @@ export const usePngExportSettings = () => {
   }
 
   const loadSettings = async () => {
+    console.log('🔍 loadSettings chiamato - tableExists:', tableExists)
     if (!tableExists) return
 
     try {
+      console.log('📋 Caricando impostazioni PNG da DB...')
       const { data, error } = await supabase
         .from('png_export_settings')
         .select('*')
         .not('created_by', 'is', null) // Solo impostazioni degli utenti
         .order('created_at', { ascending: false })
+      
+      console.log('📋 Query result:', { data: data?.length || 0, error: !!error })
 
       if (error) {
         console.error('Errore nel caricamento delle impostazioni:', error)
@@ -115,11 +123,22 @@ export const usePngExportSettings = () => {
 
       // Trova l'impostazione di default
       const defaultData = settingsWithDefaults?.find(setting => setting.is_default)
+      
+      console.log('🔍 PNG Settings Debug:')
+      console.log('• Settings trovate:', settingsWithDefaults?.length || 0)
+      console.log('• Default esplicito:', !!defaultData)
+      console.log('• Primo setting:', settingsWithDefaults?.[0]?.name || 'nessuno')
+      
       if (defaultData) {
+        console.log('✅ Usando default esplicito:', defaultData.name)
         setDefaultSetting(defaultData)
       } else if (settingsWithDefaults && settingsWithDefaults.length > 0) {
-        // Se non c'è un default, usa la prima
+        // Se non c'è un default esplicito, usa la prima impostazione salvata
+        console.log('✅ Usando prima impostazione:', settingsWithDefaults[0].name)
         setDefaultSetting(settingsWithDefaults[0])
+      } else {
+        console.log('⚠️ Nessuna impostazione trovata')
+        setDefaultSetting(null)
       }
     } catch (error) {
       console.error('Errore nel caricamento delle impostazioni:', error)
@@ -264,6 +283,15 @@ export const usePngExportSettings = () => {
       toast.error('Errore nell\'impostazione del default')
     }
   }
+
+  // Debug finale: cosa viene esposto
+  console.log('🎯 usePngExportSettings return:', {
+    settingsCount: settings.length,
+    hasDefaultSetting: !!defaultSetting,
+    defaultSettingName: defaultSetting?.name || 'nessuno',
+    loading,
+    tableExists
+  })
 
   return {
     settings,
