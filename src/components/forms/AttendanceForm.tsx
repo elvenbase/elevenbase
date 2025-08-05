@@ -24,9 +24,10 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   const { data: existingAttendance = [], refetch } = useTrainingAttendance(sessionId);
 
 
-  const presentCount = existingAttendance.filter(a => a.status === 'present').length;
-  const absentCount = existingAttendance.filter(a => a.status === 'absent').length;
+  const presentCount = existingAttendance.filter(a => a.status === 'present' || a.coach_confirmation_status === 'present').length;
+  const absentCount = existingAttendance.filter(a => a.status === 'absent' || a.coach_confirmation_status === 'absent').length;
   const selfRegisteredCount = existingAttendance.filter(a => a.self_registered).length;
+  const coachConfirmedCount = existingAttendance.filter(a => a.coach_confirmation_status && a.coach_confirmation_status !== 'pending').length;
   const noResponseCount = allPlayers.length - existingAttendance.length;
 
   const handleStatusChange = async (playerId: string, status: string) => {
@@ -64,6 +65,47 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       refetch();
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare l\'auto-registrazione: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCoachConfirmationChange = async (playerId: string, confirmationStatus: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Controlla se esiste già un record di presenza
+      const existingRecord = existingAttendance.find(a => a.player_id === playerId);
+      
+      if (existingRecord) {
+        // Aggiorna il record esistente
+        const { error } = await supabase
+          .from('training_attendance')
+          .update({ 
+            coach_confirmation_status: confirmationStatus
+          })
+          .eq('id', existingRecord.id);
+
+        if (error) throw error;
+      } else {
+        // Crea un nuovo record
+        const { error } = await supabase
+          .from('training_attendance')
+          .insert({
+            session_id: sessionId,
+            player_id: playerId,
+            status: 'pending', // Default auto-registrazione
+            coach_confirmation_status: confirmationStatus,
+            self_registered: false
+          });
+
+        if (error) throw error;
+      }
+
+      toast.success('Conferma presenza aggiornata');
+      refetch();
+    } catch (error: any) {
+      toast.error('Errore nell\'aggiornare la conferma: ' + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -135,8 +177,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
           await supabase
             .from('training_attendance')
             .update({ 
-              status,
-              self_registered: false
+              status
             })
             .eq('id', existingRecord.id);
         } else {
@@ -200,7 +241,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   return (
     <div className="space-y-6">
       {/* Header con statistiche */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
           <div className="text-2xl font-bold text-green-600">{presentCount}</div>
           <div className="text-sm text-muted-foreground">Presenti</div>
@@ -212,6 +253,10 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{selfRegisteredCount}</div>
           <div className="text-sm text-muted-foreground">Auto-registrati</div>
+        </div>
+        <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+          <div className="text-2xl font-bold text-purple-600">{coachConfirmedCount}</div>
+          <div className="text-sm text-muted-foreground">Coach Confermati</div>
         </div>
         <div className="text-center p-4 bg-muted rounded-lg">
           <div className="text-2xl font-bold text-muted-foreground">{noResponseCount}</div>
@@ -326,7 +371,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                   </div>
 
                   {/* Auto-registrazione */}
-                  <div className="col-span-2">
+                  <div className="col-span-2 text-center">
                     <Select 
                       value={attendance?.status || 'pending'} 
                       onValueChange={(value) => handleStatusChange(player.id, value)}
@@ -359,14 +404,39 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
                   {/* Conferma Presenza */}
                   <div className="col-span-2">
-                    <div className="text-center text-sm text-muted-foreground">
-                      Conferma durante sessione
-                    </div>
+                    <Select 
+                      value={attendance?.coach_confirmation_status || 'pending'} 
+                      onValueChange={(value) => handleCoachConfirmationChange(player.id, value)}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue placeholder="Seleziona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            In attesa
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="present">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            Presente
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="absent">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                            Assente
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Ritardo */}
                   <div className="col-span-1 text-center">
-                    {attendance?.status === 'present' && (
+                    {(attendance?.status === 'present' || attendance?.coach_confirmation_status === 'present') && (
                       <div className="flex items-center justify-center gap-1">
                         <input
                           type="checkbox"
@@ -456,26 +526,51 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                     </div>
 
                     <div>
-                      <label className="text-xs text-muted-foreground block mb-1">Conferma Coach</label>
-                      <div className="text-xs text-muted-foreground p-2 bg-muted/50 rounded">
-                        Durante sessione
-                      </div>
+                      <label className="text-xs text-muted-foreground block mb-1">Conferma Presenza</label>
+                      <Select 
+                        value={attendance?.coach_confirmation_status || 'pending'} 
+                        onValueChange={(value) => handleCoachConfirmationChange(player.id, value)}
+                      >
+                        <SelectTrigger className="h-8">
+                          <SelectValue placeholder="Seleziona" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-gray-500" />
+                              In attesa
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="present">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              Presente
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="absent">
+                            <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              Assente
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
-                    {attendance?.status === 'present' && (
-                      <div>
-                        <label className="text-xs text-muted-foreground block mb-1">Ritardo</label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <input
-                            type="checkbox"
-                            checked={!!attendance?.arrival_time}
-                            onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
-                            className="h-4 w-4"
-                          />
-                          <span className="text-sm">In ritardo</span>
+                                          {(attendance?.status === 'present' || attendance?.coach_confirmation_status === 'present') && (
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">Ritardo</label>
+                          <div className="flex items-center gap-2 mt-1">
+                            <input
+                              type="checkbox"
+                              checked={!!attendance?.arrival_time}
+                              onChange={(e) => handleLateStatusChange(player.id, e.target.checked)}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-sm">In ritardo</span>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
 
                   {/* Note */}

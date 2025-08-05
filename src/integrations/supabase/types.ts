@@ -486,6 +486,7 @@ export type Database = {
       training_attendance: {
         Row: {
           arrival_time: string | null
+          coach_confirmation_status: string | null
           created_at: string
           id: string
           notes: string | null
@@ -497,6 +498,7 @@ export type Database = {
         }
         Insert: {
           arrival_time?: string | null
+          coach_confirmation_status?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -508,6 +510,7 @@ export type Database = {
         }
         Update: {
           arrival_time?: string | null
+          coach_confirmation_status?: string | null
           created_at?: string
           id?: string
           notes?: string | null
