@@ -196,7 +196,7 @@ const SessionManagement = () => {
       })
 
       const link = document.createElement('a')
-      const formationName = lineupData?.formation || 'corrente'
+      const formationName = lineupData?.formation || '4-4-2-auto'
       link.download = `formazione-${formationName}-${new Date().toISOString().split('T')[0]}.png`
       link.href = canvas.toDataURL()
       link.click()
@@ -689,12 +689,25 @@ const SessionManagement = () => {
                           
                           // Se non c'è formazione salvata ma ci sono giocatori selezionati, usa quelli
                           if (players && playersInLineup.length > 0) {
+                            // Posizioni per formazione 4-4-2 di default
+                            const defaultPositions = [
+                              // Portiere
+                              { x: 50, y: 85 },
+                              // Difensori (4)
+                              { x: 20, y: 70 }, { x: 40, y: 70 }, { x: 60, y: 70 }, { x: 80, y: 70 },
+                              // Centrocampisti (4) 
+                              { x: 20, y: 45 }, { x: 40, y: 45 }, { x: 60, y: 45 }, { x: 80, y: 45 },
+                              // Attaccanti (2)
+                              { x: 35, y: 20 }, { x: 65, y: 20 }
+                            ]
+                            
                             return playersInLineup.map((playerId, index) => {
                               const player = players.find(p => p.id === playerId)
+                              const position = defaultPositions[index] || { x: 50, y: 50 } // Fallback al centro
                               return player ? {
                                 player_id: playerId,
-                                position_x: 50, // Posizioni default
-                                position_y: 50,
+                                position_x: position.x,
+                                position_y: position.y,
                                 player: player
                               } : null
                             }).filter(Boolean) as any[]
@@ -703,7 +716,7 @@ const SessionManagement = () => {
                           return []
                         })()}
                         formation={{
-                          name: lineupData?.formation || '4-4-2',
+                          name: lineupData?.formation || '4-4-2 (Auto)',
                           positions: []
                         }}
                         sessionTitle="Sessione di allenamento"
