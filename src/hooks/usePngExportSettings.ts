@@ -27,6 +27,7 @@ export const usePngExportSettings = () => {
   const [tableExists, setTableExists] = useState(false)
 
   useEffect(() => {
+    console.log('🚀 usePngExportSettings useEffect TRIGGERED - inizializzazione hook')
     checkTableAndLoadSettings()
   }, [])
 
@@ -69,7 +70,12 @@ export const usePngExportSettings = () => {
         await loadSettings()
       }
     } catch (error) {
-      console.error('Errore nel controllo della tabella:', error)
+      console.error('💥 ERRORE COMPLETO nel controllo tabella (checkTableAndLoadSettings):', error)
+      console.error('💥 Tipo errore:', typeof error)
+      console.error('💥 Error.name:', error?.name)
+      console.error('💥 Error.message:', error?.message)
+      console.error('💥 Error.code:', error?.code)
+      console.error('💥 USANDO FALLBACK HARDCODED')
       // In caso di errore, usa impostazioni di default
       setDefaultSetting({
         id: 'default',
@@ -96,7 +102,11 @@ export const usePngExportSettings = () => {
 
   const loadSettings = async () => {
     console.log('🔍 loadSettings chiamato - tableExists:', tableExists)
-    if (!tableExists) return
+    console.log('🔍 INIZIO loadSettings - about to query DB')
+    if (!tableExists) {
+      console.log('❌ loadSettings USCITA: tableExists = false')
+      return
+    }
 
     try {
       console.log('📋 Caricando impostazioni PNG da DB...')
@@ -114,7 +124,10 @@ export const usePngExportSettings = () => {
       })
 
       if (error) {
-        console.error('Errore nel caricamento delle impostazioni:', error)
+        console.error('❌ ERRORE CARICAMENTO IMPOSTAZIONI:', error)
+        console.error('❌ Error code:', error.code)
+        console.error('❌ Error message:', error.message)
+        console.error('❌ Error details:', error.details)
         return
       }
 
@@ -146,7 +159,10 @@ export const usePngExportSettings = () => {
         setDefaultSetting(null)
       }
     } catch (error) {
-      console.error('Errore nel caricamento delle impostazioni:', error)
+      console.error('💥 ECCEZIONE COMPLETA nel loadSettings:', error)
+      console.error('💥 Error name:', error.name)
+      console.error('💥 Error message:', error.message)
+      console.error('💥 Error stack:', error.stack)
     }
   }
 
