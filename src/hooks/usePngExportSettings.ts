@@ -67,7 +67,7 @@ export const usePngExportSettings = () => {
         // Tabella esiste - carica i dati
         console.log('✅ Tabella png_export_settings trovata, caricamento...')
         setTableExists(true)
-        await loadSettings()
+        await loadSettings(true) // 🔧 FIX: Passa true per bypassare race condition
       }
     } catch (error) {
       console.error('💥 ERRORE COMPLETO nel controllo tabella (checkTableAndLoadSettings):', error)
@@ -100,11 +100,12 @@ export const usePngExportSettings = () => {
     }
   }
 
-  const loadSettings = async () => {
-    console.log('🔍 loadSettings chiamato - tableExists:', tableExists)
+  const loadSettings = async (forceTableExists = false) => {
+    const actualTableExists = forceTableExists || tableExists
+    console.log('🔍 loadSettings chiamato - tableExists:', tableExists, 'forceTableExists:', forceTableExists, 'actualTableExists:', actualTableExists)
     console.log('🔍 INIZIO loadSettings - about to query DB')
-    if (!tableExists) {
-      console.log('❌ loadSettings USCITA: tableExists = false')
+    if (!actualTableExists) {
+      console.log('❌ loadSettings USCITA: actualTableExists = false')
       return
     }
 
