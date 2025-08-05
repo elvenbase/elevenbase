@@ -187,6 +187,40 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
       setNameTextColor(formationData.name_text_color || '#000000')
     }
   }, [lineup])
+
+  // Auto-save formazione quando playerPositions cambia
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
+      
+      // Solo salva se ci sono giocatori posizionati
+      if (playersInFormation.length > 0) {
+        try {
+          const lineupData = {
+            formation: selectedFormation,
+            players_data: {
+              positions: playerPositions,
+              formation_data: {
+                field_lines_color: fieldLinesColor,
+                field_lines_thickness: fieldLinesThickness,
+                jersey_numbers_color: jerseyNumbersColor,
+                jersey_numbers_shadow: jerseyNumbersShadow,
+                use_player_avatars: usePlayerAvatars,
+                name_box_color: nameBoxColor,
+                name_text_color: nameTextColor
+              }
+            }
+          }
+
+          await saveLineup(selectedFormation, { positions: playerPositions, formation_data: lineupData.players_data.formation_data })
+        } catch (error) {
+          console.error('Errore nel salvataggio automatico:', error)
+        }
+      }
+    }, 1000) // Debounce di 1 secondo
+
+    return () => clearTimeout(timeoutId)
+  }, [playerPositions, selectedFormation, fieldLinesColor, fieldLinesThickness, jerseyNumbersColor, jerseyNumbersShadow, usePlayerAvatars, nameBoxColor, nameTextColor, saveLineup])
   
   // TERZO: Tutte le funzioni helper che NON usano 'lineup'
   const handleFormationChange = (formation: string) => {
