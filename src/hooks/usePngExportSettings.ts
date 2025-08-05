@@ -60,8 +60,9 @@ export const usePngExportSettings = () => {
         })
         setSettings([])
       } else {
-        // Tabella esiste - carica i dati
+        // Tabella esiste - verifica schema e carica i dati
         setTableExists(true)
+        await checkAndUpdateSchema()
         await loadSettings()
       }
     } catch (error) {
