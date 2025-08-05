@@ -188,14 +188,16 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     }
   }, [lineup])
 
-  // Auto-save formazione quando playerPositions cambia
+  // Auto-save formazione quando playerPositions cambia (con debounce)
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
       const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
       
-      // Solo salva se ci sono giocatori posizionati
-      if (playersInFormation.length > 0) {
+      // Solo salva se ci sono giocatori posizionati e le impostazioni PNG sono caricate
+      if (playersInFormation.length > 0 && fieldLinesColor && jerseyNumbersColor) {
         try {
+          console.log(`🔄 Auto-save formazione ${selectedFormation} con ${playersInFormation.length} giocatori`)
+          
           const lineupData = {
             formation: selectedFormation,
             players_data: {
@@ -213,19 +215,45 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
           }
 
           await saveLineup(selectedFormation, { positions: playerPositions, formation_data: lineupData.players_data.formation_data })
+          console.log(`✅ Auto-save completato per ${selectedFormation}`)
         } catch (error) {
           console.error('Errore nel salvataggio automatico:', error)
         }
       }
-    }, 1000) // Debounce di 1 secondo
+    }, 2000) // Debounce di 2 secondi per evitare troppi salvataggi
 
     return () => clearTimeout(timeoutId)
   }, [playerPositions, selectedFormation, fieldLinesColor, fieldLinesThickness, jerseyNumbersColor, jerseyNumbersShadow, usePlayerAvatars, nameBoxColor, nameTextColor, saveLineup])
   
   // TERZO: Tutte le funzioni helper che NON usano 'lineup'
-  const handleFormationChange = (formation: string) => {
+  const handleFormationChange = async (formation: string) => {
     setSelectedFormation(formation)
     setPlayerPositions({})
+    
+    // Se c'era una formazione salvata, aggiorna il tipo di formazione nel DB
+    if (lineup?.id) {
+      try {
+        const lineupData = {
+          formation: formation,
+          players_data: {
+            positions: {}, // Formazione vuota dopo il cambio
+            formation_data: {
+              field_lines_color: fieldLinesColor,
+              field_lines_thickness: fieldLinesThickness,
+              jersey_numbers_color: jerseyNumbersColor,
+              jersey_numbers_shadow: jerseyNumbersShadow,
+              use_player_avatars: usePlayerAvatars,
+              name_box_color: nameBoxColor,
+              name_text_color: nameTextColor
+            }
+          }
+        }
+        
+        await saveLineup(formation, { positions: {}, formation_data: lineupData.players_data.formation_data })
+      } catch (error) {
+        console.error('Errore nell\'aggiornamento formazione:', error)
+      }
+    }
   }
 
   const getCurrentFormation = () => {
@@ -333,9 +361,17 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   }
 
   const downloadFormation = async () => {
+    // Con auto-save attivo, controlla sia lineup salvato che posizioni UI
     const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
-    if (playersInFormation.length === 0) {
+    
+    if (!lineup && playersInFormation.length === 0) {
       toast.error('Nessuna formazione da esportare')
+      return
+    }
+    
+    // Se ci sono giocatori posizionati ma lineup non è ancora salvato, aspetta un po'
+    if (playersInFormation.length > 0 && !lineup) {
+      toast.info('Salvataggio in corso, riprova tra un momento...')
       return
     }
 
@@ -765,7 +801,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={!canSave}>
             <Save className="mr-2 h-4 w-4" />
-            Salva Formazione
+            Salva Ora (Auto-save: ON)
           </Button>
           <Button variant="outline" onClick={handleClear} disabled={loading}>
             <Trash2 className="mr-2 h-4 w-4" />
