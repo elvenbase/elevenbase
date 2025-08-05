@@ -6,6 +6,7 @@ import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
@@ -135,12 +136,8 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
 
 
 
-  const removeConvocato = async (convocatoId: string) => {
+  const confirmRemoveConvocato = async (convocatoId: string) => {
     if (isReadOnly) return
-
-    if (!confirm('Sei sicuro di voler rimuovere questo giocatore dalla panchina?')) {
-      return
-    }
 
     setLoading(true)
     try {
@@ -415,15 +412,37 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     </div>
 
                     {!isReadOnly && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeConvocato(convocato.id)}
-                        className="flex items-center gap-1"
-                      >
-                        <X className="h-4 w-4" />
-                        Elimina
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="flex items-center gap-1"
+                          >
+                            <X className="h-4 w-4" />
+                            Elimina
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Rimuovi dalla panchina</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Sei sicuro di voler rimuovere <strong>{player.first_name} {player.last_name}</strong> dalla panchina?
+                              <br />
+                              Questa azione non può essere annullata.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annulla</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => confirmRemoveConvocato(convocato.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Rimuovi
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
 
                     {isReadOnly && (
