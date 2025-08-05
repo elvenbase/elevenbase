@@ -85,8 +85,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const { 
     lineup, 
     loading, 
-    createLineup, 
-    updateLineup,
+    saveLineup,
     loadLineup 
   } = useLineupManager(sessionId)
 
@@ -192,11 +191,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         }
       }
 
-      if (lineup && lineup.id) {
-        await updateLineup(lineupData)
-      } else {
-        await createLineup(lineupData)
-      }
+      await saveLineup(lineupData)
       
       toast.success('Formazione salvata con successo!')
     } catch (error) {
