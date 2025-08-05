@@ -181,13 +181,13 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         players_data: {
           positions: playerPositions,
           formation_data: {
-            field_lines_color: fieldLinesColor,
-            field_lines_thickness: fieldLinesThickness,
-            jersey_numbers_color: jerseyNumbersColor,
-            jersey_numbers_shadow: jerseyNumbersShadow,
-            use_player_avatars: usePlayerAvatars,
-            name_box_color: nameBoxColor,
-            name_text_color: nameTextColor
+            field_lines_color: '#ffffff',
+            field_lines_thickness: 2,
+            jersey_numbers_color: '#000000',
+            jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
+            use_player_avatars: false,
+            name_box_color: '#ffffff',
+            name_text_color: '#000000'
           }
         }
       }
