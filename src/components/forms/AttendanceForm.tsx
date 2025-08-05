@@ -41,8 +41,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         const { error } = await supabase
           .from('training_attendance')
           .update({ 
-            status,
-            self_registered: false // Quando l'admin conferma, non è più auto-registrazione
+            status
           })
           .eq('id', existingRecord.id);
 
@@ -61,10 +60,10 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         if (error) throw error;
       }
 
-      toast.success('Presenza aggiornata');
+      toast.success('Auto-registrazione aggiornata');
       refetch();
     } catch (error: any) {
-      toast.error('Errore nell\'aggiornare la presenza: ' + error.message);
+      toast.error('Errore nell\'aggiornare l\'auto-registrazione: ' + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -327,30 +326,6 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                   </div>
 
                   {/* Auto-registrazione */}
-                  <div className="col-span-2 text-center">
-                    {attendance?.self_registered ? (
-                      <Badge 
-                        variant={attendance.status === 'present' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {attendance.status === 'present' ? (
-                          <>
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Presente
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="w-3 h-3 mr-1" />
-                            Assente
-                          </>
-                        )}
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">Non risposto</span>
-                    )}
-                  </div>
-
-                  {/* Conferma Presenza */}
                   <div className="col-span-2">
                     <Select 
                       value={attendance?.status || 'pending'} 
@@ -380,6 +355,13 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Conferma Presenza */}
+                  <div className="col-span-2">
+                    <div className="text-center text-sm text-muted-foreground">
+                      Conferma durante sessione
+                    </div>
                   </div>
 
                   {/* Ritardo */}
@@ -433,11 +415,8 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                       )}
                     </div>
                     {attendance?.self_registered && (
-                      <Badge 
-                        variant={attendance.status === 'present' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {attendance.status === 'present' ? 'Auto-Presente' : 'Auto-Assente'}
+                      <Badge variant="outline" className="text-xs">
+                        Auto-registrato
                       </Badge>
                     )}
                   </div>
@@ -445,7 +424,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                   {/* Controlli */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-muted-foreground block mb-1">Presenza</label>
+                      <label className="text-xs text-muted-foreground block mb-1">Auto-registrazione</label>
                       <Select 
                         value={attendance?.status || 'pending'} 
                         onValueChange={(value) => handleStatusChange(player.id, value)}
@@ -474,6 +453,13 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                           </SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-muted-foreground block mb-1">Conferma Coach</label>
+                      <div className="text-xs text-muted-foreground p-2 bg-muted/50 rounded">
+                        Durante sessione
+                      </div>
                     </div>
 
                     {attendance?.status === 'present' && (
