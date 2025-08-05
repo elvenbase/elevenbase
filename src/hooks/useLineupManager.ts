@@ -68,14 +68,37 @@ export const useLineupManager = (sessionId: string) => {
         session_id: sessionId
       }
 
-      const { data, error } = await supabase
+      // Prima controlla se esiste già una formazione per questa sessione
+      const { data: existingLineup } = await supabase
         .from('training_lineups')
-        .upsert(lineupData, { 
-          onConflict: 'session_id',
-          ignoreDuplicates: false 
-        })
-        .select()
+        .select('id')
+        .eq('session_id', sessionId)
         .single()
+
+      let data, error
+
+      if (existingLineup) {
+        // Aggiorna la formazione esistente
+        const { data: updateData, error: updateError } = await supabase
+          .from('training_lineups')
+          .update(lineupData)
+          .eq('session_id', sessionId)
+          .select()
+          .single()
+        
+        data = updateData
+        error = updateError
+      } else {
+        // Crea una nuova formazione
+        const { data: insertData, error: insertError } = await supabase
+          .from('training_lineups')
+          .insert(lineupData)
+          .select()
+          .single()
+        
+        data = insertData
+        error = insertError
+      }
 
       if (error) throw error
 
