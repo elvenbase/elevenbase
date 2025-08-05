@@ -27,20 +27,16 @@ export const usePngExportSettings = () => {
   const [tableExists, setTableExists] = useState(false)
 
   useEffect(() => {
-    console.log('🚀 usePngExportSettings useEffect TRIGGERED - inizializzazione hook')
     checkTableAndLoadSettings()
   }, [])
 
   const checkTableAndLoadSettings = async () => {
-    console.log('🔍 Controllo tabella png_export_settings...')
     try {
       // Verifica se la tabella esiste
       const { data, error } = await supabase
         .from('png_export_settings')
         .select('count')
         .limit(1)
-      
-      console.log('📋 Check table result:', { data: !!data, error: error?.code || 'no error' })
 
       if (error && error.code === '42P01') {
         // Tabella non esiste - usa impostazioni di default
@@ -65,17 +61,11 @@ export const usePngExportSettings = () => {
         setSettings([])
       } else {
         // Tabella esiste - carica i dati
-        console.log('✅ Tabella png_export_settings trovata, caricamento...')
         setTableExists(true)
         await loadSettings(true) // 🔧 FIX: Passa true per bypassare race condition
       }
     } catch (error) {
-      console.error('💥 ERRORE COMPLETO nel controllo tabella (checkTableAndLoadSettings):', error)
-      console.error('💥 Tipo errore:', typeof error)
-      console.error('💥 Error.name:', error?.name)
-      console.error('💥 Error.message:', error?.message)
-      console.error('💥 Error.code:', error?.code)
-      console.error('💥 USANDO FALLBACK HARDCODED')
+      console.error('Errore nel controllo della tabella:', error)
       // In caso di errore, usa impostazioni di default
       setDefaultSetting({
         id: 'default',
@@ -102,33 +92,19 @@ export const usePngExportSettings = () => {
 
   const loadSettings = async (forceTableExists = false) => {
     const actualTableExists = forceTableExists || tableExists
-    console.log('🔍 loadSettings chiamato - tableExists:', tableExists, 'forceTableExists:', forceTableExists, 'actualTableExists:', actualTableExists)
-    console.log('🔍 INIZIO loadSettings - about to query DB')
     if (!actualTableExists) {
-      console.log('❌ loadSettings USCITA: actualTableExists = false')
       return
     }
 
-    try {
-      console.log('📋 Caricando impostazioni PNG da DB...')
-      const { data, error } = await supabase
-        .from('png_export_settings')
-        .select('*')
-        // MODIFICA: Carica TUTTE le impostazioni (utente + system default)
-        .order('created_at', { ascending: false })
-      
-      console.log('📋 Query result DETTAGLIO:', { 
-        data: data, 
-        dataLength: data?.length || 0, 
-        error: error,
-        rawData: JSON.stringify(data) 
-      })
+          try {
+        const { data, error } = await supabase
+          .from('png_export_settings')
+          .select('*')
+          // MODIFICA: Carica TUTTE le impostazioni (utente + system default)
+          .order('created_at', { ascending: false })
 
       if (error) {
-        console.error('❌ ERRORE CARICAMENTO IMPOSTAZIONI:', error)
-        console.error('❌ Error code:', error.code)
-        console.error('❌ Error message:', error.message)
-        console.error('❌ Error details:', error.details)
+        console.error('Errore nel caricamento delle impostazioni:', error)
         return
       }
 
@@ -143,27 +119,16 @@ export const usePngExportSettings = () => {
       // Trova l'impostazione di default
       const defaultData = settingsWithDefaults?.find(setting => setting.is_default)
       
-      console.log('🔍 PNG Settings Debug:')
-      console.log('• Settings trovate:', settingsWithDefaults?.length || 0)
-      console.log('• Default esplicito:', !!defaultData)
-      console.log('• Primo setting:', settingsWithDefaults?.[0]?.name || 'nessuno')
-      
       if (defaultData) {
-        console.log('✅ Usando default esplicito:', defaultData.name)
         setDefaultSetting(defaultData)
       } else if (settingsWithDefaults && settingsWithDefaults.length > 0) {
         // Se non c'è un default esplicito, usa la prima impostazione salvata
-        console.log('✅ Usando prima impostazione:', settingsWithDefaults[0].name)
         setDefaultSetting(settingsWithDefaults[0])
       } else {
-        console.log('⚠️ Nessuna impostazione trovata')
         setDefaultSetting(null)
       }
     } catch (error) {
-      console.error('💥 ECCEZIONE COMPLETA nel loadSettings:', error)
-      console.error('💥 Error name:', error.name)
-      console.error('💥 Error message:', error.message)
-      console.error('💥 Error stack:', error.stack)
+      console.error('Errore nel caricamento delle impostazioni:', error)
     }
   }
 
@@ -188,16 +153,13 @@ export const usePngExportSettings = () => {
     try {
       // Se questa è l'impostazione di default, rimuovi il flag dalle TUTTE le altre
       if (settingData.is_default) {
-        console.log('🔄 Rimuovendo flag default da tutte le altre impostazioni...')
         const { error: resetError } = await supabase
           .from('png_export_settings')
           .update({ is_default: false })
           // 🔧 FIX: Rimuovi da TUTTE (non solo utente), incluso sistema
         
         if (resetError) {
-          console.error('❌ Errore nel reset default:', resetError)
-        } else {
-          console.log('✅ Flag default rimosso da tutte le impostazioni esistenti')
+          console.error('Errore nel reset default:', resetError)
         }
       }
 
@@ -216,7 +178,6 @@ export const usePngExportSettings = () => {
         return
       }
 
-      console.log('✅ Nuova impostazione creata, ricaricando lista...')
       await loadSettings(true) // 🔧 FIX: Ricarica con forceTableExists
       toast.success('Impostazioni create con successo!')
       return data
@@ -235,7 +196,6 @@ export const usePngExportSettings = () => {
     try {
       // Se questa diventa l'impostazione di default, rimuovi il flag da TUTTE le altre
       if (updates.is_default) {
-        console.log('🔄 updateSetting: Rimuovendo flag default da tutte le altre impostazioni...')
         const { error: resetError } = await supabase
           .from('png_export_settings')
           .update({ is_default: false })
@@ -243,7 +203,7 @@ export const usePngExportSettings = () => {
           // 🔧 FIX: Rimuovi da TUTTE, incluso sistema
         
         if (resetError) {
-          console.error('❌ Errore nel reset default (updateSetting):', resetError)
+          console.error('Errore nel reset default (updateSetting):', resetError)
         }
       }
 
@@ -294,14 +254,13 @@ export const usePngExportSettings = () => {
 
     try {
       // Rimuovi il flag default da TUTTE le altre impostazioni (incluso sistema)
-      console.log('🔄 setAsDefault: Rimuovendo flag default da tutte le impostazioni...')
       const { error: resetError } = await supabase
         .from('png_export_settings')
         .update({ is_default: false })
         // 🔧 FIX: Rimuovi da TUTTE, incluso sistema
       
       if (resetError) {
-        console.error('❌ Errore nel reset default (setAsDefault):', resetError)
+        console.error('Errore nel reset default (setAsDefault):', resetError)
       }
 
       // Imposta questa come default
@@ -323,15 +282,6 @@ export const usePngExportSettings = () => {
       toast.error('Errore nell\'impostazione del default')
     }
   }
-
-  // Debug finale: cosa viene esposto
-  console.log('🎯 usePngExportSettings return:', {
-    settingsCount: settings.length,
-    hasDefaultSetting: !!defaultSetting,
-    defaultSettingName: defaultSetting?.name || 'nessuno',
-    loading,
-    tableExists
-  })
 
   return {
     settings,

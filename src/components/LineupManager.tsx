@@ -171,10 +171,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
 
   // Aggiorna impostazioni PNG dal defaultSetting o dalla formazione salvata
   useEffect(() => {
-    console.log('🎨 LineupManager - defaultSetting ricevuto:', defaultSetting)
-    
     if (defaultSetting) {
-      console.log('✅ Applicando impostazioni da /formations:', defaultSetting.name)
       setFieldLinesColor(defaultSetting.field_lines_color)
       setFieldLinesThickness(defaultSetting.field_lines_thickness)
       setJerseyNumbersColor(defaultSetting.jersey_numbers_color)
@@ -183,8 +180,6 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
       setNameBoxColor(defaultSetting.name_box_color)
       setNameTextColor(defaultSetting.name_text_color)
       setAvatarBackgroundColor(defaultSetting.avatar_background_color || '#1a2332')
-    } else {
-      console.log('⚠️ Nessun defaultSetting da /formations - usando valori hardcoded')
     }
   }, [defaultSetting])
 
