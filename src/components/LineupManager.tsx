@@ -83,7 +83,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
   
-  // Hook per gestire la formazione - deve essere dichiarato PRIMA degli useEffect che usano 'lineup'
+  // PRIMA: Dichiarare tutti gli hook - NON usano 'lineup' direttamente
   const { 
     lineup, 
     loading, 
@@ -91,37 +91,34 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     updateLineup,
     loadLineup 
   } = useLineupManager(sessionId)
+
+  const { formations: customFormations } = useCustomFormations()
+  const { getAvatarBackground } = useAvatarColor()
   
-  // Notifica cambiamenti della formazione al componente padre
+  // SECONDO: useEffect che usano 'lineup' (ora safely declared)
   useEffect(() => {
     const playersInLineup = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
     onLineupChange?.(playersInLineup)
-  }, [playerPositions]) // Rimossa onLineupChange dalle dipendenze
+  }, [playerPositions])
   
-  // Carica formazione esistente quando cambia la sessione
   useEffect(() => {
     loadLineup()
-  }, [sessionId]) // Rimossa loadLineup dalle dipendenze per evitare loop
+  }, [sessionId])
   
-  // Aggiorna stato locale quando viene caricata la formazione
   useEffect(() => {
     if (lineup) {
       setSelectedFormation(lineup.formation)
       setPlayerPositions(lineup.players_data?.positions || {})
     }
   }, [lineup])
-
-  const { formations: customFormations } = useCustomFormations()
-  const { getAvatarBackground } = useAvatarColor()
   
+  // TERZO: Tutte le funzioni helper che NON usano 'lineup'
   const handleFormationChange = (formation: string) => {
     setSelectedFormation(formation)
-    // Reset posizioni quando cambia formazione
     setPlayerPositions({})
   }
 
   const getCurrentFormation = () => {
-    // Check if it's a custom formation
     const customFormation = customFormations.find(f => f.id === selectedFormation)
     if (customFormation) {
       return {
@@ -130,13 +127,11 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
       }
     }
     
-    // Use predefined formations
     const predefinedFormation = formations[selectedFormation as keyof typeof formations]
     if (predefinedFormation) {
       return predefinedFormation
     }
     
-    // Fallback to default formation if nothing is found
     return formations['4-4-2']
   }
 
@@ -144,14 +139,12 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     setPlayerPositions(prev => {
       const newPositions = { ...prev }
       
-      // Rimuovi il giocatore dalla posizione precedente se ne aveva una
       Object.keys(newPositions).forEach(key => {
         if (newPositions[key] === playerId) {
           delete newPositions[key]
         }
       })
       
-      // Assegna alla nuova posizione (se non è vuoto o "none")
       if (playerId && playerId !== 'none') {
         newPositions[positionId] = playerId
       } else {
@@ -175,6 +168,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     )
   }
 
+  const getPlayerInitials = (player: Player) => {
+    if (!player.first_name && !player.last_name) return '?'
+    const firstInitial = player.first_name ? player.first_name.charAt(0).toUpperCase() : ''
+    const lastInitial = player.last_name ? player.last_name.charAt(0).toUpperCase() : ''
+    return firstInitial + lastInitial || '?'
+  }
+
+  // QUARTO: Funzioni che usano 'lineup' - ORA SICURE
   const handleSave = async () => {
     try {
       const lineupData = {
@@ -182,18 +183,18 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         players_data: {
           positions: playerPositions,
           formation_data: {
-            field_lines_color: '#ffffff', // Default
-            field_lines_thickness: 2, // Default
-            jersey_numbers_color: '#000000', // Default
-            jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)', // Default
-            use_player_avatars: false, // Default
-            name_box_color: '#ffffff', // Default
-            name_text_color: '#000000' // Default
+            field_lines_color: '#ffffff',
+            field_lines_thickness: 2,
+            jersey_numbers_color: '#000000',
+            jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
+            use_player_avatars: false,
+            name_box_color: '#ffffff',
+            name_text_color: '#000000'
           }
         }
       }
 
-      if (lineup) {
+      if (lineup && lineup.id) {
         await updateLineup(lineupData)
       } else {
         await createLineup(lineupData)
@@ -201,8 +202,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
       
       toast.success('Formazione salvata con successo!')
     } catch (error) {
-      console.error('Errore nel salvare la formazione:', error)
-      toast.error('Errore nel salvare la formazione')
+      console.error('Errore nel salvataggio:', error)
+      toast.error('Errore nel salvataggio della formazione')
     }
   }
 
@@ -210,15 +211,11 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     setPlayerPositions({})
   }
 
+  // QUINTO: Variabili calcolate che non dipendono da 'lineup'
   const currentFormation = getCurrentFormation()
-  const assignedCount = Object.keys(playerPositions).length
-
-
-
-  // Funzione per ottenere iniziali del giocatore
-  const getPlayerInitials = (player: Player) => {
-    return `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`.toUpperCase()
-  }
+  const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none').length
+  const isFormationComplete = playersInFormation === 11
+  const canSave = playersInFormation > 0 && !loading
 
   return (
     <Card>
@@ -262,7 +259,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
             Presenti: {presentPlayers.length}
           </Badge>
           <Badge variant="outline" className="text-xs sm:text-sm">
-            Assegnati: {assignedCount}/11
+            Assegnati: {playersInFormation}/11
           </Badge>
         </div>
 
@@ -608,11 +605,11 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
 
         {/* Azioni formazione */}
         <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={loading}>
+          <Button onClick={handleSave} disabled={!canSave}>
             <Save className="mr-2 h-4 w-4" />
             Salva Formazione
           </Button>
-          <Button variant="outline" onClick={handleClear}>
+          <Button variant="outline" onClick={handleClear} disabled={loading}>
             <Trash2 className="mr-2 h-4 w-4" />
             Cancella Tutto
           </Button>
