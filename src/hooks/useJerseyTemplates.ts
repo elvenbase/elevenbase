@@ -64,7 +64,7 @@ export const useJerseyTemplates = () => {
             .select('*')
             .is('created_by', null)
             .eq('is_default', true)
-            .single()
+            .maybeSingle()
           
           if (systemJersey) {
             setDefaultJersey(systemJersey)
