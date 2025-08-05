@@ -124,11 +124,11 @@ export const PngExportSettingsManager = () => {
                   Nuova Impostazione
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-[95vw] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Nuova Impostazione PNG</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 pb-4">
                   <div>
                     <Label htmlFor="name">Nome Impostazione</Label>
                     <Input
@@ -157,7 +157,7 @@ export const PngExportSettingsManager = () => {
                     <p className="text-xs text-muted-foreground mb-3">
                       Configura i colori per l'esportazione PNG
                     </p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label className="text-xs text-muted-foreground">Righe campo</Label>
                         <input 
