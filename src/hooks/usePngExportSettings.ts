@@ -103,7 +103,7 @@ export const usePngExportSettings = () => {
       const { data, error } = await supabase
         .from('png_export_settings')
         .select('*')
-        .not('created_by', 'is', null) // Solo impostazioni degli utenti
+        // MODIFICA: Carica TUTTE le impostazioni (utente + system default)
         .order('created_at', { ascending: false })
       
       console.log('📋 Query result:', { data: data?.length || 0, error: !!error })
