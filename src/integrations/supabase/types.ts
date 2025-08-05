@@ -353,6 +353,7 @@ export type Database = {
           first_name: string
           gaming_platform: string | null
           id: string
+          is_captain: boolean | null
           jersey_number: number | null
           last_name: string
           phone: string | null
@@ -368,6 +369,7 @@ export type Database = {
           first_name: string
           gaming_platform?: string | null
           id?: string
+          is_captain?: boolean | null
           jersey_number?: number | null
           last_name: string
           phone?: string | null
@@ -383,6 +385,7 @@ export type Database = {
           first_name?: string
           gaming_platform?: string | null
           id?: string
+          is_captain?: boolean | null
           jersey_number?: number | null
           last_name?: string
           phone?: string | null

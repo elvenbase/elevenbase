@@ -17,6 +17,8 @@ import { subMonths } from 'date-fns';
 import { PlayerForm } from '@/components/forms/PlayerForm';
 import EditPlayerForm from '@/components/forms/EditPlayerForm';
 import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 type SortField = 'name' | 'jersey_number' | 'position' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -37,6 +39,7 @@ interface Player {
   ea_sports_id?: string;
   gaming_platform?: string;
   platform_id?: string;
+  is_captain?: boolean; // 🔧 NUOVO: Campo capitano (opzionale per compatibilità)
 }
 
 
@@ -79,6 +82,11 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
               {player.jersey_number && (
                 <Badge variant="outline" className="text-xs">
                   #{player.jersey_number}
+                </Badge>
+              )}
+              {player.is_captain && (
+                <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">
+                  ⭐ Capitano
                 </Badge>
               )}
             </div>
@@ -286,6 +294,7 @@ const Squad = () => {
     from: subMonths(new Date(), 1),
     to: new Date()
   });
+  const [selectedCaptain, setSelectedCaptain] = useState<string>('');
   
   // Stato per la modale dell'immagine del giocatore
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -297,6 +306,59 @@ const Squad = () => {
   
   const { data: players = [], isLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
   const deletePlayer = useDeletePlayer();
+
+  // Carica capitano attuale al mount e quando cambiano i players
+  React.useEffect(() => {
+    const currentCaptain = players.find(p => p.is_captain);
+    if (currentCaptain) {
+      setSelectedCaptain(currentCaptain.id);
+    } else {
+      setSelectedCaptain('');
+    }
+  }, [players]);
+
+  // Funzione per aggiornare il capitano
+  const updateCaptain = async (newCaptainId: string) => {
+    try {
+      // Rimuovi is_captain da tutti i giocatori
+      await supabase
+        .from('players')
+        .update({ is_captain: false })
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Update tutti
+
+      // Se selezionato un capitano, impostalo
+      if (newCaptainId) {
+        const { error } = await supabase
+          .from('players')
+          .update({ is_captain: true })
+          .eq('id', newCaptainId);
+
+        if (error) throw error;
+        
+        const captain = players.find(p => p.id === newCaptainId);
+        toast.success(`${captain?.first_name} ${captain?.last_name} è ora il capitano`);
+      } else {
+        toast.success('Nessun capitano selezionato');
+      }
+    } catch (error) {
+      console.error('Errore nell\'aggiornamento del capitano:', error);
+      toast.error('Errore nell\'aggiornamento del capitano');
+      // Revert UI state
+      const currentCaptain = players.find(p => p.is_captain);
+      setSelectedCaptain(currentCaptain?.id || '');
+    }
+  };
+
+  // Salva quando cambia la selezione del capitano
+  React.useEffect(() => {
+    const currentCaptain = players.find(p => p.is_captain);
+    const currentCaptainId = currentCaptain?.id || '';
+    
+    // Solo se è cambiato davvero e non è il caricamento iniziale
+    if (selectedCaptain !== currentCaptainId && players.length > 0) {
+      updateCaptain(selectedCaptain);
+    }
+  }, [selectedCaptain]);
 
   const formatWhatsAppLink = (phone: string, firstName: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
@@ -398,9 +460,28 @@ const Squad = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex gap-4">
               <PlayerForm />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="min-w-0 sm:min-w-[200px]">
+                <label className="text-sm font-medium block mb-2">Capitano squadra:</label>
+                <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Seleziona capitano" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nessuno</SelectItem>
+                    {players.filter(p => p.status === 'active').map(player => (
+                      <SelectItem key={player.id} value={player.id}>
+                        {player.first_name} {player.last_name}
+                        {player.jersey_number ? ` (#${player.jersey_number})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -518,7 +599,14 @@ const Squad = () => {
                               onClick={() => openImageModal(player)}
                             />
                             <div>
-                              <div>{player.first_name} {player.last_name}</div>
+                              <div className="flex items-center gap-2">
+                                <span>{player.first_name} {player.last_name}</span>
+                                {player.is_captain && (
+                                  <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">
+                                    ⭐ Capitano
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
