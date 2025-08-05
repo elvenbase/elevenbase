@@ -175,23 +175,20 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   // QUARTO: Funzioni che usano 'lineup' - ORA SICURE
   const handleSave = async () => {
     try {
-      const lineupData = {
-        formation: selectedFormation,
-        players_data: {
-          positions: playerPositions,
-          formation_data: {
-            field_lines_color: '#ffffff',
-            field_lines_thickness: 2,
-            jersey_numbers_color: '#000000',
-            jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
-            use_player_avatars: false,
-            name_box_color: '#ffffff',
-            name_text_color: '#000000'
-          }
+      const playersData = {
+        positions: playerPositions,
+        formation_data: {
+          field_lines_color: '#ffffff',
+          field_lines_thickness: 2,
+          jersey_numbers_color: '#000000',
+          jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
+          use_player_avatars: false,
+          name_box_color: '#ffffff',
+          name_text_color: '#000000'
         }
       }
 
-      await saveLineup(lineupData)
+      await saveLineup(selectedFormation, playersData)
       
       toast.success('Formazione salvata con successo!')
     } catch (error) {
