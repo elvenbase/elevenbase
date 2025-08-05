@@ -142,8 +142,9 @@ const FormationExporter = ({
             top: '0',
             width: '200px',
             height: '80px',
-            border: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
-            borderTop: 'none',
+            borderLeft: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
+            borderRight: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
+            borderBottom: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
             transform: 'translateX(-50%)',
             background: 'transparent'
           }}
@@ -172,8 +173,9 @@ const FormationExporter = ({
             top: '0',
             width: '100px',
             height: '40px',
-            border: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
-            borderTop: 'none',
+            borderLeft: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
+            borderRight: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
+            borderBottom: `${fieldLinesThickness}px solid ${fieldLinesColor}`,
             transform: 'translateX(-50%)',
             background: 'transparent'
           }}
