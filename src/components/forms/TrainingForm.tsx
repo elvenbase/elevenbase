@@ -160,11 +160,11 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-[95vw] w-full max-w-md max-h-[75vh] sm:max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{mode === 'edit' ? 'Modifica Sessione di Allenamento' : 'Nuova Sessione di Allenamento'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 pb-4">
           <div>
             <Label htmlFor="title">Titolo</Label>
             <Input
@@ -183,7 +183,8 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Descrivi gli obiettivi dell'allenamento..."
-              rows={3}
+              rows={2}
+              className="resize-none"
             />
           </div>
           
@@ -198,7 +199,7 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label htmlFor="start_time">Inizio</Label>
               <Input
@@ -221,8 +222,8 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Label>Comunicazioni</Label>
+          <div className="space-y-2 sm:space-y-3">
+            <Label className="text-sm">Comunicazioni</Label>
             <Select value={communicationType} onValueChange={setCommunicationType}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleziona dove avverranno le comunicazioni" />
@@ -264,13 +265,19 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
             )}
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+          <div className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:space-x-2 sm:space-y-0 pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => handleOpenChange(false)}
+              className="w-full sm:w-auto order-2 sm:order-1"
+            >
               Annulla
             </Button>
             <Button 
               type="submit" 
               disabled={createTrainingSession.isPending || updateTrainingSession.isPending}
+              className="w-full sm:w-auto order-1 sm:order-2"
             >
               {mode === 'edit' 
                 ? (updateTrainingSession.isPending ? 'Aggiornamento...' : 'Aggiorna Sessione')
