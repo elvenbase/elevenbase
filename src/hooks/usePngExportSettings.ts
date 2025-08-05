@@ -13,6 +13,7 @@ export interface PngExportSetting {
   use_player_avatars: boolean
   name_box_color: string
   name_text_color: string
+  avatar_background_color: string
   is_default: boolean
   created_at: string
   updated_at: string
@@ -51,6 +52,7 @@ export const usePngExportSettings = () => {
           use_player_avatars: false,
           name_box_color: '#ffffff',
           name_text_color: '#000000',
+          avatar_background_color: '#1a2332',
           is_default: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -76,6 +78,7 @@ export const usePngExportSettings = () => {
         use_player_avatars: false,
         name_box_color: '#ffffff',
         name_text_color: '#000000',
+        avatar_background_color: '#1a2332',
         is_default: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -133,6 +136,7 @@ export const usePngExportSettings = () => {
     use_player_avatars: boolean
     name_box_color: string
     name_text_color: string
+    avatar_background_color: string
     is_default?: boolean
   }) => {
     if (!tableExists) {

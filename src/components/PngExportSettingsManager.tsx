@@ -33,6 +33,7 @@ export const PngExportSettingsManager = () => {
     use_player_avatars: false,
     name_box_color: '#ffffff',
     name_text_color: '#000000',
+    avatar_background_color: '#1a2332',
     is_default: false
   })
 
@@ -51,6 +52,7 @@ export const PngExportSettingsManager = () => {
         use_player_avatars: formData.use_player_avatars,
         name_box_color: formData.name_box_color,
         name_text_color: formData.name_text_color,
+        avatar_background_color: formData.avatar_background_color,
         is_default: formData.is_default
       })
       
@@ -65,6 +67,7 @@ export const PngExportSettingsManager = () => {
         use_player_avatars: false,
         name_box_color: '#ffffff',
         name_text_color: '#000000',
+        avatar_background_color: '#1a2332',
         is_default: false
       })
       setIsCreating(false)
@@ -84,6 +87,7 @@ export const PngExportSettingsManager = () => {
       use_player_avatars: false,
       name_box_color: '#ffffff',
       name_text_color: '#000000',
+      avatar_background_color: '#1a2332',
       is_default: false
     })
     setIsCreating(false)
@@ -221,6 +225,15 @@ export const PngExportSettingsManager = () => {
                           className="w-full h-8 rounded border cursor-pointer"
                           value={formData.name_text_color}
                           onChange={(e) => setFormData(prev => ({ ...prev, name_text_color: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Sfondo avatar</Label>
+                        <input 
+                          type="color" 
+                          className="w-full h-8 rounded border cursor-pointer"
+                          value={formData.avatar_background_color}
+                          onChange={(e) => setFormData(prev => ({ ...prev, avatar_background_color: e.target.value }))}
                         />
                       </div>
                     </div>
