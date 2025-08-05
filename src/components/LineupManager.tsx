@@ -83,6 +83,15 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
   
+  // Hook per gestire la formazione - deve essere dichiarato PRIMA degli useEffect che usano 'lineup'
+  const { 
+    lineup, 
+    loading, 
+    createLineup, 
+    updateLineup,
+    loadLineup 
+  } = useLineupManager(sessionId)
+  
   // Notifica cambiamenti della formazione al componente padre
   useEffect(() => {
     const playersInLineup = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
@@ -101,14 +110,6 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
       setPlayerPositions(lineup.players_data?.positions || {})
     }
   }, [lineup])
-
-  const { 
-    lineup, 
-    loading, 
-    createLineup, 
-    updateLineup,
-    loadLineup 
-  } = useLineupManager(sessionId)
 
   const { formations: customFormations } = useCustomFormations()
   const { getAvatarBackground } = useAvatarColor()
