@@ -144,6 +144,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const [nameTextColor, setNameTextColor] = useState('#000000')
   const [exporting, setExporting] = useState(false)
   
+  // Smart auto-save: traccia se ci sono modifiche non salvate
+  const [isDirty, setIsDirty] = useState(false)
+  const [isAutoSaving, setIsAutoSaving] = useState(false)
+  
   // SECONDO: useEffect che usano 'lineup' (ora safely declared)
   useEffect(() => {
     const playersInLineup = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
@@ -158,6 +162,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     if (lineup) {
       setSelectedFormation(lineup.formation)
       setPlayerPositions(lineup.players_data?.positions || {})
+      // Reset dirty state quando carica dati salvati
+      setIsDirty(false)
     }
   }, [lineup])
 
@@ -187,47 +193,66 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     }
   }, [lineup])
 
-  // Auto-save formazione quando playerPositions cambia (con debounce)
+  // Smart auto-save: confronta posizioni attuali con quelle salvate
   useEffect(() => {
-    const timeoutId = setTimeout(async () => {
+    if (!lineup) {
+      // Nessuna formazione salvata, qualsiasi posizione è "dirty"
       const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
-      
-      // Solo salva se ci sono giocatori posizionati e le impostazioni PNG sono caricate
-      if (playersInFormation.length > 0 && fieldLinesColor && jerseyNumbersColor) {
-        try {
-          console.log(`🔄 Auto-save formazione ${selectedFormation} con ${playersInFormation.length} giocatori`)
-          
-          const formationData = {
-            field_lines_color: fieldLinesColor,
-            field_lines_thickness: fieldLinesThickness,
-            jersey_numbers_color: jerseyNumbersColor,
-            jersey_numbers_shadow: jerseyNumbersShadow,
-            use_player_avatars: usePlayerAvatars,
-            name_box_color: nameBoxColor,
-            name_text_color: nameTextColor
-          }
+      setIsDirty(playersInFormation.length > 0)
+    } else {
+      // Confronta posizioni attuali con quelle salvate
+      const savedPositions = lineup.players_data?.positions || {}
+      const hasChanges = JSON.stringify(playerPositions) !== JSON.stringify(savedPositions)
+      setIsDirty(hasChanges)
+    }
+  }, [playerPositions, lineup])
 
-          await saveLineup(selectedFormation, { positions: playerPositions, formation_data: formationData })
-          console.log(`✅ Auto-save completato per ${selectedFormation}`)
-          
-          // Toast discreto per confermare l'auto-save (sostituisce quello del hook)
-          const formationName = getCurrentFormation().name
-          setTimeout(() => {
-            toast.success(`💾 ${formationName} salvata automaticamente`, { duration: 2000 })
-          }, 100) // Piccolo delay per evitare conflitti con toast del hook
-        } catch (error) {
-          console.error('Errore nel salvataggio automatico:', error)
+  // Auto-save intelligente: salva solo quando isDirty e non già in salvataggio
+  useEffect(() => {
+    if (!isDirty || isAutoSaving) return
+
+    const timeoutId = setTimeout(async () => {
+      setIsAutoSaving(true)
+      try {
+        console.log(`🔄 Smart auto-save: modifiche rilevate per ${selectedFormation}`)
+        
+        const formationData = {
+          field_lines_color: fieldLinesColor,
+          field_lines_thickness: fieldLinesThickness,
+          jersey_numbers_color: jerseyNumbersColor,
+          jersey_numbers_shadow: jerseyNumbersShadow,
+          use_player_avatars: usePlayerAvatars,
+          name_box_color: nameBoxColor,
+          name_text_color: nameTextColor
         }
+
+        await saveLineup(selectedFormation, { positions: playerPositions, formation_data: formationData })
+        console.log(`✅ Smart auto-save completato`)
+        
+        // Reset dirty state dopo salvataggio
+        setIsDirty(false)
+        
+        // Toast discreto di conferma
+        const formationName = getCurrentFormation().name
+        toast.success(`💾 ${formationName} salvata`, { duration: 1500 })
+      } catch (error) {
+        console.error('Errore nel salvataggio automatico:', error)
+        toast.error('Errore salvataggio automatico')
+      } finally {
+        setIsAutoSaving(false)
       }
-    }, 2000) // Debounce di 2 secondi per evitare troppi salvataggi
+    }, 1500) // Debounce più breve, visto che salviamo meno spesso
 
     return () => clearTimeout(timeoutId)
-  }, [playerPositions, selectedFormation, fieldLinesColor, fieldLinesThickness, jerseyNumbersColor, jerseyNumbersShadow, usePlayerAvatars, nameBoxColor, nameTextColor, saveLineup])
+  }, [isDirty, selectedFormation, fieldLinesColor, fieldLinesThickness, jerseyNumbersColor, jerseyNumbersShadow, usePlayerAvatars, nameBoxColor, nameTextColor, saveLineup, isAutoSaving])
   
   // TERZO: Tutte le funzioni helper che NON usano 'lineup'
   const handleFormationChange = async (formation: string) => {
     setSelectedFormation(formation)
     setPlayerPositions({})
+    
+    // Cambio formazione = modifica, segna come dirty
+    setIsDirty(true)
     
     // Se c'era una formazione salvata, aggiorna il tipo di formazione nel DB
     if (lineup?.id) {
@@ -243,6 +268,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         }
         
         await saveLineup(formation, { positions: {}, formation_data: formationData })
+        setIsDirty(false) // Reset dopo salvataggio
       } catch (error) {
         console.error('Errore nell\'aggiornamento formazione:', error)
       }
@@ -324,6 +350,9 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         formation_data: formationData 
       })
       
+      // Reset dirty state dopo salvataggio manuale
+      setIsDirty(false)
+      
       toast.success('Formazione salvata manualmente!')
     } catch (error) {
       console.error('Errore nel salvataggio:', error)
@@ -332,7 +361,12 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   }
 
   const handleClear = () => {
+    // Se c'erano posizioni, segna come dirty (per salvare la cancellazione)
+    const hadPlayers = Object.values(playerPositions).some(playerId => playerId && playerId !== 'none')
     setPlayerPositions({})
+    if (hadPlayers) {
+      setIsDirty(true)
+    }
   }
 
   const resetToDefault = () => {
@@ -395,7 +429,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const currentFormation = getCurrentFormation()
   const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none').length
   const isFormationComplete = playersInFormation === 11
-  const canSave = playersInFormation > 0 && !loading
+  const canSave = playersInFormation > 0 && !loading && !isAutoSaving
+  
+  // Testo dinamico per il bottone di salvataggio
+  const getSaveButtonText = () => {
+    if (isAutoSaving) return '💾 Salvando...'
+    if (!isDirty) return '✅ Sincronizzato'
+    return '💾 Salva Ora'
+  }
 
   return (
     <Card>
@@ -785,9 +826,9 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
 
         {/* Azioni formazione */}
         <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={!canSave}>
+          <Button onClick={handleSave} disabled={!canSave || !isDirty}>
             <Save className="mr-2 h-4 w-4" />
-            Salva Ora (Auto-save: ON)
+            {getSaveButtonText()}
           </Button>
           <Button variant="outline" onClick={handleClear} disabled={loading}>
             <Trash2 className="mr-2 h-4 w-4" />
