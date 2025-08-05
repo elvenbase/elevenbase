@@ -101,20 +101,12 @@ const SessionManagement = () => {
   const session = sessions?.find(s => s.id === sessionId) as TrainingSession | undefined
 
   // Controlla se c'è una formazione salvata con giocatori
-  console.log('🔍 DEBUG lineupData:', lineupData)
-  console.log('🔍 DEBUG players_data:', lineupData?.players_data)
-  console.log('🔍 DEBUG positions:', lineupData?.players_data?.positions)
-  
   const savedPlayersInFormation = lineupData?.players_data?.positions ? 
     Object.values(lineupData.players_data.positions).filter(playerId => playerId && playerId !== 'none').length 
     : 0
   const hasSavedFormation = lineupData && savedPlayersInFormation > 0
-  // Fallback temporaneo: mostra se ha 11 giocatori selezionati o formazione salvata
+  // Fallback: mostra se ha 11 giocatori selezionati o formazione salvata
   const shouldShowPngExport = hasSavedFormation || playersInLineup.length === 11
-  
-  console.log('🔍 DEBUG savedPlayersInFormation:', savedPlayersInFormation)
-  console.log('🔍 DEBUG hasSavedFormation:', hasSavedFormation)
-  console.log('🔍 DEBUG playersInLineup.length:', playersInLineup.length)
 
   const formatDateTime = (date: string, time: string) => {
     const sessionDate = new Date(date + 'T' + time)
@@ -204,7 +196,8 @@ const SessionManagement = () => {
       })
 
       const link = document.createElement('a')
-      link.download = `formazione-${lineupData.formation}-${new Date().toISOString().split('T')[0]}.png`
+      const formationName = lineupData?.formation || 'corrente'
+      link.download = `formazione-${formationName}-${new Date().toISOString().split('T')[0]}.png`
       link.href = canvas.toDataURL()
       link.click()
 
@@ -677,21 +670,38 @@ const SessionManagement = () => {
                     <div className="hidden">
                       <FormationExporter
                         id="formation-export"
-                        lineup={lineupData && players ? 
-                          Object.entries(lineupData.players_data?.positions || {})
-                            .filter(([_, playerId]) => playerId && playerId !== 'none')
-                            .map(([positionId, playerId]) => {
+                        lineup={(() => {
+                          // Se c'è formazione salvata, usa quella
+                          if (lineupData && players) {
+                            return Object.entries(lineupData.players_data?.positions || {})
+                              .filter(([_, playerId]) => playerId && playerId !== 'none')
+                              .map(([positionId, playerId]) => {
+                                const player = players.find(p => p.id === playerId)
+                                return player ? {
+                                  player_id: playerId,
+                                  position_x: 50,
+                                  position_y: 50,
+                                  player: player
+                                } : null
+                              })
+                              .filter(Boolean) as any[]
+                          }
+                          
+                          // Se non c'è formazione salvata ma ci sono giocatori selezionati, usa quelli
+                          if (players && playersInLineup.length > 0) {
+                            return playersInLineup.map((playerId, index) => {
                               const player = players.find(p => p.id === playerId)
                               return player ? {
                                 player_id: playerId,
-                                position_x: 50, // Placeholder - dovrebbe venire dalla posizione
-                                position_y: 50, // Placeholder - dovrebbe venire dalla posizione
+                                position_x: 50, // Posizioni default
+                                position_y: 50,
                                 player: player
                               } : null
-                            })
-                            .filter(Boolean) as any[]
-                          : []
-                        }
+                            }).filter(Boolean) as any[]
+                          }
+                          
+                          return []
+                        })()}
                         formation={{
                           name: lineupData?.formation || '4-4-2',
                           positions: []
