@@ -200,9 +200,17 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
     setSelectedPlayers([])
   }
 
-  const confirmedCount = convocati.filter(c => c.confirmed).length
-  const totalConvocati = convocati.length
-  const totalPresentPlayers = presentPlayers.length
+  // Calcolo nuove statistiche richieste
+  const presentiCount = attendance?.filter(a => a.status === 'present').length || 0
+  const convocatiCount = convocati.length
+  const nonConvocatiCount = allPlayers.length - convocatiCount - playersInLineup.length
+  const indisponibiliCount = allPlayers.filter(player => {
+    const playerAttendance = attendance?.find(a => a.player_id === player.id)
+    return player.status !== 'active' || 
+           playerAttendance?.status === 'absent' || 
+           playerAttendance?.status === 'excused'
+  }).length
+  
   const allPresentSelected = presentPlayers.length > 0 && presentPlayers.every(player => selectedPlayers.includes(player.id))
 
   return (
@@ -212,10 +220,10 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
+              <CheckCircle className="h-5 w-5 text-green-600" />
               <div>
-                <p className="text-2xl font-bold text-blue-600">{totalPresentPlayers}</p>
-                <p className="text-sm text-muted-foreground">Giocatori Presenti</p>
+                <p className="text-2xl font-bold text-green-600">{presentiCount}</p>
+                <p className="text-sm text-muted-foreground">Presenti</p>
               </div>
             </div>
           </CardContent>
@@ -223,9 +231,9 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-muted-foreground" />
+              <UserCheck className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-2xl font-bold">{totalConvocati}</p>
+                <p className="text-2xl font-bold text-blue-600">{convocatiCount}</p>
                 <p className="text-sm text-muted-foreground">Convocati</p>
               </div>
             </div>
@@ -234,10 +242,10 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-green-600" />
+              <Users className="h-5 w-5 text-gray-600" />
               <div>
-                <p className="text-2xl font-bold text-green-600">{confirmedCount}</p>
-                <p className="text-sm text-muted-foreground">Confermati</p>
+                <p className="text-2xl font-bold text-gray-600">{nonConvocatiCount}</p>
+                <p className="text-sm text-muted-foreground">Non Convocati</p>
               </div>
             </div>
           </CardContent>
@@ -245,10 +253,10 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <UserX className="h-5 w-5 text-orange-600" />
+              <UserX className="h-5 w-5 text-red-600" />
               <div>
-                <p className="text-2xl font-bold text-orange-600">{totalConvocati - confirmedCount}</p>
-                <p className="text-sm text-muted-foreground">In attesa</p>
+                <p className="text-2xl font-bold text-red-600">{indisponibiliCount}</p>
+                <p className="text-sm text-muted-foreground">Indisponibili</p>
               </div>
             </div>
           </CardContent>
