@@ -101,10 +101,20 @@ const SessionManagement = () => {
   const session = sessions?.find(s => s.id === sessionId) as TrainingSession | undefined
 
   // Controlla se c'è una formazione salvata con giocatori
+  console.log('🔍 DEBUG lineupData:', lineupData)
+  console.log('🔍 DEBUG players_data:', lineupData?.players_data)
+  console.log('🔍 DEBUG positions:', lineupData?.players_data?.positions)
+  
   const savedPlayersInFormation = lineupData?.players_data?.positions ? 
     Object.values(lineupData.players_data.positions).filter(playerId => playerId && playerId !== 'none').length 
     : 0
   const hasSavedFormation = lineupData && savedPlayersInFormation > 0
+  // Fallback temporaneo: mostra se ha 11 giocatori selezionati o formazione salvata
+  const shouldShowPngExport = hasSavedFormation || playersInLineup.length === 11
+  
+  console.log('🔍 DEBUG savedPlayersInFormation:', savedPlayersInFormation)
+  console.log('🔍 DEBUG hasSavedFormation:', hasSavedFormation)
+  console.log('🔍 DEBUG playersInLineup.length:', playersInLineup.length)
 
   const formatDateTime = (date: string, time: string) => {
     const sessionDate = new Date(date + 'T' + time)
@@ -172,8 +182,8 @@ const SessionManagement = () => {
   }
 
   const downloadFormation = async () => {
-    if (!hasSavedFormation) {
-      toast.error('Nessuna formazione salvata da esportare')
+    if (!hasSavedFormation && playersInLineup.length < 11) {
+      toast.error('Seleziona 11 giocatori o salva una formazione per esportare')
       return
     }
 
@@ -487,7 +497,7 @@ const SessionManagement = () => {
             </Card>
 
             {/* Export Formazione - Sezione separata per creativi */}
-            {sessionId && hasSavedFormation && (
+            {sessionId && shouldShowPngExport && (
               <Card className="border-2 border-dashed border-amber-300 bg-gradient-to-br from-amber-50 to-amber-100">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-amber-800">
@@ -655,7 +665,7 @@ const SessionManagement = () => {
                       </Button>
                                              <Button 
                          onClick={downloadFormation} 
-                         disabled={exporting || !hasSavedFormation}
+                         disabled={exporting || (!hasSavedFormation && playersInLineup.length < 11)}
                          className="bg-amber-600 hover:bg-amber-700 text-white text-sm sm:text-base"
                        >
                         <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
