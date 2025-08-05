@@ -214,7 +214,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     const timeoutId = setTimeout(async () => {
       setIsAutoSaving(true)
       try {
-        console.log(`🔄 Smart auto-save: modifiche rilevate per ${selectedFormation}`)
+
         
         const formationData = {
           field_lines_color: fieldLinesColor,
@@ -227,7 +227,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
         }
 
         await saveLineup(selectedFormation, { positions: playerPositions, formation_data: formationData })
-        console.log(`✅ Smart auto-save completato`)
+
         
         // Reset dirty state dopo salvataggio
         setIsDirty(false)
@@ -384,11 +384,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     // Con auto-save attivo, controlla sia lineup salvato che posizioni UI
     const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
     
-    console.log('🔍 DEBUG Export PNG:')
-    console.log('• playersInFormation:', playersInFormation.length)
-    console.log('• lineup esistente:', !!lineup)
-    console.log('• playerPositions:', playerPositions)
-    console.log('• currentFormation:', currentFormation)
+
     
     if (!lineup && playersInFormation.length === 0) {
       toast.error('Nessuna formazione da esportare')
@@ -404,10 +400,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
     setExporting(true)
     try {
       const element = document.getElementById('formation-export')
-      console.log('🔍 Elemento export trovato:', !!element)
-      console.log('🔍 Dimensioni elemento:', element?.offsetWidth, 'x', element?.offsetHeight)
-      console.log('🔍 Contenuto elemento:', element?.innerHTML?.length || 0, 'caratteri')
-      console.log('🔍 Figli elemento:', element?.children?.length || 0)
+
       
       if (!element) {
         toast.error('Elemento di export non trovato')
@@ -1026,7 +1019,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                     .map(([positionId, playerId]) => {
                       const player = getPlayerById(playerId)
                       const position = currentFormation.positions.find(p => p.id === positionId)
-                      console.log(`🔍 DEBUG Player ${playerId}:`, { player: !!player, position: !!position, positionId })
+
                       return player && position ? {
                         player_id: playerId,
                         position_x: position.x,
@@ -1036,7 +1029,6 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                     })
                     .filter(Boolean) as any[]
                   
-                  console.log('🔍 DEBUG FormationExporter lineup:', lineupData)
                   return lineupData
                 })()}
                 formation={(() => {
@@ -1044,7 +1036,6 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                     name: currentFormation.name,
                     positions: currentFormation.positions.map(pos => ({ x: pos.x, y: pos.y }))
                   }
-                  console.log('🔍 DEBUG FormationExporter formation:', formationData)
                   return formationData
                 })()}
                 sessionTitle="Sessione di allenamento"

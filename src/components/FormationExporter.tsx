@@ -274,7 +274,7 @@ const FormationExporter = ({
                       <div
                         style={{
                           position: 'absolute',
-                          bottom: '5px',
+                          bottom: '15px',
                           right: '5px',
                           width: '28px',
                           height: '28px',
@@ -324,7 +324,7 @@ const FormationExporter = ({
                       <div
                         style={{
                           position: 'absolute',
-                          bottom: '5px',
+                          bottom: '15px',
                           right: '5px',
                           width: '28px',
                           height: '28px',
