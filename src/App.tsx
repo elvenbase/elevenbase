@@ -29,6 +29,7 @@ const TrialEvaluations = lazy(() => import("@/pages/TrialEvaluations"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
 const PublicRegistration = lazy(() => import("@/pages/PublicRegistration"));
 const PublicSession = lazy(() => import("@/pages/PublicSession"));
+const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -124,6 +125,7 @@ function App() {
                 }>
                   <Routes>
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/confirm" element={<EmailConfirm />} />
                     <Route path="/register/:token" element={<PublicRegistration />} />
                     <Route path="/session/:token" element={<PublicSession />} />
                     <Route path="/" element={
