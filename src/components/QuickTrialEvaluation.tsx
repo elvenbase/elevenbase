@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useTrialists } from '@/hooks/useSupabaseData';
+import { useTrialists, useCreateQuickTrialEvaluation, useUpdateTrialistStatusFromQuickEvaluation } from '@/hooks/useSupabaseData';
 import { useAvatarColor } from '@/hooks/useAvatarColor';
-import { CheckCircle, Users, Award, Plus, Minus, Circle } from 'lucide-react';
+import { CheckCircle, Users, Award, Plus, Minus, Circle, CheckCircle2, XCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface QuickTrialEvaluationProps {
   sessionId?: string;
@@ -18,16 +19,19 @@ interface TrialistEvaluation {
   personality_ratings: number[];
   ability_ratings: number[];
   flexibility_ratings: number[];
+  final_decision: 'in_prova' | 'promosso' | 'archiviato';
   notes: string;
 }
 
 const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps) => {
   const [open, setOpen] = useState(false);
   const [selectedTrialists, setSelectedTrialists] = useState<string[]>([]);
-  const [currentStep, setCurrentStep] = useState<'select' | 'evaluate'>('select');
+  const [currentStep, setCurrentStep] = useState<'select' | 'evaluate' | 'finalize'>('select');
   const [evaluations, setEvaluations] = useState<Record<string, TrialistEvaluation>>({});
 
   const { data: trialists = [] } = useTrialists();
+  const createQuickEvaluation = useCreateQuickTrialEvaluation();
+  const updateTrialistStatus = useUpdateTrialistStatusFromQuickEvaluation();
   const { getAvatarBackground } = useAvatarColor();
 
   // Filtra solo i trialist "in prova"
@@ -64,6 +68,70 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
     if (rating === 1) return <Plus className="h-4 w-4 text-green-500" />;
     if (rating === -1) return <Minus className="h-4 w-4 text-red-500" />;
     return <Circle className="h-4 w-4 text-gray-400" />;
+  };
+
+  const handleDecisionChange = (trialistId: string, decision: 'in_prova' | 'promosso' | 'archiviato') => {
+    setEvaluations(prev => ({
+      ...prev,
+      [trialistId]: {
+        ...prev[trialistId],
+        trialist_id: trialistId,
+        final_decision: decision,
+        personality_ratings: prev[trialistId]?.personality_ratings || [],
+        ability_ratings: prev[trialistId]?.ability_ratings || [],
+        flexibility_ratings: prev[trialistId]?.flexibility_ratings || [],
+        notes: prev[trialistId]?.notes || ''
+      }
+    }));
+  };
+
+  const handleNotesChange = (trialistId: string, notes: string) => {
+    setEvaluations(prev => ({
+      ...prev,
+      [trialistId]: {
+        ...prev[trialistId],
+        trialist_id: trialistId,
+        notes,
+        personality_ratings: prev[trialistId]?.personality_ratings || [],
+        ability_ratings: prev[trialistId]?.ability_ratings || [],
+        flexibility_ratings: prev[trialistId]?.flexibility_ratings || [],
+        final_decision: prev[trialistId]?.final_decision || 'in_prova'
+      }
+    }));
+  };
+
+  const handleSaveEvaluations = async () => {
+    try {
+      // Salva tutte le valutazioni
+      for (const trialistId of selectedTrialists) {
+        const evaluation = evaluations[trialistId];
+        if (evaluation) {
+          await createQuickEvaluation.mutateAsync({
+            trialist_id: trialistId,
+            session_id: sessionId,
+            personality_ratings: evaluation.personality_ratings,
+            ability_ratings: evaluation.ability_ratings,
+            flexibility_ratings: evaluation.flexibility_ratings,
+            final_decision: evaluation.final_decision,
+            notes: evaluation.notes
+          });
+
+          // Aggiorna lo status del trialist se necessario
+          if (evaluation.final_decision !== 'in_prova') {
+            await updateTrialistStatus.mutateAsync({
+              trialist_id: trialistId,
+              status: evaluation.final_decision
+            });
+          }
+        }
+      }
+
+      toast.success('Valutazioni salvate con successo!');
+      handleClose();
+    } catch (error) {
+      toast.error('Errore nel salvataggio delle valutazioni');
+      console.error(error);
+    }
   };
 
   return (
@@ -167,6 +235,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                 personality_ratings: [],
                 ability_ratings: [],
                 flexibility_ratings: [],
+                final_decision: 'in_prova' as const,
                 notes: ''
               };
 
@@ -176,6 +245,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                 personality_ratings: evaluation.personality_ratings || [],
                 ability_ratings: evaluation.ability_ratings || [],
                 flexibility_ratings: evaluation.flexibility_ratings || [],
+                final_decision: evaluation.final_decision || 'in_prova',
                 notes: evaluation.notes || ''
               };
 
@@ -277,6 +347,40 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                       </div>
                     </div>
                   </div>
+
+                  {/* Final Decision */}
+                  <div className="space-y-2 mb-4">
+                    <label className="text-sm font-medium">Decisione Finale</label>
+                    <div className="flex space-x-2">
+                      {(['in_prova', 'promosso', 'archiviato'] as const).map((decision) => (
+                        <Button
+                          key={decision}
+                          variant={safeEvaluation.final_decision === decision ? "default" : "outline"}
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleDecisionChange(trialistId, decision)}
+                        >
+                          {decision === 'promosso' && <CheckCircle2 className="h-4 w-4 mr-2" />}
+                          {decision === 'archiviato' && <XCircle className="h-4 w-4 mr-2" />}
+                          <span className="capitalize">
+                            {decision === 'in_prova' ? 'In Prova' : decision}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Note</label>
+                    <textarea
+                      className="w-full p-2 border rounded-md text-sm"
+                      placeholder="Note sulla valutazione..."
+                      value={safeEvaluation.notes}
+                      onChange={(e) => handleNotesChange(trialistId, e.target.value)}
+                      rows={2}
+                    />
+                  </div>
                 </Card>
               );
             })}
@@ -285,11 +389,14 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
               <Button variant="outline" onClick={() => setCurrentStep('select')}>
                 Indietro
               </Button>
-              <Button onClick={() => {
-                console.log('Valutazioni:', evaluations);
-                handleClose();
-              }}>
-                Salva Valutazioni
+              <Button 
+                onClick={handleSaveEvaluations}
+                disabled={createQuickEvaluation.isPending || updateTrialistStatus.isPending}
+              >
+                {createQuickEvaluation.isPending || updateTrialistStatus.isPending 
+                  ? 'Salvataggio...' 
+                  : 'Salva Valutazioni'
+                }
               </Button>
             </div>
           </div>
