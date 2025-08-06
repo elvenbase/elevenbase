@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAvatarColor } from '@/hooks/useAvatarColor';
-import { useUpdateTrialist } from "@/hooks/useSupabaseData";
+import { useUpdateTrialist, usePromoteTrialist } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
-import { Edit, Upload, X, MessageCircle } from "lucide-react";
+import { Edit, Upload, X, MessageCircle, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface EditTrialistFormProps {
@@ -74,6 +74,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateTrialist = useUpdateTrialist();
+  const promoteTrialist = usePromoteTrialist();
   const { toast } = useToast();
   const { getAvatarBackground } = useAvatarColor();
 
@@ -199,6 +200,23 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
       console.log('Trialist updated successfully');
     } catch (error) {
       console.error('Error updating trialist:', error);
+    }
+  };
+
+  const handlePromotion = async () => {
+    const confirmPromotion = window.confirm(
+      `Sei sicuro di voler promuovere ${trialist.first_name} ${trialist.last_name} alla squadra ufficiale?\n\nQuesta azione:\n• Creerà un nuovo giocatore in /squad\n• Rimuoverà il trialist da /trials\n• Non potrà essere annullata`
+    );
+    
+    if (!confirmPromotion) return;
+
+    try {
+      await promoteTrialist.mutateAsync(trialist.id);
+      setOpen(false);
+      // Optional: Navigate to squad page
+      window.location.href = '/squad';
+    } catch (error) {
+      console.error('Error promoting trialist:', error);
     }
   };
 
@@ -530,13 +548,29 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
             />
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Annulla
-            </Button>
-            <Button type="submit" disabled={updateTrialist.isPending}>
-              {updateTrialist.isPending ? "Aggiornamento..." : "Salva Modifiche"}
-            </Button>
+          <div className="flex justify-between">
+            {/* Promotion button - only visible if status is 'promosso' */}
+            {trialist.status === 'promosso' && (
+              <Button 
+                type="button" 
+                variant="default"
+                className="bg-green-600 hover:bg-green-700"
+                onClick={handlePromotion}
+                disabled={promoteTrialist.isPending}
+              >
+                <UserCheck className="h-4 w-4 mr-2" />
+                {promoteTrialist.isPending ? "Promozione..." : "Aggiungi alla Squad"}
+              </Button>
+            )}
+            
+            <div className="flex space-x-2 ml-auto">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Annulla
+              </Button>
+              <Button type="submit" disabled={updateTrialist.isPending}>
+                {updateTrialist.isPending ? "Aggiornamento..." : "Salva Modifiche"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

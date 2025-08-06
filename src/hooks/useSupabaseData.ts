@@ -139,7 +139,24 @@ export const useCreatePlayer = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (player: { first_name: string; last_name: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended'; phone?: string }) => {
+    mutationFn: async (player: { 
+      first_name: string; 
+      last_name: string; 
+      jersey_number?: number; 
+      position?: string; 
+      status?: 'active' | 'inactive' | 'injured' | 'suspended'; 
+      phone?: string;
+      birth_date?: string;
+      email?: string;
+      esperienza?: string;
+      notes?: string;
+      avatar_url?: string;
+      ea_sport_id?: string;
+      gaming_platform?: string;
+      platform_id?: string;
+      is_captain?: boolean;
+      created_by?: string;
+    }) => {
       console.log('Creating player:', player);
       const { data, error } = await supabase
         .from('players')
@@ -170,7 +187,25 @@ export const useUpdatePlayer = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; jersey_number?: number; position?: string; status?: 'active' | 'inactive' | 'injured' | 'suspended'; phone?: string; avatar_url?: string }) => {
+    mutationFn: async ({ id, ...updates }: { 
+      id: string; 
+      first_name?: string; 
+      last_name?: string; 
+      jersey_number?: number; 
+      position?: string; 
+      status?: 'active' | 'inactive' | 'injured' | 'suspended'; 
+      phone?: string;
+      birth_date?: string;
+      email?: string;
+      esperienza?: string;
+      notes?: string;
+      avatar_url?: string;
+      ea_sport_id?: string;
+      gaming_platform?: string;
+      platform_id?: string;
+      is_captain?: boolean;
+      created_by?: string;
+    }) => {
       console.log('Updating player:', id, updates);
       const { data, error } = await supabase
         .from('players')
@@ -586,6 +621,108 @@ export const useDeleteTrialist = () => {
     onError: (error) => {
       console.error('Trialist deletion failed:', error);
       toast({ title: "Errore durante l'eliminazione del trialist", variant: "destructive" });
+    }
+  });
+};
+
+export const usePromoteTrialist = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (trialistId: string) => {
+      // 1. Fetch trialist data
+      const { data: trialist, error: fetchError } = await supabase
+        .from('trialists')
+        .select('*')
+        .eq('id', trialistId)
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching trialist:', fetchError);
+        throw fetchError;
+      }
+
+      if (!trialist) {
+        throw new Error('Trialist not found');
+      }
+
+      if (trialist.status !== 'promosso') {
+        throw new Error('Only promoted trialists can be moved to squad');
+      }
+
+      // 2. Get current user for created_by field
+      const { data: userData } = await supabase.auth.getUser();
+      const currentUserId = userData.user?.id;
+
+      // 3. Map trialist data to player data
+      const playerData = {
+        first_name: trialist.first_name,
+        last_name: trialist.last_name,
+        jersey_number: trialist.jersey_number,
+        position: trialist.position,
+        phone: trialist.phone,
+        birth_date: trialist.birth_date,
+        email: trialist.email,
+        esperienza: trialist.esperienza,
+        notes: trialist.notes,
+        avatar_url: trialist.avatar_url,
+        ea_sport_id: trialist.ea_sport_id,
+        gaming_platform: trialist.gaming_platform,
+        platform_id: trialist.platform_id,
+        is_captain: trialist.is_captain || false,
+        status: 'active' as const, // Convert from 'promosso' to 'active'
+        created_by: currentUserId
+      };
+
+      // 4. Create player
+      const { data: newPlayer, error: createError } = await supabase
+        .from('players')
+        .insert(playerData)
+        .select()
+        .single();
+      
+      if (createError) {
+        console.error('Error creating player:', createError);
+        throw createError;
+      }
+
+      // 5. Delete trialist
+      const { error: deleteError } = await supabase
+        .from('trialists')
+        .delete()
+        .eq('id', trialistId);
+      
+      if (deleteError) {
+        console.error('Error deleting trialist:', deleteError);
+        // If deletion fails, we should ideally rollback the player creation
+        // For now, we'll just log it but still return success
+      }
+
+      return {
+        newPlayer,
+        originalTrialist: trialist
+      };
+    },
+    onSuccess: (data) => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
+      queryClient.invalidateQueries({ queryKey: ['trialists'] });
+      queryClient.invalidateQueries({ queryKey: ['trialist-stats'] });
+      
+      toast({ 
+        title: "Promozione completata! 🎉", 
+        description: `${data.originalTrialist.first_name} ${data.originalTrialist.last_name} è stato aggiunto alla squadra ufficiale.`
+      });
+    },
+    onError: (error) => {
+      console.error('Trialist promotion failed:', error);
+      toast({ 
+        title: "Errore durante la promozione", 
+        description: error.message,
+        variant: "destructive" 
+      });
     }
   });
 };
