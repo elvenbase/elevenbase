@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useMediaQuery } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,6 +19,7 @@ interface TrialistFormProps {
 
 export const TrialistForm = ({ children }: TrialistFormProps) => {
   const [open, setOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -178,38 +180,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     setOpen(false);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children || (
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nuovo Trialist
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent 
-        className="sm:max-w-[600px] max-h-[95vh] w-[95vw] sm:w-auto p-0 sm:p-6"
-        style={{
-          maxHeight: '95vh',
-          height: 'auto',
-          overflow: 'hidden'
-        }}
-      >
-        <div className="flex flex-col h-full">
-          <DialogHeader className="flex-shrink-0 p-4 pb-2 border-b">
-            <DialogTitle>Nuovo Trialist</DialogTitle>
-            {/* Cache busting comment: v2024-01-15-16:35 */}
-          </DialogHeader>
-          <div 
-            className="flex-1 overflow-y-scroll p-4"
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              touchAction: 'pan-y',
-              overscrollBehavior: 'contain',
-              minHeight: 0
-            }}
-          >
+  // Form content component
+  const FormContent = () => (
           <form onSubmit={handleSubmit} className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label>Foto Profilo</Label>
@@ -540,9 +512,63 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
             </Button>
           </div>
           </form>
-          </div>
+  );
+
+  // Mobile full-screen modal
+  if (isMobile && open) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
+          <h2 className="text-lg font-semibold">Nuovo Trialist</h2>
+          <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+        
+        {/* Scrollable content */}
+        <div 
+          className="h-full overflow-y-auto p-4 pb-20"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y',
+            overscrollBehavior: 'contain'
+          }}
+        >
+          <FormContent />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop dialog
+  return (
+    <>
+      {/* Trigger */}
+      {children ? (
+        <div onClick={() => setOpen(true)}>
+          {children}
+        </div>
+      ) : (
+        <Button onClick={() => setOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nuovo Trialist
+        </Button>
+      )}
+
+      {/* Desktop Dialog */}
+      {!isMobile && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Nuovo Trialist</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <FormContent />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 };
