@@ -1,0 +1,22 @@
+{
+  "name": "ElevenBase - Ca De Rissi SG Esport",
+  "short_name": "ElevenBase",
+  "description": "Sistema di gestione per il club e-sport Ca De Rissi SG",
+  "icons": [
+    {
+      "src": "/assets/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#1e293b",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}
