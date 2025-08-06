@@ -197,12 +197,12 @@ const TrialEvaluations = () => {
                       >
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-3">
-                            <Avatar 
-                              className="h-12 w-12"
-                              style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
-                            >
+                            <Avatar className="h-12 w-12">
                               <AvatarImage src={trialist.avatar_url || undefined} />
-                              <AvatarFallback className="text-white font-bold">
+                              <AvatarFallback 
+                                className="font-bold text-white"
+                                style={getAvatarBackground(trialist.first_name + trialist.last_name, false)}
+                              >
                                 {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
@@ -252,12 +252,12 @@ const TrialEvaluations = () => {
                 <Card key={trialistId}>
                   <CardHeader>
                     <div className="flex items-center space-x-3">
-                      <Avatar 
-                        className="h-12 w-12"
-                        style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
-                      >
+                      <Avatar className="h-12 w-12">
                         <AvatarImage src={trialist.avatar_url || undefined} />
-                        <AvatarFallback className="text-white font-bold">
+                        <AvatarFallback 
+                          className="font-bold text-white"
+                          style={getAvatarBackground(trialist.first_name + trialist.last_name, false)}
+                        >
                           {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
@@ -423,12 +423,12 @@ const TrialEvaluations = () => {
                   return (
                     <div key={trialistId} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <Avatar 
-                          className="h-10 w-10"
-                          style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
-                        >
+                        <Avatar className="h-10 w-10">
                           <AvatarImage src={trialist.avatar_url || undefined} />
-                          <AvatarFallback className="text-white font-bold">
+                          <AvatarFallback 
+                            className="font-bold text-white"
+                            style={getAvatarBackground(trialist.first_name + trialist.last_name, false)}
+                          >
                             {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
