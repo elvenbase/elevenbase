@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTrialists, useUpdateTrialistStatus, useDeleteTrialist, useTrialEvaluations } from '@/hooks/useSupabaseData';
 import { useAvatarColor } from '@/hooks/useAvatarColor';
-import { User, ArrowRight, Archive, Trash2 } from 'lucide-react';
+import { User, ArrowRight, Archive, Trash2, Award } from 'lucide-react';
 import EditTrialistForm from '@/components/forms/EditTrialistForm';
 import { TrialEvaluationForm } from '@/components/forms/TrialEvaluationForm';
 
@@ -103,7 +103,7 @@ const TrialistCard = ({
               className="flex-1 text-xs"
               onClick={() => onStatusChange(trialist.id, 'promosso')}
             >
-              <Star className="h-3 w-3 mr-1" />
+              <Award className="h-3 w-3 mr-1" />
               Promuovi
             </Button>
             <Button
@@ -163,7 +163,7 @@ const TrialsKanban = () => {
       title: 'Promossi',
       color: 'bg-success/10 border-success/20',
       titleColor: 'text-success',
-      icon: <Star className="h-4 w-4" />
+      icon: <Award className="h-4 w-4" />
     },
     {
       id: 'archiviato',
