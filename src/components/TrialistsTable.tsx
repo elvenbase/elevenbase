@@ -294,21 +294,46 @@ const TrialistsTable = () => {
                           </div>
                           
                           {/* Additional Info Row */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/50">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2 border-t border-border/50">
                             <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">Email:</span>
+                              <span className="text-xs font-medium text-muted-foreground">📧 Email:</span>
                               <div className="text-sm">
                                 {trialist.email || <span className="text-muted-foreground">Non specificata</span>}
                               </div>
                             </div>
                             
                             <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">Data di Nascita:</span>
+                              <span className="text-xs font-medium text-muted-foreground">📅 Data di Nascita:</span>
                               <div className="text-sm">
                                 {trialist.birth_date ? 
                                   new Date(trialist.birth_date).toLocaleDateString('it-IT') : 
                                   <span className="text-muted-foreground">Non specificata</span>
                                 }
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <span className="text-xs font-medium text-muted-foreground">📱 Telefono:</span>
+                              <div className="text-sm space-y-1">
+                                {trialist.phone ? (
+                                  <>
+                                    <div className="font-mono">
+                                      {trialist.phone}
+                                    </div>
+                                    <div>
+                                      <a
+                                        href={`https://wa.me/${trialist.phone.replace(/[^0-9]/g, '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 text-xs font-medium hover:underline"
+                                      >
+                                        💬 WhatsApp
+                                      </a>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <span className="text-muted-foreground">Non specificato</span>
+                                )}
                               </div>
                             </div>
                           </div>
