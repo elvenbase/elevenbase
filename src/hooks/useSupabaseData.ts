@@ -1174,6 +1174,22 @@ export const useQuickTrialEvaluations = (trialistId?: string, sessionId?: string
   });
 };
 
+export const useQuickTrialEvaluationsCount = (trialistId: string) => {
+  return useQuery({
+    queryKey: ['quick-trial-evaluations-count', trialistId],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('quick_trial_evaluations')
+        .select('*', { count: 'exact', head: true })
+        .eq('trialist_id', trialistId);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!trialistId
+  });
+};
+
 export const useCreateQuickTrialEvaluation = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1197,6 +1213,7 @@ export const useCreateQuickTrialEvaluation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations'] });
+      queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations-count'] });
       queryClient.invalidateQueries({ queryKey: ['trialists'] });
     }
   });
@@ -1225,6 +1242,7 @@ export const useUpdateQuickTrialEvaluation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations'] });
+      queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations-count'] });
       queryClient.invalidateQueries({ queryKey: ['trialists'] });
     }
   });

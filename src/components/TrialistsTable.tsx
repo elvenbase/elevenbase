@@ -11,6 +11,8 @@ import EditTrialistForm from '@/components/forms/EditTrialistForm';
 import { TrialistDeleteDialog } from '@/components/TrialistDeleteDialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
+import QuickEvaluationDisplay from '@/components/QuickEvaluationDisplay';
+import SessionCounter from '@/components/SessionCounter';
 
 type SortField = 'first_name' | 'last_name' | 'position' | 'status' | 'trial_start_date';
 type SortDirection = 'asc' | 'desc';
@@ -201,7 +203,10 @@ const TrialistsTable = () => {
                     />
                   </TableCell>
                   <TableCell className="font-medium">
-                    {trialist.first_name} {trialist.last_name}
+                    <div className="flex items-center space-x-2">
+                      <span>{trialist.first_name} {trialist.last_name}</span>
+                      <SessionCounter trialistId={trialist.id} />
+                    </div>
                   </TableCell>
                   <TableCell>{trialist.position || 'Non specificata'}</TableCell>
                   <TableCell>{getStatusBadge(trialist.status)}</TableCell>
@@ -355,6 +360,14 @@ const TrialistsTable = () => {
                               </div>
                             </div>
                           )}
+                          
+                          {/* Valutazioni Rapide */}
+                          <div className="pt-4 border-t border-border/50">
+                            <h4 className="text-sm font-semibold text-muted-foreground mb-3">
+                              ⚡ Valutazioni Rapide
+                            </h4>
+                            <QuickEvaluationDisplay trialistId={trialist.id} />
+                          </div>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -379,9 +392,12 @@ const TrialistsTable = () => {
                   size="sm"
                 />
                 <div>
-                  <h3 className="font-semibold">
-                    {trialist.first_name} {trialist.last_name}
-                  </h3>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="font-semibold">
+                      {trialist.first_name} {trialist.last_name}
+                    </h3>
+                    <SessionCounter trialistId={trialist.id} />
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     {trialist.position || 'Posizione non specificata'}
                   </p>
@@ -502,6 +518,14 @@ const TrialistsTable = () => {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Valutazioni Rapide */}
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium text-muted-foreground">⚡ Valutazioni Rapide:</span>
+                    <div className="mt-2">
+                      <QuickEvaluationDisplay trialistId={trialist.id} />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
