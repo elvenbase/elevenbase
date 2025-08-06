@@ -59,15 +59,15 @@ const QuickEvaluationDisplay = ({ trialistId }: QuickEvaluationDisplayProps) => 
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 2xl:space-y-0 2xl:grid 2xl:grid-cols-2 2xl:gap-2">
       {evaluations.map((evaluation) => {
         const personalitySummary = getRatingSummary(evaluation.personality_ratings);
         const abilitySummary = getRatingSummary(evaluation.ability_ratings);
         const flexibilitySummary = getRatingSummary(evaluation.flexibility_ratings);
         
         return (
-          <Card key={evaluation.id} className="text-xs p-3">
-            <div className="flex items-center justify-between mb-2">
+          <Card key={evaluation.id} className="text-xs p-3 2xl:p-2">
+            <div className="flex items-center justify-between mb-2 2xl:mb-1">
               <div className="flex items-center space-x-2">
                 <Calendar className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs font-medium">
@@ -88,8 +88,8 @@ const QuickEvaluationDisplay = ({ trialistId }: QuickEvaluationDisplayProps) => 
               </div>
             </div>
             {/* Visualizzazione ultra compatta dei rating */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-between mb-2 2xl:mb-1">
+              <div className="flex items-center space-x-4 2xl:space-x-3">
                 <div className="flex items-center space-x-1">
                   <span className="text-xs text-muted-foreground">P:</span>
                   {personalitySummary.positive > 0 && (
@@ -132,8 +132,8 @@ const QuickEvaluationDisplay = ({ trialistId }: QuickEvaluationDisplayProps) => 
             </div>
             
             {evaluation.notes && (
-              <div className="mt-2 p-2 bg-muted rounded text-xs">
-                <div className="font-medium mb-1">Note:</div>
+              <div className="mt-2 p-2 bg-muted rounded text-xs 2xl:mt-1 2xl:p-1">
+                <div className="font-medium mb-1 2xl:mb-0.5">Note:</div>
                 <div>{evaluation.notes}</div>
               </div>
             )}
