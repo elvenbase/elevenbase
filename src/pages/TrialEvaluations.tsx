@@ -271,7 +271,8 @@ const TrialEvaluations = () => {
                       </div>
                     </div>
                   </div>
-                                  <div className="grid grid-cols-3 gap-2 mb-3">
+                  
+                  <div className="grid grid-cols-3 gap-2 mb-3">
                   {/* Personality Column */}
                   <div className="text-center">
                     <h5 className="font-medium text-xs mb-1">Personalità</h5>
