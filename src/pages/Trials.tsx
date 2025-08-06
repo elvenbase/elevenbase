@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Users, Trophy, Star } from "lucide-react";
 import { useTrialists, useTrialistStats } from "@/hooks/useSupabaseData";
-import { TrialistForm } from "@/components/forms/TrialistForm";
+// import { TrialistForm } from "@/components/forms/TrialistForm";
 import TrialsKanban from "@/components/TrialsKanban";
 import TrialistsTable from "@/components/TrialistsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -37,12 +37,12 @@ const Trials = () => {
               <Star className="h-4 w-4" />
               <span>Valutazione Provinanti</span>
             </Button>
-            <TrialistForm>
-              <Button variant="hero" className="flex items-center justify-center space-x-2 text-sm">
+            {/* <TrialistForm> */}
+              <Button variant="hero" className="flex items-center justify-center space-x-2 text-sm" disabled>
                 <UserPlus className="h-4 w-4" />
-                <span>Nuovo Trialist</span>
+                <span>Nuovo Trialist (Temporaneamente Disabilitato)</span>
               </Button>
-            </TrialistForm>
+            {/* </TrialistForm> */}
           </div>
         </div>
 
