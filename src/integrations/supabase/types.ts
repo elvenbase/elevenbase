@@ -736,6 +736,63 @@ export type Database = {
           },
         ]
       }
+      quick_trial_evaluations: {
+        Row: {
+          id: string
+          trialist_id: string
+          session_id: string | null
+          evaluation_date: string
+          personality_ratings: number[]
+          ability_ratings: number[]
+          flexibility_ratings: number[]
+          final_decision: Database["public"]["Enums"]["trial_status"]
+          notes: string | null
+          evaluator_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          trialist_id: string
+          session_id?: string | null
+          evaluation_date?: string
+          personality_ratings?: number[]
+          ability_ratings?: number[]
+          flexibility_ratings?: number[]
+          final_decision?: Database["public"]["Enums"]["trial_status"]
+          notes?: string | null
+          evaluator_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          trialist_id?: string
+          session_id?: string | null
+          evaluation_date?: string
+          personality_ratings?: number[]
+          ability_ratings?: number[]
+          flexibility_ratings?: number[]
+          final_decision?: Database["public"]["Enums"]["trial_status"]
+          notes?: string | null
+          evaluator_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_trial_evaluations_trialist_id_fkey"
+            columns: ["trialist_id"]
+            isOneToOne: false
+            referencedRelation: "trialists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quick_trial_evaluations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trialists: {
         Row: {
           avatar_url: string | null

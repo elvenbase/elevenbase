@@ -7,6 +7,7 @@ import { TrialistForm } from "@/components/forms/TrialistForm";
 import TrialsKanban from "@/components/TrialsKanban";
 import TrialistsTable from "@/components/TrialistsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import QuickTrialEvaluation from "@/components/QuickTrialEvaluation";
 
 const Trials = () => {
   const { data: trialistStats, isLoading } = useTrialistStats();
@@ -22,12 +23,20 @@ const Trials = () => {
               Gestione trialist e processo di valutazione
             </p>
           </div>
-          <TrialistForm>
-            <Button variant="hero" className="space-x-2">
-              <UserPlus className="h-4 w-4" />
-              <span>Nuovo Trialist</span>
-            </Button>
-          </TrialistForm>
+          <div className="flex items-center space-x-3">
+            <QuickTrialEvaluation>
+              <Button variant="outline" className="space-x-2">
+                <Star className="h-4 w-4" />
+                <span>Valutazione Provinanti</span>
+              </Button>
+            </QuickTrialEvaluation>
+            <TrialistForm>
+              <Button variant="hero" className="space-x-2">
+                <UserPlus className="h-4 w-4" />
+                <span>Nuovo Trialist</span>
+              </Button>
+            </TrialistForm>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

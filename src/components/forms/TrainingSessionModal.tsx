@@ -178,7 +178,10 @@ export const TrainingSessionModal = ({
               sessionId={session.id}
               presentPlayers={players?.filter(player => {
                 const playerAttendance = attendance?.find(a => a.player_id === player.id);
-                return playerAttendance?.status === 'present';
+                // Mostra solo i giocatori che hanno risposto e sono stati marcati come presenti
+                // (sia auto-registrati che marcati dall'allenatore)
+                // NON mostra giocatori senza risposta o marcati come assenti
+                return playerAttendance && playerAttendance.status === 'present';
               }) || []}
             />
           </TabsContent>

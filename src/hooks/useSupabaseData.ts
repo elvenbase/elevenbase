@@ -1140,3 +1140,113 @@ export const useUpdatePlayerStatistics = () => {
     }
   });
 };
+
+// Quick Trial Evaluation hooks
+export const useQuickTrialEvaluations = (trialistId?: string, sessionId?: string) => {
+  return useQuery({
+    queryKey: ['quick-trial-evaluations', trialistId, sessionId],
+    queryFn: async () => {
+      let query = supabase
+        .from('quick_trial_evaluations')
+        .select(`
+          *,
+          trialists (
+            first_name,
+            last_name,
+            position,
+            avatar_url
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (trialistId) {
+        query = query.eq('trialist_id', trialistId);
+      }
+      if (sessionId) {
+        query = query.eq('session_id', sessionId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!trialistId || !!sessionId
+  });
+};
+
+export const useCreateQuickTrialEvaluation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      trialist_id: string;
+      session_id?: string;
+      personality_ratings?: number[];
+      ability_ratings?: number[];
+      flexibility_ratings?: number[];
+      final_decision?: 'in_prova' | 'promosso' | 'archiviato';
+      notes?: string;
+    }) => {
+      const { data: result, error } = await supabase
+        .from('quick_trial_evaluations')
+        .insert(data)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations'] });
+      queryClient.invalidateQueries({ queryKey: ['trialists'] });
+    }
+  });
+};
+
+export const useUpdateQuickTrialEvaluation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      id: string;
+      personality_ratings?: number[];
+      ability_ratings?: number[];
+      flexibility_ratings?: number[];
+      final_decision?: 'in_prova' | 'promosso' | 'archiviato';
+      notes?: string;
+    }) => {
+      const { data: result, error } = await supabase
+        .from('quick_trial_evaluations')
+        .update(data)
+        .eq('id', data.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations'] });
+      queryClient.invalidateQueries({ queryKey: ['trialists'] });
+    }
+  });
+};
+
+export const useUpdateTrialistStatusFromQuickEvaluation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { trialist_id: string; status: 'in_prova' | 'promosso' | 'archiviato' }) => {
+      const { data: result, error } = await supabase
+        .from('trialists')
+        .update({ status: data.status })
+        .eq('id', data.trialist_id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trialists'] });
+      queryClient.invalidateQueries({ queryKey: ['trialist-stats'] });
+    }
+  });
+};
