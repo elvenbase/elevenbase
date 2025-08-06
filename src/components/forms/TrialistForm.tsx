@@ -189,24 +189,25 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
         )}
       </DialogTrigger>
       <DialogContent 
-        className="sm:max-w-[600px] max-h-[95vh] w-[95vw] sm:w-auto p-0 sm:p-6 fixed inset-4 sm:inset-auto"
+        className="sm:max-w-[600px] max-h-[95vh] w-[95vw] sm:w-auto p-0 sm:p-6"
         style={{
           maxHeight: '95vh',
           height: 'auto',
           overflow: 'hidden'
         }}
       >
-        <div className="h-full flex flex-col">
-          <DialogHeader className="flex-shrink-0 p-4 pb-2 border-b bg-background">
+        <div className="flex flex-col h-full">
+          <DialogHeader className="flex-shrink-0 p-4 pb-2 border-b">
             <DialogTitle>Nuovo Trialist</DialogTitle>
-            {/* Cache busting comment: v2024-01-15-16:30 */}
+            {/* Cache busting comment: v2024-01-15-16:35 */}
           </DialogHeader>
           <div 
-            className="flex-1 overflow-y-auto overflow-x-hidden p-4 overscroll-contain"
+            className="flex-1 overflow-y-scroll p-4"
             style={{
               WebkitOverflowScrolling: 'touch',
               touchAction: 'pan-y',
-              overscrollBehavior: 'contain'
+              overscrollBehavior: 'contain',
+              minHeight: 0
             }}
           >
           <form onSubmit={handleSubmit} className="space-y-4 pb-4">
