@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAvatarColor } from '@/hooks/useAvatarColor';
-import { useUpdateTrialist, usePromoteTrialist } from "@/hooks/useSupabaseData";
+import { useUpdateTrialist, usePromoteTrialist, useAvailableJerseyNumbers } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X, MessageCircle, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -56,6 +56,8 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
 
   const [open, setOpen] = useState(false);
   const [showPromotionAlert, setShowPromotionAlert] = useState(false);
+  const [showJerseySelection, setShowJerseySelection] = useState(false);
+  const [selectedJerseyNumber, setSelectedJerseyNumber] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     first_name: trialist.first_name,
     last_name: trialist.last_name,
@@ -79,6 +81,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateTrialist = useUpdateTrialist();
   const promoteTrialist = usePromoteTrialist();
+  const { data: availableNumbers = [], isLoading: loadingNumbers } = useAvailableJerseyNumbers();
   const { toast } = useToast();
   const { getAvatarBackground } = useAvatarColor();
 
@@ -207,11 +210,29 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
     }
   };
 
-  const handlePromotionConfirm = async () => {
+  const handlePromotionConfirm = () => {
+    setShowPromotionAlert(false);
+    setShowJerseySelection(true);
+  };
+
+  const handleJerseySelectionConfirm = async () => {
+    if (selectedJerseyNumber === null) {
+      toast({
+        title: "Numero di maglia richiesto",
+        description: "Seleziona un numero di maglia per completare la promozione.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      await promoteTrialist.mutateAsync(trialist.id);
+      await promoteTrialist.mutateAsync({
+        trialistId: trialist.id,
+        jerseyNumber: selectedJerseyNumber
+      });
       setOpen(false);
-      setShowPromotionAlert(false);
+      setShowJerseySelection(false);
+      setSelectedJerseyNumber(null);
       // Optional: Navigate to squad page
       window.location.href = '/squad';
     } catch (error) {
@@ -624,6 +645,75 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
             )}
           </div>
         </form>
+      </DialogContent>
+    </Dialog>
+
+    {/* Jersey Number Selection Dialog */}
+    <Dialog open={showJerseySelection} onOpenChange={setShowJerseySelection}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center space-x-2">
+            <UserCheck className="h-5 w-5" />
+            <span>Seleziona Numero di Maglia</span>
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Scegli un numero di maglia disponibile per <strong>{trialist.first_name} {trialist.last_name}</strong>
+          </p>
+          
+          {loadingNumbers ? (
+            <div className="text-center py-4">Caricamento numeri disponibili...</div>
+          ) : (
+            <div className="space-y-4">
+              <Label>Numeri Disponibili (0-99)</Label>
+              <div className="grid grid-cols-10 gap-2 max-h-60 overflow-y-auto p-2 border rounded">
+                {availableNumbers.map((number) => (
+                  <Button
+                    key={number}
+                    variant={selectedJerseyNumber === number ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 w-8 p-0 text-xs"
+                    onClick={() => setSelectedJerseyNumber(number)}
+                  >
+                    {number}
+                  </Button>
+                ))}
+              </div>
+              {availableNumbers.length === 0 && (
+                <p className="text-sm text-red-600">
+                  Nessun numero disponibile. Tutti i numeri da 0 a 99 sono già assegnati.
+                </p>
+              )}
+              {selectedJerseyNumber !== null && (
+                <p className="text-sm text-green-600">
+                  Numero selezionato: <strong>{selectedJerseyNumber}</strong>
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+        
+        <div className="flex justify-end space-x-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => {
+              setShowJerseySelection(false);
+              setSelectedJerseyNumber(null);
+            }}
+          >
+            Annulla
+          </Button>
+          <Button 
+            onClick={handleJerseySelectionConfirm}
+            disabled={selectedJerseyNumber === null || promoteTrialist.isPending || availableNumbers.length === 0}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {promoteTrialist.isPending ? "Promozione..." : "Conferma Promozione"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

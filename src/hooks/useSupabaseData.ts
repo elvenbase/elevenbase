@@ -625,12 +625,38 @@ export const useDeleteTrialist = () => {
   });
 };
 
+// Hook to get available jersey numbers
+export const useAvailableJerseyNumbers = () => {
+  return useQuery({
+    queryKey: ['available-jersey-numbers'],
+    queryFn: async () => {
+      const { data: players, error } = await supabase
+        .from('players')
+        .select('jersey_number')
+        .not('jersey_number', 'is', null);
+
+      if (error) throw error;
+
+      const usedNumbers = new Set((players || []).map(p => p.jersey_number));
+      const availableNumbers = [];
+      
+      for (let i = 0; i <= 99; i++) {
+        if (!usedNumbers.has(i)) {
+          availableNumbers.push(i);
+        }
+      }
+      
+      return availableNumbers;
+    }
+  });
+};
+
 export const usePromoteTrialist = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (trialistId: string) => {
+    mutationFn: async ({ trialistId, jerseyNumber }: { trialistId: string; jerseyNumber: number }) => {
       // 1. Fetch trialist data
       const { data: trialist, error: fetchError } = await supabase
         .from('trialists')
@@ -659,7 +685,7 @@ export const usePromoteTrialist = () => {
       const playerData = {
         first_name: trialist.first_name,
         last_name: trialist.last_name,
-        jersey_number: trialist.jersey_number,
+        jersey_number: jerseyNumber, // Use selected jersey number
         position: trialist.position,
         phone: trialist.phone,
         birth_date: trialist.birth_date,
@@ -744,10 +770,11 @@ export const usePromoteTrialist = () => {
       queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
       queryClient.invalidateQueries({ queryKey: ['trialists'] });
       queryClient.invalidateQueries({ queryKey: ['trialist-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['available-jersey-numbers'] });
       
       toast({ 
         title: "Promozione completata! 🎉", 
-        description: `${data.originalTrialist.first_name} ${data.originalTrialist.last_name} è stato aggiunto alla squadra ufficiale.`
+        description: `${data.originalTrialist.first_name} ${data.originalTrialist.last_name} è stato aggiunto alla squadra ufficiale con il numero ${data.newPlayer.jersey_number}.`
       });
     },
     onError: (error) => {
