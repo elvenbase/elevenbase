@@ -17,6 +17,15 @@ const EmailConfirm = () => {
       try {
         const token = searchParams.get('token');
         const type = searchParams.get('type');
+        const accessToken = searchParams.get('access_token');
+
+        // Se abbiamo un access_token, significa che l'utente è già autenticato
+        if (accessToken) {
+          console.log('Access token ricevuto, utente già autenticato');
+          setStatus('success');
+          setMessage('Email confermata con successo! Ora puoi accedere.');
+          return;
+        }
 
         if (!token) {
           setStatus('error');

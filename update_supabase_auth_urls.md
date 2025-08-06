@@ -8,7 +8,16 @@
 
 ### **2. Aggiorna Site URL:**
 - **Site URL**: `https://gleaming-kleicha-dec5b4.netlify.app`
-- **Redirect URLs**: aggiungi `https://gleaming-kleicha-dec5b4.netlify.app`
+- **Redirect URLs**: aggiungi questi URL:
+  - `https://gleaming-kleicha-dec5b4.netlify.app`
+  - `https://gleaming-kleicha-dec5b4.netlify.app/confirm`
+  - `https://gleaming-kleicha-dec5b4.netlify.app/auth`
+
+### **3. Configurazione Email Template (IMPORTANTE):**
+- Vai su **Authentication** → **Email Templates**
+- Seleziona **Confirm signup**
+- Nel template, assicurati che il link punti a: `{{ .ConfirmationURL }}`
+- Il link dovrebbe essere: `https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup`
 
 ### **3. Salva le modifiche**
 
