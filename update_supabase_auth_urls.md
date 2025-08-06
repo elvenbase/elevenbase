@@ -7,8 +7,8 @@
 - Vai su **Authentication** → **Settings**
 
 ### **2. Aggiorna Site URL:**
-- **Site URL**: `https://elevenbase.netlify.app`
-- **Redirect URLs**: aggiungi `https://elevenbase.netlify.app`
+- **Site URL**: `https://gleaming-kleicha-dec5b4.netlify.app`
+- **Redirect URLs**: aggiungi `https://gleaming-kleicha-dec5b4.netlify.app`
 
 ### **3. Salva le modifiche**
 
