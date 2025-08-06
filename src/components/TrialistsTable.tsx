@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -190,8 +190,8 @@ const TrialistsTable = () => {
             </TableHeader>
             <TableBody>
               {filteredAndSortedTrialists.map((trialist) => (
-                <>
-                  <TableRow key={trialist.id}>
+                <React.Fragment key={trialist.id}>
+                  <TableRow>
                   <TableCell>
                     <PlayerAvatar
                       firstName={trialist.first_name}
@@ -325,7 +325,7 @@ const TrialistsTable = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </TableBody>
           </Table>

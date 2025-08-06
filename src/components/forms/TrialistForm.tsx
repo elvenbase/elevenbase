@@ -27,7 +27,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     notes: '',
     jersey_number: '',
     ea_sport_id: '',
-    gaming_platform: '',
+    gaming_platform: 'none',
     platform_id: ''
   });
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -149,7 +149,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       avatar_url: avatarUrl || undefined,
       jersey_number: formData.jersey_number ? Number(formData.jersey_number) : undefined,
       ea_sport_id: formData.ea_sport_id || undefined,
-      gaming_platform: formData.gaming_platform || undefined,
+      gaming_platform: formData.gaming_platform && formData.gaming_platform !== 'none' ? formData.gaming_platform : undefined,
       platform_id: formData.platform_id || undefined
     };
 
@@ -163,7 +163,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       notes: '',
       jersey_number: '',
       ea_sport_id: '',
-      gaming_platform: '',
+      gaming_platform: 'none',
       platform_id: ''
     });
     setPhonePrefix('+39');
@@ -395,13 +395,13 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 <Label htmlFor="gaming_platform">Piattaforma Gaming</Label>
                 <Select 
                   value={formData.gaming_platform} 
-                  onValueChange={(value) => setFormData({ ...formData, gaming_platform: value, platform_id: value === 'PC' || value === 'Nintendo Switch' ? formData.platform_id : '' })}
+                  onValueChange={(value) => setFormData({ ...formData, gaming_platform: value, platform_id: value === 'PC' || value === 'Nintendo Switch' || value === 'none' ? formData.platform_id : '' })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona piattaforma" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nessuna</SelectItem>
+                    <SelectItem value="none">Nessuna</SelectItem>
                     <SelectItem value="PS5">🎮 PlayStation 5</SelectItem>
                     <SelectItem value="Xbox">🎮 Xbox Series X/S</SelectItem>
                     <SelectItem value="PC">💻 PC</SelectItem>
