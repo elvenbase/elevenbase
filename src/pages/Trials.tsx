@@ -59,15 +59,15 @@ const Trials = () => {
 
           <Card className="p-6 bg-card border-border hover:shadow-glow transition-smooth">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Valutazione Media</h3>
-              <div className="p-2 bg-accent rounded-lg">
-                <Star className="h-4 w-4 text-accent-foreground" />
+              <h3 className="text-lg font-semibold">Archiviati</h3>
+              <div className="p-2 bg-muted rounded-lg">
+                <Users className="h-4 w-4 text-muted-foreground" />
               </div>
             </div>
             <p className="text-3xl font-bold text-foreground">
-              {isLoading ? '...' : trialistStats?.averageRating > 0 ? trialistStats.averageRating : '-'}
+              {isLoading ? '...' : trialistStats?.archived || 0}
             </p>
-            <p className="text-sm text-muted-foreground">Su 5 stelle</p>
+            <p className="text-sm text-muted-foreground">Trialist archiviati</p>
           </Card>
         </div>
 
