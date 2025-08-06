@@ -11,6 +11,8 @@ import { useUpdatePlayer } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import PlayerEvaluationDisplay from "@/components/PlayerEvaluationDisplay";
+import PlayerSessionCounter from "@/components/PlayerSessionCounter";
 
 interface EditPlayerFormProps {
   player: {
@@ -227,9 +229,12 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Modifica Giocatore</DialogTitle>
+          <DialogTitle className="flex items-center space-x-2">
+            <span>Modifica Giocatore</span>
+            <PlayerSessionCounter playerId={player.id} />
+          </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -404,6 +409,14 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
               placeholder="Note aggiuntive sul giocatore..."
               rows={3}
             />
+          </div>
+
+          {/* Valutazioni Section */}
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold">⚡ Valutazioni dal Periodo di Prova</span>
+            </div>
+            <PlayerEvaluationDisplay playerId={player.id} />
           </div>
 
           {/* Status */}

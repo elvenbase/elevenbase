@@ -687,7 +687,41 @@ export const usePromoteTrialist = () => {
         throw createError;
       }
 
-      // 5. Delete trialist
+      // 5. Transfer quick trial evaluations to player evaluations
+      const { data: quickEvaluations, error: evalFetchError } = await supabase
+        .from('quick_trial_evaluations')
+        .select('*')
+        .eq('trialist_id', trialistId);
+
+      if (evalFetchError) {
+        console.error('Error fetching quick evaluations:', evalFetchError);
+        // Don't fail the promotion if evaluations can't be fetched
+      }
+
+      if (quickEvaluations && quickEvaluations.length > 0) {
+        const playerEvaluations = quickEvaluations.map(evaluation => ({
+          player_id: newPlayer.id,
+          original_trialist_id: trialistId,
+          evaluation_date: evaluation.evaluation_date,
+          personality_ratings: evaluation.personality_ratings,
+          ability_ratings: evaluation.ability_ratings,
+          flexibility_ratings: evaluation.flexibility_ratings,
+          final_decision: evaluation.final_decision,
+          notes: evaluation.notes,
+          evaluator_id: evaluation.evaluator_id
+        }));
+
+        const { error: evalInsertError } = await supabase
+          .from('player_evaluations')
+          .insert(playerEvaluations);
+
+        if (evalInsertError) {
+          console.error('Error transferring evaluations:', evalInsertError);
+          // Don't fail the promotion if evaluations can't be transferred
+        }
+      }
+
+      // 6. Delete trialist (this will cascade delete quick_trial_evaluations)
       const { error: deleteError } = await supabase
         .from('trialists')
         .delete()
@@ -1256,7 +1290,7 @@ export const useDeleteQuickTrialEvaluation = () => {
         .from('quick_trial_evaluations')
         .delete()
         .eq('id', evaluationId);
-      
+
       if (error) throw error;
       return evaluationId;
     },
@@ -1265,6 +1299,40 @@ export const useDeleteQuickTrialEvaluation = () => {
       queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations-count'] });
       queryClient.invalidateQueries({ queryKey: ['trialists'] });
     }
+  });
+};
+
+// Player evaluations hooks
+export const usePlayerEvaluations = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player-evaluations', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('player_evaluations')
+        .select('*')
+        .eq('player_id', playerId)
+        .order('evaluation_date', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!playerId
+  });
+};
+
+export const usePlayerEvaluationsCount = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player-evaluations-count', playerId],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('player_evaluations')
+        .select('*', { count: 'exact', head: true })
+        .eq('player_id', playerId);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!playerId
   });
 };
 

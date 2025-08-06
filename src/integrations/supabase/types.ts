@@ -411,6 +411,59 @@ export type Database = {
         }
         Relationships: []
       }
+      player_evaluations: {
+        Row: {
+          id: string
+          player_id: string
+          original_trialist_id: string | null
+          evaluation_date: string
+          personality_ratings: number[]
+          ability_ratings: number[]
+          flexibility_ratings: number[]
+          final_decision: Database["public"]["Enums"]["trial_status"]
+          notes: string | null
+          evaluator_id: string | null
+          transferred_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          player_id: string
+          original_trialist_id?: string | null
+          evaluation_date?: string
+          personality_ratings?: number[]
+          ability_ratings?: number[]
+          flexibility_ratings?: number[]
+          final_decision?: Database["public"]["Enums"]["trial_status"]
+          notes?: string | null
+          evaluator_id?: string | null
+          transferred_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          player_id?: string
+          original_trialist_id?: string | null
+          evaluation_date?: string
+          personality_ratings?: number[]
+          ability_ratings?: number[]
+          flexibility_ratings?: number[]
+          final_decision?: Database["public"]["Enums"]["trial_status"]
+          notes?: string | null
+          evaluator_id?: string | null
+          transferred_at?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_evaluations_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       png_export_settings: {
         Row: {
           avatar_background_color: string | null
