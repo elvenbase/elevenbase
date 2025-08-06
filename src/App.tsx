@@ -81,6 +81,10 @@ function App() {
     */
   };
 
+  // TEMPORARY BYPASS - Always show main app
+  console.log('Bypassing admin setup - showing main app directly');
+  
+  /*
   if (needsAdminSetup === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -104,6 +108,7 @@ function App() {
       </QueryClientProvider>
     );
   }
+  */
 
   return (
     <QueryClientProvider client={queryClient}>
