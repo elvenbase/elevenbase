@@ -24,7 +24,11 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     phone: '',
     birth_date: '',
     position: '',
-    notes: ''
+    notes: '',
+    jersey_number: '',
+    ea_sport_id: '',
+    gaming_platform: '',
+    platform_id: ''
   });
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -116,6 +120,25 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate gaming fields
+    if (formData.jersey_number && (isNaN(Number(formData.jersey_number)) || Number(formData.jersey_number) < 1 || Number(formData.jersey_number) > 99)) {
+      toast({
+        title: "Numero maglia non valido",
+        description: "Il numero di maglia deve essere tra 1 e 99.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if ((formData.gaming_platform === 'PS5' || formData.gaming_platform === 'Xbox') && !formData.platform_id) {
+      toast({
+        title: "Platform ID richiesto",
+        description: `L'ID ${formData.gaming_platform} è richiesto per questa piattaforma.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const trialistData = {
       first_name: formData.first_name,
       last_name: formData.last_name,
@@ -123,7 +146,11 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       birth_date: formData.birth_date || undefined,
       position: formData.position || undefined,
       notes: formData.notes || undefined,
-      avatar_url: avatarUrl || undefined
+      avatar_url: avatarUrl || undefined,
+      jersey_number: formData.jersey_number ? Number(formData.jersey_number) : undefined,
+      ea_sport_id: formData.ea_sport_id || undefined,
+      gaming_platform: formData.gaming_platform || undefined,
+      platform_id: formData.platform_id || undefined
     };
 
     await createTrialist.mutateAsync(trialistData);
@@ -133,7 +160,11 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       phone: '',
       birth_date: '',
       position: '',
-      notes: ''
+      notes: '',
+      jersey_number: '',
+      ea_sport_id: '',
+      gaming_platform: '',
+      platform_id: ''
     });
     setPhonePrefix('+39');
     setPhoneNumber('');
@@ -337,6 +368,88 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                 placeholder="es. Centrocampista"
               />
+            </div>
+          </div>
+
+          {/* Gaming Section */}
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold">🎮 Dati Gaming</span>
+              <span className="text-xs text-muted-foreground">(opzionale)</span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="jersey_number">Numero Maglia</Label>
+                <Input
+                  id="jersey_number"
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={formData.jersey_number}
+                  onChange={(e) => setFormData({ ...formData, jersey_number: e.target.value })}
+                  placeholder="1-99"
+                />
+              </div>
+              <div>
+                <Label htmlFor="gaming_platform">Piattaforma Gaming</Label>
+                <Select 
+                  value={formData.gaming_platform} 
+                  onValueChange={(value) => setFormData({ ...formData, gaming_platform: value, platform_id: value === 'PC' || value === 'Nintendo Switch' ? formData.platform_id : '' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleziona piattaforma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nessuna</SelectItem>
+                    <SelectItem value="PS5">🎮 PlayStation 5</SelectItem>
+                    <SelectItem value="Xbox">🎮 Xbox Series X/S</SelectItem>
+                    <SelectItem value="PC">💻 PC</SelectItem>
+                    <SelectItem value="Nintendo Switch">🎮 Nintendo Switch</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="ea_sport_id">EA Sports ID</Label>
+                <Input
+                  id="ea_sport_id"
+                  value={formData.ea_sport_id}
+                  onChange={(e) => setFormData({ ...formData, ea_sport_id: e.target.value })}
+                  placeholder="ID EA Sports"
+                />
+              </div>
+              <div>
+                <Label htmlFor="platform_id">
+                  Platform ID 
+                  {(formData.gaming_platform === 'PS5' || formData.gaming_platform === 'Xbox') && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
+                </Label>
+                <Input
+                  id="platform_id"
+                  value={formData.platform_id}
+                  onChange={(e) => setFormData({ ...formData, platform_id: e.target.value })}
+                  placeholder={
+                    formData.gaming_platform === 'PS5' ? 'PSN ID' :
+                    formData.gaming_platform === 'Xbox' ? 'Xbox Gamertag' :
+                    formData.gaming_platform === 'PC' ? 'Steam/Epic ID' :
+                    formData.gaming_platform === 'Nintendo Switch' ? 'Nintendo ID' :
+                    'ID Piattaforma'
+                  }
+                  required={formData.gaming_platform === 'PS5' || formData.gaming_platform === 'Xbox'}
+                />
+                {formData.gaming_platform && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formData.gaming_platform === 'PS5' && 'ID del tuo account PlayStation Network'}
+                    {formData.gaming_platform === 'Xbox' && 'Il tuo Xbox Gamertag'}
+                    {formData.gaming_platform === 'PC' && 'ID Steam, Epic Games o altro'}
+                    {formData.gaming_platform === 'Nintendo Switch' && 'ID del tuo account Nintendo'}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
