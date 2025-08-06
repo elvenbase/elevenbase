@@ -626,9 +626,10 @@ export const useDeleteTrialist = () => {
 };
 
 // Hook to get available jersey numbers
-export const useAvailableJerseyNumbers = () => {
+export const useAvailableJerseyNumbers = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ['available-jersey-numbers'],
+    enabled,
     queryFn: async () => {
       try {
         const { data: players, error } = await supabase

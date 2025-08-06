@@ -8,8 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAvatarColor } from '@/hooks/useAvatarColor';
-import { useUpdateTrialist, usePromoteTrialist } from "@/hooks/useSupabaseData";
-// import { useAvailableJerseyNumbers } from "@/hooks/useSupabaseData";
+import { useUpdateTrialist, usePromoteTrialist, useAvailableJerseyNumbers } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X, MessageCircle, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -85,9 +84,12 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const { toast } = useToast();
   const { getAvatarBackground } = useAvatarColor();
 
-  // Temporarily use hardcoded numbers to test
-  const availableNumbers: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const loadingNumbers = false;
+  // Only fetch jersey numbers when the selection dialog is about to open
+  const { 
+    data: availableNumbers = [], 
+    isLoading: loadingNumbers,
+    error: numbersError 
+  } = useAvailableJerseyNumbers(showJerseySelection);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -670,6 +672,24 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
           
           {loadingNumbers ? (
             <div className="text-center py-4">Caricamento numeri disponibili...</div>
+          ) : numbersError ? (
+            <div className="text-center py-4 text-red-600">
+              <p>Errore nel caricamento dei numeri disponibili.</p>
+              <p className="text-sm mt-2">Tutti i numeri da 0 a 99 sono temporaneamente disponibili.</p>
+              <div className="grid grid-cols-10 gap-2 max-h-60 overflow-y-auto p-2 border rounded mt-4">
+                {Array.from({ length: 100 }, (_, i) => i).map((number) => (
+                  <Button
+                    key={number}
+                    variant={selectedJerseyNumber === number ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 w-8 p-0 text-xs"
+                    onClick={() => setSelectedJerseyNumber(number)}
+                  >
+                    {number}
+                  </Button>
+                ))}
+              </div>
+            </div>
           ) : (
             <div className="space-y-4">
               <Label>Numeri Disponibili (0-99)</Label>
@@ -686,7 +706,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                   </Button>
                 ))}
               </div>
-              {availableNumbers.length === 0 && (
+              {availableNumbers.length === 0 && !loadingNumbers && (
                 <p className="text-sm text-red-600">
                   Nessun numero disponibile. Tutti i numeri da 0 a 99 sono già assegnati.
                 </p>
