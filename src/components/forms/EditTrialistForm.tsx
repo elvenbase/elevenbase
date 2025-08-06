@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,6 +53,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const { prefix: initialPrefix, number: initialNumber } = parsePhone(trialist.phone || '');
 
   const [open, setOpen] = useState(false);
+  const [showPromotionAlert, setShowPromotionAlert] = useState(false);
   const [formData, setFormData] = useState({
     first_name: trialist.first_name,
     last_name: trialist.last_name,
@@ -203,16 +205,11 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
     }
   };
 
-  const handlePromotion = async () => {
-    const confirmPromotion = window.confirm(
-      `Sei sicuro di voler promuovere ${trialist.first_name} ${trialist.last_name} alla squadra ufficiale?\n\nQuesta azione:\n• Creerà un nuovo giocatore in /squad\n• Rimuoverà il trialist da /trials\n• Non potrà essere annullata`
-    );
-    
-    if (!confirmPromotion) return;
-
+  const handlePromotionConfirm = async () => {
     try {
       await promoteTrialist.mutateAsync(trialist.id);
       setOpen(false);
+      setShowPromotionAlert(false);
       // Optional: Navigate to squad page
       window.location.href = '/squad';
     } catch (error) {
@@ -548,22 +545,9 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
             />
           </div>
 
-          <div className="flex justify-between">
-            {/* Promotion button - only visible if status is 'promosso' */}
-            {trialist.status === 'promosso' && (
-              <Button 
-                type="button" 
-                variant="default"
-                className="bg-green-600 hover:bg-green-700"
-                onClick={handlePromotion}
-                disabled={promoteTrialist.isPending}
-              >
-                <UserCheck className="h-4 w-4 mr-2" />
-                {promoteTrialist.isPending ? "Promozione..." : "Aggiungi alla Squad"}
-              </Button>
-            )}
-            
-            <div className="flex space-x-2 ml-auto">
+          <div className="space-y-4">
+            {/* Standard buttons */}
+            <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Annulla
               </Button>
@@ -571,6 +555,52 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                 {updateTrialist.isPending ? "Aggiornamento..." : "Salva Modifiche"}
               </Button>
             </div>
+            
+            {/* Promotion button - only visible if status is 'promosso' */}
+            {trialist.status === 'promosso' && (
+              <div className="flex justify-center pt-2 border-t">
+                <AlertDialog open={showPromotionAlert} onOpenChange={setShowPromotionAlert}>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      type="button" 
+                      variant="default"
+                      className="bg-green-600 hover:bg-green-700"
+                      disabled={promoteTrialist.isPending}
+                    >
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      {promoteTrialist.isPending ? "Promozione..." : "Aggiungi alla Rosa"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Conferma Promozione</AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-2">
+                        <p>
+                          Sei sicuro di voler promuovere <strong>{trialist.first_name} {trialist.last_name}</strong> alla rosa ufficiale?
+                        </p>
+                        <div className="text-sm text-muted-foreground">
+                          <p className="font-medium mb-1">Questa azione:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            <li>Creerà un nuovo giocatore in /squad</li>
+                            <li>Rimuoverà il trialist da /trials</li>
+                            <li>Non potrà essere annullata</li>
+                          </ul>
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annulla</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handlePromotionConfirm}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Conferma Promozione
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
           </div>
         </form>
       </DialogContent>
