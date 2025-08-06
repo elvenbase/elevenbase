@@ -41,6 +41,12 @@ function App() {
   }, []);
 
   const checkAdminSetup = async () => {
+    // TEMPORARY BYPASS - Skip admin setup check
+    console.log('Bypassing admin setup check - allowing direct access');
+    setNeedsAdminSetup(false);
+    
+    // Original code commented out for now
+    /*
     try {
       // Check if any superadmin exists
       const { data, error } = await supabase
@@ -72,6 +78,7 @@ function App() {
       console.error('Error in admin setup check:', error);
       setNeedsAdminSetup(false);
     }
+    */
   };
 
   if (needsAdminSetup === null) {
