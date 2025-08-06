@@ -188,11 +188,12 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[95vh] w-[95vw] sm:w-auto p-4 sm:p-6">
+        <DialogHeader className="sticky top-0 bg-background z-10 pb-4">
           <DialogTitle>Nuovo Trialist</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="max-h-[calc(95vh-120px)] overflow-y-auto overflow-x-hidden -mx-4 px-4 sm:mx-0 sm:px-0 touch-pan-y" style={{WebkitOverflowScrolling: 'touch'}}>
+          <form onSubmit={handleSubmit} className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label>Foto Profilo</Label>
             <div className="flex items-center gap-4">
@@ -275,7 +276,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                   <SelectTrigger className="w-full sm:w-[120px] h-12">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="max-h-60 bg-background border z-50">
+                  <SelectContent className="max-h-60 bg-background border z-[100]" position="popper" sideOffset={4}>
                     <SelectItem value="+39">🇮🇹 +39</SelectItem>
                     <SelectItem value="+1">🇺🇸 +1</SelectItem>
                     <SelectItem value="+44">🇬🇧 +44</SelectItem>
@@ -521,7 +522,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               {createTrialist.isPending ? 'Aggiunta...' : 'Aggiungi Trialist'}
             </Button>
           </div>
-        </form>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
