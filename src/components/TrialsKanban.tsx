@@ -53,11 +53,18 @@ const TrialistCard = ({
             <p className="font-medium text-sm">
               {trialist.first_name} {trialist.last_name}
             </p>
-            {trialist.position && (
-              <Badge variant="secondary" className="text-xs">
-                {trialist.position}
-              </Badge>
-            )}
+            <div className="flex items-center gap-1 mt-1">
+              {trialist.jersey_number && (
+                <Badge variant="outline" className="text-xs">
+                  #{trialist.jersey_number}
+                </Badge>
+              )}
+              {trialist.position && (
+                <Badge variant="secondary" className="text-xs">
+                  {trialist.position}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center space-x-1">
