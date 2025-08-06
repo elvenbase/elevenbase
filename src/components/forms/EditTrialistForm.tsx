@@ -245,6 +245,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
@@ -720,6 +721,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 
