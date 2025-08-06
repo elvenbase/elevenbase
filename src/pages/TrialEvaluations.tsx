@@ -397,7 +397,8 @@ const TrialEvaluations = () => {
                         value={evaluation.notes}
                         onChange={(e) => updateNotes(trialistId, e.target.value)}
                         rows={2}
-                        className="text-xs"
+                        style={{ fontSize: '16px' }}
+                        className="text-base"
                       />
                     </div>
                   </div>

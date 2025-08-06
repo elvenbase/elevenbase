@@ -233,6 +233,8 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
               value={formData.esperienza}
               onChange={(e) => setFormData(prev => ({ ...prev, esperienza: e.target.value }))}
               rows={3}
+              style={{ fontSize: '16px' }}
+              className="text-base"
             />
           </div>
 
@@ -244,6 +246,8 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               rows={3}
+              style={{ fontSize: '16px' }}
+              className="text-base"
             />
           </div>
 
