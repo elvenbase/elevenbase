@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Plus, Minus, Circle, Save, CheckSquare } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, Circle, Save, CheckSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTrialists, useCreateQuickTrialEvaluation, useUpdateTrialistStatusFromQuickEvaluation } from '@/hooks/useSupabaseData';
 import { useAvatarColor } from '@/hooks/useAvatarColor';
@@ -29,6 +29,7 @@ const TrialEvaluations = () => {
     notes: string;
   }>>({});
   const [finalDecisions, setFinalDecisions] = useState<Record<string, 'in_prova' | 'promosso' | 'archiviato'>>({});
+  const [showDetails, setShowDetails] = useState<Record<string, boolean>>({});
 
   const toggleTrialistSelection = (trialistId: string) => {
     setSelectedTrialists(prev => 
@@ -270,120 +271,121 @@ const TrialEvaluations = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    {/* Personality */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-medium text-sm">Personalità</h5>
-                        <div className="flex items-center space-x-1">
-                          {personalityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1.5 py-0.5">+{personalityCounts.positive}</Badge>}
-                          {personalityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0.5">-{personalityCounts.negative}</Badge>}
-                          {personalityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{personalityCounts.neutral}</Badge>}
-                        </div>
-                      </div>
-                      <div className="flex justify-center space-x-1">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-green-50 hover:bg-green-100 border-green-200 p-1"
-                          onClick={() => addRating(trialistId, 'personality', 1)}
-                        >
-                          <Plus className="h-3 w-3 text-green-600" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 p-1"
-                          onClick={() => addRating(trialistId, 'personality', 0)}
-                        >
-                          <Circle className="h-3 w-3 text-gray-600" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-red-50 hover:bg-red-100 border-red-200 p-1"
-                          onClick={() => addRating(trialistId, 'personality', -1)}
-                        >
-                          <Minus className="h-3 w-3 text-red-600" />
-                        </Button>
-                      </div>
+                                  <div className="grid grid-cols-3 gap-2 mb-3">
+                  {/* Personality Column */}
+                  <div className="text-center">
+                    <h5 className="font-medium text-xs mb-1">Personalità</h5>
+                    <div className="flex flex-col space-y-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-6 bg-green-50 hover:bg-green-100 border-green-200 p-1"
+                        onClick={() => addRating(trialistId, 'personality', 1)}
+                      >
+                        <Plus className="h-3 w-3 text-green-600" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-6 bg-red-50 hover:bg-red-100 border-red-200 p-1"
+                        onClick={() => addRating(trialistId, 'personality', -1)}
+                      >
+                        <Minus className="h-3 w-3 text-red-600" />
+                      </Button>
                     </div>
+                  </div>
 
-                    {/* Ability */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-medium text-sm">Capacità</h5>
-                        <div className="flex items-center space-x-1">
-                          {abilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1.5 py-0.5">+{abilityCounts.positive}</Badge>}
-                          {abilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0.5">-{abilityCounts.negative}</Badge>}
-                          {abilityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{abilityCounts.neutral}</Badge>}
-                        </div>
-                      </div>
-                      <div className="flex justify-center space-x-1">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-green-50 hover:bg-green-100 border-green-200 p-1"
-                          onClick={() => addRating(trialistId, 'ability', 1)}
-                        >
-                          <Plus className="h-3 w-3 text-green-600" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 p-1"
-                          onClick={() => addRating(trialistId, 'ability', 0)}
-                        >
-                          <Circle className="h-3 w-3 text-gray-600" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-red-50 hover:bg-red-100 border-red-200 p-1"
-                          onClick={() => addRating(trialistId, 'ability', -1)}
-                        >
-                          <Minus className="h-3 w-3 text-red-600" />
-                        </Button>
-                      </div>
+                  {/* Ability Column */}
+                  <div className="text-center">
+                    <h5 className="font-medium text-xs mb-1">Capacità</h5>
+                    <div className="flex flex-col space-y-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-6 bg-green-50 hover:bg-green-100 border-green-200 p-1"
+                        onClick={() => addRating(trialistId, 'ability', 1)}
+                      >
+                        <Plus className="h-3 w-3 text-green-600" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-6 bg-red-50 hover:bg-red-100 border-red-200 p-1"
+                        onClick={() => addRating(trialistId, 'ability', -1)}
+                      >
+                        <Minus className="h-3 w-3 text-red-600" />
+                      </Button>
                     </div>
+                  </div>
 
-                    {/* Flexibility */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-medium text-sm">Flessibilità</h5>
-                        <div className="flex items-center space-x-1">
-                          {flexibilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1.5 py-0.5">+{flexibilityCounts.positive}</Badge>}
-                          {flexibilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0.5">-{flexibilityCounts.negative}</Badge>}
-                          {flexibilityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{flexibilityCounts.neutral}</Badge>}
-                        </div>
-                      </div>
-                      <div className="flex justify-center space-x-1">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-green-50 hover:bg-green-100 border-green-200 p-1"
-                          onClick={() => addRating(trialistId, 'flexibility', 1)}
-                        >
-                          <Plus className="h-3 w-3 text-green-600" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 p-1"
-                          onClick={() => addRating(trialistId, 'flexibility', 0)}
-                        >
-                          <Circle className="h-3 w-3 text-gray-600" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-8 bg-red-50 hover:bg-red-100 border-red-200 p-1"
-                          onClick={() => addRating(trialistId, 'flexibility', -1)}
-                        >
-                          <Minus className="h-3 w-3 text-red-600" />
-                        </Button>
+                  {/* Flexibility Column */}
+                  <div className="text-center">
+                    <h5 className="font-medium text-xs mb-1">Flessibilità</h5>
+                    <div className="flex flex-col space-y-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-6 bg-green-50 hover:bg-green-100 border-green-200 p-1"
+                        onClick={() => addRating(trialistId, 'flexibility', 1)}
+                      >
+                        <Plus className="h-3 w-3 text-green-600" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-6 bg-red-50 hover:bg-red-100 border-red-200 p-1"
+                        onClick={() => addRating(trialistId, 'flexibility', -1)}
+                      >
+                        <Minus className="h-3 w-3 text-red-600" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Toggle per mostrare valutazioni dettagliate */}
+                <div className="mb-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs h-6 text-muted-foreground"
+                    onClick={() => {
+                      setShowDetails(prev => ({
+                        ...prev,
+                        [trialistId]: !prev[trialistId]
+                      }));
+                    }}
+                  >
+                    {showDetails[trialistId] ? 'Nascondi Valutazioni' : 'Mostra Valutazioni'} 
+                    {showDetails[trialistId] ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                  </Button>
+                </div>
+
+                {/* Dettagli valutazioni (collassabile) */}
+                {showDetails[trialistId] && (
+                  <div className="space-y-2 p-2 bg-muted/20 rounded-md text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Personalità:</span>
+                      <div className="flex items-center space-x-1">
+                        {personalityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{personalityCounts.positive}</Badge>}
+                        {personalityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{personalityCounts.negative}</Badge>}
                       </div>
                     </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Capacità:</span>
+                      <div className="flex items-center space-x-1">
+                        {abilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{abilityCounts.positive}</Badge>}
+                        {abilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{abilityCounts.negative}</Badge>}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Flessibilità:</span>
+                      <div className="flex items-center space-x-1">
+                        {flexibilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{flexibilityCounts.positive}</Badge>}
+                        {flexibilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{flexibilityCounts.negative}</Badge>}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                     {/* Notes */}
                     <div>
