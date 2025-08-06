@@ -74,7 +74,7 @@ const Auth = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <img 
-              src="/lovable-uploads/logo_elevenBase.png" 
+              src="/assets/logo_elevenBase.png" 
               alt="Ca De Rissi SG Esport" 
               className="h-16 w-16 rounded-lg"
             />

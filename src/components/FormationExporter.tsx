@@ -57,7 +57,7 @@ const FormationExporter = ({
   const { getAvatarBackground } = useAvatarColor()
   
   // Usa jerseyUrl se fornito, altrimenti la maglia di default, altrimenti fallback
-  const currentJerseyUrl = jerseyUrl || defaultJersey?.image_url || '/lovable-uploads/jersey-example.png'
+  const currentJerseyUrl = jerseyUrl || defaultJersey?.image_url || '/assets/jersey-example.png'
 
 
 
@@ -372,7 +372,7 @@ const FormationExporter = ({
                       }}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
-                        target.src = '/lovable-uploads/jersey-example.png'
+                        target.src = '/assets/jersey-example.png'
                       }}
                     />
                     <span style={{ 

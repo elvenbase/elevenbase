@@ -245,7 +245,7 @@ export const JerseyManager = () => {
                         className="w-full h-full object-contain"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
-                          target.src = '/lovable-uploads/jersey-example.png'
+                          target.src = '/assets/jersey-example.png'
                         }}
                       />
                       {jersey.is_default && (
