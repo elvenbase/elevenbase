@@ -188,7 +188,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nuovo Trialist</DialogTitle>
         </DialogHeader>
@@ -242,7 +242,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="first_name">Nome</Label>
               <Input
@@ -250,6 +250,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 value={formData.first_name}
                 onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                 required
+                className="h-12"
               />
             </div>
             <div>
@@ -259,18 +260,19 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 value={formData.last_name}
                 onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                 required
+                className="h-12"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="phone">📱 Telefono</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Select 
                   value={phonePrefix} 
                   onValueChange={setPhonePrefix}
                 >
-                  <SelectTrigger className="w-[120px]">
+                  <SelectTrigger className="w-full sm:w-[120px] h-12">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-60 bg-background border z-50">
@@ -346,7 +348,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="123 456 7890"
-                  className="flex-1"
+                  className="flex-1 h-12"
                 />
               </div>
               {phoneNumber && (
@@ -370,7 +372,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               )}
             </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="birth_date">Data di Nascita</Label>
               <Input
@@ -378,6 +380,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 type="date"
                 value={formData.birth_date}
                 onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
+                className="h-12"
               />
             </div>
             <div>
@@ -387,6 +390,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 value={formData.position}
                 onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                 placeholder="es. Centrocampista"
+                className="h-12"
               />
             </div>
           </div>
@@ -398,7 +402,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               <span className="text-xs text-muted-foreground">(opzionale)</span>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="jersey_number">Numero Maglia</Label>
                 <Input
@@ -409,6 +413,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                   value={formData.jersey_number}
                   onChange={(e) => setFormData({ ...formData, jersey_number: e.target.value })}
                   placeholder="1-99"
+                  className="h-12"
                 />
               </div>
               <div>
@@ -417,7 +422,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                   value={formData.gaming_platform} 
                   onValueChange={(value) => setFormData({ ...formData, gaming_platform: value, platform_id: value === 'PC' || value === 'Nintendo Switch' || value === 'none' ? formData.platform_id : '' })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12">
                     <SelectValue placeholder="Seleziona piattaforma" />
                   </SelectTrigger>
                   <SelectContent>
@@ -431,7 +436,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="ea_sport_id">EA Sports ID</Label>
                 <Input
@@ -439,6 +444,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                   value={formData.ea_sport_id}
                   onChange={(e) => setFormData({ ...formData, ea_sport_id: e.target.value })}
                   placeholder="ID EA Sports"
+                  className="h-12"
                 />
               </div>
               <div>
@@ -460,6 +466,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                     'ID Piattaforma'
                   }
                   required={formData.gaming_platform === 'PS5' || formData.gaming_platform === 'Xbox'}
+                  className="h-12"
                 />
                 {formData.gaming_platform && (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -481,6 +488,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               onChange={(e) => setFormData({ ...formData, esperienza: e.target.value })}
               placeholder="Descrivi l'esperienza calcistica del trialist (squadre, campionati, livelli di gioco...)"
               rows={3}
+              className="min-h-[80px]"
             />
           </div>
 
@@ -492,14 +500,24 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Note aggiuntive sul trialist..."
               rows={3}
+              className="min-h-[80px]"
             />
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              className="h-12 sm:h-10"
+            >
               Annulla
             </Button>
-            <Button type="submit" disabled={createTrialist.isPending}>
+            <Button 
+              type="submit" 
+              disabled={createTrialist.isPending}
+              className="h-12 sm:h-10"
+            >
               {createTrialist.isPending ? 'Aggiunta...' : 'Aggiungi Trialist'}
             </Button>
           </div>
