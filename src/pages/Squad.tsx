@@ -180,7 +180,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <MessageSquare className="h-3 w-3 mr-1" />
+                    <MessageCircle className="h-3 w-3 mr-1" />
                     WhatsApp
                   </a>
                 </Button>
