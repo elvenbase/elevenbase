@@ -7,10 +7,11 @@ import { TrialistForm } from "@/components/forms/TrialistForm";
 import TrialsKanban from "@/components/TrialsKanban";
 import TrialistsTable from "@/components/TrialistsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import QuickTrialEvaluation from "@/components/QuickTrialEvaluation";
+import { useNavigate } from "react-router-dom";
 
 const Trials = () => {
   const { data: trialistStats, isLoading } = useTrialistStats();
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -24,12 +25,14 @@ const Trials = () => {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <QuickTrialEvaluation>
-              <Button variant="outline" className="space-x-2">
-                <Star className="h-4 w-4" />
-                <span>Valutazione Provinanti</span>
-              </Button>
-            </QuickTrialEvaluation>
+            <Button 
+              variant="outline" 
+              className="space-x-2"
+              onClick={() => navigate('/trial-evaluations')}
+            >
+              <Star className="h-4 w-4" />
+              <span>Valutazione Provinanti</span>
+            </Button>
             <TrialistForm>
               <Button variant="hero" className="space-x-2">
                 <UserPlus className="h-4 w-4" />

@@ -25,6 +25,7 @@ const SessionManagement = lazy(() => import("@/pages/SessionManagement"));
 const Competitions = lazy(() => import("@/pages/Competitions"));
 const Formations = lazy(() => import("@/pages/Formations"));
 const Trials = lazy(() => import("@/pages/Trials"));
+const TrialEvaluations = lazy(() => import("@/pages/TrialEvaluations"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
 const PublicRegistration = lazy(() => import("@/pages/PublicRegistration"));
 const PublicSession = lazy(() => import("@/pages/PublicSession"));
@@ -182,6 +183,14 @@ function App() {
                         <Navigation />
                         <main className="ml-0 transition-all duration-200">
                           <Trials />
+                        </main>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/trial-evaluations" element={
+                      <ProtectedRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <TrialEvaluations />
                         </main>
                       </ProtectedRoute>
                     } />
