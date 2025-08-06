@@ -13,6 +13,7 @@ import { toast } from "sonner";
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   // Redirect if already authenticated
   if (!loading && user) {
@@ -87,14 +88,62 @@ const Auth = () => {
 
         <Card className="shadow-card">
           <CardHeader className="text-center">
-            <CardTitle>Accesso</CardTitle>
+            <CardTitle>{isSignUp ? "Registrazione" : "Accesso"}</CardTitle>
             <CardDescription>
-              Accedi al sistema di gestione e-sport
+              {isSignUp ? "Crea il tuo account amministratore" : "Accedi al sistema di gestione e-sport"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="w-full">
-              
+              {isSignUp ? (
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="admin@example.com"
+                        required
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="username"
+                        name="username"
+                        type="text"
+                        placeholder="admin"
+                        required
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="Password"
+                        required
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Registrazione in corso..." : "Registrati"}
+                  </Button>
+                </form>
+              ) : (
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>
@@ -128,6 +177,17 @@ const Auth = () => {
                     {isLoading ? "Accesso in corso..." : "Accedi"}
                   </Button>
                 </form>
+              )}
+              
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-sm text-primary hover:underline"
+                >
+                  {isSignUp ? "Hai già un account? Accedi" : "Non hai un account? Registrati"}
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>
