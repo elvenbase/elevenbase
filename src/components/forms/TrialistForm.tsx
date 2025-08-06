@@ -258,7 +258,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Telefono</Label>
+            <Label htmlFor="phone">📱 Telefono</Label>
               <div className="flex gap-2">
                 <Select 
                   value={phonePrefix} 
@@ -344,9 +344,17 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 />
               </div>
               {phoneNumber && (
-                <p className="text-xs text-muted-foreground">
-                  WhatsApp: https://wa.me/{`${phonePrefix}${phoneNumber}`.replace(/[^0-9]/g, '')}
-                </p>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-muted-foreground">WhatsApp:</span>
+                  <a
+                    href={`https://wa.me/${`${phonePrefix}${phoneNumber}`.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 font-medium hover:underline"
+                  >
+                    💬 Apri Chat
+                  </a>
+                </div>
               )}
             </div>
 
