@@ -22,9 +22,22 @@ const TrialistsTable = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [trialistToDelete, setTrialistToDelete] = useState<any>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const { data: trialists = [], isLoading } = useTrialists();
   const deleteTrialist = useDeleteTrialist();
+
+  const toggleRowExpansion = (trialistId: string) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(trialistId)) {
+        newSet.delete(trialistId);
+      } else {
+        newSet.add(trialistId);
+      }
+      return newSet;
+    });
+  };
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
@@ -171,12 +184,14 @@ const TrialistsTable = () => {
                   </Button>
                 </TableHead>
                 <TableHead>Telefono</TableHead>
+                <TableHead>Dettagli</TableHead>
                 <TableHead className="text-right">Azioni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredAndSortedTrialists.map((trialist) => (
-                <TableRow key={trialist.id}>
+                <>
+                  <TableRow key={trialist.id}>
                   <TableCell>
                     <PlayerAvatar
                       firstName={trialist.first_name}
@@ -194,6 +209,26 @@ const TrialistsTable = () => {
                     {new Date(trialist.trial_start_date).toLocaleDateString('it-IT')}
                   </TableCell>
                   <TableCell>{trialist.phone || 'Non specificato'}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleRowExpansion(trialist.id)}
+                      className="text-xs"
+                    >
+                      {expandedRows.has(trialist.id) ? (
+                        <>
+                          <ChevronUp className="h-4 w-4 mr-1" />
+                          Nascondi
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4 mr-1" />
+                          Dettagli
+                        </>
+                      )}
+                    </Button>
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <EditTrialistForm trialist={trialist} />
@@ -206,7 +241,91 @@ const TrialistsTable = () => {
                       </Button>
                     </div>
                   </TableCell>
-                </TableRow>
+                  </TableRow>
+                  
+                  {/* Expanded Row with Gaming Details */}
+                  {expandedRows.has(trialist.id) && (
+                    <TableRow key={`${trialist.id}-expanded`}>
+                      <TableCell colSpan={8} className="bg-muted/30 border-t-0">
+                        <div className="p-4 space-y-3">
+                          <h4 className="text-sm font-semibold text-muted-foreground mb-3">
+                            📋 Dettagli Gaming & Aggiuntivi
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="space-y-1">
+                              <span className="text-xs font-medium text-muted-foreground">Numero Maglia:</span>
+                              <div className="flex items-center">
+                                {trialist.jersey_number ? (
+                                  <Badge variant="outline" className="text-sm">
+                                    #{trialist.jersey_number}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">Non assegnato</span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <span className="text-xs font-medium text-muted-foreground">Gaming Platform:</span>
+                              <div className="flex items-center">
+                                {trialist.gaming_platform ? (
+                                  <Badge variant="secondary" className="text-sm">
+                                    🎮 {trialist.gaming_platform}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">Non specificata</span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <span className="text-xs font-medium text-muted-foreground">EA Sport ID:</span>
+                              <div className="text-sm">
+                                {trialist.ea_sport_id || <span className="text-muted-foreground">Non specificato</span>}
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <span className="text-xs font-medium text-muted-foreground">Platform ID:</span>
+                              <div className="text-sm">
+                                {trialist.platform_id || <span className="text-muted-foreground">Non specificato</span>}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Additional Info Row */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/50">
+                            <div className="space-y-1">
+                              <span className="text-xs font-medium text-muted-foreground">Email:</span>
+                              <div className="text-sm">
+                                {trialist.email || <span className="text-muted-foreground">Non specificata</span>}
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <span className="text-xs font-medium text-muted-foreground">Data di Nascita:</span>
+                              <div className="text-sm">
+                                {trialist.birth_date ? 
+                                  new Date(trialist.birth_date).toLocaleDateString('it-IT') : 
+                                  <span className="text-muted-foreground">Non specificata</span>
+                                }
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {trialist.notes && (
+                            <div className="pt-2 border-t border-border/50">
+                              <span className="text-xs font-medium text-muted-foreground">Note:</span>
+                              <div className="text-sm mt-1 p-2 bg-background rounded border">
+                                {trialist.notes}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               ))}
             </TableBody>
           </Table>
