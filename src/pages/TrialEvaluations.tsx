@@ -238,7 +238,7 @@ const TrialEvaluations = () => {
 
         {/* Step 2: Evaluation */}
         {currentStep === 'evaluate' && (
-          <div className="space-y-6">
+          <div className="space-y-3">
             {selectedTrialists.map((trialistId) => {
               const trialist = trialists.find(t => t.id === trialistId);
               if (!trialist) return null;
@@ -249,150 +249,151 @@ const TrialEvaluations = () => {
               const flexibilityCounts = getRatingCounts(evaluation.flexibility_ratings);
 
               return (
-                <Card key={trialistId}>
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
+                <Card key={trialistId} className="p-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Avatar className="h-8 w-8">
                         <AvatarImage src={trialist.avatar_url || undefined} />
                         <AvatarFallback 
-                          className="font-bold text-white"
+                          className="font-bold text-white text-xs"
                           style={getAvatarBackground(trialist.first_name + trialist.last_name, false)}
                         >
                           {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <CardTitle>{trialist.first_name} {trialist.last_name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{trialist.position}</p>
+                        <h4 className="font-medium text-sm">{trialist.first_name} {trialist.last_name}</h4>
+                        <p className="text-xs text-muted-foreground">{trialist.position}</p>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+                  </div>
+                  <div className="space-y-3">
                     {/* Personality */}
                     <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium">Personalità</h4>
-                        <div className="flex items-center space-x-2">
-                          {personalityCounts.positive > 0 && <Badge variant="default" className="bg-green-600">+{personalityCounts.positive}</Badge>}
-                          {personalityCounts.negative > 0 && <Badge variant="destructive">-{personalityCounts.negative}</Badge>}
-                          {personalityCounts.neutral > 0 && <Badge variant="secondary">○{personalityCounts.neutral}</Badge>}
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-medium text-sm">Personalità</h5>
+                        <div className="flex items-center space-x-1">
+                          {personalityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1.5 py-0.5">+{personalityCounts.positive}</Badge>}
+                          {personalityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0.5">-{personalityCounts.negative}</Badge>}
+                          {personalityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{personalityCounts.neutral}</Badge>}
                         </div>
                       </div>
-                      <div className="flex justify-center space-x-4">
+                      <div className="flex justify-center space-x-2">
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-green-50 hover:bg-green-100 border-green-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-green-50 hover:bg-green-100 border-green-200"
                           onClick={() => addRating(trialistId, 'personality', 1)}
                         >
-                          <Plus className="h-6 w-6 text-green-600" />
+                          <Plus className="h-4 w-4 text-green-600" />
                         </Button>
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-gray-50 hover:bg-gray-100 border-gray-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-gray-50 hover:bg-gray-100 border-gray-200"
                           onClick={() => addRating(trialistId, 'personality', 0)}
                         >
-                          <Circle className="h-6 w-6 text-gray-600" />
+                          <Circle className="h-4 w-4 text-gray-600" />
                         </Button>
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-red-50 hover:bg-red-100 border-red-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-red-50 hover:bg-red-100 border-red-200"
                           onClick={() => addRating(trialistId, 'personality', -1)}
                         >
-                          <Minus className="h-6 w-6 text-red-600" />
+                          <Minus className="h-4 w-4 text-red-600" />
                         </Button>
                       </div>
                     </div>
 
                     {/* Ability */}
                     <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium">Capacità</h4>
-                        <div className="flex items-center space-x-2">
-                          {abilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600">+{abilityCounts.positive}</Badge>}
-                          {abilityCounts.negative > 0 && <Badge variant="destructive">-{abilityCounts.negative}</Badge>}
-                          {abilityCounts.neutral > 0 && <Badge variant="secondary">○{abilityCounts.neutral}</Badge>}
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-medium text-sm">Capacità</h5>
+                        <div className="flex items-center space-x-1">
+                          {abilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1.5 py-0.5">+{abilityCounts.positive}</Badge>}
+                          {abilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0.5">-{abilityCounts.negative}</Badge>}
+                          {abilityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{abilityCounts.neutral}</Badge>}
                         </div>
                       </div>
-                      <div className="flex justify-center space-x-4">
+                      <div className="flex justify-center space-x-2">
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-green-50 hover:bg-green-100 border-green-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-green-50 hover:bg-green-100 border-green-200"
                           onClick={() => addRating(trialistId, 'ability', 1)}
                         >
-                          <Plus className="h-6 w-6 text-green-600" />
+                          <Plus className="h-4 w-4 text-green-600" />
                         </Button>
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-gray-50 hover:bg-gray-100 border-gray-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-gray-50 hover:bg-gray-100 border-gray-200"
                           onClick={() => addRating(trialistId, 'ability', 0)}
                         >
-                          <Circle className="h-6 w-6 text-gray-600" />
+                          <Circle className="h-4 w-4 text-gray-600" />
                         </Button>
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-red-50 hover:bg-red-100 border-red-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-red-50 hover:bg-red-100 border-red-200"
                           onClick={() => addRating(trialistId, 'ability', -1)}
                         >
-                          <Minus className="h-6 w-6 text-red-600" />
+                          <Minus className="h-4 w-4 text-red-600" />
                         </Button>
                       </div>
                     </div>
 
                     {/* Flexibility */}
                     <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium">Flessibilità</h4>
-                        <div className="flex items-center space-x-2">
-                          {flexibilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600">+{flexibilityCounts.positive}</Badge>}
-                          {flexibilityCounts.negative > 0 && <Badge variant="destructive">-{flexibilityCounts.negative}</Badge>}
-                          {flexibilityCounts.neutral > 0 && <Badge variant="secondary">○{flexibilityCounts.neutral}</Badge>}
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-medium text-sm">Flessibilità</h5>
+                        <div className="flex items-center space-x-1">
+                          {flexibilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1.5 py-0.5">+{flexibilityCounts.positive}</Badge>}
+                          {flexibilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0.5">-{flexibilityCounts.negative}</Badge>}
+                          {flexibilityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{flexibilityCounts.neutral}</Badge>}
                         </div>
                       </div>
-                      <div className="flex justify-center space-x-4">
+                      <div className="flex justify-center space-x-2">
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-green-50 hover:bg-green-100 border-green-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-green-50 hover:bg-green-100 border-green-200"
                           onClick={() => addRating(trialistId, 'flexibility', 1)}
                         >
-                          <Plus className="h-6 w-6 text-green-600" />
+                          <Plus className="h-4 w-4 text-green-600" />
                         </Button>
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-gray-50 hover:bg-gray-100 border-gray-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-gray-50 hover:bg-gray-100 border-gray-200"
                           onClick={() => addRating(trialistId, 'flexibility', 0)}
                         >
-                          <Circle className="h-6 w-6 text-gray-600" />
+                          <Circle className="h-4 w-4 text-gray-600" />
                         </Button>
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="flex-1 h-16 bg-red-50 hover:bg-red-100 border-red-200"
+                          size="sm"
+                          className="flex-1 h-12 bg-red-50 hover:bg-red-100 border-red-200"
                           onClick={() => addRating(trialistId, 'flexibility', -1)}
                         >
-                          <Minus className="h-6 w-6 text-red-600" />
+                          <Minus className="h-4 w-4 text-red-600" />
                         </Button>
                       </div>
                     </div>
 
                     {/* Notes */}
                     <div>
-                      <h4 className="font-medium mb-3">Note</h4>
+                      <h5 className="font-medium text-sm mb-2">Note</h5>
                       <Textarea
-                        placeholder="Aggiungi note per questo provinante..."
+                        placeholder="Aggiungi note..."
                         value={evaluation.notes}
                         onChange={(e) => updateNotes(trialistId, e.target.value)}
-                        rows={3}
+                        rows={2}
+                        className="text-sm"
                       />
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               );
             })}
