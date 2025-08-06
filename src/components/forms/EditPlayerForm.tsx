@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +23,8 @@ interface EditPlayerFormProps {
     phone?: string;
     birth_date?: string;
     email?: string;
+    esperienza?: string;
+    notes?: string;
     avatar_url?: string;
     ea_sport_id?: string;
     gaming_platform?: 'PC' | 'PS5' | 'Xbox';
@@ -58,6 +61,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
     phone: player.phone || '',
     birth_date: player.birth_date || '',
     email: player.email || '',
+    esperienza: player.esperienza || '',
+    notes: player.notes || '',
     ea_sport_id: player.ea_sport_id || '',
     gaming_platform: player.gaming_platform || '',
     platform_id: player.platform_id || ''
@@ -159,6 +164,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         phone: fullPhone || null,
         birth_date: formData.birth_date || null,
         email: formData.email || null,
+        esperienza: formData.esperienza || null,
+        notes: formData.notes || null,
         avatar_url: avatarUrl || null,
         ea_sport_id: formData.ea_sport_id || null,
         gaming_platform: formData.gaming_platform || null,
@@ -374,6 +381,29 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               />
             </div>
+          </div>
+
+          {/* Experience & Notes */}
+          <div>
+            <Label htmlFor="esperienza">🏆 Esperienza Sportiva</Label>
+            <Textarea
+              id="esperienza"
+              value={formData.esperienza}
+              onChange={(e) => setFormData(prev => ({ ...prev, esperienza: e.target.value }))}
+              placeholder="Descrivi l'esperienza calcistica del giocatore (squadre, campionati, livelli di gioco...)"
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="notes">📝 Note</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              placeholder="Note aggiuntive sul giocatore..."
+              rows={3}
+            />
           </div>
 
           {/* Status */}

@@ -30,6 +30,10 @@ interface Player {
   jersey_number?: number;
   position?: string;
   phone?: string;
+  birth_date?: string;
+  email?: string;
+  esperienza?: string;
+  notes?: string;
   status: 'active' | 'inactive' | 'injured' | 'suspended';
   avatar_url?: string;
   presences?: number;

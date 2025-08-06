@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreatePlayer } from '@/hooks/useSupabaseData';
 import { UserPlus } from 'lucide-react';
@@ -21,6 +22,8 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
     phone: '',
     birth_date: '',
     email: '',
+    esperienza: '',
+    notes: '',
     ea_sport_id: '',
     gaming_platform: '',
     platform_id: ''
@@ -40,6 +43,8 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
       phone: formData.phone || undefined,
       birth_date: formData.birth_date || undefined,
       email: formData.email || undefined,
+      esperienza: formData.esperienza || undefined,
+      notes: formData.notes || undefined,
       ea_sport_id: formData.ea_sport_id || undefined,
       gaming_platform: formData.gaming_platform || undefined,
       platform_id: formData.platform_id || undefined
@@ -56,6 +61,8 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
         phone: '',
         birth_date: '',
         email: '',
+        esperienza: '',
+        notes: '',
         ea_sport_id: '',
         gaming_platform: '',
         platform_id: ''
@@ -161,6 +168,27 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               />
             </div>
+          </div>
+
+          {/* Experience & Notes */}
+          <div>
+            <label className="text-sm font-medium">🏆 Esperienza Sportiva</label>
+            <Textarea
+              value={formData.esperienza}
+              onChange={(e) => setFormData(prev => ({ ...prev, esperienza: e.target.value }))}
+              placeholder="Descrivi l'esperienza calcistica del giocatore (squadre, campionati, livelli di gioco...)"
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">📝 Note</label>
+            <Textarea
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              placeholder="Note aggiuntive sul giocatore..."
+              rows={3}
+            />
           </div>
 
           {/* Gaming Section */}
