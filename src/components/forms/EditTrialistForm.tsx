@@ -29,6 +29,7 @@ interface EditTrialistFormProps {
     ea_sport_id?: string;
     gaming_platform?: string;
     platform_id?: string;
+    is_captain?: boolean;
   };
 }
 
@@ -63,7 +64,8 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
     jersey_number: trialist.jersey_number?.toString() || '',
     ea_sport_id: trialist.ea_sport_id || '',
     gaming_platform: trialist.gaming_platform || 'none',
-    platform_id: trialist.platform_id || ''
+    platform_id: trialist.platform_id || '',
+    is_captain: trialist.is_captain || false
   });
   const [avatarUrl, setAvatarUrl] = useState(trialist.avatar_url || '');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -190,7 +192,8 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
         jersey_number: formData.jersey_number ? Number(formData.jersey_number) : undefined,
         ea_sport_id: formData.ea_sport_id || undefined,
         gaming_platform: formData.gaming_platform && formData.gaming_platform !== 'none' ? formData.gaming_platform : undefined,
-        platform_id: formData.platform_id || undefined
+        platform_id: formData.platform_id || undefined,
+        is_captain: formData.is_captain
       });
       setOpen(false);
       console.log('Trialist updated successfully');

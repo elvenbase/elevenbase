@@ -19,6 +19,8 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
     position: '',
     status: 'active',
     phone: '',
+    birth_date: '',
+    email: '',
     ea_sport_id: '',
     gaming_platform: '',
     platform_id: ''
@@ -36,6 +38,8 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
       position: formData.position || undefined,
       status: formData.status as 'active' | 'inactive' | 'injured' | 'suspended',
       phone: formData.phone || undefined,
+      birth_date: formData.birth_date || undefined,
+      email: formData.email || undefined,
       ea_sport_id: formData.ea_sport_id || undefined,
       gaming_platform: formData.gaming_platform || undefined,
       platform_id: formData.platform_id || undefined
@@ -50,6 +54,8 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
         position: '',
         status: 'active',
         phone: '',
+        birth_date: '',
+        email: '',
         ea_sport_id: '',
         gaming_platform: '',
         platform_id: ''
@@ -135,6 +141,26 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                 WhatsApp: https://wa.me/{formData.phone.replace(/[^0-9]/g, '')}
               </p>
             )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">📅 Data di Nascita</label>
+              <Input
+                type="date"
+                value={formData.birth_date}
+                onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">📧 Email</label>
+              <Input
+                type="email"
+                placeholder="email@esempio.com"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              />
+            </div>
           </div>
 
           {/* Gaming Section */}

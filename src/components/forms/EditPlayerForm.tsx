@@ -20,6 +20,8 @@ interface EditPlayerFormProps {
     position?: string;
     status: 'active' | 'inactive' | 'injured' | 'suspended';
     phone?: string;
+    birth_date?: string;
+    email?: string;
     avatar_url?: string;
     ea_sport_id?: string;
     gaming_platform?: 'PC' | 'PS5' | 'Xbox';
@@ -54,6 +56,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
     position: player.position || '',
     status: player.status || 'active',
     phone: player.phone || '',
+    birth_date: player.birth_date || '',
+    email: player.email || '',
     ea_sport_id: player.ea_sport_id || '',
     gaming_platform: player.gaming_platform || '',
     platform_id: player.platform_id || ''
@@ -153,6 +157,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         position: formData.position || null,
         status: formData.status,
         phone: fullPhone || null,
+        birth_date: formData.birth_date || null,
+        email: formData.email || null,
         avatar_url: avatarUrl || null,
         ea_sport_id: formData.ea_sport_id || null,
         gaming_platform: formData.gaming_platform || null,
@@ -343,6 +349,29 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="123 456 7890"
                 className="flex-1"
+              />
+            </div>
+          </div>
+
+          {/* Personal Info */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="birth_date">📅 Data di Nascita</Label>
+              <Input
+                id="birth_date"
+                type="date"
+                value={formData.birth_date}
+                onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">📧 Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="email@esempio.com"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               />
             </div>
           </div>

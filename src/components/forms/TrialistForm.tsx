@@ -29,7 +29,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     jersey_number: '',
     ea_sport_id: '',
     gaming_platform: 'none',
-    platform_id: ''
+    platform_id: '',
+    is_captain: false
   });
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -152,7 +153,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       jersey_number: formData.jersey_number ? Number(formData.jersey_number) : undefined,
       ea_sport_id: formData.ea_sport_id || undefined,
       gaming_platform: formData.gaming_platform && formData.gaming_platform !== 'none' ? formData.gaming_platform : undefined,
-      platform_id: formData.platform_id || undefined
+      platform_id: formData.platform_id || undefined,
+      is_captain: formData.is_captain
     };
 
     await createTrialist.mutateAsync(trialistData);
@@ -167,7 +169,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       jersey_number: '',
       ea_sport_id: '',
       gaming_platform: 'none',
-      platform_id: ''
+      platform_id: '',
+      is_captain: false
     });
     setPhonePrefix('+39');
     setPhoneNumber('');

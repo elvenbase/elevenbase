@@ -348,8 +348,10 @@ export type Database = {
       players: {
         Row: {
           avatar_url: string | null
+          birth_date: string | null
           created_at: string
           ea_sport_id: string | null
+          email: string | null
           first_name: string
           gaming_platform: string | null
           id: string
@@ -364,8 +366,10 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          birth_date?: string | null
           created_at?: string
           ea_sport_id?: string | null
+          email?: string | null
           first_name: string
           gaming_platform?: string | null
           id?: string
@@ -380,8 +384,10 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          birth_date?: string | null
           created_at?: string
           ea_sport_id?: string | null
+          email?: string | null
           first_name?: string
           gaming_platform?: string | null
           id?: string
@@ -733,6 +739,7 @@ export type Database = {
           first_name: string
           gaming_platform: string | null
           id: string
+          is_captain: boolean | null
           jersey_number: number | null
           last_name: string
           notes: string | null
@@ -754,6 +761,7 @@ export type Database = {
           first_name: string
           gaming_platform?: string | null
           id?: string
+          is_captain?: boolean | null
           jersey_number?: number | null
           last_name: string
           notes?: string | null
@@ -775,6 +783,7 @@ export type Database = {
           first_name?: string
           gaming_platform?: string | null
           id?: string
+          is_captain?: boolean | null
           jersey_number?: number | null
           last_name?: string
           notes?: string | null
