@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { useUpdateTrialist } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
-import { Edit, Upload, X } from "lucide-react";
+import { Edit, Upload, X, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface EditTrialistFormProps {
@@ -367,14 +367,20 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
             {phoneNumber && (
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-muted-foreground">WhatsApp:</span>
-                <a
-                  href={`https://wa.me/${`${phonePrefix}${phoneNumber}`.replace(/[^0-9]/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 font-medium hover:underline"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="h-6 px-2"
                 >
-                  💬 Apri Chat
-                </a>
+                  <a
+                    href={`https://wa.me/${`${phonePrefix}${phoneNumber}`.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="h-3 w-3" />
+                  </a>
+                </Button>
               </div>
             )}
           </div>
