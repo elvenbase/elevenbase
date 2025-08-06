@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useMediaQuery } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,7 +19,7 @@ interface TrialistFormProps {
 
 export const TrialistForm = ({ children }: TrialistFormProps) => {
   const [open, setOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -546,9 +546,9 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     <>
       {/* Trigger */}
       {children ? (
-        <div onClick={() => setOpen(true)}>
+        <span onClick={() => setOpen(true)} style={{ cursor: 'pointer' }}>
           {children}
-        </div>
+        </span>
       ) : (
         <Button onClick={() => setOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
