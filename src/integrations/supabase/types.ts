@@ -727,12 +727,16 @@ export type Database = {
           birth_date: string | null
           created_at: string
           created_by: string | null
+          ea_sport_id: string | null
           email: string | null
           first_name: string
+          gaming_platform: string | null
           id: string
+          jersey_number: number | null
           last_name: string
           notes: string | null
           phone: string | null
+          platform_id: string | null
           position: string | null
           status: Database["public"]["Enums"]["trial_status"]
           trial_start_date: string
@@ -743,12 +747,16 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           created_by?: string | null
+          ea_sport_id?: string | null
           email?: string | null
           first_name: string
+          gaming_platform?: string | null
           id?: string
+          jersey_number?: number | null
           last_name: string
           notes?: string | null
           phone?: string | null
+          platform_id?: string | null
           position?: string | null
           status?: Database["public"]["Enums"]["trial_status"]
           trial_start_date?: string
@@ -759,12 +767,16 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           created_by?: string | null
+          ea_sport_id?: string | null
           email?: string | null
           first_name?: string
+          gaming_platform?: string | null
           id?: string
+          jersey_number?: number | null
           last_name?: string
           notes?: string | null
           phone?: string | null
+          platform_id?: string | null
           position?: string | null
           status?: Database["public"]["Enums"]["trial_status"]
           trial_start_date?: string
