@@ -145,28 +145,31 @@ const TrialEvaluations = () => {
           </div>
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div className={`flex items-center space-x-2 ${currentStep === 'select' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'select' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+        {/* Progress Steps - Mobile Optimized */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className={`flex items-center space-x-1 sm:space-x-2 ${currentStep === 'select' ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${currentStep === 'select' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                 1
               </div>
-              <span className="text-sm font-medium">Selezione</span>
+              <span className="text-xs sm:text-sm font-medium hidden sm:inline">Selezione</span>
+              <span className="text-xs font-medium sm:hidden">Sel.</span>
             </div>
-            <div className="w-8 h-px bg-border"></div>
-            <div className={`flex items-center space-x-2 ${currentStep === 'evaluate' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'evaluate' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+            <div className="w-4 sm:w-8 h-px bg-border"></div>
+            <div className={`flex items-center space-x-1 sm:space-x-2 ${currentStep === 'evaluate' ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${currentStep === 'evaluate' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                 2
               </div>
-              <span className="text-sm font-medium">Valutazione</span>
+              <span className="text-xs sm:text-sm font-medium hidden sm:inline">Valutazione</span>
+              <span className="text-xs font-medium sm:hidden">Val.</span>
             </div>
-            <div className="w-8 h-px bg-border"></div>
-            <div className={`flex items-center space-x-2 ${currentStep === 'decide' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'decide' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+            <div className="w-4 sm:w-8 h-px bg-border"></div>
+            <div className={`flex items-center space-x-1 sm:space-x-2 ${currentStep === 'decide' ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${currentStep === 'decide' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                 3
               </div>
-              <span className="text-sm font-medium">Decisioni</span>
+              <span className="text-xs sm:text-sm font-medium hidden sm:inline">Decisioni</span>
+              <span className="text-xs font-medium sm:hidden">Dec.</span>
             </div>
           </div>
         </div>
@@ -278,30 +281,30 @@ const TrialEvaluations = () => {
                           {personalityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{personalityCounts.neutral}</Badge>}
                         </div>
                       </div>
-                      <div className="flex justify-center space-x-2">
+                      <div className="flex justify-center space-x-1">
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-green-50 hover:bg-green-100 border-green-200"
+                          className="flex-1 h-8 bg-green-50 hover:bg-green-100 border-green-200 p-1"
                           onClick={() => addRating(trialistId, 'personality', 1)}
                         >
-                          <Plus className="h-4 w-4 text-green-600" />
+                          <Plus className="h-3 w-3 text-green-600" />
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-gray-50 hover:bg-gray-100 border-gray-200"
+                          className="flex-1 h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 p-1"
                           onClick={() => addRating(trialistId, 'personality', 0)}
                         >
-                          <Circle className="h-4 w-4 text-gray-600" />
+                          <Circle className="h-3 w-3 text-gray-600" />
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-red-50 hover:bg-red-100 border-red-200"
+                          className="flex-1 h-8 bg-red-50 hover:bg-red-100 border-red-200 p-1"
                           onClick={() => addRating(trialistId, 'personality', -1)}
                         >
-                          <Minus className="h-4 w-4 text-red-600" />
+                          <Minus className="h-3 w-3 text-red-600" />
                         </Button>
                       </div>
                     </div>
@@ -316,30 +319,30 @@ const TrialEvaluations = () => {
                           {abilityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{abilityCounts.neutral}</Badge>}
                         </div>
                       </div>
-                      <div className="flex justify-center space-x-2">
+                      <div className="flex justify-center space-x-1">
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-green-50 hover:bg-green-100 border-green-200"
+                          className="flex-1 h-8 bg-green-50 hover:bg-green-100 border-green-200 p-1"
                           onClick={() => addRating(trialistId, 'ability', 1)}
                         >
-                          <Plus className="h-4 w-4 text-green-600" />
+                          <Plus className="h-3 w-3 text-green-600" />
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-gray-50 hover:bg-gray-100 border-gray-200"
+                          className="flex-1 h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 p-1"
                           onClick={() => addRating(trialistId, 'ability', 0)}
                         >
-                          <Circle className="h-4 w-4 text-gray-600" />
+                          <Circle className="h-3 w-3 text-gray-600" />
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-red-50 hover:bg-red-100 border-red-200"
+                          className="flex-1 h-8 bg-red-50 hover:bg-red-100 border-red-200 p-1"
                           onClick={() => addRating(trialistId, 'ability', -1)}
                         >
-                          <Minus className="h-4 w-4 text-red-600" />
+                          <Minus className="h-3 w-3 text-red-600" />
                         </Button>
                       </div>
                     </div>
@@ -354,30 +357,30 @@ const TrialEvaluations = () => {
                           {flexibilityCounts.neutral > 0 && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">○{flexibilityCounts.neutral}</Badge>}
                         </div>
                       </div>
-                      <div className="flex justify-center space-x-2">
+                      <div className="flex justify-center space-x-1">
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-green-50 hover:bg-green-100 border-green-200"
+                          className="flex-1 h-8 bg-green-50 hover:bg-green-100 border-green-200 p-1"
                           onClick={() => addRating(trialistId, 'flexibility', 1)}
                         >
-                          <Plus className="h-4 w-4 text-green-600" />
+                          <Plus className="h-3 w-3 text-green-600" />
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-gray-50 hover:bg-gray-100 border-gray-200"
+                          className="flex-1 h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 p-1"
                           onClick={() => addRating(trialistId, 'flexibility', 0)}
                         >
-                          <Circle className="h-4 w-4 text-gray-600" />
+                          <Circle className="h-3 w-3 text-gray-600" />
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-12 bg-red-50 hover:bg-red-100 border-red-200"
+                          className="flex-1 h-8 bg-red-50 hover:bg-red-100 border-red-200 p-1"
                           onClick={() => addRating(trialistId, 'flexibility', -1)}
                         >
-                          <Minus className="h-4 w-4 text-red-600" />
+                          <Minus className="h-3 w-3 text-red-600" />
                         </Button>
                       </div>
                     </div>
@@ -438,27 +441,40 @@ const TrialEvaluations = () => {
                           <p className="text-sm text-muted-foreground">{trialist.position}</p>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                         <Button
-                          variant={finalDecisions[trialistId] === 'in_prova' ? 'default' : 'outline'}
+                          variant="outline"
                           size="sm"
                           onClick={() => setFinalDecisions(prev => ({ ...prev, [trialistId]: 'in_prova' }))}
+                          className={`text-xs flex-1 ${
+                            finalDecisions[trialistId] === 'in_prova' 
+                              ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' 
+                              : 'hover:bg-yellow-50'
+                          }`}
                         >
                           In Prova
                         </Button>
                         <Button
-                          variant={finalDecisions[trialistId] === 'promosso' ? 'default' : 'outline'}
+                          variant="outline"
                           size="sm"
                           onClick={() => setFinalDecisions(prev => ({ ...prev, [trialistId]: 'promosso' }))}
-                          className="bg-green-600 hover:bg-green-700 text-white"
+                          className={`text-xs flex-1 ${
+                            finalDecisions[trialistId] === 'promosso' 
+                              ? 'bg-green-600 text-white border-green-600 hover:bg-green-700' 
+                              : 'hover:bg-green-50'
+                          }`}
                         >
                           Promosso
                         </Button>
                         <Button
-                          variant={finalDecisions[trialistId] === 'archiviato' ? 'default' : 'outline'}
+                          variant="outline"
                           size="sm"
                           onClick={() => setFinalDecisions(prev => ({ ...prev, [trialistId]: 'archiviato' }))}
-                          className="bg-red-600 hover:bg-red-700 text-white"
+                          className={`text-xs flex-1 ${
+                            finalDecisions[trialistId] === 'archiviato' 
+                              ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' 
+                              : 'hover:bg-red-50'
+                          }`}
                         >
                           Archiviato
                         </Button>

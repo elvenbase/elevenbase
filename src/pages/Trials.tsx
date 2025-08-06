@@ -15,26 +15,30 @@ const Trials = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-              Provini
-            </h1>
-            <p className="text-muted-foreground">
-              Gestione trialist e processo di valutazione
-            </p>
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
+                Provini
+              </h1>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Gestione trialist e processo di valutazione
+              </p>
+            </div>
           </div>
-          <div className="flex items-center space-x-3">
+          
+          {/* Pulsanti responsive per mobile */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button 
               variant="outline" 
-              className="space-x-2"
+              className="flex items-center justify-center space-x-2 text-sm"
               onClick={() => navigate('/trial-evaluations')}
             >
               <Star className="h-4 w-4" />
               <span>Valutazione Provinanti</span>
             </Button>
             <TrialistForm>
-              <Button variant="hero" className="space-x-2">
+              <Button variant="hero" className="flex items-center justify-center space-x-2 text-sm">
                 <UserPlus className="h-4 w-4" />
                 <span>Nuovo Trialist</span>
               </Button>
