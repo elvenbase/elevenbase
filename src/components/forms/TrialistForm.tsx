@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,8 @@ import { useToast } from '@/hooks/use-toast';
 interface TrialistFormProps {
   children?: React.ReactNode;
 }
+
+
 
 export const TrialistForm = ({ children }: TrialistFormProps) => {
   const [open, setOpen] = useState(false);
@@ -43,6 +45,24 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   const createTrialist = useCreateTrialist();
   const { toast } = useToast();
   const { getAvatarFallbackStyle } = useAvatarColor();
+
+  // Memoizza lo stile dell'avatar per evitare re-rendering ad ogni keystroke
+  const avatarStyle = useMemo(() => {
+    return getAvatarFallbackStyle(formData.first_name + formData.last_name, !!avatarUrl);
+  }, [formData.first_name, formData.last_name, avatarUrl, getAvatarFallbackStyle]);
+
+  // Memoizza le funzioni di gestione per evitare re-rendering
+  const handleInputChange = useCallback((field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handlePhoneNumberChange = useCallback((value: string) => {
+    setPhoneNumber(value);
+  }, []);
+
+  const handlePhonePrefixChange = useCallback((value: string) => {
+    setPhonePrefix(value);
+  }, []);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -190,7 +210,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
                 <AvatarFallback 
                   className="font-bold"
-                  style={getAvatarFallbackStyle(formData.first_name + formData.last_name, !!avatarUrl)}
+                  style={avatarStyle}
                 >
                   {formData.first_name.charAt(0) || 'U'}{formData.last_name.charAt(0) || 'U'}
                 </AvatarFallback>
@@ -237,8 +257,9 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               <Label htmlFor="first_name">Nome</Label>
               <Input
                 id="first_name"
+                key="first_name_input"
                 value={formData.first_name}
-                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                onChange={(e) => handleInputChange('first_name', e.target.value)}
                 required
                 className="h-12"
               />
@@ -247,8 +268,9 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               <Label htmlFor="last_name">Cognome</Label>
               <Input
                 id="last_name"
+                key="last_name_input"
                 value={formData.last_name}
-                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                onChange={(e) => handleInputChange('last_name', e.target.value)}
                 required
                 className="h-12"
               />
@@ -260,7 +282,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               <div className="flex flex-col sm:flex-row gap-2">
                 <Select 
                   value={phonePrefix} 
-                  onValueChange={setPhonePrefix}
+                  onValueChange={handlePhonePrefixChange}
                 >
                   <SelectTrigger className="w-full sm:w-[120px] h-12">
                     <SelectValue />
@@ -334,9 +356,10 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 </Select>
                 <Input
                   id="phone"
+                  key="phone_input"
                   type="tel"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={(e) => handlePhoneNumberChange(e.target.value)}
                   placeholder="123 456 7890"
                   className="flex-1 h-12"
                 />
