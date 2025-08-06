@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Star, Minus, Plus, Trash2 } from 'lucide-react';
+import { Calendar, Trash2 } from 'lucide-react';
 import { useQuickTrialEvaluations, useDeleteQuickTrialEvaluation } from '@/hooks/useSupabaseData';
 import { toast } from 'sonner';
 
@@ -66,103 +66,77 @@ const QuickEvaluationDisplay = ({ trialistId }: QuickEvaluationDisplayProps) => 
         const flexibilitySummary = getRatingSummary(evaluation.flexibility_ratings);
         
         return (
-          <Card key={evaluation.id} className="text-xs">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-3 w-3" />
-                  <span className="text-xs font-medium">
-                    {new Date(evaluation.evaluation_date).toLocaleDateString('it-IT')}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {evaluation.final_decision && getDecisionBadge(evaluation.final_decision)}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteEvaluation(evaluation.id)}
-                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                    title="Elimina valutazione"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
+          <Card key={evaluation.id} className="text-xs p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs font-medium">
+                  {new Date(evaluation.evaluation_date).toLocaleDateString('it-IT')}
+                </span>
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {/* Visualizzazione compatta dei rating */}
-              <div className="grid grid-cols-3 gap-3 mb-2">
-                <div className="text-center">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">Personalità</div>
-                  <div className="flex justify-center space-x-1">
-                    {personalitySummary.positive > 0 && (
-                      <Badge variant="default" className="text-xs px-1 py-0 h-4">
-                        +{personalitySummary.positive}
-                      </Badge>
-                    )}
-                    {personalitySummary.negative > 0 && (
-                      <Badge variant="destructive" className="text-xs px-1 py-0 h-4">
-                        -{personalitySummary.negative}
-                      </Badge>
-                    )}
-                    {personalitySummary.neutral > 0 && (
-                      <Badge variant="outline" className="text-xs px-1 py-0 h-4">
-                        ○{personalitySummary.neutral}
-                      </Badge>
-                    )}
-                  </div>
+              <div className="flex items-center space-x-2">
+                {evaluation.final_decision && getDecisionBadge(evaluation.final_decision)}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteEvaluation(evaluation.id)}
+                  className="h-5 w-5 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  title="Elimina valutazione"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            {/* Visualizzazione ultra compatta dei rating */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                  <span className="text-xs text-muted-foreground">P:</span>
+                  {personalitySummary.positive > 0 && (
+                    <span className="text-xs font-bold text-green-600">+{personalitySummary.positive}</span>
+                  )}
+                  {personalitySummary.negative > 0 && (
+                    <span className="text-xs font-bold text-red-600">-{personalitySummary.negative}</span>
+                  )}
+                  {personalitySummary.neutral > 0 && (
+                    <span className="text-xs font-bold text-gray-500">○{personalitySummary.neutral}</span>
+                  )}
                 </div>
                 
-                <div className="text-center">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">Capacità</div>
-                  <div className="flex justify-center space-x-1">
-                    {abilitySummary.positive > 0 && (
-                      <Badge variant="default" className="text-xs px-1 py-0 h-4">
-                        +{abilitySummary.positive}
-                      </Badge>
-                    )}
-                    {abilitySummary.negative > 0 && (
-                      <Badge variant="destructive" className="text-xs px-1 py-0 h-4">
-                        -{abilitySummary.negative}
-                      </Badge>
-                    )}
-                    {abilitySummary.neutral > 0 && (
-                      <Badge variant="outline" className="text-xs px-1 py-0 h-4">
-                        ○{abilitySummary.neutral}
-                      </Badge>
-                    )}
-                  </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-xs text-muted-foreground">C:</span>
+                  {abilitySummary.positive > 0 && (
+                    <span className="text-xs font-bold text-green-600">+{abilitySummary.positive}</span>
+                  )}
+                  {abilitySummary.negative > 0 && (
+                    <span className="text-xs font-bold text-red-600">-{abilitySummary.negative}</span>
+                  )}
+                  {abilitySummary.neutral > 0 && (
+                    <span className="text-xs font-bold text-gray-500">○{abilitySummary.neutral}</span>
+                  )}
                 </div>
                 
-                <div className="text-center">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">Flessibilità</div>
-                  <div className="flex justify-center space-x-1">
-                    {flexibilitySummary.positive > 0 && (
-                      <Badge variant="default" className="text-xs px-1 py-0 h-4">
-                        +{flexibilitySummary.positive}
-                      </Badge>
-                    )}
-                    {flexibilitySummary.negative > 0 && (
-                      <Badge variant="destructive" className="text-xs px-1 py-0 h-4">
-                        -{flexibilitySummary.negative}
-                      </Badge>
-                    )}
-                    {flexibilitySummary.neutral > 0 && (
-                      <Badge variant="outline" className="text-xs px-1 py-0 h-4">
-                        ○{flexibilitySummary.neutral}
-                      </Badge>
-                    )}
-                  </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-xs text-muted-foreground">F:</span>
+                  {flexibilitySummary.positive > 0 && (
+                    <span className="text-xs font-bold text-green-600">+{flexibilitySummary.positive}</span>
+                  )}
+                  {flexibilitySummary.negative > 0 && (
+                    <span className="text-xs font-bold text-red-600">-{flexibilitySummary.negative}</span>
+                  )}
+                  {flexibilitySummary.neutral > 0 && (
+                    <span className="text-xs font-bold text-gray-500">○{flexibilitySummary.neutral}</span>
+                  )}
                 </div>
               </div>
-              
-              {evaluation.notes && (
-                <div className="mt-2 p-2 bg-muted rounded text-xs">
-                  <div className="font-medium mb-1">Note:</div>
-                  <div>{evaluation.notes}</div>
-                </div>
-              )}
-            </CardContent>
+            </div>
+            
+            {evaluation.notes && (
+              <div className="mt-2 p-2 bg-muted rounded text-xs">
+                <div className="font-medium mb-1">Note:</div>
+                <div>{evaluation.notes}</div>
+              </div>
+            )}
           </Card>
         );
       })}
