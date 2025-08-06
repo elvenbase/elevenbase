@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conferma il tuo account ElevenBase</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .title {
+            color: #1a2332;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6c757d;
+            font-size: 16px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #1a2332;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #2d3748;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://gleaming-kleicha-dec5b4.netlify.app/assets/logo_elevenBase.png" alt="ElevenBase" class="logo">
+            <div class="title">ElevenBase</div>
+            <div class="subtitle">Clubs Made Easy</div>
+        </div>
+        
+        <div class="content">
+            <h2>Ciao!</h2>
+            <p>Grazie per esserti registrato su ElevenBase. Per completare la registrazione, conferma il tuo indirizzo email cliccando sul pulsante qui sotto:</p>
+            
+            <div style="text-align: center;">
+                <a href="https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup" class="button">
+                    Conferma Email
+                </a>
+            </div>
+            
+            <div class="warning">
+                <strong>Nota:</strong> Se il pulsante non funziona, copia e incolla questo link nel tuo browser:<br>
+                <a href="https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup">
+                    https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup
+                </a>
+            </div>
+            
+            <p>Questo link scadrà tra 24 ore per motivi di sicurezza.</p>
+            
+            <p>Se non hai creato tu questo account, puoi ignorare questa email.</p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 ElevenBase. Tutti i diritti riservati.</p>
+            <p>Se hai domande, contattaci all'indirizzo support@elevenbase.com</p>
+        </div>
+    </div>
+</body>
+</html> 

@@ -16,8 +16,12 @@
 ### **3. Configurazione Email Template (IMPORTANTE):**
 - Vai su **Authentication** → **Email Templates**
 - Seleziona **Confirm signup**
-- Nel template, assicurati che il link punti a: `{{ .ConfirmationURL }}`
-- Il link dovrebbe essere: `https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup`
+- **Sostituisci** il contenuto HTML con quello del file `email_template.html`
+- **Oppure** modifica manualmente il link per puntare a:
+  ```
+  https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup
+  ```
+- **Salva** le modifiche
 
 ### **3. Salva le modifiche**
 
