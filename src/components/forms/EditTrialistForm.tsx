@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAvatarColor } from '@/hooks/useAvatarColor';
-import { useUpdateTrialist, usePromoteTrialist, useAvailableJerseyNumbers } from "@/hooks/useSupabaseData";
+import { useUpdateTrialist, usePromoteTrialist } from "@/hooks/useSupabaseData";
+// import { useAvailableJerseyNumbers } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X, MessageCircle, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -81,9 +82,12 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateTrialist = useUpdateTrialist();
   const promoteTrialist = usePromoteTrialist();
-  const { data: availableNumbers = [], isLoading: loadingNumbers } = useAvailableJerseyNumbers();
   const { toast } = useToast();
   const { getAvatarBackground } = useAvatarColor();
+
+  // Temporarily use hardcoded numbers to test
+  const availableNumbers: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const loadingNumbers = false;
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

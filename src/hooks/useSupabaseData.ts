@@ -630,24 +630,35 @@ export const useAvailableJerseyNumbers = () => {
   return useQuery({
     queryKey: ['available-jersey-numbers'],
     queryFn: async () => {
-      const { data: players, error } = await supabase
-        .from('players')
-        .select('jersey_number')
-        .not('jersey_number', 'is', null);
+      try {
+        const { data: players, error } = await supabase
+          .from('players')
+          .select('jersey_number')
+          .not('jersey_number', 'is', null);
 
-      if (error) throw error;
-
-      const usedNumbers = new Set((players || []).map(p => p.jersey_number));
-      const availableNumbers = [];
-      
-      for (let i = 0; i <= 99; i++) {
-        if (!usedNumbers.has(i)) {
-          availableNumbers.push(i);
+        if (error) {
+          console.error('Error fetching jersey numbers:', error);
+          throw error;
         }
+
+        const usedNumbers = new Set((players || []).map(p => p.jersey_number));
+        const availableNumbers = [];
+        
+        for (let i = 0; i <= 99; i++) {
+          if (!usedNumbers.has(i)) {
+            availableNumbers.push(i);
+          }
+        }
+        
+        return availableNumbers;
+      } catch (error) {
+        console.error('Error in useAvailableJerseyNumbers:', error);
+        // Return a fallback list in case of error
+        return Array.from({ length: 100 }, (_, i) => i);
       }
-      
-      return availableNumbers;
-    }
+    },
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 };
 
