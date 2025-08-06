@@ -1248,6 +1248,26 @@ export const useUpdateQuickTrialEvaluation = () => {
   });
 };
 
+export const useDeleteQuickTrialEvaluation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (evaluationId: string) => {
+      const { error } = await supabase
+        .from('quick_trial_evaluations')
+        .delete()
+        .eq('id', evaluationId);
+      
+      if (error) throw error;
+      return evaluationId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations'] });
+      queryClient.invalidateQueries({ queryKey: ['quick-trial-evaluations-count'] });
+      queryClient.invalidateQueries({ queryKey: ['trialists'] });
+    }
+  });
+};
+
 export const useUpdateTrialistStatusFromQuickEvaluation = () => {
   const queryClient = useQueryClient();
   return useMutation({
