@@ -42,7 +42,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createTrialist = useCreateTrialist();
   const { toast } = useToast();
-  const { getAvatarBackground } = useAvatarColor();
+  const { getAvatarFallbackStyle } = useAvatarColor();
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -189,8 +189,8 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               <Avatar className="h-16 w-16">
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
                 <AvatarFallback 
-                  className="text-white font-bold"
-                  style={getAvatarBackground(formData.first_name + formData.last_name, false)}
+                  className="font-bold"
+                  style={getAvatarFallbackStyle(formData.first_name + formData.last_name, !!avatarUrl)}
                 >
                   {formData.first_name.charAt(0) || 'U'}{formData.last_name.charAt(0) || 'U'}
                 </AvatarFallback>
