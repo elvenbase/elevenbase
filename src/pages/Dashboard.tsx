@@ -70,7 +70,7 @@ const Dashboard = () => {
             className="border-l-4 border-l-accent"
           />
           <StatsCard
-            title="Prove"
+            title="Provini"
             value={stats?.activeTrials || 0}
             description="Programmate"
             icon={Target}

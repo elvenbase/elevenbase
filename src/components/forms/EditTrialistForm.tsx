@@ -23,6 +23,7 @@ interface EditTrialistFormProps {
     position?: string;
     status: 'in_prova' | 'promosso' | 'archiviato';
     notes?: string;
+    esperienza?: string;
     avatar_url?: string;
     jersey_number?: number;
     ea_sport_id?: string;
@@ -58,6 +59,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
     position: trialist.position || '',
     status: trialist.status,
     notes: trialist.notes || '',
+    esperienza: trialist.esperienza || '',
     jersey_number: trialist.jersey_number?.toString() || '',
     ea_sport_id: trialist.ea_sport_id || '',
     gaming_platform: trialist.gaming_platform || 'none',
@@ -183,6 +185,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
         position: formData.position || undefined,
         status: formData.status,
         notes: formData.notes || undefined,
+        esperienza: formData.esperienza || undefined,
         avatar_url: avatarUrl || undefined,
         jersey_number: formData.jersey_number ? Number(formData.jersey_number) : undefined,
         ea_sport_id: formData.ea_sport_id || undefined,
@@ -500,6 +503,17 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                 )}
               </div>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="esperienza">🏆 Esperienza Sportiva</Label>
+            <Textarea
+              id="esperienza"
+              value={formData.esperienza}
+              onChange={(e) => setFormData({ ...formData, esperienza: e.target.value })}
+              placeholder="Descrivi l'esperienza calcistica del trialist (squadre, campionati, livelli di gioco...)"
+              rows={3}
+            />
           </div>
 
           <div className="space-y-2">

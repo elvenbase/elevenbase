@@ -338,6 +338,15 @@ const TrialistsTable = () => {
                             </div>
                           </div>
                           
+                          {trialist.esperienza && (
+                            <div className="pt-2 border-t border-border/50">
+                              <span className="text-xs font-medium text-muted-foreground">🏆 Esperienza Sportiva:</span>
+                              <div className="text-sm mt-1 p-2 bg-background rounded border">
+                                {trialist.esperienza}
+                              </div>
+                            </div>
+                          )}
+                          
                           {trialist.notes && (
                             <div className="pt-2 border-t border-border/50">
                               <span className="text-xs font-medium text-muted-foreground">Note:</span>
@@ -472,6 +481,15 @@ const TrialistsTable = () => {
                       <span className="text-xs font-medium text-muted-foreground">📅 Data di Nascita:</span>
                       <div className="text-xs">
                         {new Date(trialist.birth_date).toLocaleDateString('it-IT')}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {trialist.esperienza && (
+                    <div className="space-y-1">
+                      <span className="text-xs font-medium text-muted-foreground">🏆 Esperienza Sportiva:</span>
+                      <div className="text-xs p-2 bg-background rounded border">
+                        {trialist.esperienza}
                       </div>
                     </div>
                   )}

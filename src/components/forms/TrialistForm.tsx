@@ -25,6 +25,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     birth_date: '',
     position: '',
     notes: '',
+    esperienza: '',
     jersey_number: '',
     ea_sport_id: '',
     gaming_platform: 'none',
@@ -146,6 +147,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       birth_date: formData.birth_date || undefined,
       position: formData.position || undefined,
       notes: formData.notes || undefined,
+      esperienza: formData.esperienza || undefined,
       avatar_url: avatarUrl || undefined,
       jersey_number: formData.jersey_number ? Number(formData.jersey_number) : undefined,
       ea_sport_id: formData.ea_sport_id || undefined,
@@ -161,6 +163,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       birth_date: '',
       position: '',
       notes: '',
+      esperienza: '',
       jersey_number: '',
       ea_sport_id: '',
       gaming_platform: 'none',
@@ -465,6 +468,17 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
                 )}
               </div>
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="esperienza">🏆 Esperienza Sportiva</Label>
+            <Textarea
+              id="esperienza"
+              value={formData.esperienza}
+              onChange={(e) => setFormData({ ...formData, esperienza: e.target.value })}
+              placeholder="Descrivi l'esperienza calcistica del trialist (squadre, campionati, livelli di gioco...)"
+              rows={3}
+            />
           </div>
 
           <div>

@@ -16,7 +16,7 @@ const Trials = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-              Prove
+              Provini
             </h1>
             <p className="text-muted-foreground">
               Gestione trialist e processo di valutazione

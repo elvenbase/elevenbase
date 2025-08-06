@@ -729,6 +729,7 @@ export type Database = {
           created_by: string | null
           ea_sport_id: string | null
           email: string | null
+          esperienza: string | null
           first_name: string
           gaming_platform: string | null
           id: string
@@ -749,6 +750,7 @@ export type Database = {
           created_by?: string | null
           ea_sport_id?: string | null
           email?: string | null
+          esperienza?: string | null
           first_name: string
           gaming_platform?: string | null
           id?: string
@@ -769,6 +771,7 @@ export type Database = {
           created_by?: string | null
           ea_sport_id?: string | null
           email?: string | null
+          esperienza?: string | null
           first_name?: string
           gaming_platform?: string | null
           id?: string

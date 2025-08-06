@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTrialists, useUpdateTrialistStatus, useDeleteTrialist, useTrialEvaluations } from '@/hooks/useSupabaseData';
 import { useAvatarColor } from '@/hooks/useAvatarColor';
-import { User, Star, ArrowRight, Archive, Trash2, Award } from 'lucide-react';
+import { User, ArrowRight, Archive, Trash2 } from 'lucide-react';
 import EditTrialistForm from '@/components/forms/EditTrialistForm';
 import { TrialEvaluationForm } from '@/components/forms/TrialEvaluationForm';
 
@@ -68,14 +68,6 @@ const TrialistCard = ({
           </div>
         </div>
         <div className="flex items-center space-x-1">
-          <TrialEvaluationForm 
-            trialistId={trialist.id}
-            trialistName={`${trialist.first_name} ${trialist.last_name}`}
-          >
-            <Button variant="outline" size="sm" className="p-1 h-6 w-6">
-              <Star className="h-3 w-3 text-primary" />
-            </Button>
-          </TrialEvaluationForm>
           <EditTrialistForm trialist={trialist} />
           <Button
             variant="outline"
@@ -88,32 +80,7 @@ const TrialistCard = ({
         </div>
       </div>
 
-      {latestEvaluation && (
-        <div className="mb-3 p-2 bg-muted/50 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Award className="h-3 w-3 text-primary" />
-              <span className="text-xs font-medium">Valutazione</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-xs font-bold">{latestEvaluation.overall_rating?.toFixed(1)}/5</span>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`h-2 w-2 ${
-                    star <= Math.round(latestEvaluation.overall_rating || 0)
-                      ? 'fill-primary text-primary'
-                      : 'text-muted-foreground'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            {new Date(latestEvaluation.evaluation_date).toLocaleDateString()}
-          </span>
-        </div>
-      )}
+
 
       {trialist.notes && (
         <p className="text-xs text-muted-foreground mb-3 line-clamp-2">

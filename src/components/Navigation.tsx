@@ -29,7 +29,7 @@ const Navigation = () => {
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: BarChart3 },
-    { name: "Prove", path: "/trials", icon: UserPlus },
+    { name: "Provini", path: "/trials", icon: UserPlus },
     { name: "Competizioni", path: "/competitions", icon: Trophy },
     { name: "Allenamenti", path: "/training", icon: Activity },
     { name: "Utenti", path: "/users", icon: Shield },
