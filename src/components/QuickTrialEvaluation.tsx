@@ -170,6 +170,15 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                 notes: ''
               };
 
+              // Assicuriamoci che gli array esistano
+              const safeEvaluation = {
+                ...evaluation,
+                personality_ratings: evaluation.personality_ratings || [],
+                ability_ratings: evaluation.ability_ratings || [],
+                flexibility_ratings: evaluation.flexibility_ratings || [],
+                notes: evaluation.notes || ''
+              };
+
               if (!trialist) return null;
 
               return (
@@ -212,7 +221,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                         ))}
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        {evaluation.personality_ratings.map((rating, index) => (
+                        {safeEvaluation.personality_ratings.map((rating, index) => (
                           <div key={index} className="p-1 bg-muted rounded">
                             {getRatingIcon(rating)}
                           </div>
@@ -236,7 +245,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                         ))}
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        {evaluation.ability_ratings.map((rating, index) => (
+                        {safeEvaluation.ability_ratings.map((rating, index) => (
                           <div key={index} className="p-1 bg-muted rounded">
                             {getRatingIcon(rating)}
                           </div>
@@ -260,7 +269,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                         ))}
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        {evaluation.flexibility_ratings.map((rating, index) => (
+                        {safeEvaluation.flexibility_ratings.map((rating, index) => (
                           <div key={index} className="p-1 bg-muted rounded">
                             {getRatingIcon(rating)}
                           </div>
