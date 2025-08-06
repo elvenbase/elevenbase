@@ -356,49 +356,52 @@ const TrialEvaluations = () => {
                       }));
                     }}
                   >
-                    {showDetails[trialistId] ? 'Nascondi Valutazioni' : 'Mostra Valutazioni'} 
+                    {showDetails[trialistId] ? 'Nascondi Dettagli' : 'Mostra Dettagli'} 
                     {showDetails[trialistId] ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
                   </Button>
                 </div>
 
-                {/* Dettagli valutazioni (collassabile) */}
+                {/* Dettagli valutazioni e note (collassabile) */}
                 {showDetails[trialistId] && (
-                  <div className="space-y-2 p-2 bg-muted/20 rounded-md text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Personalità:</span>
-                      <div className="flex items-center space-x-1">
-                        {personalityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{personalityCounts.positive}</Badge>}
-                        {personalityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{personalityCounts.negative}</Badge>}
+                  <div className="space-y-3 p-3 bg-muted/20 rounded-md">
+                    {/* Riepilogo valutazioni */}
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Personalità:</span>
+                        <div className="flex items-center space-x-1">
+                          {personalityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{personalityCounts.positive}</Badge>}
+                          {personalityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{personalityCounts.negative}</Badge>}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Capacità:</span>
+                        <div className="flex items-center space-x-1">
+                          {abilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{abilityCounts.positive}</Badge>}
+                          {abilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{abilityCounts.negative}</Badge>}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Flessibilità:</span>
+                        <div className="flex items-center space-x-1">
+                          {flexibilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{flexibilityCounts.positive}</Badge>}
+                          {flexibilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{flexibilityCounts.negative}</Badge>}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Capacità:</span>
-                      <div className="flex items-center space-x-1">
-                        {abilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{abilityCounts.positive}</Badge>}
-                        {abilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{abilityCounts.negative}</Badge>}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Flessibilità:</span>
-                      <div className="flex items-center space-x-1">
-                        {flexibilityCounts.positive > 0 && <Badge variant="default" className="bg-green-600 text-xs px-1 py-0">+{flexibilityCounts.positive}</Badge>}
-                        {flexibilityCounts.negative > 0 && <Badge variant="destructive" className="text-xs px-1 py-0">-{flexibilityCounts.negative}</Badge>}
-                      </div>
+                    
+                    {/* Note */}
+                    <div>
+                      <h5 className="font-medium text-xs mb-2">Note</h5>
+                      <Textarea
+                        placeholder="Aggiungi note..."
+                        value={evaluation.notes}
+                        onChange={(e) => updateNotes(trialistId, e.target.value)}
+                        rows={2}
+                        className="text-xs"
+                      />
                     </div>
                   </div>
                 )}
-
-                  {/* Notes */}
-                  <div>
-                    <h5 className="font-medium text-sm mb-2">Note</h5>
-                    <Textarea
-                      placeholder="Aggiungi note..."
-                      value={evaluation.notes}
-                      onChange={(e) => updateNotes(trialistId, e.target.value)}
-                      rows={2}
-                      className="text-sm"
-                    />
-                  </div>
                 </Card>
               );
             })}
