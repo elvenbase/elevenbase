@@ -1234,6 +1234,19 @@ export const useUpdateTrialistStatusFromQuickEvaluation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: { trialist_id: string; status: 'in_prova' | 'promosso' | 'archiviato' }) => {
+      // Prima verifichiamo che il trialist esista
+      const { data: existingTrialist, error: checkError } = await supabase
+        .from('trialists')
+        .select('id')
+        .eq('id', data.trialist_id)
+        .single();
+      
+      if (checkError) {
+        console.error('Trialist non trovato:', data.trialist_id, checkError);
+        throw new Error(`Trialist con ID ${data.trialist_id} non trovato`);
+      }
+
+      // Aggiorniamo lo status
       const { data: result, error } = await supabase
         .from('trialists')
         .update({ status: data.status })

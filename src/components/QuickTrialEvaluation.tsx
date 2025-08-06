@@ -106,22 +106,32 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
       for (const trialistId of selectedTrialists) {
         const evaluation = evaluations[trialistId];
         if (evaluation) {
-          await createQuickEvaluation.mutateAsync({
-            trialist_id: trialistId,
-            session_id: sessionId,
-            personality_ratings: evaluation.personality_ratings,
-            ability_ratings: evaluation.ability_ratings,
-            flexibility_ratings: evaluation.flexibility_ratings,
-            final_decision: evaluation.final_decision,
-            notes: evaluation.notes
-          });
-
-          // Aggiorna lo status del trialist se necessario
-          if (evaluation.final_decision !== 'in_prova') {
-            await updateTrialistStatus.mutateAsync({
+          try {
+            await createQuickEvaluation.mutateAsync({
               trialist_id: trialistId,
-              status: evaluation.final_decision
+              session_id: sessionId,
+              personality_ratings: evaluation.personality_ratings,
+              ability_ratings: evaluation.ability_ratings,
+              flexibility_ratings: evaluation.flexibility_ratings,
+              final_decision: evaluation.final_decision,
+              notes: evaluation.notes
             });
+
+            // Aggiorna lo status del trialist se necessario
+            if (evaluation.final_decision !== 'in_prova') {
+              try {
+                await updateTrialistStatus.mutateAsync({
+                  trialist_id: trialistId,
+                  status: evaluation.final_decision
+                });
+              } catch (statusError) {
+                console.error('Errore aggiornamento status trialist:', trialistId, statusError);
+                toast.error(`Errore aggiornamento status per trialist ${trialistId}`);
+              }
+            }
+          } catch (evalError) {
+            console.error('Errore salvataggio valutazione per trialist:', trialistId, evalError);
+            toast.error(`Errore salvataggio valutazione per trialist ${trialistId}`);
           }
         }
       }
@@ -129,7 +139,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
       toast.success('Valutazioni salvate con successo!');
       handleClose();
     } catch (error) {
-      toast.error('Errore nel salvataggio delle valutazioni');
+      toast.error('Errore generale nel salvataggio delle valutazioni');
       console.error(error);
     }
   };
