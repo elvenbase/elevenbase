@@ -388,17 +388,16 @@ const TrialEvaluations = () => {
                   </div>
                 )}
 
-                    {/* Notes */}
-                    <div>
-                      <h5 className="font-medium text-sm mb-2">Note</h5>
-                      <Textarea
-                        placeholder="Aggiungi note..."
-                        value={evaluation.notes}
-                        onChange={(e) => updateNotes(trialistId, e.target.value)}
-                        rows={2}
-                        className="text-sm"
-                      />
-                    </div>
+                  {/* Notes */}
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">Note</h5>
+                    <Textarea
+                      placeholder="Aggiungi note..."
+                      value={evaluation.notes}
+                      onChange={(e) => updateNotes(trialistId, e.target.value)}
+                      rows={2}
+                      className="text-sm"
+                    />
                   </div>
                 </Card>
               );
