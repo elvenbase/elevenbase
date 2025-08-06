@@ -55,7 +55,7 @@ const QuickEvaluationDisplay = ({ trialistId }: QuickEvaluationDisplayProps) => 
   }
 
   if (evaluations.length === 0) {
-    return <div className="text-sm text-muted-foreground">Nessuna valutazione rapida</div>;
+    return <div className="text-sm text-muted-foreground">Nessuna valutazione</div>;
   }
 
   return (

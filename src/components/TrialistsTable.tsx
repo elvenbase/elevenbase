@@ -361,10 +361,10 @@ const TrialistsTable = () => {
                             </div>
                           )}
                           
-                          {/* Valutazioni Rapide */}
+                          {/* Valutazioni */}
                           <div className="pt-4 border-t border-border/50">
                             <h4 className="text-sm font-semibold text-muted-foreground mb-3">
-                              ⚡ Valutazioni Rapide
+                              ⚡ Valutazioni
                             </h4>
                             <QuickEvaluationDisplay trialistId={trialist.id} />
                           </div>
@@ -519,9 +519,9 @@ const TrialistsTable = () => {
                     </div>
                   )}
                   
-                  {/* Valutazioni Rapide */}
+                  {/* Valutazioni */}
                   <div className="space-y-1">
-                    <span className="text-xs font-medium text-muted-foreground">⚡ Valutazioni Rapide:</span>
+                    <span className="text-xs font-medium text-muted-foreground">⚡ Valutazioni:</span>
                     <div className="mt-2">
                       <QuickEvaluationDisplay trialistId={trialist.id} />
                     </div>
