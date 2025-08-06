@@ -186,12 +186,12 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           <div className="space-y-2">
             <Label>Foto Profilo</Label>
             <div className="flex items-center gap-4">
-              <Avatar 
-                className="h-16 w-16"
-                style={getAvatarBackground(formData.first_name + formData.last_name, !!avatarUrl)}
-              >
+              <Avatar className="h-16 w-16">
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
-                <AvatarFallback className="text-white font-bold">
+                <AvatarFallback 
+                  className="text-white font-bold"
+                  style={getAvatarBackground(formData.first_name + formData.last_name, false)}
+                >
                   {formData.first_name.charAt(0) || 'U'}{formData.last_name.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -517,9 +517,9 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   // Mobile full-screen modal
   if (isMobile && open) {
     return (
-      <div className="fixed inset-0 z-50 bg-background">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b bg-background">
           <h2 className="text-lg font-semibold">Nuovo Trialist</h2>
           <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
             <X className="h-4 w-4" />
@@ -528,14 +528,17 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
         
         {/* Scrollable content */}
         <div 
-          className="h-full overflow-y-auto p-4 pb-20"
+          className="flex-1 overflow-y-auto p-4"
           style={{
             WebkitOverflowScrolling: 'touch',
             touchAction: 'pan-y',
-            overscrollBehavior: 'contain'
+            overscrollBehavior: 'contain',
+            minHeight: 0
           }}
         >
-          <FormContent />
+          <div className="pb-8">
+            <FormContent />
+          </div>
         </div>
       </div>
     );
