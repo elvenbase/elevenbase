@@ -188,11 +188,27 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[95vh] w-[95vw] sm:w-auto p-4 sm:p-6">
-        <DialogHeader className="sticky top-0 bg-background z-10 pb-4">
-          <DialogTitle>Nuovo Trialist</DialogTitle>
-        </DialogHeader>
-        <div className="max-h-[calc(95vh-120px)] overflow-y-auto overflow-x-hidden -mx-4 px-4 sm:mx-0 sm:px-0 touch-pan-y" style={{WebkitOverflowScrolling: 'touch'}}>
+      <DialogContent 
+        className="sm:max-w-[600px] max-h-[95vh] w-[95vw] sm:w-auto p-0 sm:p-6 fixed inset-4 sm:inset-auto"
+        style={{
+          maxHeight: '95vh',
+          height: 'auto',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="h-full flex flex-col">
+          <DialogHeader className="flex-shrink-0 p-4 pb-2 border-b bg-background">
+            <DialogTitle>Nuovo Trialist</DialogTitle>
+            {/* Cache busting comment: v2024-01-15-16:30 */}
+          </DialogHeader>
+          <div 
+            className="flex-1 overflow-y-auto overflow-x-hidden p-4 overscroll-contain"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              touchAction: 'pan-y',
+              overscrollBehavior: 'contain'
+            }}
+          >
           <form onSubmit={handleSubmit} className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label>Foto Profilo</Label>
@@ -523,6 +539,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
             </Button>
           </div>
           </form>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
