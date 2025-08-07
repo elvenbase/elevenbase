@@ -87,15 +87,15 @@
             <p>Grazie per esserti registrato su ElevenBase. Per completare la registrazione, conferma il tuo indirizzo email cliccando sul pulsante qui sotto:</p>
             
             <div style="text-align: center;">
-                <a href="{{ .ConfirmationURL }}" class="button">
+                <a href="https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup" class="button">
                     Conferma Email
                 </a>
             </div>
             
             <div class="warning">
                 <strong>Nota:</strong> Se il pulsante non funziona, copia e incolla questo link nel tuo browser:<br>
-                <a href="{{ .ConfirmationURL }}">
-                    {{ .ConfirmationURL }}
+                <a href="https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup">
+                    https://gleaming-kleicha-dec5b4.netlify.app/confirm?token={{ .Token }}&type=signup
                 </a>
             </div>
             
