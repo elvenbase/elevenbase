@@ -6,9 +6,7 @@ import { useCustomFormations, CustomFormation } from '@/hooks/useCustomFormation
 import { FormationBuilder } from '@/components/FormationBuilder'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { JerseyManager } from '@/components/JerseyManager'
-import { PngExportSettingsManager } from '@/components/PngExportSettingsManager'
-import { AvatarManager } from '@/components/AvatarManager'
+import { Link } from 'react-router-dom'
 
 
 export default function Formations() {
@@ -175,17 +173,15 @@ export default function Formations() {
         </div>
       )}
 
-      {/* Gestione Maglie */}
-      <JerseyManager />
-
-      {/* Gestione Sfondi Avatar */}
-      <div className="mt-8">
-        <AvatarManager />
-      </div>
-
-      {/* Impostazioni PNG */}
-      <div className="mt-8">
-        <PngExportSettingsManager />
+      <div className="mt-8 text-center">
+        <p className="text-muted-foreground">
+          Le funzioni di gestione avanzate sono disponibili nell'area Admin
+        </p>
+        <Link to="/admin" className="inline-block mt-2">
+          <Button variant="outline">
+            Vai all'Area Admin
+          </Button>
+        </Link>
       </div>
     </div>
   )
