@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { useCreateTrialist } from '@/hooks/useSupabaseData';
+import { useFieldOptions } from '@/hooks/useFieldOptions';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Upload, X, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -28,6 +29,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
     phone: '',
     birth_date: '',
     position: '',
+    player_role: '',
     notes: '',
     esperienza: '',
     jersey_number: '',
@@ -45,6 +47,12 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   const createTrialist = useCreateTrialist();
   const { toast } = useToast();
   const { getAvatarFallbackStyle } = useAvatarColor();
+  const { getOptionsForField, loadOptions } = useFieldOptions();
+
+  // Load field options when component mounts
+  useEffect(() => {
+    loadOptions();
+  }, [loadOptions]);
 
   // Memoizza lo stile dell'avatar per evitare re-rendering ad ogni keystroke
   const avatarStyle = useMemo(() => {
@@ -169,6 +177,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       phone: phoneNumber ? `${phonePrefix}${phoneNumber}` : undefined,
       birth_date: formData.birth_date || undefined,
       position: formData.position || undefined,
+      player_role: formData.player_role || undefined,
       notes: formData.notes || undefined,
       esperienza: formData.esperienza || undefined,
       avatar_url: avatarUrl || undefined,
@@ -186,6 +195,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       phone: '',
       birth_date: '',
       position: '',
+      player_role: '',
       notes: '',
       esperienza: '',
       jersey_number: '',
@@ -385,7 +395,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               )}
             </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="birth_date">Data di Nascita</Label>
               <Input
@@ -398,13 +408,39 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
             </div>
             <div>
               <Label htmlFor="position">Posizione</Label>
-              <Input
-                id="position"
+              <Select
                 value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                placeholder="es. Centrocampista"
-                className="h-12"
-              />
+                onValueChange={(value) => setFormData({ ...formData, position: value })}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Seleziona posizione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getOptionsForField('position').map((option) => (
+                    <SelectItem key={option.id} value={option.option_value}>
+                      {option.option_label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="player_role">Ruolo</Label>
+              <Select
+                value={formData.player_role}
+                onValueChange={(value) => setFormData({ ...formData, player_role: value })}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Seleziona ruolo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getOptionsForField('player_role').map((option) => (
+                    <SelectItem key={option.id} value={option.option_value}>
+                      {option.option_label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

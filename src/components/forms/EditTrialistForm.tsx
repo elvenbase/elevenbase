@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { useUpdateTrialist, usePromoteTrialist, useAvailableJerseyNumbers } from "@/hooks/useSupabaseData";
+import { useFieldOptions } from "@/hooks/useFieldOptions";
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X, MessageCircle, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +25,7 @@ interface EditTrialistFormProps {
     phone?: string;
     birth_date?: string;
     position?: string;
+    player_role?: string;
     status: 'in_prova' | 'promosso' | 'archiviato';
     notes?: string;
     esperienza?: string;
@@ -64,6 +66,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
     phone: trialist.phone || '',
     birth_date: trialist.birth_date || '',
     position: trialist.position || '',
+    player_role: trialist.player_role || '',
     status: trialist.status,
     notes: trialist.notes || '',
     esperienza: trialist.esperienza || '',
@@ -83,6 +86,12 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const promoteTrialist = usePromoteTrialist();
   const { toast } = useToast();
   const { getAvatarBackground } = useAvatarColor();
+  const { getOptionsForField, loadOptions } = useFieldOptions();
+
+  // Load field options when component mounts
+  useEffect(() => {
+    loadOptions();
+  }, [loadOptions]);
 
   // Only fetch jersey numbers when the selection dialog is about to open
   const { 
@@ -199,6 +208,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
         phone: phoneNumber ? `${phonePrefix}${phoneNumber}` : undefined,
         birth_date: formData.birth_date || undefined,
         position: formData.position || undefined,
+        player_role: formData.player_role || undefined,
         status: formData.status,
         notes: formData.notes || undefined,
         esperienza: formData.esperienza || undefined,
@@ -442,7 +452,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="birth_date">Data di Nascita</Label>
                   <Input
@@ -454,12 +464,39 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="position">Posizione</Label>
-                  <Input
-                    id="position"
+                  <Select
                     value={formData.position}
-                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    placeholder="es. Attaccante, Centrocampista..."
-                  />
+                    onValueChange={(value) => setFormData({ ...formData, position: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona posizione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getOptionsForField('position').map((option) => (
+                        <SelectItem key={option.id} value={option.option_value}>
+                          {option.option_label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="player_role">Ruolo</Label>
+                  <Select
+                    value={formData.player_role}
+                    onValueChange={(value) => setFormData({ ...formData, player_role: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona ruolo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getOptionsForField('player_role').map((option) => (
+                        <SelectItem key={option.id} value={option.option_value}>
+                          {option.option_label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
