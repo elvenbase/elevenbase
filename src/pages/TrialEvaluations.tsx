@@ -204,8 +204,8 @@ const TrialEvaluations = () => {
                             <Avatar className="h-12 w-12">
                               <AvatarImage src={trialist.avatar_url || undefined} />
                               <AvatarFallback 
-                                className="font-bold text-white"
-                                style={getAvatarBackground(trialist.first_name + trialist.last_name, false)}
+                                className="font-bold"
+                                style={getAvatarFallbackStyle(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
                               >
                                 {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                               </AvatarFallback>
@@ -259,8 +259,8 @@ const TrialEvaluations = () => {
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={trialist.avatar_url || undefined} />
                         <AvatarFallback 
-                          className="font-bold text-white text-xs"
-                          style={getAvatarBackground(trialist.first_name + trialist.last_name, false)}
+                          className="font-bold text-xs"
+                          style={getAvatarFallbackStyle(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
                         >
                           {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                         </AvatarFallback>
@@ -436,8 +436,8 @@ const TrialEvaluations = () => {
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={trialist.avatar_url || undefined} />
                           <AvatarFallback 
-                            className="font-bold text-white"
-                            style={getAvatarBackground(trialist.first_name + trialist.last_name, false)}
+                            className="font-bold"
+                            style={getAvatarFallbackStyle(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
                           >
                             {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                           </AvatarFallback>

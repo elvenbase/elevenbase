@@ -285,7 +285,10 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                     style={getAvatarBackground(trialist.first_name + trialist.last_name, !!avatarUrl)}
                   >
                     <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
-                    <AvatarFallback className="text-white font-bold">
+                    <AvatarFallback 
+                      className="font-bold"
+                      style={getAvatarFallbackStyle(trialist.first_name + trialist.last_name, !!avatarUrl)}
+                    >
                       {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>

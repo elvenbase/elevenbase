@@ -45,9 +45,8 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   const avatarClasses = `${sizeClasses[size]} ${className}`.trim();
   
   // Logica per lo style del componente Avatar
-  const avatarStyle = hasAvatar 
-    ? { ...getAvatarBackground(fullName, hasAvatar), ...style }
-    : style;
+  // Applica sempre lo sfondo configurato, sia per avatar che per fallback
+  const avatarStyle = { ...getAvatarBackground(fullName, hasAvatar), ...style };
 
   return (
     <Avatar 
@@ -60,7 +59,7 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
         alt={`${firstName} ${lastName}`} 
       />
       <AvatarFallback 
-        className="text-white font-bold"
+        className="font-bold"
         style={getAvatarFallbackStyle(fullName, hasAvatar)}
       >
         {initials}

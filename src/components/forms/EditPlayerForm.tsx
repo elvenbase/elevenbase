@@ -244,7 +244,10 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16" style={getAvatarBackground(player.first_name + player.last_name, !!avatarUrl)}>
                 <AvatarImage src={avatarUrl || undefined} />
-                <AvatarFallback className="text-white font-bold">
+                <AvatarFallback 
+                  className="font-bold"
+                  style={getAvatarFallbackStyle(player.first_name + player.last_name, !!avatarUrl)}
+                >
                   {player.first_name.charAt(0)}{player.last_name.charAt(0)}
                 </AvatarFallback>
               </Avatar>

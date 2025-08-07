@@ -575,7 +575,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                             >
                               <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                               <AvatarFallback 
-                                className="text-white font-bold text-xs"
+                                className="font-bold text-xs"
+                                style={getAvatarFallbackStyle(assignedPlayer.first_name + assignedPlayer.last_name, !!assignedPlayer.avatar_url)}
                               >
                                 {getPlayerInitials(assignedPlayer)}
                               </AvatarFallback>
@@ -619,7 +620,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
-                                    className="text-white text-xs font-bold"
+                                    className="text-xs font-bold"
+                                    style={getAvatarFallbackStyle(player.first_name + player.last_name, !!player.avatar_url)}
                                   >
                                     {getPlayerInitials(player)}
                                   </AvatarFallback>
@@ -648,7 +650,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                           >
                             <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                             <AvatarFallback 
-                              className="text-white font-bold"
+                              className="font-bold"
+                              style={getAvatarFallbackStyle(assignedPlayer.first_name + assignedPlayer.last_name, !!assignedPlayer.avatar_url)}
                             >
                               {getPlayerInitials(assignedPlayer)}
                             </AvatarFallback>
@@ -744,7 +747,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                             >
                               <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                               <AvatarFallback 
-                                className="text-white font-bold text-lg"
+                                className="font-bold text-lg"
+                                style={getAvatarFallbackStyle(assignedPlayer.first_name + assignedPlayer.last_name, !!assignedPlayer.avatar_url)}
                               >
                                 {getPlayerInitials(assignedPlayer)}
                               </AvatarFallback>
@@ -790,7 +794,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
                                   <AvatarFallback 
-                                    className="text-white text-xs font-bold"
+                                    className="text-xs font-bold"
+                                    style={getAvatarFallbackStyle(player.first_name + player.last_name, !!player.avatar_url)}
                                   >
                                     {getPlayerInitials(player)}
                                   </AvatarFallback>
@@ -819,7 +824,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
                           >
                             <AvatarImage src={assignedPlayer.avatar_url || undefined} />
                             <AvatarFallback 
-                              className="text-white font-bold"
+                              className="font-bold"
+                              style={getAvatarFallbackStyle(assignedPlayer.first_name + assignedPlayer.last_name, !!assignedPlayer.avatar_url)}
                             >
                               {getPlayerInitials(assignedPlayer)}
                             </AvatarFallback>

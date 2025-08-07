@@ -186,8 +186,8 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={trialist.avatar_url || undefined} />
                       <AvatarFallback 
-                        className="text-white font-bold"
-                        style={getAvatarBackground(trialist.first_name + trialist.last_name)}
+                        className="font-bold"
+                        style={getAvatarFallbackStyle(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
                       >
                         {trialist.first_name[0]}{trialist.last_name[0]}
                       </AvatarFallback>
@@ -268,8 +268,8 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={trialist.avatar_url || undefined} />
                       <AvatarFallback 
-                        className="text-white font-bold"
-                        style={getAvatarBackground(trialist.first_name + trialist.last_name)}
+                        className="font-bold"
+                        style={getAvatarFallbackStyle(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
                       >
                         {trialist.first_name[0]}{trialist.last_name[0]}
                       </AvatarFallback>

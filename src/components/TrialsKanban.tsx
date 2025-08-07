@@ -44,7 +44,8 @@ const TrialistCard = ({
               alt={`${trialist.first_name} ${trialist.last_name}`} 
             />
             <AvatarFallback 
-              className="text-white font-bold"
+              className="font-bold"
+              style={getAvatarFallbackStyle(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
             >
               {trialist.first_name[0]}{trialist.last_name[0]}
             </AvatarFallback>

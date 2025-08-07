@@ -484,12 +484,17 @@ export const AvatarManager: React.FC = () => {
                     <Avatar className="w-12 h-12">
                       <AvatarImage src="" />
                       <AvatarFallback 
-                        className="text-white font-bold"
+                        className="font-bold"
                         style={{
                           backgroundColor: background.type === 'color' ? background.value : 'transparent',
                           backgroundImage: background.type === 'image' ? `url(${background.value})` : 'none',
                           backgroundSize: 'cover',
-                          backgroundPosition: 'center'
+                          backgroundPosition: 'center',
+                          color: background.text_color || '#ffffff',
+                          fontSize: background.text_size || '14px',
+                          fontWeight: background.text_weight || '600',
+                          fontFamily: background.text_family || 'Inter, system-ui, sans-serif',
+                          textShadow: background.text_shadow || '2px 2px 4px rgba(0,0,0,0.8)'
                         }}
                       >
                         JD

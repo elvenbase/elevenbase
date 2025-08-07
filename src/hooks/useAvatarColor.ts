@@ -38,8 +38,8 @@ export const useAvatarColor = () => {
     backgroundColor?: string; 
     backgroundImage?: string;
   } => {
-    // Se il giocatore ha un avatar caricato, usa il sistema personalizzato
-    if (hasAvatar && defaultBackground) {
+    // Se c'è uno sfondo predefinito configurato, usalo SEMPRE
+    if (defaultBackground) {
       if (defaultBackground.type === 'color') {
         return { backgroundColor: defaultBackground.value }
       } else if (defaultBackground.type === 'image') {
@@ -49,23 +49,30 @@ export const useAvatarColor = () => {
       }
     }
 
-    // Se non ha avatar O non ci sono custom background, usa il fallback
-    if (!hasAvatar) {
-      return { backgroundColor: '#0D1B2A' }
-    }
-
-    // Fallback: usa il colore generato
+    // Se non ci sono custom background, usa il fallback generato
     return { backgroundColor: getAvatarColor(name) }
   }
 
   const getAvatarFallbackStyle = (name: string, hasAvatar: boolean = false): React.CSSProperties => {
-    // Se non ha avatar, applica sempre il background scuro direttamente al fallback
-    if (!hasAvatar) {
-      return { backgroundColor: '#0D1B2A', color: 'white' }
+    // Se c'è uno sfondo predefinito con impostazioni testo, usalo SEMPRE
+    if (defaultBackground) {
+      return {
+        color: defaultBackground.text_color || '#ffffff',
+        fontSize: defaultBackground.text_size || '14px',
+        fontWeight: defaultBackground.text_weight || '600',
+        fontFamily: defaultBackground.text_family || 'Inter, system-ui, sans-serif',
+        textShadow: defaultBackground.text_shadow || '2px 2px 4px rgba(0,0,0,0.8)'
+      }
     }
-    
-    // Se ha avatar, il background viene gestito dal componente Avatar
-    return { color: 'white' }
+
+    // Fallback: usa impostazioni di default per testo bianco
+    return { 
+      color: 'white',
+      fontSize: '14px',
+      fontWeight: '600',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+    }
   }
 
   return {
