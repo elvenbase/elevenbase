@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAvatarColor } from '@/hooks/useAvatarColor';
 import { useUpdatePlayer } from "@/hooks/useSupabaseData";
+import { useFieldOptions } from "@/hooks/useFieldOptions";
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,7 @@ interface EditPlayerFormProps {
     last_name: string;
     jersey_number?: number;
     position?: string;
+    player_role?: string;
     status: 'active' | 'inactive' | 'injured' | 'suspended';
     phone?: string;
     birth_date?: string;
@@ -59,6 +61,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
     last_name: player.last_name,
     jersey_number: player.jersey_number || '',
     position: player.position || '',
+    player_role: player.player_role || '',
     status: player.status || 'active',
     phone: player.phone || '',
     birth_date: player.birth_date || '',
@@ -79,6 +82,12 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
   const updatePlayer = useUpdatePlayer();
   const { toast } = useToast();
   const { getAvatarBackground } = useAvatarColor();
+  const { getOptionsForField, loadOptions } = useFieldOptions();
+
+  // Load field options when component mounts
+  useEffect(() => {
+    loadOptions();
+  }, [loadOptions]);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -162,6 +171,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         last_name: formData.last_name,
         jersey_number: formData.jersey_number ? parseInt(formData.jersey_number.toString()) : null,
         position: formData.position || null,
+        player_role: formData.player_role || null,
         status: formData.status,
         phone: fullPhone || null,
         birth_date: formData.birth_date || null,
@@ -189,19 +199,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
     }
   };
 
-  const positions = [
-    "Portiere",
-    "Difensore Centrale", 
-    "Terzino Destro",
-    "Terzino Sinistro",
-    "Centrocampista Centrale",
-    "Centrocampista Offensivo", 
-    "Centrocampista Difensivo",
-    "Ala Destra",
-    "Ala Sinistra", 
-    "Prima Punta",
-    "Seconda Punta"
-  ];
+
 
   const phonePrefixes = [
     { value: '+39', label: '+39 (Italia)' },
@@ -308,7 +306,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="jersey_number">Numero Maglia</Label>
               <Input
@@ -321,18 +319,36 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
               />
             </div>
             <div>
-              <Label htmlFor="position">Ruolo</Label>
+              <Label htmlFor="position">Posizione</Label>
               <Select
                 value={formData.position}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}
               >
                 <SelectTrigger>
+                  <SelectValue placeholder="Seleziona posizione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getOptionsForField('position').map((option) => (
+                    <SelectItem key={option.id} value={option.option_value}>
+                      {option.option_label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="player_role">Ruolo</Label>
+              <Select
+                value={formData.player_role}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, player_role: value }))}
+              >
+                <SelectTrigger>
                   <SelectValue placeholder="Seleziona ruolo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {positions.map((position) => (
-                    <SelectItem key={position} value={position}>
-                      {position}
+                  {getOptionsForField('player_role').map((option) => (
+                    <SelectItem key={option.id} value={option.option_value}>
+                      {option.option_label}
                     </SelectItem>
                   ))}
                 </SelectContent>

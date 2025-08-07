@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreatePlayer } from '@/hooks/useSupabaseData';
+import { useFieldOptions } from '@/hooks/useFieldOptions';
 import { UserPlus } from 'lucide-react';
 
 interface PlayerFormProps {
@@ -18,6 +19,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
     last_name: '',
     jersey_number: '',
     position: '',
+    player_role: '',
     status: 'active',
     phone: '',
     birth_date: '',
@@ -30,6 +32,12 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
   });
 
   const createPlayer = useCreatePlayer();
+  const { getOptionsForField, loadOptions } = useFieldOptions();
+
+  // Load field options when component mounts
+  useEffect(() => {
+    loadOptions();
+  }, [loadOptions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +47,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
       last_name: formData.last_name,
       jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
       position: formData.position || undefined,
+      player_role: formData.player_role || undefined,
       status: formData.status as 'active' | 'inactive' | 'injured' | 'suspended',
       phone: formData.phone || undefined,
       birth_date: formData.birth_date || undefined,
@@ -57,6 +66,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
         last_name: '',
         jersey_number: '',
         position: '',
+        player_role: '',
         status: 'active',
         phone: '',
         birth_date: '',
@@ -126,13 +136,35 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Posizione</label>
-              <Input
-                type="text"
-                placeholder="Ruolo (es. Centrocampista)"
-                value={formData.position}
-                onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-              />
+              <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleziona posizione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getOptionsForField('position').map((option) => (
+                    <SelectItem key={option.id} value={option.option_value}>
+                      {option.option_label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Ruolo</label>
+            <Select value={formData.player_role} onValueChange={(value) => setFormData(prev => ({ ...prev, player_role: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleziona ruolo" />
+              </SelectTrigger>
+              <SelectContent>
+                {getOptionsForField('player_role').map((option) => (
+                  <SelectItem key={option.id} value={option.option_value}>
+                    {option.option_label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -242,10 +274,11 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                 <SelectValue placeholder="Seleziona stato" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Attivo</SelectItem>
-                <SelectItem value="inactive">Inattivo</SelectItem>
-                <SelectItem value="injured">Infortunato</SelectItem>
-                <SelectItem value="suspended">Squalificato</SelectItem>
+                {getOptionsForField('status').map((option) => (
+                  <SelectItem key={option.id} value={option.option_value}>
+                    {option.option_label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
