@@ -6,8 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAvatarColor } from '@/hooks/useAvatarColor';
+import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { useCreateTrialist } from '@/hooks/useSupabaseData';
 import { useFieldOptions } from '@/hooks/useFieldOptions';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,7 +45,6 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createTrialist = useCreateTrialist();
   const { toast } = useToast();
-  const { getAvatarFallbackStyle } = useAvatarColor();
   const { getOptionsForField, loadOptions } = useFieldOptions();
 
   // Load field options when component mounts
@@ -55,11 +53,6 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       loadOptions();
     }
   }, [open, loadOptions]);
-
-  // Memoizza lo stile dell'avatar per evitare re-rendering ad ogni keystroke
-  const avatarStyle = useMemo(() => {
-    return getAvatarFallbackStyle(formData.first_name + formData.last_name, !!avatarUrl);
-  }, [formData.first_name, formData.last_name, avatarUrl, getAvatarFallbackStyle]);
 
   // Memoizza le funzioni di gestione per evitare re-rendering
   const handleInputChange = useCallback((field: string, value: string) => {
@@ -218,15 +211,12 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
           <div className="space-y-2">
             <Label>Foto Profilo</Label>
             <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
-                <AvatarFallback 
-                  className="font-bold"
-                  style={avatarStyle}
-                >
-                  {formData.first_name.charAt(0) || 'U'}{formData.last_name.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
+              <PlayerAvatar
+                firstName={formData.first_name || 'U'}
+                lastName={formData.last_name || 'U'}
+                avatarUrl={avatarUrl}
+                size="xl"
+              />
               <div className="flex gap-2">
                 <Button
                   type="button"

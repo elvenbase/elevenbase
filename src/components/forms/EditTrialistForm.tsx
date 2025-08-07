@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAvatarColor } from '@/hooks/useAvatarColor';
+import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { useUpdateTrialist, usePromoteTrialist, useAvailableJerseyNumbers } from "@/hooks/useSupabaseData";
 import { useFieldOptions } from "@/hooks/useFieldOptions";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,7 +84,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const updateTrialist = useUpdateTrialist();
   const promoteTrialist = usePromoteTrialist();
   const { toast } = useToast();
-  const { getAvatarBackground } = useAvatarColor();
+
   const { getOptionsForField, loadOptions } = useFieldOptions();
 
   // Load field options when component mounts
@@ -280,18 +279,12 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
               <div className="space-y-2">
                 <Label>Foto Profilo</Label>
                 <div className="flex items-center gap-4">
-                  <Avatar 
-                    className="h-16 w-16"
-                    style={getAvatarBackground(trialist.first_name + trialist.last_name, !!avatarUrl)}
-                  >
-                    <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
-                    <AvatarFallback 
-                      className="font-bold"
-                      style={getAvatarFallbackStyle(trialist.first_name + trialist.last_name, !!avatarUrl)}
-                    >
-                      {trialist.first_name.charAt(0)}{trialist.last_name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <PlayerAvatar
+                    firstName={trialist.first_name}
+                    lastName={trialist.last_name}
+                    avatarUrl={avatarUrl}
+                    size="xl"
+                  />
                   <div className="flex gap-2">
                     <Button
                       type="button"

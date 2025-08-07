@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAvatarColor } from '@/hooks/useAvatarColor';
+import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { useUpdatePlayer } from "@/hooks/useSupabaseData";
 import { useFieldOptions } from "@/hooks/useFieldOptions";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,7 +80,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updatePlayer = useUpdatePlayer();
   const { toast } = useToast();
-  const { getAvatarBackground } = useAvatarColor();
+
   const { getOptionsForField, loadOptions } = useFieldOptions();
 
   // Load field options when component mounts
@@ -242,15 +241,12 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
           <div className="space-y-3">
             <Label>Avatar</Label>
             <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16" style={getAvatarBackground(player.first_name + player.last_name, !!avatarUrl)}>
-                <AvatarImage src={avatarUrl || undefined} />
-                <AvatarFallback 
-                  className="font-bold"
-                  style={getAvatarFallbackStyle(player.first_name + player.last_name, !!avatarUrl)}
-                >
-                  {player.first_name.charAt(0)}{player.last_name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              <PlayerAvatar
+                firstName={player.first_name}
+                lastName={player.last_name}
+                avatarUrl={avatarUrl}
+                size="xl"
+              />
               
               <div className="flex flex-col gap-2">
                 <input
