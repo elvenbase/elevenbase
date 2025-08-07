@@ -90,8 +90,10 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
 
   // Load field options when component mounts
   useEffect(() => {
-    loadOptions();
-  }, [loadOptions]);
+    if (open) {
+      loadOptions();
+    }
+  }, [open, loadOptions]);
 
   // Only fetch jersey numbers when the selection dialog is about to open
   const { 

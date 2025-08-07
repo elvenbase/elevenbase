@@ -36,8 +36,10 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
 
   // Load field options when component mounts
   useEffect(() => {
-    loadOptions();
-  }, [loadOptions]);
+    if (open) {
+      loadOptions();
+    }
+  }, [open, loadOptions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,11 +143,17 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                   <SelectValue placeholder="Seleziona posizione" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getOptionsForField('position').map((option) => (
-                    <SelectItem key={option.id} value={option.option_value}>
-                      {option.option_label}
+                  {getOptionsForField('position').length > 0 ? (
+                    getOptionsForField('position').map((option) => (
+                      <SelectItem key={option.id} value={option.option_value}>
+                        {option.option_label}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      Caricamento opzioni...
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -157,13 +165,19 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
               <SelectTrigger>
                 <SelectValue placeholder="Seleziona ruolo" />
               </SelectTrigger>
-              <SelectContent>
-                {getOptionsForField('player_role').map((option) => (
-                  <SelectItem key={option.id} value={option.option_value}>
-                    {option.option_label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+                              <SelectContent>
+                  {getOptionsForField('player_role').length > 0 ? (
+                    getOptionsForField('player_role').map((option) => (
+                      <SelectItem key={option.id} value={option.option_value}>
+                        {option.option_label}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      Caricamento opzioni...
+                    </SelectItem>
+                  )}
+                </SelectContent>
             </Select>
           </div>
 
@@ -274,11 +288,17 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                 <SelectValue placeholder="Seleziona stato" />
               </SelectTrigger>
               <SelectContent>
-                {getOptionsForField('status').map((option) => (
-                  <SelectItem key={option.id} value={option.option_value}>
-                    {option.option_label}
+                {getOptionsForField('status').length > 0 ? (
+                  getOptionsForField('status').map((option) => (
+                    <SelectItem key={option.id} value={option.option_value}>
+                      {option.option_label}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="" disabled>
+                    Caricamento opzioni...
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </div>

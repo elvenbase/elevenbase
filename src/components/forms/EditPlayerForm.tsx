@@ -86,8 +86,10 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
 
   // Load field options when component mounts
   useEffect(() => {
-    loadOptions();
-  }, [loadOptions]);
+    if (open) {
+      loadOptions();
+    }
+  }, [open, loadOptions]);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

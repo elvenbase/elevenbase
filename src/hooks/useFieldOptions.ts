@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -14,34 +14,85 @@ export interface FieldOption {
   created_by?: string;
 }
 
+// Cache globale per evitare chiamate multiple
+let globalOptionsCache: FieldOption[] = [];
+let globalLoadingPromise: Promise<FieldOption[]> | null = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minuti
+
 export const useFieldOptions = () => {
   const [options, setOptions] = useState<FieldOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const loadOptions = async (fieldName?: string) => {
     try {
-      setLoading(true);
-      let query = supabase
-        .from('field_options')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
-
-      if (fieldName) {
-        query = query.eq('field_name', fieldName);
+      // Se abbiamo già una promise in corso, aspettiamo quella
+      if (globalLoadingPromise) {
+        const cachedData = await globalLoadingPromise;
+        if (mountedRef.current) {
+          setOptions(cachedData);
+          setLoading(false);
+        }
+        return;
       }
 
-      const { data, error } = await query;
+      // Controlla se il cache è ancora valido
+      const now = Date.now();
+      if (globalOptionsCache.length > 0 && (now - lastFetchTime) < CACHE_DURATION) {
+        if (mountedRef.current) {
+          setOptions(globalOptionsCache);
+          setLoading(false);
+        }
+        return;
+      }
 
-      if (error) throw error;
+      setLoading(true);
+      
+      // Crea una nuova promise per evitare chiamate multiple
+      globalLoadingPromise = (async () => {
+        const { data, error } = await supabase
+          .from('field_options')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
 
-      setOptions(data || []);
+        if (error) throw error;
+
+        const result = data || [];
+        globalOptionsCache = result;
+        lastFetchTime = now;
+        return result;
+      })();
+
+      const result = await globalLoadingPromise;
+      globalLoadingPromise = null;
+
+      if (mountedRef.current) {
+        setOptions(result);
+        setLoading(false);
+      }
     } catch (error) {
+      globalLoadingPromise = null;
       console.error('Error loading field options:', error);
-      toast.error('Impossibile caricare le opzioni');
+      // Non mostrare toast per ogni errore, solo log
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
+  };
+
+  const invalidateCache = () => {
+    globalOptionsCache = [];
+    globalLoadingPromise = null;
+    lastFetchTime = 0;
   };
 
   const createOption = async (option: Omit<FieldOption, 'id' | 'created_at' | 'updated_at'>) => {
@@ -58,7 +109,9 @@ export const useFieldOptions = () => {
 
       if (error) throw error;
 
-      await loadOptions(option.field_name);
+      // Invalida il cache e ricarica
+      invalidateCache();
+      await loadOptions();
       toast.success('Opzione creata con successo');
     } catch (error) {
       console.error('Error creating option:', error);
@@ -75,6 +128,8 @@ export const useFieldOptions = () => {
 
       if (error) throw error;
 
+      // Invalida il cache e ricarica
+      invalidateCache();
       await loadOptions();
       toast.success('Opzione aggiornata con successo');
     } catch (error) {
@@ -92,6 +147,8 @@ export const useFieldOptions = () => {
 
       if (error) throw error;
 
+      // Invalida il cache e ricarica
+      invalidateCache();
       await loadOptions();
       toast.success('Opzione eliminata con successo');
     } catch (error) {
@@ -117,6 +174,7 @@ export const useFieldOptions = () => {
     updateOption,
     deleteOption,
     getOptionsForField,
-    getOptionLabel
+    getOptionLabel,
+    invalidateCache
   };
 }; 

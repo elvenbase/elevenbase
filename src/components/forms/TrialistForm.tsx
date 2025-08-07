@@ -51,8 +51,10 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
 
   // Load field options when component mounts
   useEffect(() => {
-    loadOptions();
-  }, [loadOptions]);
+    if (open) {
+      loadOptions();
+    }
+  }, [open, loadOptions]);
 
   // Memoizza lo stile dell'avatar per evitare re-rendering ad ogni keystroke
   const avatarStyle = useMemo(() => {
