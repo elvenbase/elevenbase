@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -10,31 +11,59 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
+    PostgrestVersion: "13.0.4"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
       admin_setup: {
         Row: {
           created_at: string | null
-          expires_at: string
+          expires_at: string | null
           id: string
           is_completed: boolean | null
           setup_token: string
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
-          expires_at?: string
-          id?: string
-          is_completed?: boolean | null
-          setup_token: string
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string
+          expires_at?: string | null
           id?: string
           is_completed?: boolean | null
           setup_token?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_completed?: boolean | null
+          setup_token?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -155,10 +184,6 @@ export type Database = {
           image_url: string
           is_default: boolean | null
           name: string
-          png_field_lines_color: string | null
-          png_jersey_numbers_color: string | null
-          png_name_box_color: string | null
-          png_name_text_color: string | null
           updated_at: string | null
         }
         Insert: {
@@ -169,10 +194,6 @@ export type Database = {
           image_url: string
           is_default?: boolean | null
           name: string
-          png_field_lines_color?: string | null
-          png_jersey_numbers_color?: string | null
-          png_name_box_color?: string | null
-          png_name_text_color?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -183,10 +204,6 @@ export type Database = {
           image_url?: string
           is_default?: boolean | null
           name?: string
-          png_field_lines_color?: string | null
-          png_jersey_numbers_color?: string | null
-          png_name_box_color?: string | null
-          png_name_text_color?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -291,6 +308,59 @@ export type Database = {
             columns: ["competition_id"]
             isOneToOne: false
             referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_evaluations: {
+        Row: {
+          ability_ratings: number[] | null
+          created_at: string
+          evaluation_date: string
+          evaluator_id: string | null
+          final_decision: Database["public"]["Enums"]["trial_status"] | null
+          flexibility_ratings: number[] | null
+          id: string
+          notes: string | null
+          original_trialist_id: string | null
+          personality_ratings: number[] | null
+          player_id: string
+          transferred_at: string
+        }
+        Insert: {
+          ability_ratings?: number[] | null
+          created_at?: string
+          evaluation_date: string
+          evaluator_id?: string | null
+          final_decision?: Database["public"]["Enums"]["trial_status"] | null
+          flexibility_ratings?: number[] | null
+          id?: string
+          notes?: string | null
+          original_trialist_id?: string | null
+          personality_ratings?: number[] | null
+          player_id: string
+          transferred_at?: string
+        }
+        Update: {
+          ability_ratings?: number[] | null
+          created_at?: string
+          evaluation_date?: string
+          evaluator_id?: string | null
+          final_decision?: Database["public"]["Enums"]["trial_status"] | null
+          flexibility_ratings?: number[] | null
+          id?: string
+          notes?: string | null
+          original_trialist_id?: string | null
+          personality_ratings?: number[] | null
+          player_id?: string
+          transferred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_evaluations_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
             referencedColumns: ["id"]
           },
         ]
@@ -411,113 +481,6 @@ export type Database = {
         }
         Relationships: []
       }
-      player_evaluations: {
-        Row: {
-          id: string
-          player_id: string
-          original_trialist_id: string | null
-          evaluation_date: string
-          personality_ratings: number[]
-          ability_ratings: number[]
-          flexibility_ratings: number[]
-          final_decision: Database["public"]["Enums"]["trial_status"]
-          notes: string | null
-          evaluator_id: string | null
-          transferred_at: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          player_id: string
-          original_trialist_id?: string | null
-          evaluation_date?: string
-          personality_ratings?: number[]
-          ability_ratings?: number[]
-          flexibility_ratings?: number[]
-          final_decision?: Database["public"]["Enums"]["trial_status"]
-          notes?: string | null
-          evaluator_id?: string | null
-          transferred_at?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          player_id?: string
-          original_trialist_id?: string | null
-          evaluation_date?: string
-          personality_ratings?: number[]
-          ability_ratings?: number[]
-          flexibility_ratings?: number[]
-          final_decision?: Database["public"]["Enums"]["trial_status"]
-          notes?: string | null
-          evaluator_id?: string | null
-          transferred_at?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "player_evaluations_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      png_export_settings: {
-        Row: {
-          avatar_background_color: string | null
-          created_at: string | null
-          created_by: string | null
-          description: string | null
-          field_lines_color: string | null
-          field_lines_thickness: number | null
-          id: string
-          is_default: boolean | null
-          jersey_numbers_color: string | null
-          jersey_numbers_shadow: string | null
-          name: string
-          name_box_color: string | null
-          name_text_color: string | null
-          updated_at: string | null
-          use_player_avatars: boolean | null
-        }
-        Insert: {
-          avatar_background_color?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          field_lines_color?: string | null
-          field_lines_thickness?: number | null
-          id?: string
-          is_default?: boolean | null
-          jersey_numbers_color?: string | null
-          jersey_numbers_shadow?: string | null
-          name: string
-          name_box_color?: string | null
-          name_text_color?: string | null
-          updated_at?: string | null
-          use_player_avatars?: boolean | null
-        }
-        Update: {
-          avatar_background_color?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          field_lines_color?: string | null
-          field_lines_thickness?: number | null
-          id?: string
-          is_default?: boolean | null
-          jersey_numbers_color?: string | null
-          jersey_numbers_shadow?: string | null
-          name?: string
-          name_box_color?: string | null
-          name_text_color?: string | null
-          updated_at?: string | null
-          use_player_avatars?: boolean | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string
@@ -550,6 +513,63 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      quick_trial_evaluations: {
+        Row: {
+          ability_ratings: number[] | null
+          created_at: string
+          evaluation_date: string
+          evaluator_id: string | null
+          final_decision: Database["public"]["Enums"]["trial_status"] | null
+          flexibility_ratings: number[] | null
+          id: string
+          notes: string | null
+          personality_ratings: number[] | null
+          session_id: string | null
+          trialist_id: string
+        }
+        Insert: {
+          ability_ratings?: number[] | null
+          created_at?: string
+          evaluation_date?: string
+          evaluator_id?: string | null
+          final_decision?: Database["public"]["Enums"]["trial_status"] | null
+          flexibility_ratings?: number[] | null
+          id?: string
+          notes?: string | null
+          personality_ratings?: number[] | null
+          session_id?: string | null
+          trialist_id: string
+        }
+        Update: {
+          ability_ratings?: number[] | null
+          created_at?: string
+          evaluation_date?: string
+          evaluator_id?: string | null
+          final_decision?: Database["public"]["Enums"]["trial_status"] | null
+          flexibility_ratings?: number[] | null
+          id?: string
+          notes?: string | null
+          personality_ratings?: number[] | null
+          session_id?: string | null
+          trialist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_trial_evaluations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quick_trial_evaluations_trialist_id_fkey"
+            columns: ["trialist_id"]
+            isOneToOne: false
+            referencedRelation: "trialists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       training_attendance: {
         Row: {
@@ -688,14 +708,13 @@ export type Database = {
       training_sessions: {
         Row: {
           allow_responses_until: string | null
-          communication_details: string | null
-          communication_type: string | null
           created_at: string
           created_by: string | null
           description: string | null
           end_time: string
           id: string
           is_closed: boolean | null
+          location: string | null
           max_participants: number | null
           public_link_token: string | null
           session_date: string
@@ -705,14 +724,13 @@ export type Database = {
         }
         Insert: {
           allow_responses_until?: string | null
-          communication_details?: string | null
-          communication_type?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           end_time: string
           id?: string
           is_closed?: boolean | null
+          location?: string | null
           max_participants?: number | null
           public_link_token?: string | null
           session_date: string
@@ -722,14 +740,13 @@ export type Database = {
         }
         Update: {
           allow_responses_until?: string | null
-          communication_details?: string | null
-          communication_type?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           end_time?: string
           id?: string
           is_closed?: boolean | null
+          location?: string | null
           max_participants?: number | null
           public_link_token?: string | null
           session_date?: string
@@ -785,63 +802,6 @@ export type Database = {
             columns: ["trialist_id"]
             isOneToOne: false
             referencedRelation: "trialists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quick_trial_evaluations: {
-        Row: {
-          id: string
-          trialist_id: string
-          session_id: string | null
-          evaluation_date: string
-          personality_ratings: number[]
-          ability_ratings: number[]
-          flexibility_ratings: number[]
-          final_decision: Database["public"]["Enums"]["trial_status"]
-          notes: string | null
-          evaluator_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          trialist_id: string
-          session_id?: string | null
-          evaluation_date?: string
-          personality_ratings?: number[]
-          ability_ratings?: number[]
-          flexibility_ratings?: number[]
-          final_decision?: Database["public"]["Enums"]["trial_status"]
-          notes?: string | null
-          evaluator_id?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          trialist_id?: string
-          session_id?: string | null
-          evaluation_date?: string
-          personality_ratings?: number[]
-          ability_ratings?: number[]
-          flexibility_ratings?: number[]
-          final_decision?: Database["public"]["Enums"]["trial_status"]
-          notes?: string | null
-          evaluator_id?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quick_trial_evaluations_trialist_id_fkey"
-            columns: ["trialist_id"]
-            isOneToOne: false
-            referencedRelation: "trialists"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quick_trial_evaluations_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "training_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -941,6 +901,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_admin_role: {
+        Args: { user_email: string }
+        Returns: boolean
+      }
       calculate_response_deadline: {
         Args: { session_date: string; start_time: string }
         Returns: string
@@ -948,10 +912,6 @@ export type Database = {
       complete_admin_setup: {
         Args: { _setup_token: string; _user_id: string }
         Returns: boolean
-      }
-      create_avatar_backgrounds_table: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
       }
       create_fake_user: {
         Args: { _email: string; _password: string; _username: string }
@@ -1113,6 +1073,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["superadmin", "admin", "coach", "player"],
