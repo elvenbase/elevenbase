@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { CustomFormation } from '@/hooks/useCustomFormations'
+import { useFieldOptions } from '@/hooks/useFieldOptions'
 import { Trash2, Save, Plus } from 'lucide-react'
 
 interface FormationBuilderProps {
@@ -18,6 +19,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
   onSave,
   onCancel
 }) => {
+  const { options, loadOptions, getOptionsForField } = useFieldOptions();
   const [name, setName] = useState(formation?.name || '')
   const [defenders, setDefenders] = useState(formation?.defenders || 4)
   const [midfielders, setMidfielders] = useState(formation?.midfielders || 4)
@@ -26,11 +28,37 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
   const [draggedPosition, setDraggedPosition] = useState<string | null>(null)
   const [editingRole, setEditingRole] = useState<string | null>(null)
 
+  // Load field options on component mount
+  useEffect(() => {
+    loadOptions();
+  }, [loadOptions]);
+
+  // Get player roles from field_options
+  const playerRoles = getOptionsForField('player_role');
+
   const totalPlayers = defenders + midfielders + forwards
 
   const generatePositions = useCallback(() => {
     const newPositions = []
     let positionId = 1
+
+    // Get default roles for each position type
+    const getDefaultRole = (type: 'defender' | 'midfielder' | 'forward') => {
+      const roles = playerRoles.filter(role => {
+        const value = role.option_value.toLowerCase();
+        switch (type) {
+          case 'defender':
+            return value.includes('difensore') || value.includes('terzino') || value.includes('esterno');
+          case 'midfielder':
+            return value.includes('mediano') || value.includes('regista') || value.includes('mezzala') || value.includes('interno') || value.includes('trequartista');
+          case 'forward':
+            return value.includes('ala') || value.includes('punta') || value.includes('nove') || value.includes('centravanti');
+          default:
+            return false;
+        }
+      });
+      return roles.length > 0 ? roles[0] : null;
+    };
 
     // Goalkeeper (always present)
     newPositions.push({
@@ -44,6 +72,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
 
     // Defenders
     const defenderSpacing = defenders > 1 ? 80 / (defenders - 1) : 0
+    const defaultDefenderRole = getDefaultRole('defender');
     for (let i = 0; i < defenders; i++) {
       const x = defenders === 1 ? 50 : 10 + (i * defenderSpacing)
       newPositions.push({
@@ -51,14 +80,15 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Difensore ${positionId}`,
         x,
         y: 70,
-        role: 'Difensore',
-        roleShort: 'D'
+        role: defaultDefenderRole?.option_label || 'Difensore',
+        roleShort: defaultDefenderRole?.abbreviation || 'D'
       })
       positionId++
     }
 
     // Midfielders
     const midfielderSpacing = midfielders > 1 ? 80 / (midfielders - 1) : 0
+    const defaultMidfielderRole = getDefaultRole('midfielder');
     for (let i = 0; i < midfielders; i++) {
       const x = midfielders === 1 ? 50 : 10 + (i * midfielderSpacing)
       newPositions.push({
@@ -66,14 +96,15 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Centrocampista ${positionId}`,
         x,
         y: 45,
-        role: 'Centrocampista',
-        roleShort: 'C'
+        role: defaultMidfielderRole?.option_label || 'Centrocampista',
+        roleShort: defaultMidfielderRole?.abbreviation || 'C'
       })
       positionId++
     }
 
     // Forwards
     const forwardSpacing = forwards > 1 ? 80 / (forwards - 1) : 0
+    const defaultForwardRole = getDefaultRole('forward');
     for (let i = 0; i < forwards; i++) {
       const x = forwards === 1 ? 50 : 10 + (i * forwardSpacing)
       newPositions.push({
@@ -81,14 +112,14 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Attaccante ${positionId}`,
         x,
         y: 20,
-        role: 'Attaccante',
-        roleShort: 'A'
+        role: defaultForwardRole?.option_label || 'Attaccante',
+        roleShort: defaultForwardRole?.abbreviation || 'A'
       })
       positionId++
     }
 
     setPositions(newPositions)
-  }, [defenders, midfielders, forwards])
+  }, [defenders, midfielders, forwards, playerRoles])
 
   const handlePositionDrag = useCallback((positionId: string, event: React.MouseEvent | React.TouchEvent) => {
     event.preventDefault()
@@ -417,27 +448,36 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                                              {/* Role display/edit - desktop */}
                        {editingRole === position.id ? (
                          <div 
-                           className={`bg-white/95 backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg min-w-[150px] space-y-3 absolute z-50 ${
+                           className={`bg-white/95 backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg min-w-[200px] space-y-3 absolute z-50 ${
                              position.x > 70 ? 'right-0' : position.x < 30 ? 'left-0' : 'left-1/2 -translate-x-1/2'
                            } ${
                              position.y < 30 ? 'top-full mt-3' : 'bottom-full mb-3'
                            }`}
                            onClick={(e) => e.stopPropagation()}
                          >
-                           <Input
-                             value={position.role || ''}
-                             onChange={(e) => updatePositionRole(position.id, e.target.value, position.roleShort)}
-                             placeholder="Ruolo esteso"
-                             className="text-sm h-9"
-                             autoFocus
-                           />
-                           <Input
-                             value={position.roleShort || ''}
-                             onChange={(e) => updatePositionRole(position.id, position.role || '', e.target.value)}
-                             placeholder="Abbreviato"
-                             className="text-sm h-9"
-                             maxLength={3}
-                           />
+                           <div>
+                             <Label className="text-xs text-gray-600">Ruolo</Label>
+                             <select
+                               value={position.role || ''}
+                               onChange={(e) => {
+                                 const selectedRole = playerRoles.find(role => role.option_label === e.target.value);
+                                 updatePositionRole(
+                                   position.id, 
+                                   selectedRole?.option_label || e.target.value,
+                                   selectedRole?.abbreviation || ''
+                                 );
+                               }}
+                               className="w-full text-sm h-9 px-3 py-1 border border-gray-300 rounded-md bg-white"
+                               autoFocus
+                             >
+                               <option value="">Seleziona ruolo...</option>
+                               {playerRoles.map((role) => (
+                                 <option key={role.id} value={role.option_label}>
+                                   {role.option_label} ({role.abbreviation})
+                                 </option>
+                               ))}
+                             </select>
+                           </div>
                            <div className="flex gap-2">
                              <Button 
                                size="sm" 
@@ -484,7 +524,11 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                     <div className="flex-1">
                       <div className="font-medium text-sm">{position.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {position.role} {position.roleShort && `(${position.roleShort})`}
+                        {position.role} {position.roleShort && (
+                          <span className="ml-1 text-xs bg-primary/10 text-primary px-1 rounded">
+                            {position.roleShort}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex space-x-1">
