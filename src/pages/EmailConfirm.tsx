@@ -20,8 +20,12 @@ const EmailConfirm = () => {
         const accessToken = searchParams.get('access_token');
         const tokenHash = searchParams.get('token_hash');
 
-        // Se abbiamo un access_token, significa che l'utente è già autenticato
-        if (accessToken) {
+        // Controlla anche l'hash fragment per access_token
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashAccessToken = hashParams.get('access_token');
+
+        // Se abbiamo un access_token (da query params o hash), significa che l'utente è già autenticato
+        if (accessToken || hashAccessToken) {
           console.log('Access token ricevuto, utente già autenticato');
           setStatus('success');
           setMessage('Email confermata con successo! Ora puoi accedere.');
@@ -82,6 +86,30 @@ const EmailConfirm = () => {
 
     confirmEmail();
   }, [searchParams]);
+
+  // Listener per cambiamenti nell'hash
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hashAccessToken = hashParams.get('access_token');
+      
+      if (hashAccessToken) {
+        console.log('Access token ricevuto dall\'hash, utente già autenticato');
+        setStatus('success');
+        setMessage('Email confermata con successo! Ora puoi accedere.');
+      }
+    };
+
+    // Controlla immediatamente se c'è già un hash
+    handleHashChange();
+
+    // Aggiungi listener per cambiamenti nell'hash
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   const handleContinue = () => {
     navigate('/auth');
