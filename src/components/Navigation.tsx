@@ -36,7 +36,12 @@ const Navigation = () => {
   ];
 
   const adminItems = [
-    { name: "Utenti", path: "/users", icon: Shield },
+    { name: "Dashboard", path: "/admin", icon: Shield },
+    { name: "Utenti", path: "/admin/users", icon: Users },
+    { name: "Formazioni", path: "/admin/formations", icon: Grid3X3 },
+    { name: "Maglie", path: "/admin/jerseys", icon: Settings },
+    { name: "Sfondi Avatar", path: "/admin/avatar-backgrounds", icon: Settings },
+    { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
     { name: "Opzioni Campi", path: "/field-options", icon: Settings },
   ];
 

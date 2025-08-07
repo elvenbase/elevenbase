@@ -33,6 +33,13 @@ const PublicSession = lazy(() => import("@/pages/PublicSession"));
 const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
+// Admin pages
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const FormationManagement = lazy(() => import("@/pages/admin/FormationManagement"));
+const JerseyManagement = lazy(() => import("@/pages/admin/JerseyManagement"));
+const AvatarBackgroundManagement = lazy(() => import("@/pages/admin/AvatarBackgroundManagement"));
+const PngSettingsManagement = lazy(() => import("@/pages/admin/PngSettingsManagement"));
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -222,6 +229,56 @@ function App() {
                         <Navigation />
                         <main className="ml-0 transition-all duration-200">
                           <FieldOptionsManagement />
+                        </main>
+                      </AdminRoute>
+                    } />
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={
+                      <AdminRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <AdminDashboard />
+                        </main>
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin/users" element={
+                      <AdminRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <UserManagement />
+                        </main>
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin/formations" element={
+                      <AdminRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <FormationManagement />
+                        </main>
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin/jerseys" element={
+                      <AdminRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <JerseyManagement />
+                        </main>
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin/avatar-backgrounds" element={
+                      <AdminRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <AvatarBackgroundManagement />
+                        </main>
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin/png-settings" element={
+                      <AdminRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <PngSettingsManagement />
                         </main>
                       </AdminRoute>
                     } />
