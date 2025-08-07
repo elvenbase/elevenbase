@@ -30,7 +30,6 @@ SELECT
   au.email,
   au.email_confirmed_at,
   p.username,
-  p.full_name,
   ur.role,
   CASE 
     WHEN ur.role = 'admin' THEN '✅ AMMINISTRATORE'

@@ -12,11 +12,10 @@ FROM auth.users
 WHERE email = 'andrea.camolese@me.com';
 
 -- 2. Se l'utente esiste, creiamo il profilo se non esiste
-INSERT INTO profiles (id, username, full_name, avatar_url, created_at, updated_at)
+INSERT INTO profiles (id, username, avatar_url, created_at, updated_at)
 SELECT 
   au.id,
   'andrea.camolese',
-  'Andrea Camolese',
   NULL,
   NOW(),
   NOW()
@@ -45,7 +44,6 @@ SELECT
   au.email,
   au.email_confirmed_at,
   p.username,
-  p.full_name,
   ur.role
 FROM auth.users au
 LEFT JOIN profiles p ON p.id = au.id
