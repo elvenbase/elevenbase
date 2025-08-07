@@ -27,6 +27,7 @@ const Formations = lazy(() => import("@/pages/Formations"));
 const Trials = lazy(() => import("@/pages/Trials"));
 const TrialEvaluations = lazy(() => import("@/pages/TrialEvaluations"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
+const FieldOptionsManagement = lazy(() => import("@/pages/FieldOptionsManagement"));
 const PublicRegistration = lazy(() => import("@/pages/PublicRegistration"));
 const PublicSession = lazy(() => import("@/pages/PublicSession"));
 const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
@@ -213,6 +214,14 @@ function App() {
                         <Navigation />
                         <main className="ml-0 transition-all duration-200">
                           <UserManagement />
+                        </main>
+                      </AdminRoute>
+                    } />
+                    <Route path="/field-options" element={
+                      <AdminRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <FieldOptionsManagement />
                         </main>
                       </AdminRoute>
                     } />

@@ -19,7 +19,8 @@ import {
   Shield,
   LogOut,
   Grid3X3,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -32,7 +33,11 @@ const Navigation = () => {
     { name: "Provini", path: "/trials", icon: UserPlus },
     { name: "Competizioni", path: "/competitions", icon: Trophy },
     { name: "Allenamenti", path: "/training", icon: Activity },
+  ];
+
+  const adminItems = [
     { name: "Utenti", path: "/users", icon: Shield },
+    { name: "Opzioni Campi", path: "/field-options", icon: Settings },
   ];
 
   const squadItems = [
@@ -133,6 +138,36 @@ const Navigation = () => {
                 </NavLink>
               );
             })}
+
+            {/* Admin Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span className="text-sm font-medium">Admin</span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {adminItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem key={item.path} asChild>
+                      <NavLink
+                        to={item.path}
+                        className="flex items-center space-x-2 w-full"
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </NavLink>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* User Menu */}
@@ -230,6 +265,33 @@ const Navigation = () => {
                   </NavLink>
                 );
               })}
+
+              {/* Admin items */}
+              <div className="pt-2 border-t border-border mt-2">
+                <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Amministrazione
+                </div>
+                {adminItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={({ isActive }) =>
+                        `flex items-center space-x-3 px-4 py-3 rounded-xl transition-smooth ${
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-glow"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`
+                      }
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="font-medium">{item.name}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
               
               <div className="pt-4 border-t border-border mt-4">
                 <div className="flex items-center justify-between px-4 py-3">
