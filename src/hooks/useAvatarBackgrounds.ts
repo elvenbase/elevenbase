@@ -7,6 +7,11 @@ export interface AvatarBackground {
   name: string
   type: 'color' | 'image'
   value: string
+  text_color?: string
+  text_shadow?: string
+  text_size?: string
+  text_weight?: string
+  text_family?: string
   is_default: boolean
   created_at: string
   updated_at: string
@@ -65,7 +70,7 @@ export const useAvatarBackgrounds = () => {
     }
   }
 
-  const updateBackground = async (id: string, updates: Partial<Pick<AvatarBackground, 'name' | 'type' | 'value'>>) => {
+  const updateBackground = async (id: string, updates: Partial<Pick<AvatarBackground, 'name' | 'type' | 'value' | 'text_color' | 'text_shadow' | 'text_size' | 'text_weight' | 'text_family'>>) => {
     try {
       const { error } = await supabase
         .from('avatar_backgrounds')

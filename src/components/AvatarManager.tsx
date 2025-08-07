@@ -17,7 +17,12 @@ export const AvatarManager: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     type: 'color' as 'color' | 'image',
-    value: '#3B82F6'
+    value: '#3B82F6',
+    text_color: '#ffffff',
+    text_shadow: '2px 2px 4px rgba(0,0,0,0.8)',
+    text_size: '14px',
+    text_weight: '600',
+    text_family: 'Inter, system-ui, sans-serif'
   })
   const [uploading, setUploading] = useState(false)
   const { toast } = useToast()
@@ -80,7 +85,12 @@ export const AvatarManager: React.FC = () => {
         await updateBackground(editingBackground.id, {
           name: formData.name,
           type: formData.type,
-          value: formData.value
+          value: formData.value,
+          text_color: formData.text_color,
+          text_shadow: formData.text_shadow,
+          text_size: formData.text_size,
+          text_weight: formData.text_weight,
+          text_family: formData.text_family
         })
         setEditingBackground(null)
       } else {
@@ -88,12 +98,26 @@ export const AvatarManager: React.FC = () => {
           name: formData.name,
           type: formData.type,
           value: formData.value,
+          text_color: formData.text_color,
+          text_shadow: formData.text_shadow,
+          text_size: formData.text_size,
+          text_weight: formData.text_weight,
+          text_family: formData.text_family,
           is_default: backgrounds.length === 0 // First one becomes default
         })
         setIsCreating(false)
       }
 
-      setFormData({ name: '', type: 'color', value: '#3B82F6' })
+      setFormData({ 
+        name: '', 
+        type: 'color', 
+        value: '#3B82F6',
+        text_color: '#ffffff',
+        text_shadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        text_size: '14px',
+        text_weight: '600',
+        text_family: 'Inter, system-ui, sans-serif'
+      })
     } catch (error) {
       console.error('Error saving background:', error)
     }
@@ -120,14 +144,28 @@ export const AvatarManager: React.FC = () => {
     setFormData({
       name: background.name,
       type: background.type,
-      value: background.value
+      value: background.value,
+      text_color: background.text_color || '#ffffff',
+      text_shadow: background.text_shadow || '2px 2px 4px rgba(0,0,0,0.8)',
+      text_size: background.text_size || '14px',
+      text_weight: background.text_weight || '600',
+      text_family: background.text_family || 'Inter, system-ui, sans-serif'
     })
   }
 
   const handleCancel = () => {
     setEditingBackground(null)
     setIsCreating(false)
-    setFormData({ name: '', type: 'color', value: '#3B82F6' })
+    setFormData({ 
+      name: '', 
+      type: 'color', 
+      value: '#3B82F6',
+      text_color: '#ffffff',
+      text_shadow: '2px 2px 4px rgba(0,0,0,0.8)',
+      text_size: '14px',
+      text_weight: '600',
+      text_family: 'Inter, system-ui, sans-serif'
+    })
   }
 
 
@@ -216,6 +254,106 @@ export const AvatarManager: React.FC = () => {
             </div>
           )}
 
+          {/* Text Settings Section */}
+          <div className="border-t pt-4">
+            <h3 className="font-semibold mb-3">Impostazioni Scritte</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="text_color">Colore Testo</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="text_color"
+                    type="color"
+                    value={formData.text_color}
+                    onChange={(e) => setFormData(prev => ({ ...prev, text_color: e.target.value }))}
+                    className="w-20 h-10"
+                  />
+                  <Input
+                    value={formData.text_color}
+                    onChange={(e) => setFormData(prev => ({ ...prev, text_color: e.target.value }))}
+                    placeholder="#ffffff"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="text_size">Dimensione Testo</Label>
+                <select
+                  id="text_size"
+                  value={formData.text_size}
+                  onChange={(e) => setFormData(prev => ({ ...prev, text_size: e.target.value }))}
+                  className="w-full mt-2 p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="12px">Piccolo (12px)</option>
+                  <option value="14px">Normale (14px)</option>
+                  <option value="16px">Grande (16px)</option>
+                  <option value="18px">Molto Grande (18px)</option>
+                  <option value="20px">Enorme (20px)</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="text_weight">Spessore Testo</Label>
+                <select
+                  id="text_weight"
+                  value={formData.text_weight}
+                  onChange={(e) => setFormData(prev => ({ ...prev, text_weight: e.target.value }))}
+                  className="w-full mt-2 p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="400">Normale (400)</option>
+                  <option value="500">Medio (500)</option>
+                  <option value="600">Semi-Bold (600)</option>
+                  <option value="700">Bold (700)</option>
+                  <option value="800">Extra Bold (800)</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="text_shadow">Ombra Testo</Label>
+                <select
+                  id="text_shadow"
+                  value={formData.text_shadow}
+                  onChange={(e) => setFormData(prev => ({ ...prev, text_shadow: e.target.value }))}
+                  className="w-full mt-2 p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="none">Nessuna</option>
+                  <option value="1px 1px 2px rgba(0,0,0,0.5)">Leggera</option>
+                  <option value="2px 2px 4px rgba(0,0,0,0.8)">Media</option>
+                  <option value="3px 3px 6px rgba(0,0,0,0.9)">Forte</option>
+                  <option value="0 0 10px rgba(255,255,255,0.8)">Glow Bianco</option>
+                  <option value="0 0 10px rgba(0,0,0,0.8)">Glow Nero</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Text Preview */}
+            <div className="mt-4 p-3 border rounded-lg">
+              <Label className="text-sm text-gray-600 mb-2">Anteprima Testo</Label>
+              <div 
+                className="p-3 rounded"
+                style={{
+                  backgroundColor: formData.type === 'color' ? formData.value : '#3B82F6',
+                  backgroundImage: formData.type === 'image' && formData.value ? `url(${formData.value})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                <div
+                  style={{
+                    color: formData.text_color,
+                    fontSize: formData.text_size,
+                    fontWeight: formData.text_weight,
+                    fontFamily: formData.text_family,
+                    textShadow: formData.text_shadow,
+                    textAlign: 'center'
+                  }}
+                >
+                  Esempio Testo
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex gap-2 pt-4">
             <Button onClick={handleSubmit} disabled={uploading}>
               {editingBackground ? 'Aggiorna' : 'Crea'}
@@ -262,14 +400,29 @@ export const AvatarManager: React.FC = () => {
               <Card key={background.id} className="overflow-hidden">
                 <div className="relative">
                   <div 
-                    className="h-32 w-full"
+                    className="h-32 w-full relative"
                     style={{
                       backgroundColor: background.type === 'color' ? background.value : 'transparent',
                       backgroundImage: background.type === 'image' ? `url(${background.value})` : 'none',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center'
                     }}
-                  />
+                  >
+                    {/* Text Preview on Background */}
+                    <div
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{
+                        color: background.text_color || '#ffffff',
+                        fontSize: background.text_size || '14px',
+                        fontWeight: background.text_weight || '600',
+                        fontFamily: background.text_family || 'Inter, system-ui, sans-serif',
+                        textShadow: background.text_shadow || '2px 2px 4px rgba(0,0,0,0.8)',
+                        textAlign: 'center'
+                      }}
+                    >
+                      Aa
+                    </div>
+                  </div>
                   {background.is_default && (
                     <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
                       Predefinito
