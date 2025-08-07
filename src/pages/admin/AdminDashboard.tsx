@@ -57,12 +57,12 @@ const AdminDashboard = () => {
       badge: 'PNG'
     },
     {
-      title: 'Opzioni Campi',
+      title: 'Opzioni Giocatori',
       description: 'Gestisci le opzioni dinamiche dei form (ruoli, posizioni, status)',
       icon: Database,
       href: '/field-options',
       color: 'bg-indigo-500',
-      badge: 'Campi'
+      badge: 'Giocatori'
     }
   ];
 

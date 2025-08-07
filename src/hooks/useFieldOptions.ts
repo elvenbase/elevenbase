@@ -7,6 +7,7 @@ export interface FieldOption {
   field_name: string;
   option_value: string;
   option_label: string;
+  abbreviation?: string;
   sort_order: number;
   is_active: boolean;
   created_at: string;
@@ -119,7 +120,7 @@ export const useFieldOptions = () => {
     }
   };
 
-  const updateOption = async (id: string, updates: Partial<Pick<FieldOption, 'option_value' | 'option_label' | 'sort_order' | 'is_active'>>) => {
+  const updateOption = async (id: string, updates: Partial<Pick<FieldOption, 'option_value' | 'option_label' | 'abbreviation' | 'sort_order' | 'is_active'>>) => {
     try {
       const { error } = await supabase
         .from('field_options')

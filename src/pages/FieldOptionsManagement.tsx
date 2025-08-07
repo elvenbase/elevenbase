@@ -22,6 +22,7 @@ const FieldOptionsManagement = () => {
     field_name: 'player_role',
     option_value: '',
     option_label: '',
+    abbreviation: '',
     sort_order: 0
   });
 
@@ -58,6 +59,7 @@ const FieldOptionsManagement = () => {
         field_name: formData.field_name,
         option_value: formData.option_value.trim().toLowerCase(),
         option_label: formData.option_label.trim(),
+        abbreviation: formData.abbreviation.trim().toUpperCase(),
         sort_order: formData.sort_order,
         is_active: true
       });
@@ -76,6 +78,7 @@ const FieldOptionsManagement = () => {
       await updateOption(option.id, {
         option_value: editingOption.option_value,
         option_label: editingOption.option_label,
+        abbreviation: editingOption.abbreviation,
         sort_order: editingOption.sort_order
       });
 
@@ -98,6 +101,7 @@ const FieldOptionsManagement = () => {
       field_name: activeTab,
       option_value: '',
       option_label: '',
+      abbreviation: '',
       sort_order: 0
     });
   };
@@ -127,7 +131,7 @@ const FieldOptionsManagement = () => {
         <CardHeader>
           <CardTitle className="text-3xl font-bold flex items-center gap-3">
             <Settings className="h-8 w-8 text-primary" />
-            Gestione Opzioni Campi
+            Gestione Opzioni Giocatori
           </CardTitle>
           <CardDescription>
             Configura le opzioni disponibili per i campi select dell'applicazione
@@ -195,6 +199,16 @@ const FieldOptionsManagement = () => {
                           />
                         </div>
                         <div>
+                          <Label htmlFor="abbreviation">Sigla (2 lettere)</Label>
+                          <Input
+                            id="abbreviation"
+                            value={formData.abbreviation}
+                            onChange={(e) => setFormData(prev => ({ ...prev, abbreviation: e.target.value.toUpperCase() }))}
+                            placeholder="es. AT"
+                            maxLength={2}
+                          />
+                        </div>
+                        <div>
                           <Label htmlFor="sort_order">Ordine</Label>
                           <Input
                             id="sort_order"
@@ -225,7 +239,14 @@ const FieldOptionsManagement = () => {
                         <Badge variant="outline">#{option.sort_order}</Badge>
                         <div>
                           <div className="font-medium">{option.option_label}</div>
-                          <div className="text-sm text-muted-foreground">{option.option_value}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {option.option_value}
+                            {option.abbreviation && (
+                              <span className="ml-2 text-xs bg-primary/10 text-primary px-1 rounded">
+                                {option.abbreviation}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -235,6 +256,14 @@ const FieldOptionsManagement = () => {
                               value={editingOption.option_label}
                               onChange={(e) => setEditingOption(prev => prev ? { ...prev, option_label: e.target.value } : null)}
                               className="w-32"
+                              placeholder="Etichetta"
+                            />
+                            <Input
+                              value={editingOption.abbreviation || ''}
+                              onChange={(e) => setEditingOption(prev => prev ? { ...prev, abbreviation: e.target.value.toUpperCase() } : null)}
+                              className="w-16"
+                              placeholder="Sigla"
+                              maxLength={2}
                             />
                             <Button size="sm" onClick={() => handleUpdateOption(option)}>
                               <Save className="h-4 w-4" />

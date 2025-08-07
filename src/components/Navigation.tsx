@@ -42,7 +42,7 @@ const Navigation = () => {
     { name: "Maglie", path: "/admin/jerseys", icon: Settings },
     { name: "Sfondi Avatar", path: "/admin/avatar-backgrounds", icon: Settings },
     { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
-    { name: "Opzioni Campi", path: "/field-options", icon: Settings },
+    { name: "Opzioni Giocatori", path: "/field-options", icon: Settings },
   ];
 
   const squadItems = [
