@@ -18,6 +18,7 @@ const EmailConfirm = () => {
         const token = searchParams.get('token');
         const type = searchParams.get('type');
         const accessToken = searchParams.get('access_token');
+        const tokenHash = searchParams.get('token_hash');
 
         // Se abbiamo un access_token, significa che l'utente è già autenticato
         if (accessToken) {
@@ -27,7 +28,10 @@ const EmailConfirm = () => {
           return;
         }
 
-        if (!token) {
+        // Se abbiamo un token_hash, usiamo quello
+        const tokenToUse = tokenHash || token;
+
+        if (!tokenToUse) {
           setStatus('error');
           setMessage('Token di conferma mancante');
           return;
@@ -36,7 +40,7 @@ const EmailConfirm = () => {
         if (type === 'signup') {
           // Conferma registrazione
           const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
+            token_hash: tokenToUse,
             type: 'signup'
           });
 
