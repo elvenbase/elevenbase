@@ -43,7 +43,7 @@ const EmailConfirm = () => {
           if (error) {
             console.error('Errore conferma email:', error);
             setStatus('error');
-            setMessage('Errore durante la conferma dell\'email. Riprova.');
+            setMessage('Link di conferma scaduto o non valido. Richiedi una nuova email di conferma.');
             return;
           }
 
@@ -81,6 +81,33 @@ const EmailConfirm = () => {
 
   const handleContinue = () => {
     navigate('/auth');
+  };
+
+  const handleResendEmail = async () => {
+    try {
+      setStatus('loading');
+      setMessage('Invio nuova email di conferma...');
+      
+      // Richiedi una nuova email di conferma
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: 'a.camolese@gmail.com' // Email hardcoded per ora
+      });
+
+      if (error) {
+        console.error('Errore invio email:', error);
+        setStatus('error');
+        setMessage('Errore nell\'invio della nuova email. Riprova.');
+        return;
+      }
+
+      setStatus('success');
+      setMessage('Nuova email di conferma inviata! Controlla la tua casella email.');
+    } catch (error) {
+      console.error('Errore:', error);
+      setStatus('error');
+      setMessage('Errore imprevisto. Riprova.');
+    }
   };
 
   return (
@@ -144,6 +171,13 @@ const EmailConfirm = () => {
               <div className="space-y-3">
                 <Button onClick={handleContinue} className="w-full">
                   Torna al Login
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleResendEmail} 
+                  className="w-full"
+                >
+                  Invia Nuova Email
                 </Button>
                 <Button 
                   variant="outline" 
