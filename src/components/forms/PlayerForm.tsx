@@ -150,7 +150,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="loading" disabled>
                       Caricamento opzioni...
                     </SelectItem>
                   )}
@@ -173,7 +173,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="loading" disabled>
                       Caricamento opzioni...
                     </SelectItem>
                   )}
@@ -295,7 +295,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="loading" disabled>
                     Caricamento opzioni...
                   </SelectItem>
                 )}

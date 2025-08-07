@@ -330,11 +330,17 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                   <SelectValue placeholder="Seleziona posizione" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getOptionsForField('position').map((option) => (
-                    <SelectItem key={option.id} value={option.option_value}>
-                      {option.option_label}
+                  {getOptionsForField('position').length > 0 ? (
+                    getOptionsForField('position').map((option) => (
+                      <SelectItem key={option.id} value={option.option_value}>
+                        {option.option_label}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="loading" disabled>
+                      Caricamento opzioni...
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -348,11 +354,17 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                   <SelectValue placeholder="Seleziona ruolo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getOptionsForField('player_role').map((option) => (
-                    <SelectItem key={option.id} value={option.option_value}>
-                      {option.option_label}
+                  {getOptionsForField('player_role').length > 0 ? (
+                    getOptionsForField('player_role').map((option) => (
+                      <SelectItem key={option.id} value={option.option_value}>
+                        {option.option_label}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="loading" disabled>
+                      Caricamento opzioni...
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
