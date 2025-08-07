@@ -119,7 +119,13 @@ enabled = true
 # in emails.
 site_url = "https://gleaming-kleicha-dec5b4.netlify.app"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://gleaming-kleicha-dec5b4.netlify.app", "https://gleaming-kleicha-dec5b4.netlify.app/confirm", "https://gleaming-kleicha-dec5b4.netlify.app/auth", "https://127.0.0.1:3000"]
+additional_redirect_urls = [
+  "https://gleaming-kleicha-dec5b4.netlify.app",
+  "https://gleaming-kleicha-dec5b4.netlify.app/auth",
+  "https://gleaming-kleicha-dec5b4.netlify.app/confirm",
+  "https://gleaming-kleicha-dec5b4.netlify.app/dashboard",
+  "https://127.0.0.1:3000"
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # Path to JWT signing key. DO NOT commit your signing keys file to git.
