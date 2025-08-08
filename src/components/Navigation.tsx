@@ -18,9 +18,12 @@ import {
   X,
   Shield,
   LogOut,
-  Grid3X3,
   ChevronDown,
-  Settings
+  Settings,
+  Layout,
+  Palette,
+  Image,
+  Database
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -38,16 +41,15 @@ const Navigation = () => {
   const adminItems = [
     { name: "Dashboard", path: "/admin", icon: Shield },
     { name: "Utenti", path: "/admin/users", icon: Users },
-    { name: "Formazioni", path: "/admin/formations", icon: Grid3X3 },
-    { name: "Maglie", path: "/admin/jerseys", icon: Settings },
-    { name: "Sfondi Avatar", path: "/admin/avatar-backgrounds", icon: Settings },
+    { name: "Formazioni", path: "/admin/formations", icon: Layout },
+    { name: "Maglie", path: "/admin/jerseys", icon: Palette },
+    { name: "Sfondi Avatar", path: "/admin/avatar-backgrounds", icon: Image },
     { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
-    { name: "Opzioni Giocatori", path: "/field-options", icon: Settings },
+    { name: "Opzioni Giocatori", path: "/field-options", icon: Database },
   ];
 
   const squadItems = [
     { name: "Rosa", path: "/squad", icon: Users },
-    { name: "Formazioni", path: "/formations", icon: Grid3X3 },
   ];
 
   const handleSignOut = async () => {
