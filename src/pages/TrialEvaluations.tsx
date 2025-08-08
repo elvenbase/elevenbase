@@ -15,7 +15,7 @@ const TrialEvaluations = () => {
   const { data: trialists = [] } = useTrialists();
   const createEvaluation = useCreateQuickTrialEvaluation();
   const updateTrialistStatus = useUpdateTrialistStatusFromQuickEvaluation();
-  const { getAvatarBackground } = useAvatarColor();
+  const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor();
 
   // Filtra solo i trialists "in_prova"
   const activeTrialists = trialists.filter(t => t.status === 'in_prova');
