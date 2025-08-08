@@ -5,12 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Users, 
   Settings, 
-  Palette, 
   Image, 
   Layout, 
   ArrowRight,
   Shield,
-  Database
+  Shirt,
+  UserCog
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -32,14 +32,14 @@ const AdminDashboard = () => {
       color: 'bg-green-500',
       badge: 'Formazioni'
     },
-    {
-      title: 'Gestione Maglie',
-      description: 'Configura template di maglie e colori',
-      icon: Palette,
-      href: '/admin/jerseys',
-      color: 'bg-purple-500',
-      badge: 'Maglie'
-    },
+          {
+        title: 'Gestione Maglie',
+        description: 'Configura template di maglie e colori',
+        icon: Shirt,
+        href: '/admin/jerseys',
+        color: 'bg-purple-500',
+        badge: 'Maglie'
+      },
     {
       title: 'Gestione Sfondi Avatar',
       description: 'Personalizza gli sfondi degli avatar dei giocatori',
@@ -56,14 +56,14 @@ const AdminDashboard = () => {
       color: 'bg-red-500',
       badge: 'PNG'
     },
-    {
-      title: 'Opzioni Giocatori',
-      description: 'Gestisci le opzioni dinamiche dei form (ruoli, posizioni, status)',
-      icon: Database,
-      href: '/field-options',
-      color: 'bg-indigo-500',
-      badge: 'Giocatori'
-    }
+          {
+        title: 'Opzioni Giocatori',
+        description: 'Gestisci le opzioni dinamiche dei form (ruoli, posizioni, status)',
+        icon: UserCog,
+        href: '/field-options',
+        color: 'bg-indigo-500',
+        badge: 'Giocatori'
+      }
   ];
 
   return (
