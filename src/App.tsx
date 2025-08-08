@@ -184,14 +184,7 @@ function App() {
                         </main>
                       </ProtectedRoute>
                     } />
-                    <Route path="/competitions" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <Competitions />
-                        </main>
-                      </ProtectedRoute>
-                    } />
+                    {/* Competitions temporarily removed for redesign */}
                     <Route path="/formations" element={
                       <ProtectedRoute>
                         <Navigation />
