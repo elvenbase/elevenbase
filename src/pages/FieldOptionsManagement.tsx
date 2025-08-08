@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { Settings, Plus, Edit, Trash2, Save, X, UserCog } from 'lucide-react';
 import { useFieldOptions, FieldOption } from '@/hooks/useFieldOptions';
 import { toast } from 'sonner';
 
@@ -130,7 +130,7 @@ const FieldOptionsManagement = () => {
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="text-3xl font-bold flex items-center gap-3">
-            <Settings className="h-8 w-8 text-primary" />
+            <UserCog className="h-8 w-8 text-primary" />
             Gestione Opzioni Giocatori
           </CardTitle>
           <CardDescription>
