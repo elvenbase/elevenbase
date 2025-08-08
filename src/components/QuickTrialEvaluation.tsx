@@ -183,7 +183,10 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                   onClick={() => handleTrialistToggle(trialist.id)}
                 >
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-10 w-10">
+                    <Avatar 
+                      className="h-10 w-10"
+                      style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
+                    >
                       <AvatarImage src={trialist.avatar_url || undefined} />
                       <AvatarFallback 
                         className="font-bold"
@@ -265,7 +268,10 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
               return (
                 <Card key={trialistId} className="p-4">
                   <div className="flex items-center space-x-3 mb-4">
-                    <Avatar className="h-12 w-12">
+                    <Avatar 
+                      className="h-12 w-12"
+                      style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
+                    >
                       <AvatarImage src={trialist.avatar_url || undefined} />
                       <AvatarFallback 
                         className="font-bold"

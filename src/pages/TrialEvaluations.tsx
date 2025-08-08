@@ -201,7 +201,10 @@ const TrialEvaluations = () => {
                       >
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-3">
-                            <Avatar className="h-12 w-12">
+                            <Avatar 
+                              className="h-12 w-12"
+                              style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
+                            >
                               <AvatarImage src={trialist.avatar_url || undefined} />
                               <AvatarFallback 
                                 className="font-bold"
@@ -256,7 +259,10 @@ const TrialEvaluations = () => {
                 <Card key={trialistId} className="p-3">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
-                      <Avatar className="h-8 w-8">
+                      <Avatar 
+                        className="h-8 w-8"
+                        style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
+                      >
                         <AvatarImage src={trialist.avatar_url || undefined} />
                         <AvatarFallback 
                           className="font-bold text-xs"
@@ -433,7 +439,10 @@ const TrialEvaluations = () => {
                   return (
                     <div key={trialistId} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <Avatar className="h-10 w-10">
+                        <Avatar 
+                          className="h-10 w-10"
+                          style={getAvatarBackground(trialist.first_name + trialist.last_name, !!trialist.avatar_url)}
+                        >
                           <AvatarImage src={trialist.avatar_url || undefined} />
                           <AvatarFallback 
                             className="font-bold"
