@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Shirt } from 'lucide-react';
 import { JerseyManager } from '@/components/JerseyManager';
 import { Link } from 'react-router-dom';
 
@@ -15,7 +15,10 @@ const JerseyManagement = () => {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold">Gestione Maglie</h1>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <Shirt className="h-8 w-8 text-primary" />
+            Gestione Maglie
+          </h1>
           <p className="text-muted-foreground">
             Crea e gestisci template di maglie per le tue squadre
           </p>
