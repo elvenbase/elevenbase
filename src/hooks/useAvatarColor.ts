@@ -44,7 +44,10 @@ export const useAvatarColor = () => {
         return { backgroundColor: defaultBackground.value }
       } else if (defaultBackground.type === 'image') {
         return { 
-          backgroundImage: `url(${defaultBackground.value})`
+          backgroundImage: `url(${defaultBackground.value})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
         }
       }
     }
