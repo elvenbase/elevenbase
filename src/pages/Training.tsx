@@ -153,8 +153,8 @@ const Training = () => {
 
             {/* Quick action button */}
             <Link to={`/training/session/${session.id}`} className="block">
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                <Settings className="h-4 w-4 mr-2" />
+              <Button className="w-full bg-gradient-primary text-white hover:opacity-90">
+                <Settings className="h-4 w-4 mr-2 text-white" />
                 Gestisci Sessione
               </Button>
             </Link>

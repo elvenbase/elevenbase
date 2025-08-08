@@ -36,7 +36,7 @@ const StatsCard = ({ title, value, description, icon: Icon, trend, className }: 
         </div>
         <div className="flex-shrink-0">
           <div className="p-2 sm:p-3 bg-gradient-primary rounded-xl shadow-glow">
-            <Icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-foreground" />
+            <Icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
           </div>
         </div>
       </div>
