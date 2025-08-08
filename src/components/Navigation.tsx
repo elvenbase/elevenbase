@@ -71,7 +71,7 @@ const Navigation = () => {
               <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 rounded-lg transition-smooth" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-xl font-semibold bg-gradient-primary bg-clip-text text-transparent">
                 ElevenBase
               </h1>
               <p className="text-xs text-muted-foreground">E-Sport Management</p>

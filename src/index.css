@@ -16,17 +16,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 198 12% 20%;
 
-    /* Primary (Teal) #00DFA5 */
-    --primary: 164 100% 44%;
+    /* Primary Teal #008080 */
+    --primary: 180 100% 25%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 164 100% 50%;
+    --primary-glow: 180 100% 35%;
 
-    /* Accent (Cyan) #00B2FF */
-    --accent: 200 100% 50%;
+    /* Accent Deep Blue #0066CC */
+    --accent: 210 100% 40%;
     --accent-foreground: 0 0% 100%;
-    --accent-glow: 200 100% 60%;
+    --accent-glow: 210 100% 50%;
 
-    --secondary: 200 92% 85%; /* #7DD3FC approx */
+    --secondary: 210 70% 80%; /* light blue */
     --secondary-foreground: 198 12% 20%;
 
     --muted: 200 92% 95%;
@@ -48,13 +48,13 @@
     --radius: 1rem;
 
     /* Brand gradients */
-    --gradient-primary: linear-gradient(135deg, #00DFA5, #00B2FF);
-    --gradient-accent: linear-gradient(135deg, #00B2FF, #7DD3FC);
-    --gradient-hero: linear-gradient(135deg, #00DFA5, #00B2FF);
+    --gradient-primary: linear-gradient(135deg, #008080, #0066CC);
+    --gradient-accent: linear-gradient(135deg, #0066CC, #66A3E0);
+    --gradient-hero: linear-gradient(135deg, #008080, #0066CC);
     
-    --shadow-glow: 0 0 20px rgb(0 223 165 / 0.3);
-    --shadow-accent-glow: 0 0 20px rgb(0 178 255 / 0.3);
-    --shadow-card: 0 4px 24px rgb(0 178 255 / 0.15);
+    --shadow-glow: 0 0 20px rgb(0 128 128 / 0.3);
+    --shadow-accent-glow: 0 0 20px rgb(0 102 204 / 0.3);
+    --shadow-card: 0 4px 24px rgb(0 102 204 / 0.15);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
