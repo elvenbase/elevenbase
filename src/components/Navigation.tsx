@@ -21,9 +21,9 @@ import {
   ChevronDown,
   Settings,
   Layout,
-  Palette,
   Image,
-  Database
+  Shirt,
+  UserCog
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -42,10 +42,10 @@ const Navigation = () => {
     { name: "Dashboard", path: "/admin", icon: Shield },
     { name: "Utenti", path: "/admin/users", icon: Users },
     { name: "Formazioni", path: "/admin/formations", icon: Layout },
-    { name: "Maglie", path: "/admin/jerseys", icon: Palette },
+    { name: "Maglie", path: "/admin/jerseys", icon: Shirt },
     { name: "Sfondi Avatar", path: "/admin/avatar-backgrounds", icon: Image },
     { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
-    { name: "Opzioni Giocatori", path: "/field-options", icon: Database },
+    { name: "Opzioni Giocatori", path: "/field-options", icon: UserCog },
   ];
 
   const squadItems = [
