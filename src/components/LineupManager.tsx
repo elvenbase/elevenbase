@@ -132,7 +132,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
   const { defaultSetting } = usePngExportSettings()
-  const { getAvatarBackground } = useAvatarColor()
+  const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor()
   
   // Stati per la personalizzazione PNG - inizializzati dopo l'hook
   const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')

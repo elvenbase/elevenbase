@@ -25,7 +25,7 @@ const TrialistCard = ({
 }) => {
   const { data: evaluations = [] } = useTrialEvaluations(trialist.id);
   const latestEvaluation = evaluations[0];
-  const { getAvatarBackground } = useAvatarColor();
+  const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor();
 
   return (
     <Card

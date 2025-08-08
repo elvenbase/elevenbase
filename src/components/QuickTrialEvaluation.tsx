@@ -32,7 +32,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
   const { data: trialists = [] } = useTrialists();
   const createQuickEvaluation = useCreateQuickTrialEvaluation();
   const updateTrialistStatus = useUpdateTrialistStatusFromQuickEvaluation();
-  const { getAvatarBackground } = useAvatarColor();
+  const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor();
 
   // Filtra solo i trialist "in prova"
   const activeTrialists = trialists.filter(t => t.status === 'in_prova');
