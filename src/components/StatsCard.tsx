@@ -19,7 +19,7 @@ const StatsCard = ({ title, value, description, icon: Icon, trend, className }: 
       <div className="flex items-center justify-between gap-2">
         <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
           <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
-          <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground break-words">{value}</p>
+          <p className="text-base sm:text-xl lg:text-2xl font-bold text-foreground whitespace-nowrap truncate" title={String(value)}>{value}</p>
           {description && (
             <p className="text-xs sm:text-sm text-muted-foreground truncate">{description}</p>
           )}

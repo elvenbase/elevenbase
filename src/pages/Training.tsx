@@ -140,14 +140,16 @@ const Training = () => {
             </div>
 
             {/* Date and time info */}
-            <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
               <div className="flex items-center gap-1 min-w-0">
                 <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span className="truncate">{format(new Date(session.session_date), 'EEE d MMM', { locale: it })}</span>
+                <span className="truncate whitespace-nowrap" title={format(new Date(session.session_date), 'EEEE d MMMM yyyy', { locale: it })}>
+                  {format(new Date(session.session_date), 'EEE d MMM', { locale: it })}
+                </span>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span>{session.start_time}</span>
+                <span className="whitespace-nowrap">{session.start_time}</span>
               </div>
             </div>
 
