@@ -309,9 +309,20 @@ export const useCreateTrainingSession = () => {
       communication_details?: string | null;
       max_participants?: number;
     }) => {
+      // Generate public link token client-side to avoid DB default that may use missing gen_random_bytes
+      let public_link_token = '';
+      try {
+        const bytes = new Uint8Array(16);
+        // @ts-ignore
+        (typeof crypto !== 'undefined' && crypto.getRandomValues) ? crypto.getRandomValues(bytes) : bytes.forEach((_, i) => bytes[i] = Math.floor(Math.random() * 256));
+        public_link_token = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+      } catch {
+        public_link_token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
       const { data, error } = await supabase
         .from('training_sessions')
-        .insert([{ ...session, created_by: (await supabase.auth.getUser()).data.user?.id }])
+        .insert([{ ...session, public_link_token, created_by: (await supabase.auth.getUser()).data.user?.id }])
         .select()
         .single();
       
