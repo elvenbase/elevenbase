@@ -126,13 +126,13 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
       }
       handleOpenChange(false);
     } catch (error: any) {
-      console.error('Error submitting form:', error);
+      try { console.error('Error submitting form:', JSON.stringify(error)); } catch { console.error('Error submitting form:', error); }
       const message = [
         error?.message && `Messaggio: ${error.message}`,
         error?.details && `Dettagli: ${error.details}`,
-        error?.hint && `Hint: ${error.hint}`
+        error?.hint && `Hint: ${error.hint}`,
+        error?.code && `Codice: ${error.code}`
       ].filter(Boolean).join('\n');
-      // Optional: surface as toast if available (use hook here if desired)
       alert(message || 'Errore durante l\'invio della form');
     }
   };

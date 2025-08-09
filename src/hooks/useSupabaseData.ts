@@ -315,7 +315,13 @@ export const useCreateTrainingSession = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        const norm: any = new Error(error.message || 'Errore creazione sessione');
+        norm.details = error.details;
+        norm.hint = error.hint;
+        norm.code = error.code;
+        throw norm;
+      }
       return data;
     },
     onSuccess: () => {
