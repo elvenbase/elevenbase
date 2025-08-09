@@ -35,6 +35,7 @@ const Navigation = () => {
     { name: "Dashboard", path: "/", icon: BarChart3 },
     { name: "Provini", path: "/trials", icon: UserPlus },
     { name: "Allenamenti", path: "/training", icon: Activity },
+    { name: "Partite", path: "/matches", icon: Target },
   ];
 
   const adminItems = [

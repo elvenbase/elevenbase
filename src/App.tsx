@@ -22,7 +22,8 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Squad = lazy(() => import("@/pages/Squad"));
 const Training = lazy(() => import("@/pages/Training"));
 const SessionManagement = lazy(() => import("@/pages/SessionManagement"));
-const Competitions = lazy(() => import("@/pages/Competitions"));
+// const Competitions = lazy(() => import("@/pages/Competitions"));
+const Matches = lazy(() => import("@/pages/Matches"));
 const Formations = lazy(() => import("@/pages/Formations"));
 const Trials = lazy(() => import("@/pages/Trials"));
 const TrialEvaluations = lazy(() => import("@/pages/TrialEvaluations"));
@@ -184,7 +185,15 @@ function App() {
                         </main>
                       </ProtectedRoute>
                     } />
-                    {/* Competitions temporarily removed for redesign */}
+                    {/* Matches */}
+                    <Route path="/matches" element={
+                      <ProtectedRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <Matches />
+                        </main>
+                      </ProtectedRoute>
+                    } />
                     <Route path="/formations" element={
                       <ProtectedRoute>
                         <Navigation />
