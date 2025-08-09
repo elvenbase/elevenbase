@@ -1070,16 +1070,29 @@ export const useCompetitionStats = () => {
 };
 
 // Matches hooks
+export const useMatch = (matchId: string) => {
+  return useQuery({
+    queryKey: ['match', matchId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .eq('id', matchId)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!matchId
+  })
+}
+
 export const useMatches = () => {
   return useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select(`
-          *,
-          competitions:competition_id(name)
-        `)
+        .select(`*`)
         .order('match_date', { ascending: true });
       
       if (error) throw error;
@@ -1087,6 +1100,35 @@ export const useMatches = () => {
     }
   });
 };
+
+export const useMatchEvents = (matchId: string) => {
+  return useQuery({
+    queryKey: ['match-events', matchId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('match_events')
+        .select(`*, players:player_id(first_name,last_name)`).eq('match_id', matchId)
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      return data
+    },
+    enabled: !!matchId
+  })
+}
+
+export const useCreateMatchEvent = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (evt: { match_id: string; team: 'us'|'opponent'; event_type: string; player_id?: string|null; assister_id?: string|null; comment?: string|null }) => {
+      const { data, error } = await supabase.from('match_events').insert(evt).select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['match-events', variables.match_id] })
+    }
+  })
+}
 
 export const useCreateMatch = () => {
   const queryClient = useQueryClient();
@@ -1102,9 +1144,19 @@ export const useCreateMatch = () => {
       competition_id?: string;
       notes?: string;
     }) => {
+      let public_link_token = '';
+      try {
+        const bytes = new Uint8Array(16);
+        // @ts-ignore
+        (typeof crypto !== 'undefined' && crypto.getRandomValues) ? crypto.getRandomValues(bytes) : bytes.forEach((_, i) => bytes[i] = Math.floor(Math.random() * 256));
+        public_link_token = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+      } catch {
+        public_link_token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
       const { data, error } = await supabase
         .from('matches')
-        .insert([{ ...match, created_by: (await supabase.auth.getUser()).data.user?.id }])
+        .insert([{ ...match, public_link_token, created_by: (await supabase.auth.getUser()).data.user?.id }])
         .select()
         .single();
       
@@ -1115,8 +1167,8 @@ export const useCreateMatch = () => {
       queryClient.invalidateQueries({ queryKey: ['matches'] });
       toast({ title: "Partita creata con successo" });
     },
-    onError: () => {
-      toast({ title: "Errore durante la creazione della partita", variant: "destructive" });
+    onError: (error: any) => {
+      toast({ title: "Errore durante la creazione della partita", description: error?.message, variant: "destructive" });
     }
   });
 };
