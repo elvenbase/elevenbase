@@ -1140,23 +1140,12 @@ export const useCreateMatch = () => {
       match_date: string;
       match_time: string;
       home_away?: string;
-      location?: string;
       competition_id?: string;
       notes?: string;
     }) => {
-      let public_link_token = '';
-      try {
-        const bytes = new Uint8Array(16);
-        // @ts-ignore
-        (typeof crypto !== 'undefined' && crypto.getRandomValues) ? crypto.getRandomValues(bytes) : bytes.forEach((_, i) => bytes[i] = Math.floor(Math.random() * 256));
-        public_link_token = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
-      } catch {
-        public_link_token = Math.random().toString(36).slice(2) + Date.now().toString(36);
-      }
-
       const { data, error } = await supabase
         .from('matches')
-        .insert([{ ...match, public_link_token, created_by: (await supabase.auth.getUser()).data.user?.id }])
+        .insert([{ ...match, created_by: (await supabase.auth.getUser()).data.user?.id }])
         .select()
         .single();
       

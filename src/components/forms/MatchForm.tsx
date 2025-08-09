@@ -1,53 +1,84 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateMatch, useCompetitions } from '@/hooks/useSupabaseData';
+import { useCreateMatch, useCompetitions, useCreateCompetition } from '@/hooks/useSupabaseData';
 import { Plus } from 'lucide-react';
 
 interface MatchFormProps {
   children?: React.ReactNode;
 }
 
+const getTomorrowDate = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
 export const MatchForm = ({ children }: MatchFormProps) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     opponent_name: '',
-    match_date: '',
-    match_time: '',
+    match_date: getTomorrowDate(),
+    match_time: '22:00',
     home_away: 'home' as 'home' | 'away',
-    location: '',
-    competition_id: '',
+    competition_name: '',
     notes: ''
   });
 
   const createMatch = useCreateMatch();
+  const createCompetition = useCreateCompetition();
   const { data: competitions = [] } = useCompetitions();
+
+  const competitionNames = useMemo(() => competitions.map((c: any) => c.name), [competitions]);
+
+  useEffect(() => {
+    if (open) {
+      setFormData((prev) => ({
+        ...prev,
+        match_date: getTomorrowDate(),
+        match_time: '22:00'
+      }));
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    let competition_id: string | undefined = undefined;
+    const name = formData.competition_name?.trim();
+    if (name) {
+      const existing = competitions.find((c: any) => c.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        competition_id = existing.id;
+      } else {
+        const created = await createCompetition.mutateAsync({ name, type: 'championship' });
+        competition_id = created?.id;
+      }
+    }
+
     const matchData = {
       opponent_name: formData.opponent_name,
       match_date: formData.match_date,
       match_time: formData.match_time,
       home_away: formData.home_away,
-      location: formData.location || undefined,
-      competition_id: formData.competition_id || undefined,
+      competition_id,
       notes: formData.notes || undefined
     };
 
     await createMatch.mutateAsync(matchData);
     setFormData({
       opponent_name: '',
-      match_date: '',
-      match_time: '',
+      match_date: getTomorrowDate(),
+      match_time: '22:00',
       home_away: 'home',
-      location: '',
-      competition_id: '',
+      competition_name: '',
       notes: ''
     });
     setOpen(false);
@@ -116,29 +147,19 @@ export const MatchForm = ({ children }: MatchFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="competition_id">Competizione</Label>
-            <Select value={formData.competition_id} onValueChange={(value) => setFormData({ ...formData, competition_id: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleziona competizione" />
-              </SelectTrigger>
-              <SelectContent>
-                {competitions.map((competition) => (
-                  <SelectItem key={competition.id} value={competition.id}>
-                    {competition.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="location">Luogo</Label>
+            <Label htmlFor="competition_name">Competizione</Label>
             <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              placeholder="es. Campo Sportivo Comunale"
+              id="competition_name"
+              list="competition-suggestions"
+              value={formData.competition_name}
+              onChange={(e) => setFormData({ ...formData, competition_name: e.target.value })}
+              placeholder="Scrivi il nome della competizione"
             />
+            <datalist id="competition-suggestions">
+              {competitionNames.map((name) => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
           </div>
 
           <div>
@@ -156,8 +177,8 @@ export const MatchForm = ({ children }: MatchFormProps) => {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annulla
             </Button>
-            <Button type="submit" disabled={createMatch.isPending}>
-              {createMatch.isPending ? 'Creazione...' : 'Crea Partita'}
+            <Button type="submit" disabled={createMatch.isPending || createCompetition.isPending}>
+              {createMatch.isPending || createCompetition.isPending ? 'Creazione...' : 'Crea Partita'}
             </Button>
           </div>
         </form>
