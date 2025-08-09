@@ -23,7 +23,8 @@ import {
   Layout,
   Image,
   Shirt,
-  UserCog
+  UserCog,
+  Target
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
