@@ -125,8 +125,15 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
         await createTrainingSession.mutateAsync(sessionData);
       }
       handleOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
+      const message = [
+        error?.message && `Messaggio: ${error.message}`,
+        error?.details && `Dettagli: ${error.details}`,
+        error?.hint && `Hint: ${error.hint}`
+      ].filter(Boolean).join('\n');
+      // Optional: surface as toast if available (use hook here if desired)
+      alert(message || 'Errore durante l\'invio della form');
     }
   };
 

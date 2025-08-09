@@ -322,8 +322,14 @@ export const useCreateTrainingSession = () => {
       queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
       toast({ title: "Sessione di allenamento creata con successo" });
     },
-    onError: () => {
-      toast({ title: "Errore durante la creazione della sessione", variant: "destructive" });
+    onError: (error: any) => {
+      const desc = [
+        error?.message && `Messaggio: ${error.message}`,
+        error?.details && `Dettagli: ${error.details}`,
+        error?.hint && `Hint: ${error.hint}`,
+        error?.code && `Codice: ${error.code}`,
+      ].filter(Boolean).join('\n');
+      toast({ title: "Errore durante la creazione della sessione", description: desc || undefined, variant: "destructive" });
     }
   });
 };
