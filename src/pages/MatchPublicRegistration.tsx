@@ -26,6 +26,8 @@ const MatchPublicRegistration = () => {
   const [deadline, setDeadline] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
+  const [lineup, setLineup] = useState<any | null>(null)
+  const [bench, setBench] = useState<any[]>([])
 
   useEffect(() => { if (!token) { setError('Token mancante'); setLoading(false); return } loadData() }, [token])
 
@@ -49,6 +51,8 @@ const MatchPublicRegistration = () => {
       setPlayers(data.players)
       setExistingAttendance(data.existingAttendance)
       setDeadline(new Date(data.deadline))
+      setLineup(data.lineup || null)
+      setBench(data.bench || [])
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
       setError('Errore nel caricamento dei dati')
@@ -150,6 +154,34 @@ const MatchPublicRegistration = () => {
               <div><div className="text-2xl font-bold text-red-600">{existingAttendance.filter(a => a.status === 'absent').length}</div><div className="text-sm text-muted-foreground">Assenti</div></div>
               <div><div className="text-2xl font-bold text-muted-foreground">{players.length - existingAttendance.length}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
             </div>
+          </CardContent>
+        </Card>
+
+        {lineup && (
+          <Card>
+            <CardHeader><CardTitle>Formazione</CardTitle></CardHeader>
+            <CardContent>
+              <pre className="text-xs bg-muted p-3 rounded overflow-auto">{JSON.stringify(lineup, null, 2)}</pre>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader><CardTitle>Convocati (Panchina)</CardTitle></CardHeader>
+          <CardContent>
+            {bench.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nessun convocato</p>
+            ) : (
+              <ul className="space-y-2">
+                {bench.map((b) => (
+                  <li key={b.id} className="flex items-center gap-2">
+                    <span className="font-medium">{b.players?.first_name} {b.players?.last_name}</span>
+                    {b.players?.jersey_number && <Badge variant="outline">#{b.players.jersey_number}</Badge>}
+                    {b.players?.position && <Badge variant="secondary">{b.players.position}</Badge>}
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       </div>

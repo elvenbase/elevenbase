@@ -33,8 +33,6 @@ serve(async (req) => {
 
       const { data: match, error: matchError } = await supabase.from('matches').select('*').eq('public_link_token', token).single()
       if (matchError || !match) return new Response(JSON.stringify({ error: 'Token non valido' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-
-      // optional closure flag
       if ((match as any).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
       const now = new Date()
@@ -42,7 +40,7 @@ serve(async (req) => {
 
       const { data: players, error: playersError } = await supabase
         .from('players')
-        .select('id, first_name, last_name, jersey_number')
+        .select('id, first_name, last_name, jersey_number, position, avatar_url')
         .eq('status', 'active')
         .order('last_name')
       if (playersError) throw playersError
@@ -53,7 +51,33 @@ serve(async (req) => {
         .eq('match_id', match.id)
       if (attendanceError) throw attendanceError
 
-      return new Response(JSON.stringify({ match, players, existingAttendance, deadline: deadline.toISOString(), isRegistrationExpired: now > deadline }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const { data: lineupRow } = await supabase
+        .from('match_lineups')
+        .select('players_data')
+        .eq('match_id', match.id)
+        .maybeSingle()
+
+      const { data: bench, error: benchError } = await supabase
+        .from('match_bench')
+        .select(`
+          id, match_id, player_id, notes,
+          players:player_id(id, first_name, last_name, jersey_number, position, avatar_url)
+        `)
+        .eq('match_id', match.id)
+      if (benchError) {
+        // don't fail if bench is missing
+        console.warn('bench fetch error', benchError)
+      }
+
+      return new Response(JSON.stringify({
+        match,
+        players,
+        existingAttendance,
+        lineup: lineupRow?.players_data || null,
+        bench: bench || [],
+        deadline: deadline.toISOString(),
+        isRegistrationExpired: now > deadline
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     if (method === 'POST' || (req.method === 'POST' && method !== 'GET')) {
@@ -65,7 +89,6 @@ serve(async (req) => {
 
       const { data: match, error: matchError } = await supabase.from('matches').select('*').eq('public_link_token', token).single()
       if (matchError || !match) return new Response(JSON.stringify({ error: 'Token non valido' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-
       if ((match as any).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
       const now = new Date()
