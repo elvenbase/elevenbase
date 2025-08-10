@@ -9,6 +9,7 @@ import { useMatch, useMatchEvents } from '@/hooks/useSupabaseData'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
+import MatchAttendanceForm from '@/components/forms/MatchAttendanceForm'
 
 // TODO: swap out with real match attendance components/hooks
 const computeScore = (events: any[]) => {
@@ -103,8 +104,7 @@ const MatchDetail = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* TODO: implement MatchAttendanceForm replicando AttendanceForm con tabella match_attendance */}
-                <div className="text-sm text-muted-foreground">In arrivo: gestione convocati/presenze partita</div>
+                <MatchAttendanceForm matchId={id} />
               </CardContent>
             </Card>
           </TabsContent>

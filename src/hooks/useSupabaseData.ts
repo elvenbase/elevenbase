@@ -1469,3 +1469,50 @@ export const useUpdateTrialistStatusFromQuickEvaluation = () => {
     }
   });
 };
+
+export const useMatchAttendance = (matchId: string) => {
+  return useQuery({
+    queryKey: ['match-attendance', matchId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('match_attendance')
+        .select(`*, players:player_id(first_name,last_name,avatar_url,jersey_number)`) 
+        .eq('match_id', matchId)
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!matchId
+  })
+}
+
+export const useUpsertMatchAttendance = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload: { match_id: string; player_id: string; status?: string; arrival_time?: string | null; notes?: string | null }) => {
+      const { data, error } = await supabase
+        .from('match_attendance')
+        .upsert(payload, { onConflict: 'match_id,player_id' })
+        .select()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['match-attendance', variables.match_id] })
+    }
+  })
+}
+
+export const useBulkUpdateMatchAttendance = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload: { match_id: string; player_ids: string[]; status: string }) => {
+      const updates = payload.player_ids.map((player_id) => ({ match_id: payload.match_id, player_id, status: payload.status }))
+      const { error } = await supabase.from('match_attendance').upsert(updates, { onConflict: 'match_id,player_id' })
+      if (error) throw error
+      return true
+    },
+    onSuccess: (_ok, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['match-attendance', variables.match_id] })
+    }
+  })
+}
