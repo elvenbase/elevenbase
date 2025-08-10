@@ -2,12 +2,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Calendar, Target, Edit, Trash2, Copy, MoreHorizontal } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Trophy, Plus, Calendar, Target, Edit, Trash2, Copy, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import { useCompetitions, useCompetitionStats, useMatches, useCloneMatch, useDeleteMatch } from "@/hooks/useSupabaseData";
 import { CompetitionForm } from "@/components/forms/CompetitionForm";
 import { MatchForm } from "@/components/forms/MatchForm";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const Competitions = () => {
   const { data: competitions = [] } = useCompetitions();
@@ -20,6 +21,19 @@ const Competitions = () => {
     if (confirm("Sei sicuro di voler eliminare questa partita? L'operazione è irreversibile.")) {
       deleteMatch.mutate(id);
     }
+  };
+  const [expandedMatches, setExpandedMatches] = useState<Set<string>>(new Set());
+  const toggleExpanded = (id: string) => {
+    const next = new Set(expandedMatches);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setExpandedMatches(next);
+  };
+  const getMatchStatusBadge = (match: any) => {
+    if (match.status === 'completed') return <Badge variant="outline">Completata</Badge>;
+    const matchDateTime = new Date(match.match_date + 'T' + (match.match_time || '00:00'));
+    const now = new Date();
+    if (matchDateTime < now) return <Badge variant="secondary">Passata</Badge>;
+    return <Badge variant="default">Programmata</Badge>;
   };
 
   const upcomingMatches = matches
@@ -154,73 +168,99 @@ const Competitions = () => {
                   <p className="text-sm">Nessuna partita programmata</p>
                 </div>
               ) : (
-                upcomingMatches.map((match) => (
-                  <div key={match.id} className="flex items-center justify-between p-3 rounded-xl bg-muted hover:bg-muted/80 transition-smooth">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${match.home_away === 'home' ? "bg-accent" : "bg-warning"}`} />
-                      <div>
-                        <p className="text-sm font-medium text-foreground truncate" title={`${match.home_away === 'home' ? 'vs' : '@'} ${match.opponent_name}`}>
-                          {match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {match.competitions?.name || 'Amichevole'}
-                        </p>
+                upcomingMatches.map((match) => {
+                  const isExpanded = expandedMatches.has(match.id);
+                  const title = `${match.home_away === 'home' ? 'vs' : '@'} ${match.opponent_name}`;
+                  return (
+                    <div key={match.id} className="rounded-xl bg-muted hover:bg-muted/80 transition-smooth p-3">
+                      {/* Header with title and status */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2 min-w-0">
+                          <div className={`mt-1 w-3 h-3 rounded-full ${match.home_away === 'home' ? 'bg-accent' : 'bg-warning'}`} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold text-base sm:text-lg leading-tight truncate" title={title}>{title}</h4>
+                              <Badge variant="outline">{match.home_away === 'home' ? 'Casa' : 'Trasferta'}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 truncate" title={match.competitions?.name || 'Amichevole'}>
+                              {match.competitions?.name || 'Amichevole'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="ml-2 flex-shrink-0">{getMatchStatusBadge(match)}</div>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 text-right">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          {new Date(match.match_date).toLocaleDateString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{match.match_time}</p>
+
+                      {/* Date and time */}
+                      <div className="mt-3 flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="truncate whitespace-nowrap">{new Date(match.match_date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="whitespace-nowrap">{match.match_time}</span>
+                        </div>
                       </div>
-                      {/* Desktop / tablet actions */}
-                      <div className="hidden sm:flex items-center gap-2">
-                        <Button variant="outline" size="icon" title="Clona" onClick={() => onClone(match.id)} disabled={cloneMatch.isPending}>
-                          <Copy className="h-4 w-4" />
+
+                      {/* Primary action */}
+                      <Link to={`/match/${match.id}`} className="block mt-3">
+                        <Button className="w-full bg-gradient-primary text-white hover:opacity-90">
+                          <Settings className="h-4 w-4 mr-2 text-white" />
+                          Gestisci Partita
                         </Button>
-                        <Button variant="destructive" size="icon" title="Elimina" onClick={() => onDelete(match.id)} disabled={deleteMatch.isPending}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                        <Link to={`/match/${match.id}`}>
-                          <Button variant="outline" className="space-x-2">
-                            <Target className="h-4 w-4" />
-                            <span>Vai</span>
-                          </Button>
-                        </Link>
-                      </div>
-                      {/* Mobile actions: condensed menu */}
-                      <div className="sm:hidden">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
+                      </Link>
+
+                      {/* Expand/collapse */}
+                      <Button
+                        variant="ghost"
+                        onClick={() => toggleExpanded(match.id)}
+                        className="w-full mt-2 flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
+                      >
+                        <span className="text-xs sm:text-sm">{isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}</span>
+                        {isExpanded ? (
+                          <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                        )}
+                      </Button>
+
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-border space-y-2">
+                          <div className="grid grid-cols-1 gap-2">
+                            {/* Clone */}
+                            <Button variant="outline" className="w-full justify-start" onClick={() => onClone(match.id)} disabled={cloneMatch.isPending}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Clona Partita
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuItem asChild>
-                              <Link to={`/match/${match.id}`}>
-                                <div className="flex items-center gap-2">
-                                  <Target className="h-4 w-4" />
-                                  <span>Apri</span>
-                                </div>
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => onClone(match.id)}>
-                              <Copy className="h-4 w-4 mr-2" />
-                              Clona
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onDelete(match.id)} className="text-destructive focus:text-destructive">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Elimina
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                            {/* Delete */}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Elimina Partita
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Questa azione non può essere annullata. Verranno eliminati eventuali dati collegati alla partita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => onDelete(match.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Elimina
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </Card>
