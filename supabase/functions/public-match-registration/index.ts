@@ -53,7 +53,7 @@ serve(async (req) => {
 
       const { data: lineupRow } = await supabase
         .from('match_lineups')
-        .select('players_data')
+        .select('formation, players_data')
         .eq('match_id', match.id)
         .maybeSingle()
 
@@ -73,7 +73,7 @@ serve(async (req) => {
         match,
         players,
         existingAttendance,
-        lineup: lineupRow?.players_data || null,
+        lineup: lineupRow ? { formation: (lineupRow as any).formation, players_data: (lineupRow as any).players_data } : null,
         bench: bench || [],
         deadline: deadline.toISOString(),
         isRegistrationExpired: now > deadline
