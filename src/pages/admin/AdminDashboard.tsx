@@ -67,52 +67,52 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 max-w-6xl">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <Shield className="h-8 w-8 text-primary" />
+          <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold">Area Amministrativa</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold">Area Amministrativa</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Gestisci tutte le configurazioni e impostazioni del sistema
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
           <Badge variant="outline">Admin</Badge>
           <span>•</span>
           <span>Accesso completo al sistema</span>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {adminSections.map((section) => {
           const IconComponent = section.icon;
           return (
             <Card key={section.href} className="group hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2 sm:pb-3">
                 <div className="flex items-center justify-between">
                   <div className={`p-2 rounded-lg ${section.color} text-white`}>
-                    <IconComponent className="h-5 w-5" />
+                    <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-[10px] sm:text-xs">
                     {section.badge}
                   </Badge>
                 </div>
-                <CardTitle className="text-lg">{section.title}</CardTitle>
-                <CardDescription className="text-sm">
+                <CardTitle className="text-base sm:text-lg">{section.title}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   {section.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
                 <Link to={section.href}>
                   <Button 
-                    variant="outline" 
+                    variant="outline"
                     className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                   >
-                    Accedi
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    <span className="text-sm">Accedi</span>
+                    <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
               </CardContent>
@@ -121,13 +121,13 @@ const AdminDashboard = () => {
         })}
       </div>
 
-      <div className="mt-12">
+      <div className="mt-8 sm:mt-12">
         <Card className="bg-muted/50">
           <CardHeader>
-            <CardTitle className="text-lg">Informazioni Sistema</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Informazioni Sistema</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3 text-sm">
+            <div className="grid gap-3 sm:gap-4 md:grid-cols-3 text-xs sm:text-sm">
               <div>
                 <h4 className="font-semibold mb-2">Permessi</h4>
                 <p className="text-muted-foreground">

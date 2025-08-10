@@ -117,7 +117,7 @@ const FieldOptionsManagement = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-6 sm:py-8 px-3 sm:px-0">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
@@ -126,23 +126,23 @@ const FieldOptionsManagement = () => {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <Card className="mb-8">
+    <div className="container mx-auto py-6 sm:py-8 px-3 sm:px-0">
+      <Card className="mb-6 sm:mb-8">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold flex items-center gap-3">
-            <UserCog className="h-8 w-8 text-primary" />
+          <CardTitle className="text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
+            <UserCog className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             Gestione Opzioni Giocatori
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm sm:text-base">
             Configura le opzioni disponibili per i campi select dell'applicazione
           </CardDescription>
         </CardHeader>
       </Card>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
           {Object.entries(fieldConfigs).map(([key, config]) => (
-            <TabsTrigger key={key} value={key} className="flex items-center gap-2">
+            <TabsTrigger key={key} value={key} className="flex items-center gap-1 sm:gap-2">
               <span>{config.icon}</span>
               {config.label}
             </TabsTrigger>
@@ -155,10 +155,10 @@ const FieldOptionsManagement = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                       {config.icon} {config.label}
                     </CardTitle>
-                    <CardDescription>{config.description}</CardDescription>
+                    <CardDescription className="text-sm sm:text-base">{config.description}</CardDescription>
                   </div>
                   <Dialog open={isCreateModalOpen && formData.field_name === tabName} onOpenChange={setIsCreateModalOpen}>
                     <DialogTrigger asChild>
@@ -167,6 +167,7 @@ const FieldOptionsManagement = () => {
                           setFormData(prev => ({ ...prev, field_name: tabName, sort_order: getNextSortOrder(tabName) }));
                           setIsCreateModalOpen(true);
                         }}
+                        size="sm"
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Aggiungi {config.label.slice(0, -1)}
@@ -232,17 +233,17 @@ const FieldOptionsManagement = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {getOptionsForTab(tabName).map((option) => (
-                    <div key={option.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <Badge variant="outline">#{option.sort_order}</Badge>
+                    <div key={option.id} className="flex items-center justify-between p-3 sm:p-4 border rounded-lg">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <Badge variant="outline" className="text-[10px] sm:text-xs">#{option.sort_order}</Badge>
                         <div>
-                          <div className="font-medium">{option.option_label}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="font-medium text-sm sm:text-base">{option.option_label}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">
                             {option.option_value}
                             {option.abbreviation && (
-                              <span className="ml-2 text-xs bg-primary/10 text-primary px-1 rounded">
+                              <span className="ml-2 text-[10px] sm:text-xs bg-primary/10 text-primary px-1 rounded">
                                 {option.abbreviation}
                               </span>
                             )}
@@ -255,13 +256,13 @@ const FieldOptionsManagement = () => {
                             <Input
                               value={editingOption.option_label}
                               onChange={(e) => setEditingOption(prev => prev ? { ...prev, option_label: e.target.value } : null)}
-                              className="w-32"
+                              className="w-24 sm:w-32"
                               placeholder="Etichetta"
                             />
                             <Input
                               value={editingOption.abbreviation || ''}
                               onChange={(e) => setEditingOption(prev => prev ? { ...prev, abbreviation: e.target.value.toUpperCase() } : null)}
-                              className="w-16"
+                              className="w-12 sm:w-16"
                               placeholder="Sigla"
                               maxLength={2}
                             />
