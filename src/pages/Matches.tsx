@@ -2,21 +2,35 @@ import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Clock, Plus, Target, Copy, Trash2, MoreHorizontal } from 'lucide-react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Calendar, Clock, Plus, Target, Copy, Trash2, Settings, ChevronDown, ChevronUp } from 'lucide-react'
 import { useMatches, useCloneMatch, useDeleteMatch } from '@/hooks/useSupabaseData'
 import { MatchForm } from '@/components/forms/MatchForm'
+import { useState } from 'react'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 const Matches = () => {
   const { data: matches = [], isLoading } = useMatches()
   const cloneMatch = useCloneMatch()
   const deleteMatch = useDeleteMatch()
+  const [expandedMatches, setExpandedMatches] = useState<Set<string>>(new Set())
 
   const onClone = (id: string) => cloneMatch.mutate(id)
   const onDelete = (id: string) => {
     if (confirm('Sei sicuro di voler eliminare questa partita? L\'operazione è irreversibile.')) {
       deleteMatch.mutate(id)
     }
+  }
+  const toggleExpanded = (id: string) => {
+    const next = new Set(expandedMatches)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    setExpandedMatches(next)
+  }
+  const getMatchStatusBadge = (m: any) => {
+    if (m.status === 'completed') return <Badge variant="outline">Completata</Badge>
+    const dt = new Date(m.match_date + 'T' + (m.match_time || '00:00'))
+    const now = new Date()
+    if (dt < now) return <Badge variant="secondary">Passata</Badge>
+    return <Badge variant="default">Programmata</Badge>
   }
 
   return (
@@ -46,70 +60,89 @@ const Matches = () => {
               <div className="text-center py-8 text-muted-foreground">Nessuna partita presente</div>
             ) : (
               <div className="space-y-3">
-                {matches.map((m: any) => (
-                  <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground truncate">{m.home_away === 'home' ? 'vs' : '@'} {m.opponent_name}</span>
-                        <Badge variant="outline">{m.home_away === 'home' ? 'Casa' : 'Trasferta'}</Badge>
-                      </div>
-                      <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1 min-w-0">
-                          <Calendar className="h-4 w-4" />
-                          <span className="truncate whitespace-nowrap">{new Date(m.match_date).toLocaleDateString()}</span>
+                {matches.map((m: any) => {
+                  const isExpanded = expandedMatches.has(m.id)
+                  const title = `${m.home_away === 'home' ? 'vs' : '@'} ${m.opponent_name}`
+                  return (
+                    <div key={m.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-foreground truncate" title={title}>{title}</span>
+                            <Badge variant="outline">{m.home_away === 'home' ? 'Casa' : 'Trasferta'}</Badge>
+                          </div>
+                          <div className="mt-1 flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1 min-w-0">
+                              <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="truncate whitespace-nowrap">{new Date(m.match_date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="whitespace-nowrap">{m.match_time}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          <span className="whitespace-nowrap">{m.match_time}</span>
-                        </div>
+                        <div className="ml-2 flex-shrink-0">{getMatchStatusBadge(m)}</div>
                       </div>
-                    </div>
-                    {/* Desktop / tablet actions */}
-                    <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
-                      <Button variant="outline" size="icon" title="Clona" onClick={() => onClone(m.id)} disabled={cloneMatch.isPending}>
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button variant="destructive" size="icon" title="Elimina" onClick={() => onDelete(m.id)} disabled={deleteMatch.isPending}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                      <Link to={`/match/${m.id}`}>
-                        <Button variant="outline" className="space-x-2">
-                          <Target className="h-4 w-4" />
-                          <span>Vai</span>
+
+                      {/* Primary action */}
+                      <Link to={`/match/${m.id}`} className="block mt-3">
+                        <Button className="w-full bg-gradient-primary text-white hover:opacity-90">
+                          <Settings className="h-4 w-4 mr-2 text-white" />
+                          Gestisci Partita
                         </Button>
                       </Link>
+
+                      {/* Expand/collapse */}
+                      <Button
+                        variant="ghost"
+                        onClick={() => toggleExpanded(m.id)}
+                        className="w-full mt-2 flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
+                      >
+                        <span className="text-xs sm:text-sm">{isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}</span>
+                        {isExpanded ? (
+                          <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                        )}
+                      </Button>
+
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-border space-y-2">
+                          <div className="grid grid-cols-1 gap-2">
+                            <Button variant="outline" className="w-full justify-start" onClick={() => onClone(m.id)} disabled={cloneMatch.isPending}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Clona Partita
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Elimina Partita
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Questa azione non può essere annullata. Verranno eliminati anche dati collegati.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => onDelete(m.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Elimina
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    {/* Mobile actions: condensed menu */}
-                    <div className="sm:hidden flex-shrink-0">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem asChild>
-                            <Link to={`/match/${m.id}`}>
-                              <div className="flex items-center gap-2">
-                                <Target className="h-4 w-4" />
-                                <span>Apri</span>
-                              </div>
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => onClone(m.id)}>
-                            <Copy className="h-4 w-4 mr-2" />
-                            Clona
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onDelete(m.id)} className="text-destructive focus:text-destructive">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Elimina
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </CardContent>
