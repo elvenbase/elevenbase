@@ -31,6 +31,7 @@ const TrialEvaluations = lazy(() => import("@/pages/TrialEvaluations"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
 const FieldOptionsManagement = lazy(() => import("@/pages/FieldOptionsManagement"));
 const PublicRegistration = lazy(() => import("@/pages/PublicRegistration"));
+const MatchPublicRegistration = lazy(() => import("@/pages/MatchPublicRegistration"));
 const PublicSession = lazy(() => import("@/pages/PublicSession"));
 const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
@@ -137,6 +138,7 @@ function App() {
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/confirm" element={<EmailConfirm />} />
                     <Route path="/register/:token" element={<PublicRegistration />} />
+                    <Route path="/m/:token" element={<MatchPublicRegistration />} />
                     <Route path="/session/:token" element={<PublicSession />} />
                     <Route path="/" element={
                       <ProtectedRoute>
