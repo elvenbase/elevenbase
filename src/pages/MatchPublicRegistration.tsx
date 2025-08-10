@@ -52,8 +52,13 @@ const MatchPublicRegistration = () => {
 
   const loadData = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('public-match-registration', { body: { token, method: 'GET' } })
-      if (error) throw error
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/public-match-registration`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabase.supabaseKey}` },
+        body: JSON.stringify({ token, method: 'GET' })
+      })
+      const data = await response.json()
+      if (!response.ok) { setError(data.error || `HTTP ${response.status}`); return }
       if (data.error) { setError(data.error); return }
       setMatch(data.match)
       setPlayers(data.players)
