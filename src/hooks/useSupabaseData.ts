@@ -518,16 +518,55 @@ export const useTrialists = () => {
   return useQuery({
     queryKey: ['trialists'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('trialists')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      const { data, error } = await supabase.from('trialists').select('*').order('last_name')
+      if (error) throw error
+      return data
     }
-  });
-};
+  })
+}
+
+export const useSetTrainingTrialistInvites = () => {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ sessionId, trialistIds }: { sessionId: string; trialistIds: string[] }) => {
+      // delete existing then insert new set
+      await supabase.from('training_trialist_invites').delete().eq('session_id', sessionId)
+      if (trialistIds.length > 0) {
+        const rows = trialistIds.map(id => ({ session_id: sessionId, trialist_id: id }))
+        const { error } = await supabase.from('training_trialist_invites').insert(rows)
+        if (error) throw error
+      }
+      return true
+    },
+    onSuccess: (_res, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['training-trialist-invites', vars.sessionId] })
+      toast({ title: 'Inviti provinanti aggiornati' })
+    },
+    onError: (e: any) => toast({ title: 'Errore aggiornando inviti', description: e?.message, variant: 'destructive' })
+  })
+}
+
+export const useSetMatchTrialistInvites = () => {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ matchId, trialistIds }: { matchId: string; trialistIds: string[] }) => {
+      await supabase.from('match_trialist_invites').delete().eq('match_id', matchId)
+      if (trialistIds.length > 0) {
+        const rows = trialistIds.map(id => ({ match_id: matchId, trialist_id: id }))
+        const { error } = await supabase.from('match_trialist_invites').insert(rows)
+        if (error) throw error
+      }
+      return true
+    },
+    onSuccess: (_res, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['match-trialist-invites', vars.matchId] })
+      toast({ title: 'Inviti provinanti aggiornati' })
+    },
+    onError: (e: any) => toast({ title: 'Errore aggiornando inviti', description: e?.message, variant: 'destructive' })
+  })
+}
 
 export const useCreateTrialist = () => {
   const queryClient = useQueryClient();

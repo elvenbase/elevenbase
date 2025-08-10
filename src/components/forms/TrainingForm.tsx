@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateTrainingSession, useUpdateTrainingSession } from '@/hooks/useSupabaseData';
+import { useCreateTrainingSession, useUpdateTrainingSession, useTrialists, useSetTrainingTrialistInvites } from '@/hooks/useSupabaseData';
 import { Plus, Edit } from 'lucide-react';
 
 interface TrainingSession {
@@ -84,6 +84,10 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
 
   const createTrainingSession = useCreateTrainingSession();
   const updateTrainingSession = useUpdateTrainingSession();
+  const { data: trialists = [] } = useTrialists();
+  const setTrialistInvites = useSetTrainingTrialistInvites();
+  const [includeTrialists, setIncludeTrialists] = useState(false);
+  const [selectedTrialists, setSelectedTrialists] = useState<string[]>([]);
 
   useEffect(() => {
     if (session && mode === 'edit') {
@@ -121,8 +125,14 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
           id: session.id,
           data: sessionData
         });
+        if (includeTrialists) {
+          await setTrialistInvites.mutateAsync({ sessionId: session.id, trialistIds: selectedTrialists })
+        }
       } else {
-        await createTrainingSession.mutateAsync(sessionData);
+        const created = await createTrainingSession.mutateAsync(sessionData);
+        if (includeTrialists && created?.id) {
+          await setTrialistInvites.mutateAsync({ sessionId: created.id, trialistIds: selectedTrialists })
+        }
       }
       handleOpenChange(false);
     } catch (error: any) {
@@ -268,6 +278,32 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
                   placeholder="es. TeamSpeak, Telegram, etc."
                   required
                 />
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm">Provinanti</Label>
+            <div className="flex items-center gap-2">
+              <input id="include_trialists" type="checkbox" checked={includeTrialists} onChange={(e) => setIncludeTrialists(e.target.checked)} />
+              <label htmlFor="include_trialists" className="text-sm">Includi provinanti in questa convocazione</label>
+            </div>
+            {includeTrialists && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Seleziona i provinanti</Label>
+                <div className="max-h-40 overflow-y-auto border rounded p-2 space-y-1">
+                  {trialists.map((t: any) => {
+                    const checked = selectedTrialists.includes(t.id)
+                    return (
+                      <label key={t.id} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={checked} onChange={(e) => {
+                          setSelectedTrialists(prev => e.target.checked ? [...prev, t.id] : prev.filter(id => id !== t.id))
+                        }} />
+                        <span className="truncate">{t.first_name} {t.last_name}</span>
+                      </label>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </div>

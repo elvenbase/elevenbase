@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateMatch, useCompetitions, useCreateCompetition, useOpponents } from '@/hooks/useSupabaseData';
+import { useCreateMatch, useCompetitions, useCreateCompetition, useOpponents, useTrialists, useSetMatchTrialistInvites } from '@/hooks/useSupabaseData';
 import { Plus, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -41,6 +41,10 @@ export const MatchForm = ({ children }: MatchFormProps) => {
   const createCompetition = useCreateCompetition();
   const { data: competitions = [] } = useCompetitions();
   const { data: opponents = [] } = useOpponents();
+  const { data: trialists = [] } = useTrialists();
+  const setMatchTrialistInvites = useSetMatchTrialistInvites();
+  const [includeTrialists, setIncludeTrialists] = useState(false);
+  const [selectedTrialists, setSelectedTrialists] = useState<string[]>([]);
 
   const competitionNames = useMemo(() => competitions.map((c: any) => c.name), [competitions]);
 
@@ -103,7 +107,10 @@ export const MatchForm = ({ children }: MatchFormProps) => {
     };
     if (opponentLogoUrl) matchData.opponent_logo_url = opponentLogoUrl;
 
-    await createMatch.mutateAsync(matchData);
+    const created = await createMatch.mutateAsync(matchData);
+    if (includeTrialists && created?.id) {
+      await setMatchTrialistInvites.mutateAsync({ matchId: created.id, trialistIds: selectedTrialists })
+    }
     setFormData({
       opponent_name: '',
       match_date: getTomorrowDate(),
@@ -222,6 +229,32 @@ export const MatchForm = ({ children }: MatchFormProps) => {
               placeholder="Note aggiuntive..."
               rows={2}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm">Provinanti</Label>
+            <div className="flex items-center gap-2">
+              <input id="include_match_trialists" type="checkbox" checked={includeTrialists} onChange={(e) => setIncludeTrialists(e.target.checked)} />
+              <label htmlFor="include_match_trialists" className="text-sm">Includi provinanti in questa partita</label>
+            </div>
+            {includeTrialists && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Seleziona i provinanti</Label>
+                <div className="max-h-40 overflow-y-auto border rounded p-2 space-y-1">
+                  {trialists.map((t: any) => {
+                    const checked = selectedTrialists.includes(t.id)
+                    return (
+                      <label key={t.id} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={checked} onChange={(e) => {
+                          setSelectedTrialists(prev => e.target.checked ? [...prev, t.id] : prev.filter(id => id !== t.id))
+                        }} />
+                        <span className="truncate">{t.first_name} {t.last_name}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-2">
