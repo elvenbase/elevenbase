@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { pathname } = useLocation();
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: BarChart3 },
@@ -56,6 +57,8 @@ const Navigation = () => {
   const handleSignOut = async () => {
     await signOut();
   };
+
+  const isMatchesActive = pathname.startsWith('/matches') || pathname.startsWith('/match/');
 
   return (
     <nav className="bg-card border-b border-border shadow-card sticky top-0 z-50">
@@ -129,6 +132,24 @@ const Navigation = () => {
             {/* Rest of navigation items */}
             {navigationItems.slice(1).map((item) => {
               const Icon = item.icon;
+              if (item.path === '/matches') {
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={
+                      `flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth ${
+                        isMatchesActive
+                          ? "bg-primary text-primary-foreground shadow-glow"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`
+                    }
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{item.name}</span>
+                  </NavLink>
+                );
+              }
               return (
                 <NavLink
                   key={item.path}
@@ -255,6 +276,25 @@ const Navigation = () => {
               {/* Rest of navigation items */}
               {navigationItems.slice(1).map((item) => {
                 const Icon = item.icon;
+                if (item.path === '/matches') {
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={
+                        `flex items-center space-x-3 px-4 py-3 rounded-xl transition-smooth ${
+                          isMatchesActive
+                            ? "bg-primary text-primary-foreground shadow-glow"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`
+                      }
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="font-medium">{item.name}</span>
+                    </NavLink>
+                  );
+                }
                 return (
                   <NavLink
                     key={item.path}
