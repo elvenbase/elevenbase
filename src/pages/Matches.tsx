@@ -73,6 +73,9 @@ const Matches = () => {
                               <img src={m.opponents.logo_url} alt={m.opponents?.name || 'logo'} className="h-6 w-6 rounded object-cover" />
                             )}
                             <span className="font-semibold text-foreground truncate" title={title}>{title}</span>
+                            {m.opponents?.jersey_template_id && (
+                              <span className="text-xs text-muted-foreground">• Maglia</span>
+                            )}
                             <Badge variant="outline">{m.home_away === 'home' ? 'Casa' : 'Trasferta'}</Badge>
                           </div>
                           <div className="mt-1 flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">

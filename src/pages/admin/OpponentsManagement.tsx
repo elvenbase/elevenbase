@@ -8,13 +8,15 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { useOpponents, useCreateOpponent, useUpdateOpponent, useDeleteOpponent } from '@/hooks/useSupabaseData'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
-import { Plus, Trash2, Save, Image as ImageIcon } from 'lucide-react'
+import { Plus, Trash2, Save, Image as ImageIcon, Shirt } from 'lucide-react'
+import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 
 const OpponentsManagement = () => {
   const { data: opponents = [] } = useOpponents()
   const createOpponent = useCreateOpponent()
   const updateOpponent = useUpdateOpponent()
   const deleteOpponent = useDeleteOpponent()
+  const { data: jerseys = [] } = useJerseyTemplates()
 
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
@@ -113,6 +115,19 @@ const OpponentsManagement = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input type="file" accept="image/*" onChange={(e) => e.target.files && handleUpdateLogo(o.id, e.target.files[0])} className="w-40" />
+                  <div className="flex items-center gap-2">
+                    <Shirt className="h-4 w-4 text-muted-foreground" />
+                    <select
+                      defaultValue={o.jersey_template_id || ''}
+                      onChange={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_template_id: e.target.value || null } })}
+                      className="h-9 rounded border px-2 text-sm"
+                    >
+                      <option value="">Nessuna maglia</option>
+                      {jerseys.map((j: any) => (
+                        <option key={j.id} value={j.id}>{j.name || j.id}</option>
+                      ))}
+                    </select>
+                  </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>

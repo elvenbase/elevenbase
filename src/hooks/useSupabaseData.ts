@@ -1092,7 +1092,7 @@ export const useMatches = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('*, opponents:opponent_id(name, logo_url)')
+        .select('*, opponents:opponent_id(name, logo_url, jersey_template_id)')
         .order('match_date', { ascending: false });
       
       if (error) throw error;
