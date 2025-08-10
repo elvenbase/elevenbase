@@ -71,12 +71,31 @@ serve(async (req) => {
         console.warn('bench fetch error', benchError)
       }
 
+      // Invited trialists
+      const { data: trialistInvites, error: tiErr } = await supabase
+        .from('match_trialist_invites')
+        .select(`
+          trialist_id,
+          status,
+          self_registered,
+          trialists ( id, first_name, last_name )
+        `)
+        .eq('match_id', match.id)
+      if (tiErr) console.warn('trialist invites fetch error', tiErr)
+
       return new Response(JSON.stringify({
         match,
         players,
         existingAttendance,
         lineup: lineupRow ? { formation: (lineupRow as any).formation, players_data: (lineupRow as any).players_data } : null,
         bench: bench || [],
+        trialistsInvited: (trialistInvites || []).map((t: any) => ({
+          id: t.trialist_id,
+          first_name: t.trialists?.first_name,
+          last_name: t.trialists?.last_name,
+          status: t.status || 'pending',
+          self_registered: !!t.self_registered
+        })),
         deadline: deadline.toISOString(),
         isRegistrationExpired: now > deadline
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -84,9 +103,10 @@ serve(async (req) => {
 
     if (method === 'POST' || (req.method === 'POST' && method !== 'GET')) {
       if (!body) return new Response(JSON.stringify({ error: 'Body JSON non valido' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      const { playerId, status } = body
-      if (!token || !playerId || !status) return new Response(JSON.stringify({ error: 'Missing required parameters' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      if (!validateUuid(playerId)) return new Response(JSON.stringify({ error: 'Invalid player ID format' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const { playerId, trialistId, status } = body
+      if (!token || (!playerId && !trialistId) || !status) return new Response(JSON.stringify({ error: 'Missing required parameters' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      if (playerId && !validateUuid(playerId)) return new Response(JSON.stringify({ error: 'Invalid player ID format' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      if (trialistId && !validateUuid(trialistId)) return new Response(JSON.stringify({ error: 'Invalid trialist ID format' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       if (!['present', 'absent', 'uncertain'].includes(status)) return new Response(JSON.stringify({ error: 'Invalid status value' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
       const { data: match, error: matchError } = await supabase.from('matches').select('*').eq('public_link_token', token).single()
@@ -97,13 +117,23 @@ serve(async (req) => {
       const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : now
       if (now > deadline) return new Response(JSON.stringify({ error: 'Tempo scaduto per le registrazioni' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
-      const { data, error } = await supabase
-        .from('match_attendance')
-        .upsert({ match_id: match.id, player_id: playerId, status, self_registered: true }, { onConflict: 'match_id,player_id' })
-        .select()
-      if (error) throw error
+      if (playerId) {
+        const { data, error } = await supabase
+          .from('match_attendance')
+          .upsert({ match_id: match.id, player_id: playerId, status, self_registered: true }, { onConflict: 'match_id,player_id' })
+          .select()
+        if (error) throw error
+        return new Response(JSON.stringify({ success: true, data }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
 
-      return new Response(JSON.stringify({ success: true, data }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      if (trialistId) {
+        // Ensure invite exists, then set status/self_registered
+        const { error: upErr } = await supabase
+          .from('match_trialist_invites')
+          .upsert({ match_id: match.id, trialist_id: trialistId, status, self_registered: true }, { onConflict: 'match_id,trialist_id' })
+        if (upErr) throw upErr
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
     }
 
     return new Response(JSON.stringify({ error: 'Metodo non supportato' }), { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
