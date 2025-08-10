@@ -123,4 +123,9 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Remove default mobile tap highlight to prevent blue overlay */
+  a, button {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
