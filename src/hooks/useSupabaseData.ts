@@ -1543,3 +1543,30 @@ export const useBulkUpdateMatchAttendance = () => {
     }
   })
 }
+
+export const useEnsureMatchPublicSettings = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (matchId: string) => {
+      let updates: any = {}
+      // fetch match
+      const { data: match, error } = await supabase.from('matches').select('public_link_token, allow_responses_until, match_date, match_time').eq('id', matchId).maybeSingle()
+      if (error) throw error
+      if (!match) throw new Error('Match not found')
+      if (!match.public_link_token) updates.public_link_token = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('')
+      if (!match.allow_responses_until && match.match_date && match.match_time) {
+        const start = new Date(`${match.match_date}T${match.match_time}`)
+        start.setHours(start.getHours() - 2)
+        updates.allow_responses_until = start.toISOString()
+      }
+      if (Object.keys(updates).length === 0) return match
+      const { data: updated, error: upErr } = await supabase.from('matches').update(updates).eq('id', matchId).select().single()
+      if (upErr) throw upErr
+      return updated
+    },
+    onSuccess: (_data, matchId) => {
+      queryClient.invalidateQueries({ queryKey: ['match', matchId] })
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+    }
+  })
+}

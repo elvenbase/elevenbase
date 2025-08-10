@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Target, Share, ArrowLeft } from 'lucide-react'
-import { useMatch, useMatchEvents, useMatchAttendance } from '@/hooks/useSupabaseData'
+import { useMatch, useMatchEvents, useMatchAttendance, useEnsureMatchPublicSettings } from '@/hooks/useSupabaseData'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
@@ -39,6 +39,7 @@ const MatchDetail = () => {
   const { data: match, isLoading } = useMatch(id || '')
   const { data: events = [] } = useMatchEvents(id || '')
   const { data: matchAttendance = [] } = useMatchAttendance(id || '')
+  const ensurePublic = useEnsureMatchPublicSettings()
 
   const score = useMemo(() => computeScore(events), [events])
   const attendanceStats = useMemo(() => ({
@@ -50,6 +51,7 @@ const MatchDetail = () => {
 
   useEffect(() => {
     // future: subscribe realtime
+    if (id) ensurePublic.mutate(id)
   }, [id])
 
   if (!id) return null
