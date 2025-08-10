@@ -165,7 +165,7 @@ const Training = () => {
               <Button
                 variant="ghost"
                 onClick={() => toggleExpanded(session.id)}
-                className="w-full flex items-center justify-center gap-2 text-foreground hover:text-foreground"
+                className="w-full flex items-center justify-center gap-2 text-foreground hover:text-foreground focus-visible:bg-primary focus-visible:text-primary-foreground active:bg-primary active:text-primary-foreground"
               >
                 <span className="text-xs sm:text-sm">
                   {isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}
