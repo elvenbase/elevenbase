@@ -19,75 +19,75 @@ const Competitions = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-primary mb-2">
+            <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-1 sm:mb-2">
               Competizioni
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Gestione campionati, tornei e partite
             </p>
           </div>
           <CompetitionForm>
-            <Button variant="hero" className="space-x-2">
+            <Button variant="hero" className="space-x-2 w-full sm:w-auto">
               <Plus className="h-4 w-4" />
               <span>Nuova Competizione</span>
             </Button>
           </CompetitionForm>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6 bg-card border-border hover:shadow-glow transition-smooth">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          <Card className="p-4 sm:p-6 bg-card border-border hover:shadow-glow transition-smooth">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Campionati</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Campionati</h3>
               <div className="p-2 bg-primary rounded-lg shadow-glow">
                 <Trophy className="h-4 w-4 text-primary-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">{stats?.championships || 0}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">{stats?.championships || 0}</p>
             <p className="text-sm text-muted-foreground">Attivi</p>
           </Card>
 
-          <Card className="p-6 bg-card border-border hover:shadow-glow transition-smooth">
+          <Card className="p-4 sm:p-6 bg-card border-border hover:shadow-glow transition-smooth">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Tornei</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Tornei</h3>
               <div className="p-2 bg-accent rounded-lg shadow-accent-glow">
                 <Target className="h-4 w-4 text-accent-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">{stats?.tournaments || 0}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">{stats?.tournaments || 0}</p>
             <p className="text-sm text-muted-foreground">In corso</p>
           </Card>
 
-          <Card className="p-6 bg-card border-border hover:shadow-glow transition-smooth">
+          <Card className="p-4 sm:p-6 bg-card border-border hover:shadow-glow transition-smooth">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Partite</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Partite</h3>
               <div className="p-2 bg-success rounded-lg">
                 <Calendar className="h-4 w-4 text-success-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">{stats?.totalMatches || 0}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">{stats?.totalMatches || 0}</p>
             <p className="text-sm text-muted-foreground">Totali</p>
           </Card>
 
-          <Card className="p-6 bg-card border-border hover:shadow-glow transition-smooth">
+          <Card className="p-4 sm:p-6 bg-card border-border hover:shadow-glow transition-smooth">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Prossima</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Prossima</h3>
               <div className="p-2 bg-warning rounded-lg">
                 <Calendar className="h-4 w-4 text-warning-foreground" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">{stats?.daysToNext || 0}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">{stats?.daysToNext || 0}</p>
             <p className="text-sm text-muted-foreground">Giorni</p>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card className="p-6 bg-card border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
+          <Card className="p-4 sm:p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Wizard Competizioni</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">Wizard Competizioni</h3>
                 <p className="text-sm text-muted-foreground">Crea nuove competizioni guidato</p>
               </div>
               <Trophy className="h-5 w-5 text-primary" />
@@ -100,7 +100,7 @@ const Competitions = () => {
                   Crea un campionato con girone all'italiana, doppio o singolo
                 </p>
                 <CompetitionForm>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
                     <Trophy className="h-4 w-4 mr-2" />
                     Crea Campionato
                   </Button>
@@ -113,7 +113,7 @@ const Competitions = () => {
                   Organizza un torneo con gironi e fasi eliminatorie
                 </p>
                 <CompetitionForm>
-                  <Button variant="gaming" size="sm">
+                  <Button variant="gaming" size="sm" className="w-full sm:w-auto">
                     <Target className="h-4 w-4 mr-2" />
                     Crea Torneo
                   </Button>
@@ -122,15 +122,15 @@ const Competitions = () => {
             </div>
           </Card>
 
-          <Card className="p-6 bg-card border-border">
+          <Card className="p-4 sm:p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Prossime Partite</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">Prossime Partite</h3>
                 <p className="text-sm text-muted-foreground">Match programmati</p>
               </div>
               <div className="flex items-center space-x-2">
                 <MatchForm>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     Nuova Partita
                   </Button>
@@ -149,7 +149,7 @@ const Competitions = () => {
                     <div className="flex items-center space-x-3">
                       <div className={`w-3 h-3 rounded-full ${match.home_away === 'home' ? "bg-accent" : "bg-warning"}`} />
                       <div>
-                        <p className="text-sm font-medium text-foreground">
+                        <p className="text-sm font-medium text-foreground truncate" title={`${match.home_away === 'home' ? 'vs' : '@'} ${match.opponent_name}`}>
                           {match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -170,17 +170,19 @@ const Competitions = () => {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="p-6 bg-card border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <Card className="p-4 sm:p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Competizioni Attive</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">Competizioni Attive</h3>
                 <p className="text-sm text-muted-foreground">Gestisci le tue competizioni</p>
               </div>
               <Trophy className="h-5 w-5 text-primary" />
             </div>
             
-            <Table>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="min-w-[640px]">
+                <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
@@ -225,19 +227,23 @@ const Competitions = () => {
                   ))
                 )}
               </TableBody>
-            </Table>
+                </Table>
+              </div>
+            </div>
           </Card>
 
-          <Card className="p-6 bg-card border-border">
+          <Card className="p-4 sm:p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Tutte le Partite</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">Tutte le Partite</h3>
                 <p className="text-sm text-muted-foreground">Cronologia completa</p>
               </div>
               <Calendar className="h-5 w-5 text-accent" />
             </div>
             
-            <Table>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="min-w-[640px]">
+                <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Avversario</TableHead>
@@ -283,7 +289,9 @@ const Competitions = () => {
                   ))
                 )}
               </TableBody>
-            </Table>
+                </Table>
+              </div>
+            </div>
           </Card>
         </div>
       </div>

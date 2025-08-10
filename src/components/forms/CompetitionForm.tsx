@@ -56,7 +56,7 @@ export const CompetitionForm = ({ children }: CompetitionFormProps) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="w-[95vw] sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>Nuova Competizione</DialogTitle>
         </DialogHeader>
@@ -97,7 +97,7 @@ export const CompetitionForm = ({ children }: CompetitionFormProps) => {
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label htmlFor="start_date">Data Inizio</Label>
               <Input
@@ -118,11 +118,11 @@ export const CompetitionForm = ({ children }: CompetitionFormProps) => {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">
               Annulla
             </Button>
-            <Button type="submit" disabled={createCompetition.isPending}>
+            <Button type="submit" disabled={createCompetition.isPending} className="w-full sm:w-auto">
               {createCompetition.isPending ? 'Creazione...' : 'Crea Competizione'}
             </Button>
           </div>
