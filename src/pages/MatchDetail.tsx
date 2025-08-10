@@ -64,7 +64,7 @@ const MatchDetail = () => {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" className="text-foreground" asChild>
                 <Link to="/matches">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Torna alle Partite

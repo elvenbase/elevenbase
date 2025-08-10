@@ -343,7 +343,7 @@ const Training = () => {
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                <Button variant="ghost" className="h-8 w-8 p-0 text-foreground">
                                   <span className="sr-only">Apri menu</span>
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
@@ -432,7 +432,7 @@ const Training = () => {
                                 <TableCell>
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                      <Button variant="ghost" className="h-8 w-8 p-0 text-foreground">
                                         <span className="sr-only">Apri menu</span>
                                         <MoreHorizontal className="h-4 w-4" />
                                       </Button>
