@@ -2,15 +2,25 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Calendar, Target, Edit, Trash2 } from "lucide-react";
-import { useCompetitions, useCompetitionStats, useMatches } from "@/hooks/useSupabaseData";
+import { Trophy, Plus, Calendar, Target, Edit, Trash2, Copy, MoreHorizontal } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useCompetitions, useCompetitionStats, useMatches, useCloneMatch, useDeleteMatch } from "@/hooks/useSupabaseData";
 import { CompetitionForm } from "@/components/forms/CompetitionForm";
 import { MatchForm } from "@/components/forms/MatchForm";
+import { Link } from "react-router-dom";
 
 const Competitions = () => {
   const { data: competitions = [] } = useCompetitions();
   const { data: matches = [] } = useMatches();
   const { data: stats } = useCompetitionStats();
+  const cloneMatch = useCloneMatch();
+  const deleteMatch = useDeleteMatch();
+  const onClone = (id: string) => cloneMatch.mutate(id);
+  const onDelete = (id: string) => {
+    if (confirm("Sei sicuro di voler eliminare questa partita? L'operazione è irreversibile.")) {
+      deleteMatch.mutate(id);
+    }
+  };
 
   const upcomingMatches = matches
     .filter(match => new Date(match.match_date) >= new Date())
@@ -157,15 +167,123 @@ const Competitions = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-foreground">
-                        {new Date(match.match_date).toLocaleDateString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{match.match_time}</p>
+                    <div className="flex flex-col items-end gap-2 text-right">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {new Date(match.match_date).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{match.match_time}</p>
+                      </div>
+                      {/* Desktop / tablet actions */}
+                      <div className="hidden sm:flex items-center gap-2">
+                        <Button variant="outline" size="icon" title="Clona" onClick={() => onClone(match.id)} disabled={cloneMatch.isPending}>
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button variant="destructive" size="icon" title="Elimina" onClick={() => onDelete(match.id)} disabled={deleteMatch.isPending}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Link to={`/match/${match.id}`}>
+                          <Button variant="outline" className="space-x-2">
+                            <Target className="h-4 w-4" />
+                            <span>Vai</span>
+                          </Button>
+                        </Link>
+                      </div>
+                      {/* Mobile actions: condensed menu */}
+                      <div className="sm:hidden">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem asChild>
+                              <Link to={`/match/${match.id}`}>
+                                <div className="flex items-center gap-2">
+                                  <Target className="h-4 w-4" />
+                                  <span>Apri</span>
+                                </div>
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => onClone(match.id)}>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Clona
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onDelete(match.id)} className="text-destructive focus:text-destructive">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Elimina
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </div>
                 ))
               )}
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:p-6 bg-card border-border">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">Tutte le Partite</h3>
+                <p className="text-sm text-muted-foreground">Cronologia completa</p>
+              </div>
+              <Calendar className="h-5 w-5 text-accent" />
+            </div>
+            
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="min-w-[640px]">
+                <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Avversario</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Risultato</TableHead>
+                  <TableHead className="text-right">Azioni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {matches.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      Nessuna partita registrata
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  matches.slice(0, 5).map((match) => (
+                    <TableRow key={match.id}>
+                      <TableCell className="font-medium">
+                        {match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(match.match_date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {match.status === 'completed' ? (
+                          <Badge variant={
+                            (match.our_score || 0) > (match.opponent_score || 0) ? 'default' :
+                            (match.our_score || 0) < (match.opponent_score || 0) ? 'destructive' : 'secondary'
+                          }>
+                            {match.our_score || 0} - {match.opponent_score || 0}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">{match.status}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+                </Table>
+              </div>
             </div>
           </Card>
         </div>
