@@ -63,6 +63,14 @@ const AdminDashboard = () => {
         href: '/field-options',
         color: 'bg-indigo-500',
         badge: 'Giocatori'
+      },
+      {
+        title: 'Avversari',
+        description: 'Anagrafica squadre avversarie e loghi',
+        icon: Users,
+        href: '/admin/opponents',
+        color: 'bg-cyan-600',
+        badge: 'Opponenti'
       }
   ];
 

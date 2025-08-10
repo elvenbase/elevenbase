@@ -1211,6 +1211,40 @@ export const useCreateOpponent = () => {
   })
 }
 
+export const useUpdateOpponent = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, any> }) => {
+      const { data: res, error } = await supabase.from('opponents').update(data).eq('id', id).select().single()
+      if (error) throw error
+      return res
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['opponents'] })
+      toast({ title: 'Avversario aggiornato' })
+    },
+    onError: (e: any) => toast({ title: 'Errore aggiornamento avversario', description: e?.message, variant: 'destructive' })
+  })
+}
+
+export const useDeleteOpponent = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('opponents').delete().eq('id', id)
+      if (error) throw error
+      return true
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['opponents'] })
+      toast({ title: 'Avversario eliminato' })
+    },
+    onError: (e: any) => toast({ title: 'Errore eliminazione avversario', description: e?.message, variant: 'destructive' })
+  })
+}
+
 export const useUpdateMatch = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

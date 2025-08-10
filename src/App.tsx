@@ -42,6 +42,7 @@ const FormationManagement = lazy(() => import("@/pages/admin/FormationManagement
 const JerseyManagement = lazy(() => import("@/pages/admin/JerseyManagement"));
 const AvatarBackgroundManagement = lazy(() => import("@/pages/admin/AvatarBackgroundManagement"));
 const PngSettingsManagement = lazy(() => import("@/pages/admin/PngSettingsManagement"));
+const OpponentsManagement = lazy(() => import("@/pages/admin/OpponentsManagement"));
 
 const queryClient = new QueryClient();
 
@@ -292,6 +293,14 @@ function App() {
                         <Navigation />
                         <main className="ml-0 transition-all duration-200">
                           <PngSettingsManagement />
+                        </main>
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin/opponents" element={
+                      <AdminRoute>
+                        <Navigation />
+                        <main className="ml-0 transition-all duration-200">
+                          <OpponentsManagement />
                         </main>
                       </AdminRoute>
                     } />

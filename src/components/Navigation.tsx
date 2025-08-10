@@ -47,6 +47,7 @@ const Navigation = () => {
     { name: "Maglie", path: "/admin/jerseys", icon: Shirt },
     { name: "Sfondi Avatar", path: "/admin/avatar-backgrounds", icon: Image },
     { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
+    { name: "Avversari", path: "/admin/opponents", icon: Users },
     { name: "Opzioni Giocatori", path: "/field-options", icon: UserCog },
   ];
 

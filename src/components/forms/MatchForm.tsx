@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateMatch, useCompetitions, useCreateCompetition } from '@/hooks/useSupabaseData';
+import { useCreateMatch, useCompetitions, useCreateCompetition, useOpponents } from '@/hooks/useSupabaseData';
 import { Plus, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -40,6 +40,7 @@ export const MatchForm = ({ children }: MatchFormProps) => {
   const createMatch = useCreateMatch();
   const createCompetition = useCreateCompetition();
   const { data: competitions = [] } = useCompetitions();
+  const { data: opponents = [] } = useOpponents();
 
   const competitionNames = useMemo(() => competitions.map((c: any) => c.name), [competitions]);
 
@@ -134,11 +135,17 @@ export const MatchForm = ({ children }: MatchFormProps) => {
             <Label htmlFor="opponent_name">Avversario</Label>
             <Input
               id="opponent_name"
+              list="opponent-suggestions"
               value={formData.opponent_name}
               onChange={(e) => setFormData({ ...formData, opponent_name: e.target.value })}
               placeholder="es. Team Alpha"
               required
             />
+            <datalist id="opponent-suggestions">
+              {opponents.map((o: any) => (
+                <option key={o.id} value={o.name} />
+              ))}
+            </datalist>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
