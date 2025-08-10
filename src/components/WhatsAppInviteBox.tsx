@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MessageCircle } from 'lucide-react'
@@ -7,24 +7,31 @@ interface WhatsAppInviteBoxProps {
   sessionTitle: string
   publicLink: string
   customMessage?: string
+  editable?: boolean
 }
 
 export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({ 
   sessionTitle, 
   publicLink,
-  customMessage
+  customMessage,
+  editable = false
 }) => {
+  const defaultText = useMemo(() => (
+    customMessage && customMessage.trim().length > 0
+      ? customMessage
+      : `"Ciao ragazzi! Sessione di allenamento \"${sessionTitle}\" preparata, registratevi qui ${publicLink}"`
+  ), [customMessage, sessionTitle, publicLink])
+
+  const [message, setMessage] = useState<string>(defaultText)
+
   const generateWhatsAppMessage = (): string => {
-    if (customMessage && customMessage.trim().length > 0) {
-      return encodeURIComponent(customMessage)
-    }
-    const message = `Ciao ragazzi! Sessione di allenamento "${sessionTitle}" preparata, registratevi qui ${publicLink}`
-    return encodeURIComponent(message)
+    const text = editable ? message : (customMessage && customMessage.trim().length > 0 ? customMessage : `Ciao ragazzi! Sessione di allenamento "${sessionTitle}" preparata, registratevi qui ${publicLink}`)
+    return encodeURIComponent(text)
   }
 
   const generateWhatsAppLink = (): string => {
-    const message = generateWhatsAppMessage()
-    return `https://wa.me/?text=${message}`
+    const encoded = generateWhatsAppMessage()
+    return `https://wa.me/?text=${encoded}`
   }
 
   const handleWhatsAppClick = () => {
@@ -32,9 +39,9 @@ export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({
     window.open(whatsappLink, '_blank')
   }
 
-  const previewText = customMessage && customMessage.trim().length > 0
+  const previewText = editable ? message : (customMessage && customMessage.trim().length > 0
     ? customMessage
-    : `"Ciao ragazzi! Sessione di allenamento "${sessionTitle}" preparata, registratevi qui ${publicLink}"`
+    : `"Ciao ragazzi! Sessione di allenamento \"${sessionTitle}\" preparata, registratevi qui ${publicLink}"`)
 
   return (
     <Card className="border-green-200 bg-green-50 shadow-lg">
@@ -50,11 +57,20 @@ export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({
             Condividi questa sessione con la squadra via WhatsApp!
           </p>
           
-          <div className="bg-white p-3 rounded-lg border border-green-200">
-            <p className="text-sm text-gray-600 mb-2">Messaggio che verrà inviato:</p>
-            <p className="text-sm italic bg-gray-50 p-2 rounded border-l-3 border-green-400" style={{ wordWrap: 'break-word' }}>
-              {previewText}
-            </p>
+          <div className="bg-white p-3 rounded-lg border border-green-200 space-y-2">
+            <p className="text-sm text-gray-600">Messaggio che verrà inviato:</p>
+            {editable ? (
+              <textarea
+                className="w-full text-sm bg-gray-50 p-2 rounded border border-green-200"
+                rows={3}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+            ) : (
+              <p className="text-sm italic bg-gray-50 p-2 rounded border-l-3 border-green-400" style={{ wordWrap: 'break-word' }}>
+                {previewText}
+              </p>
+            )}
           </div>
 
           <Button 
