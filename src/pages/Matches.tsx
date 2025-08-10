@@ -69,6 +69,9 @@ const Matches = () => {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
+                            {m.opponents?.logo_url && (
+                              <img src={m.opponents.logo_url} alt={m.opponents?.name || 'logo'} className="h-6 w-6 rounded object-cover" />
+                            )}
                             <span className="font-semibold text-foreground truncate" title={title}>{title}</span>
                             <Badge variant="outline">{m.home_away === 'home' ? 'Casa' : 'Trasferta'}</Badge>
                           </div>

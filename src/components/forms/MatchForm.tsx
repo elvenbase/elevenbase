@@ -61,12 +61,12 @@ export const MatchForm = ({ children }: MatchFormProps) => {
     setUploadingLogo(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `opponent-logo-${Date.now()}.${fileExt}`;
+      const fileName = `opponent-${Date.now()}.${fileExt}`;
       const { error } = await supabase.storage
-        .from('avatars')
+        .from('opponents-logos')
         .upload(fileName, file, { cacheControl: '3600', upsert: false });
       if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const { data: { publicUrl } } = supabase.storage.from('opponents-logos').getPublicUrl(fileName);
       setOpponentLogoUrl(publicUrl);
       toast({ title: 'Logo caricato' });
     } catch (err) {

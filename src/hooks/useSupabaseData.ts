@@ -1092,8 +1092,8 @@ export const useMatches = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select(`*`)
-        .order('match_date', { ascending: true });
+        .select('*, opponents:opponent_id(name, logo_url)')
+        .order('match_date', { ascending: false });
       
       if (error) throw error;
       return data;
@@ -1144,12 +1144,32 @@ export const useCreateMatch = () => {
       notes?: string;
       opponent_logo_url?: string;
     }) => {
+      // Ensure opponent exists (by name), optionally setting logo_url, then attach opponent_id
+      const opponentName = (match.opponent_name || '').trim()
+      let opponent_id: string | undefined = undefined
+      if (opponentName) {
+        const lower = opponentName.toLowerCase()
+        const { data: existing } = await supabase.from('opponents').select('id, logo_url').ilike('name', lower)
+        if (existing && existing.length > 0) {
+          opponent_id = existing[0].id
+          // Optionally update logo if provided and missing
+          if (match.opponent_logo_url && !existing[0].logo_url) {
+            await supabase.from('opponents').update({ logo_url: match.opponent_logo_url }).eq('id', opponent_id)
+          }
+        } else {
+          const { data: inserted, error: oppErr } = await supabase.from('opponents').insert({ name: opponentName, logo_url: match.opponent_logo_url || null }).select().single()
+          if (oppErr) throw oppErr
+          opponent_id = inserted?.id
+        }
+      }
+
+      const payload: any = { ...match, opponent_logo_url: undefined, opponent_id, created_by: (await supabase.auth.getUser()).data.user?.id }
       const { data, error } = await supabase
         .from('matches')
-        .insert([{ ...match, created_by: (await supabase.auth.getUser()).data.user?.id }])
+        .insert([payload])
         .select()
         .single();
-      
+       
       if (error) throw error;
       return data;
     },
@@ -1162,6 +1182,34 @@ export const useCreateMatch = () => {
     }
   });
 };
+
+export const useOpponents = () => {
+  return useQuery({
+    queryKey: ['opponents'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('opponents').select('*').order('name', { ascending: true })
+      if (error) throw error
+      return data
+    }
+  })
+}
+
+export const useCreateOpponent = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  return useMutation({
+    mutationFn: async (payload: { name: string; logo_url?: string|null; jersey_template_id?: string|null }) => {
+      const { data, error } = await supabase.from('opponents').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['opponents'] })
+      toast({ title: 'Avversario creato' })
+    },
+    onError: (e: any) => toast({ title: 'Errore creazione avversario', description: e?.message, variant: 'destructive' })
+  })
+}
 
 export const useUpdateMatch = () => {
   const queryClient = useQueryClient();
