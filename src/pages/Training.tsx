@@ -165,15 +165,15 @@ const Training = () => {
               <Button
                 variant="ghost"
                 onClick={() => toggleExpanded(session.id)}
-                className="w-full flex items-center justify-center gap-2 text-white hover:text-white"
+                className="w-full flex items-center justify-center gap-2 text-foreground hover:text-foreground"
               >
                 <span className="text-xs sm:text-sm">
                   {isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}
                 </span>
                 {isExpanded ? (
-                  <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                  <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
                 ) : (
-                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
                 )}
               </Button>
           </div>

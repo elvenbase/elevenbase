@@ -214,13 +214,13 @@ const Competitions = () => {
                       <Button
                         variant="ghost"
                         onClick={() => toggleExpanded(match.id)}
-                        className="w-full mt-2 flex items-center justify-center gap-2 text-white hover:text-white"
+                        className="w-full mt-2 flex items-center justify-center gap-2 text-foreground hover:text-foreground"
                       >
                         <span className="text-xs sm:text-sm">{isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}</span>
                         {isExpanded ? (
-                          <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                          <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
                         ) : (
-                          <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                          <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
                         )}
                       </Button>
 
