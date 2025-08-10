@@ -10,6 +10,7 @@ import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
 import MatchAttendanceForm from '@/components/forms/MatchAttendanceForm'
+import MatchLineupSection from '@/components/MatchLineupSection'
 
 // TODO: swap out with real match attendance components/hooks
 const computeScore = (events: any[]) => {
@@ -121,11 +122,7 @@ const MatchDetail = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Reuse existing lineup components; wire to match-specific state when schema pronta */}
-                <LineupManager sessionId={id} presentPlayers={[]} onLineupChange={() => {}} />
-                <div className="mt-8 pt-8 border-t">
-                  <ConvocatiManager sessionId={id} allPlayers={[]} attendance={[]} playersInLineup={[]} />
-                </div>
+                <MatchLineupSection matchId={id} />
               </CardContent>
             </Card>
           </TabsContent>
