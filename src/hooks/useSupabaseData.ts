@@ -1488,7 +1488,7 @@ export const useMatchAttendance = (matchId: string) => {
 export const useUpsertMatchAttendance = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: { match_id: string; player_id: string; status?: string; arrival_time?: string | null; notes?: string | null }) => {
+    mutationFn: async (payload: { match_id: string; player_id: string; status?: string; coach_confirmation_status?: string; self_registered?: boolean; arrival_time?: string | null; notes?: string | null }) => {
       const { data, error } = await supabase
         .from('match_attendance')
         .upsert(payload, { onConflict: 'match_id,player_id' })
