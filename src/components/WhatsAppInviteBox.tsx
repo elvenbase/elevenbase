@@ -6,13 +6,18 @@ import { MessageCircle } from 'lucide-react'
 interface WhatsAppInviteBoxProps {
   sessionTitle: string
   publicLink: string
+  customMessage?: string
 }
 
 export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({ 
   sessionTitle, 
-  publicLink 
+  publicLink,
+  customMessage
 }) => {
   const generateWhatsAppMessage = (): string => {
+    if (customMessage && customMessage.trim().length > 0) {
+      return encodeURIComponent(customMessage)
+    }
     const message = `Ciao ragazzi! Sessione di allenamento "${sessionTitle}" preparata, registratevi qui ${publicLink}`
     return encodeURIComponent(message)
   }
@@ -27,6 +32,10 @@ export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({
     window.open(whatsappLink, '_blank')
   }
 
+  const previewText = customMessage && customMessage.trim().length > 0
+    ? customMessage
+    : `"Ciao ragazzi! Sessione di allenamento "${sessionTitle}" preparata, registratevi qui ${publicLink}"`
+
   return (
     <Card className="border-green-200 bg-green-50 shadow-lg">
       <CardHeader className="pb-4">
@@ -38,13 +47,13 @@ export const WhatsAppInviteBox: React.FC<WhatsAppInviteBoxProps> = ({
       <CardContent className="space-y-4">
         <div className="space-y-3">
           <p className="text-green-700">
-            Condividi questa sessione di allenamento con la squadra via WhatsApp!
+            Condividi questa sessione con la squadra via WhatsApp!
           </p>
           
           <div className="bg-white p-3 rounded-lg border border-green-200">
             <p className="text-sm text-gray-600 mb-2">Messaggio che verrà inviato:</p>
             <p className="text-sm italic bg-gray-50 p-2 rounded border-l-3 border-green-400" style={{ wordWrap: 'break-word' }}>
-              "Ciao ragazzi! Sessione di allenamento "{sessionTitle}" preparata, registratevi qui {publicLink}"
+              {previewText}
             </p>
           </div>
 

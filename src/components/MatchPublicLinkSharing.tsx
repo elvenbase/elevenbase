@@ -140,7 +140,11 @@ const MatchPublicLinkSharing = ({ match, attendanceStats, onRefresh }: MatchPubl
 
         {/* WhatsApp Invite Box */}
         <div className="mt-4">
-          <WhatsAppInviteBox sessionTitle={`Partita vs ${match.opponent_name}`} publicLink={matchUrl} />
+          <WhatsAppInviteBox 
+            sessionTitle={`Partita vs ${match.opponent_name}`} 
+            publicLink={matchUrl}
+            customMessage={`Ciao ragazzi, la partita con ${match.opponent_name} è stata fissata per ${new Date(match.match_date).toLocaleDateString()} ${match.match_time}. Per dare la vostra disponibilità andate a questo link ${matchUrl}. Vi ricordiamo che l’appuntamento online è previsto mezz’ora prima dell’ora di inizio. Grazie a tutti.`}
+          />
         </div>
       </CardContent>
     </Card>
