@@ -4,11 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CheckCircle, XCircle, Users, Lock, Check, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Users, Lock, Check, Clock, UserPlus } from 'lucide-react';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData';
+import { useTrainingAttendance, usePlayers, useTrainingTrialistInvites, useUpdateTrainingTrialistInvite } from '@/hooks/useSupabaseData';
 
 interface AttendanceFormProps {
   sessionId: string;
@@ -22,6 +22,8 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   
   const { data: allPlayers = [], refetch: refetchPlayers } = usePlayers();
   const { data: existingAttendance = [], refetch } = useTrainingAttendance(sessionId);
+  const { data: trialistInvites = [] } = useTrainingTrialistInvites(sessionId);
+  const updateTrialistInvite = useUpdateTrainingTrialistInvite();
 
 
   const presentCount = existingAttendance.filter(a => a.status === 'present' || a.coach_confirmation_status === 'present').length;
@@ -587,6 +589,36 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
               </div>
             )
           })}
+        </div>
+      </div>
+
+      {/* Provinanti invitati */}
+      <div className="mt-8 border rounded-lg">
+        <div className="p-4 flex items-center gap-2 bg-muted/50 font-medium text-sm">
+          <UserPlus className="w-4 h-4" /> Provinanti invitati ({trialistInvites.length})
+        </div>
+        <div className="divide-y">
+          {trialistInvites.length === 0 && (
+            <div className="p-4 text-sm text-muted-foreground">Nessun provinante invitato</div>
+          )}
+          {trialistInvites.map((t: any) => (
+            <div key={t.trialist_id} className="p-4 flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <div className="font-medium truncate">{t.trialists?.first_name} {t.trialists?.last_name}</div>
+                {t.self_registered && <Badge variant="outline" className="mt-1">Auto-registrato</Badge>}
+              </div>
+              <div className="w-48">
+                <Select value={t.status || 'pending'} onValueChange={(value) => updateTrialistInvite.mutate({ session_id: sessionId, trialist_id: t.trialist_id, status: value as any })}>
+                  <SelectTrigger className="h-8"><SelectValue placeholder="Stato" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending"><div className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-500" /> In attesa</div></SelectItem>
+                    <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Presente</div></SelectItem>
+                    <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Assente</div></SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

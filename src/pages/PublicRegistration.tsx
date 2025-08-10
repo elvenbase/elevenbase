@@ -17,6 +17,10 @@ interface Player {
   jersey_number?: number
 }
 
+interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
+
+type SelectEntity = `player:${string}` | `trialist:${string}`
+
 interface Session {
   id: string
   title: string
@@ -39,8 +43,9 @@ const PublicRegistration = () => {
   const [submitting, setSubmitting] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
+  const [trialistsInvited, setTrialistsInvited] = useState<Trialist[]>([])
   const [existingAttendance, setExistingAttendance] = useState<AttendanceRecord[]>([])
-  const [selectedPlayer, setSelectedPlayer] = useState<string>('')
+  const [selectedEntity, setSelectedEntity] = useState<SelectEntity | ''>('')
   const [selectedStatus, setSelectedStatus] = useState<'present' | 'absent'>('present')
   const [deadline, setDeadline] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -93,6 +98,7 @@ const PublicRegistration = () => {
 
       setSession(data.session)
       setPlayers(data.players)
+      setTrialistsInvited(data.trialistsInvited || [])
       setExistingAttendance(data.existingAttendance)
       setDeadline(new Date(data.deadline))
     } catch (err: any) {
@@ -104,21 +110,20 @@ const PublicRegistration = () => {
   }
 
   const handleSubmit = async () => {
-    if (!selectedPlayer) {
-      toast.error('Seleziona un giocatore')
+    if (!selectedEntity) {
+      toast.error('Seleziona il tuo nome')
       return
     }
 
     setSubmitting(true)
 
     try {
-      const { data, error } = await supabase.functions.invoke('public-registration', {
-        body: {
-          token,
-          playerId: selectedPlayer,
-          status: selectedStatus
-        }
-      })
+      const [kind, id] = selectedEntity.split(':') as ['player' | 'trialist', string]
+      const payload: any = { token, status: selectedStatus }
+      if (kind === 'player') payload.playerId = id
+      if (kind === 'trialist') payload.trialistId = id
+
+      const { data, error } = await supabase.functions.invoke('public-registration', { body: payload })
 
       if (error) throw error
 
@@ -131,7 +136,7 @@ const PublicRegistration = () => {
       
       // Ricarica i dati per mostrare l'aggiornamento
       await loadSessionData()
-      setSelectedPlayer('')
+      setSelectedEntity('')
       setSelectedStatus('present')
 
     } catch (err: any) {
@@ -221,23 +226,26 @@ const PublicRegistration = () => {
             <CardHeader>
               <CardTitle>Conferma la tua presenza</CardTitle>
               <CardDescription>
-                Seleziona il tuo nome e indica se sarai presente all'allenamento
+                Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Giocatore</label>
-                <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
+                <label className="text-sm font-medium">Giocatore o Provinante</label>
+                <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona il tuo nome" />
                   </SelectTrigger>
                   <SelectContent>
+                    {players.length > 0 && (
+                      <div className="px-2 py-1 text-xs text-muted-foreground">Giocatori</div>
+                    )}
                     {players.map(player => {
                       const registration = getPlayerRegistration(player.id)
                       return (
                         <SelectItem 
                           key={player.id} 
-                          value={player.id}
+                          value={`player:${player.id}` as SelectEntity}
                           disabled={!!registration}
                         >
                           <div className="flex items-center gap-2">
@@ -257,6 +265,17 @@ const PublicRegistration = () => {
                         </SelectItem>
                       )
                     })}
+                    {trialistsInvited.length > 0 && (
+                      <div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>
+                    )}
+                    {trialistsInvited.map(t => (
+                      <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!t.status}>
+                        <div className="flex items-center gap-2">
+                          {t.first_name} {t.last_name}
+                          {t.status && (<Badge variant="outline">{t.status === 'present' ? 'già presente' : 'già assente'}</Badge>)}
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -286,7 +305,7 @@ const PublicRegistration = () => {
 
               <Button 
                 onClick={handleSubmit} 
-                disabled={submitting || !selectedPlayer}
+                disabled={submitting || !selectedEntity}
                 className="w-full"
               >
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

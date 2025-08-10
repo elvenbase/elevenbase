@@ -568,6 +568,75 @@ export const useSetMatchTrialistInvites = () => {
   })
 }
 
+// Trialist invites readers/updaters
+export const useTrainingTrialistInvites = (sessionId: string) => {
+  return useQuery({
+    queryKey: ['training-trialist-invites', sessionId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_trialist_invites')
+        .select('trialist_id, status, self_registered, trialists:trialist_id(first_name,last_name)')
+        .eq('session_id', sessionId)
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!sessionId
+  })
+}
+
+export const useUpdateTrainingTrialistInvite = () => {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ session_id, trialist_id, status }: { session_id: string; trialist_id: string; status: 'present'|'absent'|'pending'|'uncertain' }) => {
+      const { error } = await supabase
+        .from('training_trialist_invites')
+        .upsert({ session_id, trialist_id, status }, { onConflict: 'session_id,trialist_id' })
+      if (error) throw error
+      return true
+    },
+    onSuccess: (_r, v) => {
+      queryClient.invalidateQueries({ queryKey: ['training-trialist-invites', v.session_id] })
+      toast({ title: 'Stato provinante aggiornato' })
+    },
+    onError: (e: any) => toast({ title: 'Errore aggiornando provinante', description: e?.message, variant: 'destructive' })
+  })
+}
+
+export const useMatchTrialistInvites = (matchId: string) => {
+  return useQuery({
+    queryKey: ['match-trialist-invites', matchId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('match_trialist_invites')
+        .select('trialist_id, status, self_registered, trialists:trialist_id(first_name,last_name)')
+        .eq('match_id', matchId)
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!matchId
+  })
+}
+
+export const useUpdateMatchTrialistInvite = () => {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ match_id, trialist_id, status }: { match_id: string; trialist_id: string; status: 'present'|'absent'|'pending'|'uncertain' }) => {
+      const { error } = await supabase
+        .from('match_trialist_invites')
+        .upsert({ match_id, trialist_id, status }, { onConflict: 'match_id,trialist_id' })
+      if (error) throw error
+      return true
+    },
+    onSuccess: (_r, v) => {
+      queryClient.invalidateQueries({ queryKey: ['match-trialist-invites', v.match_id] })
+      toast({ title: 'Stato provinante aggiornato' })
+    },
+    onError: (e: any) => toast({ title: 'Errore aggiornando provinante', description: e?.message, variant: 'destructive' })
+  })
+}
+
 export const useCreateTrialist = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

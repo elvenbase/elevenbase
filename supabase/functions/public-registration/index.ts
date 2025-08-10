@@ -208,11 +208,30 @@ serve(async (req) => {
         // Non bloccare se i convocati falliscono, è solo visualizzazione
       }
 
+      // Inviti provinanti
+      const { data: trialistInvites, error: tiErr } = await supabase
+        .from('training_trialist_invites')
+        .select(`
+          trialist_id,
+          status,
+          self_registered,
+          trialists ( id, first_name, last_name )
+        `)
+        .eq('session_id', session.id)
+      if (tiErr) console.warn('trialist invites fetch error', tiErr)
+
       return new Response(JSON.stringify({
         session,
         players,
         existingAttendance,
         convocati: convocati || [],
+        trialistsInvited: (trialistInvites || []).map((t: any) => ({
+          id: t.trialist_id,
+          first_name: t.trialists?.first_name,
+          last_name: t.trialists?.last_name,
+          status: t.status || 'pending',
+          self_registered: !!t.self_registered
+        })),
         deadline: deadline.toISOString(),
         isRegistrationExpired
       }), {
@@ -228,10 +247,10 @@ serve(async (req) => {
         })
       }
       
-      const { playerId, status } = requestBody
+      const { playerId, trialistId, status } = requestBody
 
       // Input validation
-      if (!token || !playerId || !status) {
+      if (!token || (!playerId && !trialistId) || !status) {
         return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -246,9 +265,15 @@ serve(async (req) => {
         })
       }
 
-      // Validate playerId UUID format
-      if (!validateUuid(playerId)) {
+      // Validate IDs
+      if (playerId && !validateUuid(playerId)) {
         return new Response(JSON.stringify({ error: 'Invalid player ID format' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      if (trialistId && !validateUuid(trialistId)) {
+        return new Response(JSON.stringify({ error: 'Invalid trialist ID format' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
@@ -261,8 +286,6 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
-
-
 
       // Trova la sessione
       const { data: session, error: sessionError } = await supabase
@@ -297,37 +320,39 @@ serve(async (req) => {
         })
       }
 
-      // Verifica se la sessione è chiusa
-      if (session.is_closed) {
-        return new Response(JSON.stringify({ error: 'Sessione già chiusa' }), {
-          status: 403,
+      // Inserisci o aggiorna la registrazione
+      if (playerId) {
+        const { data, error } = await supabase
+          .from('training_attendance')
+          .upsert({
+            session_id: session.id,
+            player_id: playerId,
+            status,
+            self_registered: true,
+            registration_time: new Date().toISOString()
+          }, {
+            onConflict: 'session_id,player_id'
+          })
+          .select()
+
+        if (error) {
+          throw error
+        }
+
+        console.log(`Player ${playerId} registered as ${status} for session ${session.id}`)
+
+        return new Response(JSON.stringify({ success: true, data }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
 
-      // Inserisci o aggiorna la registrazione
-      const { data, error } = await supabase
-        .from('training_attendance')
-        .upsert({
-          session_id: session.id,
-          player_id: playerId,
-          status,
-          self_registered: true,
-          registration_time: new Date().toISOString()
-        }, {
-          onConflict: 'session_id,player_id'
-        })
-        .select()
-
-      if (error) {
-        throw error
+      if (trialistId) {
+        const { error: upErr } = await supabase
+          .from('training_trialist_invites')
+          .upsert({ session_id: session.id, trialist_id: trialistId, status, self_registered: true }, { onConflict: 'session_id,trialist_id' })
+        if (upErr) throw upErr
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
-
-      console.log(`Player ${playerId} registered as ${status} for session ${session.id}`)
-
-      return new Response(JSON.stringify({ success: true, data }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
     }
 
     return new Response(JSON.stringify({ error: 'Metodo non supportato' }), {
@@ -337,7 +362,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Errore in public-registration:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as any).message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
