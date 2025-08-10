@@ -22,7 +22,7 @@ const MatchLineupSection = ({ matchId }: MatchLineupSectionProps) => {
 
   return (
     <div>
-      <LineupManager sessionId={matchId} presentPlayers={presentPlayers} onLineupChange={() => {}} />
+      <LineupManager sessionId={matchId} presentPlayers={presentPlayers} onLineupChange={() => {}} mode="match" />
       <div className="mt-8 pt-8 border-t">
         <MatchBenchManager matchId={matchId} allPlayers={allPlayers} attendance={attendance} playersInLineup={[]} />
       </div>

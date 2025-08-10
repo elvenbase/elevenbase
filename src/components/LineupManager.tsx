@@ -14,6 +14,7 @@ import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import { usePngExportSettings } from '@/hooks/usePngExportSettings'
 import { useAvatarColor } from '@/hooks/useAvatarColor'
 import html2canvas from 'html2canvas'
+import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 
 // Stili CSS personalizzati per il range slider
 const rangeSliderStyles = `
@@ -64,6 +65,7 @@ interface LineupManagerProps {
   sessionId: string
   presentPlayers: Player[]
   onLineupChange?: (playersInLineup: string[]) => void
+  mode?: 'training' | 'match'
 }
 
 const formations = {
@@ -117,17 +119,19 @@ const formations = {
   }
 }
 
-const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupManagerProps) => {
+const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'training' }: LineupManagerProps) => {
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
   
   // PRIMA: Dichiarare tutti gli hook - NON usano 'lineup' direttamente
+  const trainingManager = useLineupManager(sessionId)
+  const matchManager = useMatchLineupManager(sessionId)
   const { 
     lineup, 
     loading, 
     saveLineup,
     loadLineup 
-  } = useLineupManager(sessionId)
+  } = (mode === 'match' ? matchManager : trainingManager) as any
 
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
@@ -158,7 +162,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange }: LineupMana
   
   useEffect(() => {
     loadLineup()
-  }, [sessionId])
+  }, [sessionId, loadLineup])
   
   useEffect(() => {
     if (lineup) {
