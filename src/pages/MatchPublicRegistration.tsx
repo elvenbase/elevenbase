@@ -239,17 +239,17 @@ const MatchPublicRegistration = () => {
           <Card className="shadow-lg">
             <CardHeader className="p-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-lg"><Target className="h-4 w-4" />Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}</CardTitle>
-                <Button variant="outline" size="sm" onClick={downloadFormation} className="flex items-center gap-2"><Download className="h-4 w-4" />Scarica PNG</Button>
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Target className="h-4 w-4" />Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}</CardTitle>
+                <Button variant="outline" size="sm" onClick={downloadFormation} className="flex items-center gap-2 text-xs sm:text-sm"><Download className="h-4 w-4" />Scarica PNG</Button>
               </div>
             </CardHeader>
             <CardContent className="p-4">
               <div className="space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
                 <div className="lg:col-span-2">
-                  <div className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 border-white rounded-lg shadow-lg overflow-hidden mx-auto" style={{ aspectRatio: '2/3', maxWidth: '350px', width: '100%', minHeight: '400px', maxHeight: '500px' }}>
+                  <div className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 border-white rounded-lg shadow-lg overflow-hidden mx-auto" style={{ aspectRatio: '2/3', maxWidth: '320px', width: '100%', minHeight: '360px', maxHeight: '480px' }}>
                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(0,100,0,0.1) 5px, rgba(0,100,0,0.1) 10px)' }} />
                     <div className="absolute top-1/2 left-0 right-0 h-1 bg-white transform -translate-y-1/2" />
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border-2 border-white rounded-full" />
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 sm:w-20 h-16 sm:h-20 border-2 border-white rounded-full" />
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-b-2 border-white" />
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-t-2 border-white" />
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-b-2 border-white" />
@@ -260,9 +260,9 @@ const MatchPublicRegistration = () => {
                       return (
                         <div key={position.id} className="absolute transform -translate-x-1/2 -translate-y-1/2" style={{ left: `${position.x}%`, top: `${position.y}%` }} title={player ? `${player.first_name} ${player.last_name}` : position.name}>
                           {player ? (
-                            <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="lg" className="border-3 border-white shadow-lg" />
+                            <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="md" className="border-2 border-white shadow-lg" />
                           ) : (
-                            <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center"><Users className="w-5 h-5 text-white/70" /></div>
+                            <div className="w-10 h-10 rounded-full border-2 border-dashed border-white bg-white/20 flex items-center justify-center"><Users className="w-5 h-5 text-white/70" /></div>
                           )}
                         </div>
                       )
@@ -270,7 +270,7 @@ const MatchPublicRegistration = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5" />Titolari</h3>
+                  <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5" />Titolari</h3>
                   <div className="space-y-1">
                     {getFormationFromLineup(lineup.formation)?.positions.filter(pos => lineup.players_data?.positions?.[pos.id]).map(pos => {
                       const pid = lineup.players_data?.positions?.[pos.id]
@@ -281,7 +281,7 @@ const MatchPublicRegistration = () => {
                           <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" className="border-2 border-white" />
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-sm truncate">{player.first_name} {player.last_name}</div>
-                            <div className="text-xs text-muted-foreground">{pos.roleShort || pos.name}</div>
+                            <div className="text-xs text-muted-foreground truncate">{pos.roleShort || pos.name}</div>
                           </div>
                         </div>
                       )
@@ -294,7 +294,7 @@ const MatchPublicRegistration = () => {
         )}
 
         <Card className="shadow-lg">
-          <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-lg"><Users className="h-4 w-4" />Convocati {bench.length > 0 && `(${bench.length})`}</CardTitle></CardHeader>
+          <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati {bench.length > 0 && `(${bench.length})`}</CardTitle></CardHeader>
           <CardContent className="p-4">
             {bench.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nessun convocato</p>
@@ -304,8 +304,8 @@ const MatchPublicRegistration = () => {
                   <div key={b.id} className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
                     <PlayerAvatar firstName={b.players?.first_name} lastName={b.players?.last_name} avatarUrl={b.players?.avatar_url} size="md" className="mb-2" />
                     <div className="text-center">
-                      <p className="text-xs font-medium leading-tight">{b.players?.first_name}</p>
-                      <p className="text-xs font-medium leading-tight">{b.players?.last_name}</p>
+                      <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{b.players?.first_name}</p>
+                      <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{b.players?.last_name}</p>
                       {b.players?.jersey_number && (<p className="text-xs text-muted-foreground mt-1">#{b.players.jersey_number}</p>)}
                     </div>
                   </div>
