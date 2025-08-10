@@ -15,6 +15,7 @@ import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
+import { WhatsAppInviteBox } from '@/components/WhatsAppInviteBox'
 
 interface Player { id: string; first_name: string; last_name: string; jersey_number?: number }
 interface MatchInfo { id: string; opponent_name: string; match_date: string; match_time: string }
@@ -178,6 +179,9 @@ const MatchPublicRegistration = () => {
             {deadline && (<Badge variant={isExpired ? 'destructive' : 'secondary'}>{isExpired ? 'Tempo scaduto' : `Tempo rimasto: ${timeLeft}`}</Badge>)}
           </CardContent>
         </Card>
+
+        {/* WhatsApp invite box */}
+        <WhatsAppInviteBox sessionTitle={`Partita vs ${match.opponent_name}`} publicLink={window.location.href} />
 
         {!isExpired && (
           <Card>
