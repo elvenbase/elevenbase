@@ -61,7 +61,9 @@ serve(async (req) => {
         .from('match_bench')
         .select(`
           id, match_id, player_id, notes,
-          players:player_id(id, first_name, last_name, jersey_number, position, avatar_url)
+          players (
+            id, first_name, last_name, jersey_number, position, avatar_url
+          )
         `)
         .eq('match_id', match.id)
       if (benchError) {
