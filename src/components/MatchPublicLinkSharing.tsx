@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Copy, ExternalLink, Clock, Users, Edit3, Save, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useUpdateMatch } from '@/hooks/useSupabaseData'
+import { WhatsAppInviteBox } from '@/components/WhatsAppInviteBox'
 
 interface MatchInfo {
   id: string
@@ -135,6 +136,11 @@ const MatchPublicLinkSharing = ({ match, attendanceStats, onRefresh }: MatchPubl
             <Button variant="outline" size="icon" onClick={copyToClipboard}><Copy className="h-4 w-4" /></Button>
             <Button variant="outline" size="icon" onClick={openPublicLink}><ExternalLink className="h-4 w-4" /></Button>
           </div>
+        </div>
+
+        {/* WhatsApp Invite Box */}
+        <div className="mt-4">
+          <WhatsAppInviteBox sessionTitle={`Partita vs ${match.opponent_name}`} publicLink={matchUrl} />
         </div>
       </CardContent>
     </Card>
