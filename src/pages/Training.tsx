@@ -171,9 +171,9 @@ const Training = () => {
                   {isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}
                 </span>
                 {isExpanded ? (
-                  <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 ) : (
-                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 )}
               </Button>
           </div>
