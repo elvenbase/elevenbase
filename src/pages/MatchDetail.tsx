@@ -71,7 +71,7 @@ const LiveConsole = ({ matchId }: { matchId: string }) => {
           <Button variant="outline" onClick={() => submit('assist')} className="space-x-2"><Users className="h-4 w-4" /><span>Assist</span></Button>
           <Button variant="outline" onClick={() => submit('yellow')} className="space-x-2"><FlagTriangleRight className="h-4 w-4" /><span>Giallo</span></Button>
           <Button variant="outline" onClick={() => submit('red')} className="space-x-2"><FlagTriangleRight className="h-4 w-4 text-destructive" /><span>Rosso</span></Button>
-          <Button variant="outline" onClick={() => submit('own_goal')} className="space-x-2"><SoccerBall className="h-4 w-4" /><span>Autogol</span></Button>
+          <Button variant="outline" onClick={() => submit('own_goal')} className="space-x-2"><Goal className="h-4 w-4" /><span>Autogol</span></Button>
           <Button variant="outline" onClick={() => submit('note')} className="space-x-2"><StickyNote className="h-4 w-4" /><span>Nota</span></Button>
         </div>
       </CardContent>
