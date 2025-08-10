@@ -1163,6 +1163,33 @@ export const useCreateMatch = () => {
   });
 };
 
+export const useUpdateMatch = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (payload: { id: string; data: Record<string, any> }) => {
+      const { id, data } = payload;
+      const { data: res, error } = await supabase
+        .from('matches')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return res;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['match', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      toast({ title: 'Partita aggiornata' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'Errore aggiornando la partita', description: error?.message, variant: 'destructive' });
+    }
+  });
+}
+
 // Training Attendance hooks
 export const useTrainingAttendance = (sessionId: string) => {
   return useQuery({

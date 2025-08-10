@@ -5,12 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Target, Share, ArrowLeft } from 'lucide-react'
-import { useMatch, useMatchEvents } from '@/hooks/useSupabaseData'
+import { useMatch, useMatchEvents, useMatchAttendance } from '@/hooks/useSupabaseData'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
 import MatchAttendanceForm from '@/components/forms/MatchAttendanceForm'
 import MatchLineupSection from '@/components/MatchLineupSection'
+import MatchPublicLinkSharing from '@/components/MatchPublicLinkSharing'
 
 // TODO: swap out with real match attendance components/hooks
 const computeScore = (events: any[]) => {
@@ -37,8 +38,15 @@ const MatchDetail = () => {
   const { id } = useParams<{ id: string }>()
   const { data: match, isLoading } = useMatch(id || '')
   const { data: events = [] } = useMatchEvents(id || '')
+  const { data: matchAttendance = [] } = useMatchAttendance(id || '')
 
   const score = useMemo(() => computeScore(events), [events])
+  const attendanceStats = useMemo(() => ({
+    present: matchAttendance.filter((a: any) => a.status === 'present').length,
+    absent: matchAttendance.filter((a: any) => a.status === 'absent').length,
+    noResponse: 0,
+    totalPlayers: matchAttendance.length
+  }), [matchAttendance])
 
   useEffect(() => {
     // future: subscribe realtime
@@ -139,16 +147,7 @@ const MatchDetail = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Placeholder: riuso del componente attuale in attesa dei campi match */}
-                <PublicLinkSharing session={{
-                  id,
-                  title: `${match.home_away === 'home' ? 'vs' : '@'} ${match.opponent_name}`,
-                  description: '',
-                  session_date: match.match_date,
-                  start_time: match.match_time,
-                  end_time: match.match_time,
-                  is_closed: false,
-                } as any} attendanceStats={{ present: 0, absent: 0, noResponse: 0, totalPlayers: 0 }} onRefresh={() => {}} />
+                <MatchPublicLinkSharing match={{ id, opponent_name: match.opponent_name, match_date: match.match_date, match_time: match.match_time, public_link_token: match.public_link_token, allow_responses_until: match.allow_responses_until, is_closed: false }} attendanceStats={attendanceStats} onRefresh={() => {}} />
               </CardContent>
             </Card>
           </TabsContent>
