@@ -17,8 +17,11 @@ import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
 
 interface Player { id: string; first_name: string; last_name: string; jersey_number?: number }
+interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
 interface MatchInfo { id: string; opponent_name: string; match_date: string; match_time: string }
 interface AttendanceRecord { player_id: string; status: string; self_registered: boolean }
+
+type SelectEntity = `player:${string}` | `trialist:${string}`
 
 const MatchPublicRegistration = () => {
   const { token } = useParams<{ token: string }>()
@@ -26,8 +29,9 @@ const MatchPublicRegistration = () => {
   const [submitting, setSubmitting] = useState(false)
   const [match, setMatch] = useState<MatchInfo | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
+  const [trialistsInvited, setTrialistsInvited] = useState<Trialist[]>([])
   const [existingAttendance, setExistingAttendance] = useState<AttendanceRecord[]>([])
-  const [selectedPlayer, setSelectedPlayer] = useState<string>('')
+  const [selectedEntity, setSelectedEntity] = useState<SelectEntity | ''>('')
   const [selectedStatus, setSelectedStatus] = useState<'present' | 'absent'>('present')
   const [deadline, setDeadline] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -62,6 +66,7 @@ const MatchPublicRegistration = () => {
       if (data.error) { setError(data.error); return }
       setMatch(data.match)
       setPlayers(data.players)
+      setTrialistsInvited(data.trialistsInvited || [])
       setExistingAttendance(data.existingAttendance)
       setDeadline(new Date(data.deadline))
       setLineup(data.lineup || null)
@@ -73,15 +78,19 @@ const MatchPublicRegistration = () => {
   }
 
   const handleSubmit = async () => {
-    if (!selectedPlayer) { toast.error('Seleziona un giocatore'); return }
+    if (!selectedEntity) { toast.error('Seleziona il tuo nome'); return }
     setSubmitting(true)
     try {
-      const { data, error } = await supabase.functions.invoke('public-match-registration', { body: { token, playerId: selectedPlayer, status: selectedStatus } })
+      const [kind, id] = selectedEntity.split(':') as ['player' | 'trialist', string]
+      const payload: any = { token, status: selectedStatus }
+      if (kind === 'player') payload.playerId = id
+      if (kind === 'trialist') payload.trialistId = id
+      const { data, error } = await supabase.functions.invoke('public-match-registration', { body: payload })
       if (error) throw error
       if (data.error) { toast.error(data.error); return }
       toast.success('Registrazione completata!')
       await loadData()
-      setSelectedPlayer(''); setSelectedStatus('present')
+      setSelectedEntity(''); setSelectedStatus('present')
     } catch (err: any) {
       console.error('Errore nella registrazione:', err)
       toast.error('Errore nella registrazione')
@@ -183,18 +192,21 @@ const MatchPublicRegistration = () => {
           <Card>
             <CardHeader>
               <CardTitle>Conferma la tua presenza</CardTitle>
-              <CardDescription>Seleziona il tuo nome e indica se sarai presente alla partita</CardDescription>
+              <CardDescription>Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Giocatore</label>
-                <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
+                <label className="text-sm font-medium">Giocatore o Provinante</label>
+                <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
                   <SelectTrigger><SelectValue placeholder="Seleziona il tuo nome" /></SelectTrigger>
                   <SelectContent>
+                    {players.length > 0 && (
+                      <div className="px-2 py-1 text-xs text-muted-foreground">Giocatori</div>
+                    )}
                     {players.map(p => {
                       const registration = getPlayerRegistration(p.id)
                       return (
-                        <SelectItem key={p.id} value={p.id} disabled={!!registration}>
+                        <SelectItem key={p.id} value={`player:${p.id}` as SelectEntity} disabled={!!registration}>
                           <div className="flex items-center gap-2">
                             {p.first_name} {p.last_name}
                             {p.jersey_number && (<Badge variant="outline">#{p.jersey_number}</Badge>)}
@@ -202,6 +214,17 @@ const MatchPublicRegistration = () => {
                         </SelectItem>
                       )
                     })}
+                    {trialistsInvited.length > 0 && (
+                      <div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>
+                    )}
+                    {trialistsInvited.map(t => (
+                      <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!t.status}>
+                        <div className="flex items-center gap-2">
+                          {t.first_name} {t.last_name}
+                          {t.status && (<Badge variant="outline">{t.status === 'present' ? 'già presente' : 'già assente'}</Badge>)}
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -217,7 +240,7 @@ const MatchPublicRegistration = () => {
                 </Select>
               </div>
 
-              <Button onClick={handleSubmit} disabled={submitting || !selectedPlayer} className="w-full">
+              <Button onClick={handleSubmit} disabled={submitting || !selectedEntity} className="w-full">
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Conferma Registrazione
               </Button>
             </CardContent>
