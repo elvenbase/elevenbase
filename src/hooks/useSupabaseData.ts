@@ -575,7 +575,7 @@ export const useTrainingTrialistInvites = (sessionId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('training_trialist_invites')
-        .select('trialist_id, status, self_registered, trialists:trialist_id(first_name,last_name)')
+        .select('*, trialists:trialist_id(first_name,last_name)')
         .eq('session_id', sessionId)
       if (error) throw error
       return data || []
@@ -609,7 +609,7 @@ export const useMatchTrialistInvites = (matchId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('match_trialist_invites')
-        .select('trialist_id, status, self_registered, trialists:trialist_id(first_name,last_name)')
+        .select('*, trialists:trialist_id(first_name,last_name)')
         .eq('match_id', matchId)
       if (error) throw error
       return data || []
