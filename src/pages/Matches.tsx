@@ -2,12 +2,21 @@ import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Clock, Plus, Target } from 'lucide-react'
-import { useMatches } from '@/hooks/useSupabaseData'
+import { Calendar, Clock, Plus, Target, Copy, Trash2 } from 'lucide-react'
+import { useMatches, useCloneMatch, useDeleteMatch } from '@/hooks/useSupabaseData'
 import { MatchForm } from '@/components/forms/MatchForm'
 
 const Matches = () => {
   const { data: matches = [], isLoading } = useMatches()
+  const cloneMatch = useCloneMatch()
+  const deleteMatch = useDeleteMatch()
+
+  const onClone = (id: string) => cloneMatch.mutate(id)
+  const onDelete = (id: string) => {
+    if (confirm('Sei sicuro di voler eliminare questa partita? L\'operazione è irreversibile.')) {
+      deleteMatch.mutate(id)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,6 +64,12 @@ const Matches = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button variant="outline" size="icon" title="Clona" onClick={() => onClone(m.id)} disabled={cloneMatch.isPending}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button variant="destructive" size="icon" title="Elimina" onClick={() => onDelete(m.id)} disabled={deleteMatch.isPending}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                       <Link to={`/match/${m.id}`}>
                         <Button variant="outline" className="space-x-2">
                           <Target className="h-4 w-4" />

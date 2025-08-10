@@ -1190,6 +1190,69 @@ export const useUpdateMatch = () => {
   });
 }
 
+export const useDeleteMatch = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async (matchId: string) => {
+      const { error } = await supabase.from('matches').delete().eq('id', matchId)
+      if (error) throw error
+      return true
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      toast({ title: 'Partita eliminata' })
+    },
+    onError: (e: any) => toast({ title: 'Errore eliminazione partita', description: e?.message, variant: 'destructive' })
+  })
+}
+
+export const useCloneMatch = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async (matchId: string) => {
+      // fetch match
+      const { data: m, error } = await supabase.from('matches').select('*').eq('id', matchId).maybeSingle()
+      if (error) throw error
+      if (!m) throw new Error('Match not found')
+      // insert clone (shift date +7 days as default)
+      const originalDate = new Date(m.match_date)
+      originalDate.setDate(originalDate.getDate() + 7)
+      const y = originalDate.getFullYear(); const mo = String(originalDate.getMonth()+1).padStart(2,'0'); const d = String(originalDate.getDate()).padStart(2,'0')
+      const newDate = `${y}-${mo}-${d}`
+      const insert = {
+        opponent_name: m.opponent_name,
+        match_date: newDate,
+        match_time: m.match_time,
+        home_away: m.home_away,
+        location: m.location,
+        competition_id: m.competition_id,
+        notes: m.notes
+      }
+      const { data: inserted, error: insErr } = await supabase.from('matches').insert(insert).select().single()
+      if (insErr) throw insErr
+      // clone lineup if exists
+      const { data: lineup } = await supabase.from('match_lineups').select('*').eq('match_id', matchId).maybeSingle()
+      if (lineup) {
+        await supabase.from('match_lineups').insert({ match_id: inserted.id, formation: lineup.formation, players_data: lineup.players_data })
+      }
+      // clone bench if exists
+      const { data: bench } = await supabase.from('match_bench').select('player_id, notes').eq('match_id', matchId)
+      if (bench && bench.length > 0) {
+        const rows = bench.map(b => ({ match_id: inserted.id, player_id: b.player_id, notes: b.notes }))
+        await supabase.from('match_bench').insert(rows)
+      }
+      return inserted
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      toast({ title: 'Partita clonata' })
+    },
+    onError: (e: any) => toast({ title: 'Errore clonazione partita', description: e?.message, variant: 'destructive' })
+  })
+}
+
 // Training Attendance hooks
 export const useTrainingAttendance = (sessionId: string) => {
   return useQuery({
