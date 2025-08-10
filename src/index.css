@@ -113,6 +113,13 @@
   .formation-position-empty {
     border-width: thin;
   }
+
+  /* Ghost brand button: ensures brand bg/text on hover/focus/active */
+  .btn-ghost-brand { @apply text-foreground; }
+  .btn-ghost-brand:hover { @apply bg-primary text-primary-foreground; }
+  .btn-ghost-brand:focus { @apply bg-primary text-primary-foreground; }
+  .btn-ghost-brand:focus-visible { @apply bg-primary text-primary-foreground; }
+  .btn-ghost-brand:active { @apply bg-primary text-primary-foreground; }
 }
 
 @layer base {
