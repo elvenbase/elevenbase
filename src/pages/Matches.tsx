@@ -98,7 +98,7 @@ const Matches = () => {
                       <Button
                         variant="ghost"
                         onClick={() => toggleExpanded(m.id)}
-                        className="w-full mt-2 flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
+                        className="w-full mt-2 flex items-center justify-center gap-2 text-white hover:text-white"
                       >
                         <span className="text-xs sm:text-sm">{isExpanded ? 'Nascondi opzioni' : 'Mostra altre opzioni'}</span>
                         {isExpanded ? (
