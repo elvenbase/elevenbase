@@ -217,7 +217,7 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
                     </Select>
                   </div>
                   <div className="col-span-1 text-center">
-                    {(rec?.status === 'present') && (
+                    {((rec?.status === 'present') || (rec?.coach_confirmation_status === 'present')) && (
                       <div className="flex items-center justify-center gap-1">
                         <input type="checkbox" checked={!!rec?.arrival_time} onChange={(e) => handleLateStatusChange(player.id, e.target.checked)} className="h-4 w-4" />
                         <span className="text-xs">Ritardo</span>
@@ -271,7 +271,7 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground block mb-1">Ritardo</label>
-                    {(rec?.status === 'present') && (
+                    {((rec?.status === 'present') || (rec?.coach_confirmation_status === 'present')) && (
                       <div>
                         <div className="flex items-center gap-2 mt-1">
                           <input type="checkbox" checked={!!rec?.arrival_time} onChange={(e) => handleLateStatusChange(player.id, e.target.checked)} className="h-4 w-4" />
