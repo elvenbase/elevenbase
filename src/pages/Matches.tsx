@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Clock, Plus, Target, Copy, Trash2 } from 'lucide-react'
+import { Calendar, Clock, Plus, Target, Copy, Trash2, MoreHorizontal } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useMatches, useCloneMatch, useDeleteMatch } from '@/hooks/useSupabaseData'
 import { MatchForm } from '@/components/forms/MatchForm'
 
@@ -20,14 +21,14 @@ const Matches = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">Partite Ufficiali</h1>
             <p className="text-muted-foreground">Gestisci e registra eventi live delle partite ufficiali</p>
           </div>
           <MatchForm>
-            <Button className="space-x-2">
+            <Button className="space-x-2 w-full sm:w-auto">
               <Plus className="h-4 w-4" />
               <span>Nuova Partita</span>
             </Button>
@@ -63,7 +64,8 @@ const Matches = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Desktop / tablet actions */}
+                    <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
                       <Button variant="outline" size="icon" title="Clona" onClick={() => onClone(m.id)} disabled={cloneMatch.isPending}>
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -76,6 +78,35 @@ const Matches = () => {
                           <span>Vai</span>
                         </Button>
                       </Link>
+                    </div>
+                    {/* Mobile actions: condensed menu */}
+                    <div className="sm:hidden flex-shrink-0">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem asChild>
+                            <Link to={`/match/${m.id}`}>
+                              <div className="flex items-center gap-2">
+                                <Target className="h-4 w-4" />
+                                <span>Apri</span>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => onClone(m.id)}>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Clona
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onDelete(m.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Elimina
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 ))}
