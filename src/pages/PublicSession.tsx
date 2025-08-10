@@ -23,6 +23,10 @@ interface Player {
   avatar_url?: string
 }
 
+interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
+
+type SelectEntity = `player:${string}` | `trialist:${string}`
+
 interface Session {
   id: string
   title: string
@@ -62,8 +66,9 @@ const PublicSession = () => {
   const [submitting, setSubmitting] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
+  const [trialistsInvited, setTrialistsInvited] = useState<Trialist[]>([])
   const [existingAttendance, setExistingAttendance] = useState<AttendanceRecord[]>([])
-  const [selectedPlayer, setSelectedPlayer] = useState<string>('')
+  const [selectedEntity, setSelectedEntity] = useState<SelectEntity | ''>('')
   const [selectedStatus, setSelectedStatus] = useState<'present' | 'absent'>('present')
   const [deadline, setDeadline] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -120,10 +125,9 @@ const PublicSession = () => {
       })
 
       const data = await response.json()
-      console.log('Edge function response:', { status: response.status, data })
+      console.log('Edge function response:', { status: response.status, data: JSON.stringify(data) })
 
       if (!response.ok) {
-        // Handle HTTP errors (403, 404, etc.)
         setError(data.error || `Errore HTTP ${response.status}`)
         return
       }
@@ -136,20 +140,18 @@ const PublicSession = () => {
 
       setSession(data.session)
       setPlayers(data.players)
+      setTrialistsInvited(data.trialistsInvited || [])
       setExistingAttendance(data.existingAttendance)
       
-      // Imposta i convocati dalla edge function
       if (data.convocati) {
         console.log('✅ Setting convocati from edge function:', data.convocati.length)
         setConvocati(data.convocati)
       }
       
-      // Calcola deadline: 4 ore prima dell'inizio della sessione
       const sessionDateTime = new Date(`${data.session.session_date}T${data.session.start_time}`)
-      const registrationDeadline = new Date(sessionDateTime.getTime() - (4 * 60 * 60 * 1000)) // 4 ore prima
+      const registrationDeadline = new Date(sessionDateTime.getTime() - (4 * 60 * 60 * 1000))
       setDeadline(registrationDeadline)
 
-      // Carica solo la formazione (i convocati arrivano già dalla edge function)
       if (data.session?.id) {
         await loadLineup(data.session.id)
       }
@@ -186,21 +188,20 @@ const PublicSession = () => {
   }
 
   const handleSubmit = async () => {
-    if (!selectedPlayer) {
-      toast.error('Seleziona un giocatore')
+    if (!selectedEntity) {
+      toast.error('Seleziona il tuo nome')
       return
     }
 
     setSubmitting(true)
 
     try {
-      const { data, error } = await supabase.functions.invoke('public-registration', {
-        body: {
-          token,
-          playerId: selectedPlayer,
-          status: selectedStatus
-        }
-      })
+      const [kind, id] = selectedEntity.split(':') as ['player' | 'trialist', string]
+      const payload: any = { token, status: selectedStatus }
+      if (kind === 'player') payload.playerId = id
+      if (kind === 'trialist') payload.trialistId = id
+
+      const { data, error } = await supabase.functions.invoke('public-registration', { body: payload })
 
       if (error) throw error
 
@@ -211,9 +212,8 @@ const PublicSession = () => {
 
       toast.success('Registrazione completata con successo!')
       
-      // Ricarica i dati per mostrare l'aggiornamento
       await loadSessionData()
-      setSelectedPlayer('')
+      setSelectedEntity('')
       setSelectedStatus('present')
 
     } catch (err: any) {
@@ -691,40 +691,27 @@ const PublicSession = () => {
                   Conferma la tua presenza
                 </CardTitle>
                 <CardDescription className="text-sm sm:text-base">
-                  Seleziona il tuo nome e indica se sarai presente all'allenamento
+                  Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente all'allenamento
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">Giocatore</label>
-                  <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
+                  <label className="text-sm font-medium">Giocatore o Provinante</label>
+                  <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Seleziona il tuo nome" />
                     </SelectTrigger>
                     <SelectContent>
+                      {players.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Giocatori</div>)}
                       {players.map(player => {
                         const registration = getPlayerRegistration(player.id)
                         return (
-                          <SelectItem 
-                            key={player.id} 
-                            value={player.id}
-                            disabled={!!registration}
-                          >
+                          <SelectItem key={player.id} value={`player:${player.id}` as SelectEntity} disabled={!!registration}>
                             <div className="flex items-center gap-3 w-full">
-                              <PlayerAvatar
-                                firstName={player.first_name}
-                                lastName={player.last_name}
-                                avatarUrl={player.avatar_url}
-                                size="sm"
-                              />
-                              <span className="font-medium">
-                                {player.first_name} {player.last_name}
-                              </span>
+                              <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" />
+                              <span className="font-medium">{player.first_name} {player.last_name}</span>
                               {registration && (
-                                <Badge 
-                                  variant={registration.status === 'present' ? "default" : "secondary"}
-                                  className="ml-auto text-xs"
-                                >
+                                <Badge variant={registration.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
                                   {registration.status === 'present' ? 'Presente' : 'Assente'}
                                 </Badge>
                               )}
@@ -732,6 +719,15 @@ const PublicSession = () => {
                           </SelectItem>
                         )
                       })}
+                      {trialistsInvited.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>)}
+                      {trialistsInvited.map(t => (
+                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!t.status}>
+                          <div className="flex items-center gap-2">
+                            {t.first_name} {t.last_name}
+                            {t.status && (<Badge variant="outline">{t.status === 'present' ? 'già presente' : 'già assente'}</Badge>)}
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -759,12 +755,7 @@ const PublicSession = () => {
                   </Select>
                 </div>
 
-                <Button 
-                  onClick={handleSubmit} 
-                  disabled={submitting || !selectedPlayer}
-                  className="w-full h-12 text-lg"
-                  size="lg"
-                >
+                <Button onClick={handleSubmit} disabled={submitting || !selectedEntity} className="w-full h-12 text-lg" size="lg">
                   {submitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                   Conferma Registrazione
                 </Button>
