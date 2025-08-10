@@ -1076,7 +1076,7 @@ export const useMatch = (matchId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('*')
+        .select('*, opponents:opponent_id(name, logo_url, jersey_shape, jersey_primary_color, jersey_secondary_color, jersey_accent_color, jersey_image_url)')
         .eq('id', matchId)
         .maybeSingle()
       if (error) throw error

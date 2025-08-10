@@ -34,6 +34,23 @@ const computeScore = (events: any[]) => {
   return { us, opp }
 }
 
+const MiniJersey = ({ o }: { o: any }) => {
+  if (!o) return null
+  if (o.jersey_image_url) return <img src={o.jersey_image_url} alt="jersey" className="h-5 w-5 rounded object-cover" />
+  const shape = o.jersey_shape as 'classic'|'stripes'|'hoops'|undefined
+  const p = o.jersey_primary_color || '#008080'
+  const s = o.jersey_secondary_color || '#ffffff'
+  const style: React.CSSProperties = {}
+  if (shape === 'stripes') {
+    style.backgroundImage = `repeating-linear-gradient(90deg, ${p} 0 6px, ${s} 6px 12px)`
+  } else if (shape === 'hoops') {
+    style.backgroundImage = `repeating-linear-gradient(0deg, ${p} 0 6px, ${s} 6px 12px)`
+  } else {
+    style.backgroundColor = p
+  }
+  return <div className="h-5 w-5 rounded border" style={style} />
+}
+
 const MatchDetail = () => {
   const { id } = useParams<{ id: string }>()
   const { data: match, isLoading } = useMatch(id || '')
@@ -74,6 +91,7 @@ const MatchDetail = () => {
               <div>
                 <div className="flex items-center gap-3">
                   <h1 className="text-2xl font-bold text-primary">{match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}</h1>
+                  <MiniJersey o={match.opponents} />
                   <Badge variant="outline">{new Date(match.match_date).toLocaleDateString()} {match.match_time}</Badge>
                 </div>
                 {match.location && (
