@@ -1142,6 +1142,7 @@ export const useCreateMatch = () => {
       home_away?: string;
       competition_id?: string;
       notes?: string;
+      opponent_logo_url?: string;
     }) => {
       const { data, error } = await supabase
         .from('matches')

@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateMatch, useCompetitions, useCreateCompetition } from '@/hooks/useSupabaseData';
-import { Plus } from 'lucide-react';
+import { Plus, Image as ImageIcon } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 interface MatchFormProps {
   children?: React.ReactNode;
@@ -31,7 +33,10 @@ export const MatchForm = ({ children }: MatchFormProps) => {
     competition_name: '',
     notes: ''
   });
+  const [opponentLogoUrl, setOpponentLogoUrl] = useState<string>('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
+  const { toast } = useToast();
   const createMatch = useCreateMatch();
   const createCompetition = useCreateCompetition();
   const { data: competitions = [] } = useCompetitions();
@@ -48,6 +53,30 @@ export const MatchForm = ({ children }: MatchFormProps) => {
     }
   }, [open]);
 
+  const handleUploadLogo = async (file: File) => {
+    if (!file || !file.type.startsWith('image/')) {
+      toast({ title: 'Formato non valido', description: 'Seleziona un\'immagine valida (JPG, PNG, etc.).', variant: 'destructive' });
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `opponent-logo-${Date.now()}.${fileExt}`;
+      const { error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      setOpponentLogoUrl(publicUrl);
+      toast({ title: 'Logo caricato' });
+    } catch (err) {
+      console.error('Upload logo error:', err);
+      toast({ title: 'Errore di caricamento', description: 'Caricamento del logo non riuscito.', variant: 'destructive' });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -63,7 +92,7 @@ export const MatchForm = ({ children }: MatchFormProps) => {
       }
     }
 
-    const matchData = {
+    const matchData: any = {
       opponent_name: formData.opponent_name,
       match_date: formData.match_date,
       match_time: formData.match_time,
@@ -71,6 +100,7 @@ export const MatchForm = ({ children }: MatchFormProps) => {
       competition_id,
       notes: formData.notes || undefined
     };
+    if (opponentLogoUrl) matchData.opponent_logo_url = opponentLogoUrl;
 
     await createMatch.mutateAsync(matchData);
     setFormData({
@@ -81,6 +111,7 @@ export const MatchForm = ({ children }: MatchFormProps) => {
       competition_name: '',
       notes: ''
     });
+    setOpponentLogoUrl('');
     setOpen(false);
   };
 
@@ -163,6 +194,19 @@ export const MatchForm = ({ children }: MatchFormProps) => {
           </div>
 
           <div>
+            <Label>Logo avversario</Label>
+            <div className="flex items-center gap-3">
+              <Input type="file" accept="image/*" onChange={(e) => e.target.files && handleUploadLogo(e.target.files[0])} />
+              {opponentLogoUrl && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <ImageIcon className="h-4 w-4" />
+                  <span>Logo caricato</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
             <Label htmlFor="notes">Note</Label>
             <Textarea
               id="notes"
@@ -177,8 +221,8 @@ export const MatchForm = ({ children }: MatchFormProps) => {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annulla
             </Button>
-            <Button type="submit" disabled={createMatch.isPending || createCompetition.isPending}>
-              {createMatch.isPending || createCompetition.isPending ? 'Creazione...' : 'Crea Partita'}
+            <Button type="submit" disabled={createMatch.isPending || createCompetition.isPending || uploadingLogo}>
+              {createMatch.isPending || createCompetition.isPending || uploadingLogo ? 'Creazione...' : 'Crea Partita'}
             </Button>
           </div>
         </form>
