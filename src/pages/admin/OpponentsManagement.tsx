@@ -11,6 +11,25 @@ import { toast } from 'sonner'
 import { Plus, Trash2, Save, Image as ImageIcon, Shirt } from 'lucide-react'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 
+type JerseyShape = 'classic' | 'stripes' | 'hoops'
+
+const JerseyMini = ({ shape, primary, secondary, accent, imageUrl }: { shape?: JerseyShape|null; primary?: string|null; secondary?: string|null; accent?: string|null; imageUrl?: string|null }) => {
+  if (imageUrl) {
+    return <img src={imageUrl} alt="jersey" className="h-6 w-6 rounded object-cover" />
+  }
+  const p = primary || '#008080'
+  const s = secondary || '#ffffff'
+  const style: React.CSSProperties = {}
+  if (shape === 'stripes') {
+    style.backgroundImage = `repeating-linear-gradient(90deg, ${p} 0 6px, ${s} 6px 12px)`
+  } else if (shape === 'hoops') {
+    style.backgroundImage = `repeating-linear-gradient(0deg, ${p} 0 6px, ${s} 6px 12px)`
+  } else {
+    style.backgroundColor = p
+  }
+  return <div className="h-6 w-6 rounded border" style={style} />
+}
+
 const OpponentsManagement = () => {
   const { data: opponents = [] } = useOpponents()
   const createOpponent = useCreateOpponent()
@@ -22,6 +41,11 @@ const OpponentsManagement = () => {
   const [name, setName] = useState('')
   const [logoUrl, setLogoUrl] = useState<string>('')
   const [uploading, setUploading] = useState(false)
+  const [creatingShape, setCreatingShape] = useState<JerseyShape>('classic')
+  const [creatingPrimary, setCreatingPrimary] = useState('#008080')
+  const [creatingSecondary, setCreatingSecondary] = useState('#ffffff')
+  const [creatingAccent, setCreatingAccent] = useState('#000000')
+  const [creatingJerseyImage, setCreatingJerseyImage] = useState<string>('')
 
   const handleUploadLogo = async (file: File) => {
     if (!file || !file.type.startsWith('image/')) { toast.error('Seleziona un\'immagine'); return }
@@ -42,10 +66,38 @@ const OpponentsManagement = () => {
     }
   }
 
+  const handleUploadJerseyImageCreate = async (file: File) => {
+    if (!file || !file.type.startsWith('image/')) { toast.error('Seleziona un\'immagine'); return }
+    setUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `opponent-jersey-${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('opponents-jerseys').upload(fileName, file, { cacheControl: '3600', upsert: false })
+      if (error) throw error
+      const { data: { publicUrl } } = supabase.storage.from('opponents-jerseys').getPublicUrl(fileName)
+      setCreatingJerseyImage(publicUrl)
+      toast.success('Maglia caricata')
+    } catch (e) {
+      console.error(e)
+      toast.error('Errore upload maglia')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const handleCreate = async () => {
     if (!name.trim()) { toast.error('Nome richiesto'); return }
-    await createOpponent.mutateAsync({ name: name.trim(), logo_url: logoUrl || null })
+    await createOpponent.mutateAsync({ 
+      name: name.trim(), 
+      logo_url: logoUrl || null,
+      jersey_shape: creatingJerseyImage ? null : creatingShape,
+      jersey_primary_color: creatingJerseyImage ? null : creatingPrimary,
+      jersey_secondary_color: creatingJerseyImage ? null : creatingSecondary,
+      jersey_accent_color: creatingJerseyImage ? null : creatingAccent,
+      jersey_image_url: creatingJerseyImage || null
+    } as any)
     setName(''); setLogoUrl(''); setOpen(false)
+    setCreatingJerseyImage('')
   }
 
   const handleUpdateName = async (id: string, newName: string) => {
@@ -58,6 +110,15 @@ const OpponentsManagement = () => {
     if (error) { toast.error('Upload fallito'); return }
     const { data: { publicUrl } } = supabase.storage.from('opponents-logos').getPublicUrl(fileName)
     await updateOpponent.mutateAsync({ id, data: { logo_url: publicUrl } })
+  }
+
+  const handleUpdateJerseyImage = async (id: string, file: File) => {
+    const ext = file.name.split('.').pop()
+    const fileName = `opponent-jersey-${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from('opponents-jerseys').upload(fileName, file, { cacheControl: '3600', upsert: false })
+    if (error) { toast.error('Upload maglia fallito'); return }
+    const { data: { publicUrl } } = supabase.storage.from('opponents-jerseys').getPublicUrl(fileName)
+    await updateOpponent.mutateAsync({ id, data: { jersey_image_url: publicUrl, jersey_shape: null, jersey_primary_color: null, jersey_secondary_color: null, jersey_accent_color: null } })
   }
 
   return (
@@ -88,6 +149,24 @@ const OpponentsManagement = () => {
                     {logoUrl && <span className="flex items-center gap-2 text-sm text-muted-foreground"><ImageIcon className="h-4 w-4" />Logo caricato</span>}
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label>Maglia Avversario</Label>
+                  <div className="flex items-center gap-3">
+                    <JerseyMini shape={creatingShape} primary={creatingPrimary} secondary={creatingSecondary} accent={creatingAccent} imageUrl={creatingJerseyImage} />
+                    <select value={creatingShape} onChange={(e) => setCreatingShape(e.target.value as JerseyShape)} className="h-9 rounded border px-2 text-sm">
+                      <option value="classic">Classic</option>
+                      <option value="stripes">Strisce</option>
+                      <option value="hoops">Orizzontali</option>
+                    </select>
+                    <input type="color" value={creatingPrimary} onChange={(e) => setCreatingPrimary(e.target.value)} title="Colore primario" />
+                    <input type="color" value={creatingSecondary} onChange={(e) => setCreatingSecondary(e.target.value)} title="Colore secondario" />
+                    <input type="color" value={creatingAccent} onChange={(e) => setCreatingAccent(e.target.value)} title="Colore accento" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Input type="file" accept="image/*" onChange={(e) => e.target.files && handleUploadJerseyImageCreate(e.target.files[0])} />
+                    {creatingJerseyImage && <span className="text-xs text-muted-foreground">Immagine maglia caricata</span>}
+                  </div>
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Annulla</Button>
@@ -115,6 +194,20 @@ const OpponentsManagement = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input type="file" accept="image/*" onChange={(e) => e.target.files && handleUpdateLogo(o.id, e.target.files[0])} className="w-40" />
+                  <JerseyMini shape={o.jersey_shape} primary={o.jersey_primary_color} secondary={o.jersey_secondary_color} accent={o.jersey_accent_color} imageUrl={o.jersey_image_url} />
+                  <select
+                    defaultValue={o.jersey_shape || 'classic'}
+                    onChange={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_shape: e.target.value, jersey_image_url: null } })}
+                    className="h-9 rounded border px-2 text-sm"
+                  >
+                    <option value="classic">Classic</option>
+                    <option value="stripes">Strisce</option>
+                    <option value="hoops">Orizzontali</option>
+                  </select>
+                  <input type="color" defaultValue={o.jersey_primary_color || '#008080'} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_primary_color: e.target.value, jersey_image_url: null } })} title="Colore primario" />
+                  <input type="color" defaultValue={o.jersey_secondary_color || '#ffffff'} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_secondary_color: e.target.value, jersey_image_url: null } })} title="Colore secondario" />
+                  <input type="color" defaultValue={o.jersey_accent_color || '#000000'} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_accent_color: e.target.value, jersey_image_url: null } })} title="Colore accento" />
+                  <Input type="file" accept="image/*" onChange={(e) => e.target.files && handleUpdateJerseyImage(o.id, e.target.files[0])} className="w-40" />
                   <div className="flex items-center gap-2">
                     <Shirt className="h-4 w-4 text-muted-foreground" />
                     <select
