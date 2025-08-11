@@ -32,7 +32,7 @@ const MatchPublicRegistration = () => {
   const [trialistsInvited, setTrialistsInvited] = useState<Trialist[]>([])
   const [existingAttendance, setExistingAttendance] = useState<AttendanceRecord[]>([])
   const [selectedEntity, setSelectedEntity] = useState<SelectEntity | ''>('')
-  const [selectedStatus, setSelectedStatus] = useState<'present' | 'absent'>('present')
+  const [selectedStatus, setSelectedStatus] = useState<'pending' | 'present' | 'absent'>('present')
   const [deadline, setDeadline] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
@@ -82,7 +82,9 @@ const MatchPublicRegistration = () => {
     setSubmitting(true)
     try {
       const [kind, id] = selectedEntity.split(':') as ['player' | 'trialist', string]
-      const payload: any = { token, status: selectedStatus }
+      // Normalizza: se pending, salviamo come 'present' o 'absent'? Manteniamo pending per coerenza con training
+      const statusToSave = selectedStatus === 'pending' ? 'present' : selectedStatus
+      const payload: any = { token, status: statusToSave }
       if (kind === 'player') payload.playerId = id
       if (kind === 'trialist') payload.trialistId = id
       const { data, error } = await supabase.functions.invoke('public-match-registration', { body: payload })
@@ -184,7 +186,11 @@ const MatchPublicRegistration = () => {
             <CardDescription>{formatMatchDateTime(match.match_date, match.match_time)}</CardDescription>
           </CardHeader>
           <CardContent>
-            {deadline && (<Badge variant={isExpired ? 'destructive' : 'secondary'}>{isExpired ? 'Tempo scaduto' : `Tempo rimasto: ${timeLeft}`}</Badge>)}
+            {deadline && (
+              <Badge variant={isExpired ? 'destructive' : 'secondary'}>
+                {isExpired ? 'Tempo scaduto' : `Tempo rimasto: ${timeLeft}`}
+              </Badge>
+            )}
           </CardContent>
         </Card>
 
@@ -198,7 +204,9 @@ const MatchPublicRegistration = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Giocatore o Provinante</label>
                 <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
-                  <SelectTrigger><SelectValue placeholder="Seleziona il tuo nome" /></SelectTrigger>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Seleziona il tuo nome" />
+                  </SelectTrigger>
                   <SelectContent>
                     {players.length > 0 && (
                       <div className="px-2 py-1 text-xs text-muted-foreground">Giocatori</div>
@@ -207,8 +215,9 @@ const MatchPublicRegistration = () => {
                       const registration = getPlayerRegistration(p.id)
                       return (
                         <SelectItem key={p.id} value={`player:${p.id}` as SelectEntity} disabled={!!registration}>
-                          <div className="flex items-center gap-2">
-                            {p.first_name} {p.last_name}
+                          <div className="flex items-center gap-3 w-full">
+                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} size="sm" />
+                            <span className="font-medium">{p.first_name} {p.last_name}</span>
                             {p.jersey_number && (<Badge variant="outline">#{p.jersey_number}</Badge>)}
                           </div>
                         </SelectItem>
@@ -231,17 +240,20 @@ const MatchPublicRegistration = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Presenza</label>
-                <Select value={selectedStatus} onValueChange={(v: 'present' | 'absent') => setSelectedStatus(v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select value={selectedStatus} onValueChange={(v: 'pending' | 'present' | 'absent') => setSelectedStatus(v)}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Seleziona" />
+                  </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Sarò presente</div></SelectItem>
-                    <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Non sarò presente</div></SelectItem>
+                    <SelectItem value="pending"><div className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-500" /> In attesa</div></SelectItem>
+                    <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Presente</div></SelectItem>
+                    <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Assente</div></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <Button onClick={handleSubmit} disabled={submitting || !selectedEntity} className="w-full">
-                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Conferma Registrazione
+              <Button onClick={handleSubmit} disabled={submitting || !selectedEntity} className="w-full h-12 text-lg">
+                {submitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />} Conferma Registrazione
               </Button>
             </CardContent>
           </Card>
