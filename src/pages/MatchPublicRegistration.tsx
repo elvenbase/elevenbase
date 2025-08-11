@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Navigate, useLocation } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -25,8 +25,6 @@ type SelectEntity = `player:${string}` | `trialist:${string}`
 
 const MatchPublicRegistration = () => {
   const { token } = useParams<{ token: string }>()
-  const location = useLocation()
-  const debug = new URLSearchParams(location.search).get('debug') === '1'
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [match, setMatch] = useState<MatchInfo | null>(null)
@@ -180,11 +178,6 @@ const MatchPublicRegistration = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto space-y-6">
-        {debug && (
-          <div className="p-2 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900">
-            Debug: trialistsInvited={trialistsInvited.length} • players={players.length} • token={(token || '').slice(0,8)}...
-          </div>
-        )}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Partita: {match.opponent_name}</CardTitle>
@@ -225,10 +218,10 @@ const MatchPublicRegistration = () => {
                       <div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>
                     )}
                     {trialistsInvited.map(t => (
-                      <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!t.status}>
-                        <div className="flex items-center gap-2">
-                          {t.first_name} {t.last_name}
-                          {t.status && (<Badge variant="outline">{t.status === 'present' ? 'già presente' : 'già assente'}</Badge>)}
+                      <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity}>
+                        <div className="flex items-center gap-3 w-full">
+                          <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
+                          <span className="font-medium">{t.first_name} {t.last_name}</span>
                         </div>
                       </SelectItem>
                     ))}

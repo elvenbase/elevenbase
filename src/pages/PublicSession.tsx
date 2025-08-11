@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Navigate, useLocation } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -62,8 +62,6 @@ interface Formation {
 
 const PublicSession = () => {
   const { token } = useParams<{ token: string }>()
-  const location = useLocation()
-  const debug = new URLSearchParams(location.search).get('debug') === '1'
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
@@ -411,11 +409,6 @@ const PublicSession = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-        {debug && (
-          <div className="p-2 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900">
-            Debug: trialistsInvited={trialistsInvited.length} • players={players.length} • token={(token || '').slice(0,8)}...
-          </div>
-        )}
         {/* Header */}
         <div className="text-center py-4 sm:py-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Registrazione Allenamento</h1>
@@ -729,10 +722,10 @@ const PublicSession = () => {
                       })}
                       {trialistsInvited.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>)}
                       {trialistsInvited.map(t => (
-                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={t.status === 'present' || t.status === 'absent'}>
-                          <div className="flex items-center gap-2">
-                            {t.first_name} {t.last_name}
-                            {t.status && (<Badge variant="outline">{t.status === 'present' ? 'già presente' : 'già assente'}</Badge>)}
+                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity}>
+                          <div className="flex items-center gap-3 w-full">
+                            <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
+                            <span className="font-medium">{t.first_name} {t.last_name}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -744,19 +737,25 @@ const PublicSession = () => {
                   <label className="text-sm font-medium">Presenza</label>
                   <Select value={selectedStatus} onValueChange={(value: 'present' | 'absent') => setSelectedStatus(value)}>
                     <SelectTrigger className="h-12">
-                      <SelectValue />
+                      <SelectValue placeholder="Seleziona" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="pending">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-gray-500" />
+                          In attesa
+                        </div>
+                      </SelectItem>
                       <SelectItem value="present">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span>Sarò presente</span>
+                          Presente
                         </div>
                       </SelectItem>
                       <SelectItem value="absent">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <XCircle className="h-4 w-4 text-red-600" />
-                          <span>Non sarò presente</span>
+                          Assente
                         </div>
                       </SelectItem>
                     </SelectContent>
