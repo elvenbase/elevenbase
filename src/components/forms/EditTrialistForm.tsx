@@ -461,7 +461,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="position">Posizione</Label>
+                  <Label htmlFor="position">Ruolo</Label>
                   <Select
                     value={formData.position}
                     onValueChange={(value) => setFormData({ ...formData, position: value })}

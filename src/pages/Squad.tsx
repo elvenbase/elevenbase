@@ -131,9 +131,9 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
             <h4 className="text-sm font-semibold text-muted-foreground">Informazioni Giocatore</h4>
             <div className="grid grid-cols-1 gap-3">
               <div>
-                <span className="text-xs text-muted-foreground uppercase tracking-wide">Posizione</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Ruolo</span>
                 <div className="text-sm font-medium mt-1">
-                  {player.position || 'Non specificata'}
+                  {player.position || 'Non specificato'}
                 </div>
               </div>
             </div>
@@ -540,7 +540,7 @@ const Squad = () => {
                         <SelectContent>
                           <SelectItem value="name">Nome/Cognome</SelectItem>
                           <SelectItem value="jersey_number">Numero di maglia</SelectItem>
-                          <SelectItem value="position">Posizione</SelectItem>
+                          <SelectItem value="position">Ruolo</SelectItem>
                           <SelectItem value="phone">Telefono</SelectItem>
                           <SelectItem value="presences">Presenze allenamenti</SelectItem>
                           <SelectItem value="tardiness">Ritardi allenamenti</SelectItem>
@@ -601,7 +601,7 @@ const Squad = () => {
                     <TableRow>
                       <TableHead className="font-semibold">Nome/Cognome</TableHead>
                       <TableHead className="font-semibold">Numero</TableHead>
-                      <TableHead className="font-semibold">Posizione</TableHead>
+                      <TableHead className="font-semibold">Ruolo</TableHead>
                       <TableHead className="font-semibold">Telefono</TableHead>
                       <TableHead className="font-semibold">Presenze Allenamenti</TableHead>
                       <TableHead className="font-semibold">Ritardi Allenamenti</TableHead>

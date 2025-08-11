@@ -164,7 +164,7 @@ const TrialistsTable = () => {
                     onClick={() => handleSort('position')}
                     className="h-auto p-0 font-semibold hover:bg-transparent"
                   >
-                    Posizione {getSortIcon('position')}
+                    Ruolo {getSortIcon('position')}
                   </Button>
                 </TableHead>
                 <TableHead>
@@ -399,7 +399,7 @@ const TrialistsTable = () => {
                     <SessionCounter trialistId={trialist.id} />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {trialist.position || 'Posizione non specificata'}
+                    {trialist.position || 'Ruolo non specificato'}
                   </p>
                 </div>
               </div>

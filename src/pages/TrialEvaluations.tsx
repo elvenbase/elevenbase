@@ -218,7 +218,7 @@ const TrialEvaluations = () => {
                                 {trialist.first_name} {trialist.last_name}
                               </h3>
                               <p className="text-sm text-muted-foreground">
-                                {trialist.position || 'Posizione non specificata'}
+                                {trialist.position || 'Ruolo non specificato'}
                               </p>
                             </div>
                             {selectedTrialists.includes(trialist.id) && (

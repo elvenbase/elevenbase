@@ -137,7 +137,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Posizione</label>
+              <label className="text-sm font-medium">Ruolo</label>
               <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleziona posizione" />

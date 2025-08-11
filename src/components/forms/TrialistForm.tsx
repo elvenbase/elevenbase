@@ -399,7 +399,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               />
             </div>
             <div>
-              <Label htmlFor="position">Posizione</Label>
+              <Label htmlFor="position">Ruolo</Label>
               <Select
                 value={formData.position}
                 onValueChange={(value) => setFormData({ ...formData, position: value })}

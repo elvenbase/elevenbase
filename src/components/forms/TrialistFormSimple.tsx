@@ -123,7 +123,7 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
             />
           </div>
 
-          {/* Data di nascita e Posizione */}
+          {/* Data di nascita e Ruolo */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Data di Nascita</label>
@@ -134,7 +134,7 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Posizione</label>
+              <label className="text-sm font-medium">Ruolo</label>
               <Input
                 type="text"
                 placeholder="es. Centrocampista"

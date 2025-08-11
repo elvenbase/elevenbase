@@ -320,7 +320,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
               />
             </div>
             <div>
-              <Label htmlFor="position">Posizione</Label>
+              <Label htmlFor="position">Ruolo</Label>
               <Select
                 value={formData.position}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}
