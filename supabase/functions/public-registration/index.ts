@@ -213,9 +213,7 @@ serve(async (req) => {
         .from('training_trialist_invites')
         .select(`
           trialist_id,
-          status,
-          self_registered,
-          trialists ( id, first_name, last_name )
+          trialists:trialist_id ( id, first_name, last_name )
         `)
         .eq('session_id', session.id)
       if (tiErr) console.warn('trialist invites fetch error', tiErr)
@@ -228,10 +226,9 @@ serve(async (req) => {
         trialistsInvited: (trialistInvites || []).map((t: any) => ({
           id: t.trialist_id,
           first_name: t.trialists?.first_name,
-          last_name: t.trialists?.last_name,
-          status: t.status || 'pending',
-          self_registered: !!t.self_registered
+          last_name: t.trialists?.last_name
         })),
+
         deadline: deadline.toISOString(),
         isRegistrationExpired
       }), {
