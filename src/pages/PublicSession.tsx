@@ -722,7 +722,7 @@ const PublicSession = () => {
                       })}
                       {trialistsInvited.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>)}
                       {trialistsInvited.map(t => (
-                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!t.status}>
+                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={t.status === 'present' || t.status === 'absent'}>
                           <div className="flex items-center gap-2">
                             {t.first_name} {t.last_name}
                             {t.status && (<Badge variant="outline">{t.status === 'present' ? 'già presente' : 'già assente'}</Badge>)}

@@ -4,44 +4,30 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Clock, MapPin, Calendar, CheckCircle, XCircle } from 'lucide-react'
+import { Loader2, Calendar, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
+import { Users, Target, Download } from 'lucide-react'
+import { useCustomFormations } from '@/hooks/useCustomFormations'
+import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
+import FormationExporter from '@/components/FormationExporter'
+import html2canvas from 'html2canvas'
 
-interface Player {
-  id: string
-  first_name: string
-  last_name: string
-  jersey_number?: number
-}
-
+interface Player { id: string; first_name: string; last_name: string; jersey_number?: number }
 interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
+interface MatchInfo { id: string; opponent_name: string; match_date: string; match_time: string }
+interface AttendanceRecord { player_id: string; status: string; self_registered: boolean }
 
 type SelectEntity = `player:${string}` | `trialist:${string}`
 
-interface Session {
-  id: string
-  title: string
-  description?: string
-  session_date: string
-  start_time: string
-  end_time: string
-  location?: string
-}
-
-interface AttendanceRecord {
-  player_id: string
-  status: string
-  self_registered: boolean
-}
-
-const PublicRegistration = () => {
+const MatchPublicRegistration = () => {
   const { token } = useParams<{ token: string }>()
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [session, setSession] = useState<Session | null>(null)
+  const [match, setMatch] = useState<MatchInfo | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [trialistsInvited, setTrialistsInvited] = useState<Trialist[]>([])
   const [existingAttendance, setExistingAttendance] = useState<AttendanceRecord[]>([])
@@ -50,217 +36,180 @@ const PublicRegistration = () => {
   const [deadline, setDeadline] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
+  const [lineup, setLineup] = useState<any | null>(null)
+  const [bench, setBench] = useState<any[]>([])
+  const { formations: customFormations } = useCustomFormations()
+  const { defaultJersey } = useJerseyTemplates()
 
-  useEffect(() => {
-    if (!token) {
-      setError('Token mancante')
-      setLoading(false)
-      return
-    }
+  useEffect(() => { if (!token) { setError('Token mancante'); setLoading(false); return } loadData() }, [token])
 
-    loadSessionData()
-  }, [token])
-
-  // Countdown timer
   useEffect(() => {
     if (!deadline) return
-
     const timer = setInterval(() => {
-      const now = new Date()
-      const diff = deadline.getTime() - now.getTime()
-      
-      if (diff <= 0) {
-        setTimeLeft('Tempo scaduto')
-        return
-      }
-
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      
+      const now = new Date(); const diff = deadline.getTime() - now.getTime()
+      if (diff <= 0) { setTimeLeft('Tempo scaduto'); return }
+      const hours = Math.floor(diff / (1000 * 60 * 60)); const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       setTimeLeft(`${hours}h ${minutes}m`)
     }, 1000)
-
     return () => clearInterval(timer)
   }, [deadline])
 
-  const loadSessionData = async () => {
+  const loadData = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('public-registration', {
-        body: { token, method: 'GET' }
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/public-match-registration`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabase.supabaseKey}` },
+        body: JSON.stringify({ token, method: 'GET' })
       })
-
-      if (error) throw error
-
-      if (data.error) {
-        setError(data.error)
-        return
-      }
-
-      setSession(data.session)
+      const data = await response.json()
+      if (!response.ok) { setError(data.error || `HTTP ${response.status}`); return }
+      if (data.error) { setError(data.error); return }
+      setMatch(data.match)
       setPlayers(data.players)
       setTrialistsInvited(data.trialistsInvited || [])
       setExistingAttendance(data.existingAttendance)
       setDeadline(new Date(data.deadline))
+      setLineup(data.lineup || null)
+      setBench(data.bench || [])
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
       setError('Errore nel caricamento dei dati')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   const handleSubmit = async () => {
-    if (!selectedEntity) {
-      toast.error('Seleziona il tuo nome')
-      return
-    }
-
+    if (!selectedEntity) { toast.error('Seleziona il tuo nome'); return }
     setSubmitting(true)
-
     try {
       const [kind, id] = selectedEntity.split(':') as ['player' | 'trialist', string]
       const payload: any = { token, status: selectedStatus }
       if (kind === 'player') payload.playerId = id
       if (kind === 'trialist') payload.trialistId = id
-
-      const { data, error } = await supabase.functions.invoke('public-registration', { body: payload })
-
+      const { data, error } = await supabase.functions.invoke('public-match-registration', { body: payload })
       if (error) throw error
-
-      if (data.error) {
-        toast.error(data.error)
-        return
-      }
-
-      toast.success('Registrazione completata con successo!')
-      
-      // Ricarica i dati per mostrare l'aggiornamento
-      await loadSessionData()
-      setSelectedEntity('')
-      setSelectedStatus('present')
-
+      if (data.error) { toast.error(data.error); return }
+      toast.success('Registrazione completata!')
+      await loadData()
+      setSelectedEntity(''); setSelectedStatus('present')
     } catch (err: any) {
       console.error('Errore nella registrazione:', err)
       toast.error('Errore nella registrazione')
-    } finally {
-      setSubmitting(false)
-    }
+    } finally { setSubmitting(false) }
   }
 
-  const getPlayerRegistration = (playerId: string) => {
-    return existingAttendance.find(a => a.player_id === playerId)
+  const getPlayerRegistration = (playerId: string) => existingAttendance.find(a => a.player_id === playerId)
+  const formatMatchDateTime = (date: string, time: string) => format(new Date(date + 'T' + time), "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
+
+  const predefinedFormations: Record<string, { name: string; positions: { id: string; name: string; x: number; y: number; roleShort?: string }[] }> = {
+    '4-4-2': { name: '4-4-2', positions: [
+      { id: 'gk', name: 'Portiere', x: 50, y: 90, roleShort: 'P' },
+      { id: 'rb', name: 'Terzino Dx', x: 80, y: 70, roleShort: 'TD' },
+      { id: 'cb1', name: 'Centrale 1', x: 60, y: 70, roleShort: 'DC' },
+      { id: 'cb2', name: 'Centrale 2', x: 40, y: 70, roleShort: 'DC' },
+      { id: 'lb', name: 'Terzino Sx', x: 20, y: 70, roleShort: 'TS' },
+      { id: 'rm', name: 'Esterno Dx', x: 80, y: 40, roleShort: 'ED' },
+      { id: 'cm1', name: 'Mediano 1', x: 60, y: 40, roleShort: 'MC' },
+      { id: 'cm2', name: 'Mediano 2', x: 40, y: 40, roleShort: 'MC' },
+      { id: 'lm', name: 'Esterno Sx', x: 20, y: 40, roleShort: 'ES' },
+      { id: 'st1', name: 'Attaccante 1', x: 60, y: 15, roleShort: 'ATT' },
+      { id: 'st2', name: 'Attaccante 2', x: 40, y: 15, roleShort: 'ATT' }
+    ] },
+    '4-3-3': { name: '4-3-3', positions: [
+      { id: 'gk', name: 'Portiere', x: 50, y: 90, roleShort: 'P' },
+      { id: 'rb', name: 'Terzino Dx', x: 80, y: 70, roleShort: 'TD' },
+      { id: 'cb1', name: 'Centrale 1', x: 60, y: 70, roleShort: 'DC' },
+      { id: 'cb2', name: 'Centrale 2', x: 40, y: 70, roleShort: 'DC' },
+      { id: 'lb', name: 'Terzino Sx', x: 20, y: 70, roleShort: 'TS' },
+      { id: 'cdm', name: 'Mediano', x: 50, y: 50, roleShort: 'MED' },
+      { id: 'cm1', name: 'Mezzala Dx', x: 65, y: 40, roleShort: 'MD' },
+      { id: 'cm2', name: 'Mezzala Sx', x: 35, y: 40, roleShort: 'MS' },
+      { id: 'rw', name: 'Ala Dx', x: 80, y: 20, roleShort: 'AD' },
+      { id: 'st', name: 'Punta', x: 50, y: 15, roleShort: 'PU' },
+      { id: 'lw', name: 'Ala Sx', x: 20, y: 20, roleShort: 'AS' }
+    ] },
+    '3-5-2': { name: '3-5-2', positions: [
+      { id: 'gk', name: 'Portiere', x: 50, y: 90, roleShort: 'P' },
+      { id: 'cb1', name: 'Centrale Dx', x: 70, y: 70, roleShort: 'DCD' },
+      { id: 'cb2', name: 'Centrale', x: 50, y: 70, roleShort: 'DC' },
+      { id: 'cb3', name: 'Centrale Sx', x: 30, y: 70, roleShort: 'DCS' },
+      { id: 'rwb', name: 'Quinto Dx', x: 85, y: 50, roleShort: 'QD' },
+      { id: 'cm1', name: 'Mediano 1', x: 65, y: 40, roleShort: 'MC' },
+      { id: 'cm2', name: 'Regista', x: 50, y: 45, roleShort: 'REG' },
+      { id: 'cm3', name: 'Mediano 2', x: 35, y: 40, roleShort: 'MC' },
+      { id: 'lwb', name: 'Quinto Sx', x: 15, y: 50, roleShort: 'QS' },
+      { id: 'st1', name: 'Attaccante 1', x: 60, y: 15, roleShort: 'ATT' },
+      { id: 'st2', name: 'Attaccante 2', x: 40, y: 15, roleShort: 'ATT' }
+    ] }
   }
 
-  const formatSessionDateTime = (date: string, time: string) => {
-    const sessionDate = new Date(date + 'T' + time)
-    return format(sessionDate, "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
+  const getAllFormations = () => {
+    const formations = { ...predefinedFormations }
+    customFormations.forEach(cf => { formations[cf.name] = { name: cf.name, positions: cf.positions } })
+    return formations
+  }
+  const formations = getAllFormations()
+  const getFormationFromLineup = (formationIdentifier: string) => {
+    const customFormation = customFormations.find(f => f.id === formationIdentifier)
+    if (customFormation) return { name: customFormation.name, positions: customFormation.positions }
+    return formations[formationIdentifier] || null
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    )
+  const downloadFormation = async () => {
+    if (!lineup || !getFormationFromLineup(lineup.formation)) { toast.error('Nessuna formazione disponibile'); return }
+    const exportElement = document.getElementById('formation-export')
+    if (!exportElement) return
+    const canvas = await html2canvas(exportElement, { backgroundColor: null, scale: 2, useCORS: true, allowTaint: true, logging: false })
+    const link = document.createElement('a')
+    link.download = `formazione-${match?.opponent_name || 'match'}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-destructive">Errore</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">{error}</p>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return <Navigate to="/not-found" replace />
-  }
+  if (loading) return (<div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin" /></div>)
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md"><CardHeader><CardTitle className="text-destructive">Errore</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">{error}</p></CardContent></Card>
+    </div>
+  )
+  if (!match) return <Navigate to="/not-found" replace />
 
   const isExpired = deadline && new Date() > deadline
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              {session.title}
-            </CardTitle>
-            <CardDescription>{session.description}</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Partita: {match.opponent_name}</CardTitle>
+            <CardDescription>{formatMatchDateTime(match.match_date, match.match_time)}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4" />
-              {formatSessionDateTime(session.session_date, session.start_time)}
-            </div>
-            
-            {session.location && (
-              <div className="flex items-center gap-2 text-sm">
-                <MapPin className="h-4 w-4" />
-                {session.location}
-              </div>
-            )}
-
-            {deadline && (
-              <div className="flex items-center gap-2">
-                <Badge variant={isExpired ? "destructive" : "secondary"}>
-                  {isExpired ? 'Tempo scaduto' : `Tempo rimasto: ${timeLeft}`}
-                </Badge>
-              </div>
-            )}
+          <CardContent>
+            {deadline && (<Badge variant={isExpired ? 'destructive' : 'secondary'}>{isExpired ? 'Tempo scaduto' : `Tempo rimasto: ${timeLeft}`}</Badge>)}
           </CardContent>
         </Card>
 
-        {/* Registrazione */}
         {!isExpired && (
           <Card>
             <CardHeader>
               <CardTitle>Conferma la tua presenza</CardTitle>
-              <CardDescription>
-                Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente
-              </CardDescription>
+              <CardDescription>Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Giocatore o Provinante</label>
                 <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona il tuo nome" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Seleziona il tuo nome" /></SelectTrigger>
                   <SelectContent>
                     {players.length > 0 && (
                       <div className="px-2 py-1 text-xs text-muted-foreground">Giocatori</div>
                     )}
-                    {players.map(player => {
-                      const registration = getPlayerRegistration(player.id)
+                    {players.map(p => {
+                      const registration = getPlayerRegistration(p.id)
                       return (
-                        <SelectItem 
-                          key={player.id} 
-                          value={`player:${player.id}` as SelectEntity}
-                          disabled={!!registration}
-                        >
+                        <SelectItem key={p.id} value={`player:${p.id}` as SelectEntity} disabled={!!registration}>
                           <div className="flex items-center gap-2">
-                            {player.first_name} {player.last_name}
-                            {player.jersey_number && (
-                              <Badge variant="outline">#{player.jersey_number}</Badge>
-                            )}
-                            {registration && (
-                              <Badge 
-                                variant={registration.status === 'present' ? "default" : "secondary"}
-                                className="ml-2"
-                              >
-                                {registration.status === 'present' ? 'Presente' : 'Assente'}
-                              </Badge>
-                            )}
+                            {p.first_name} {p.last_name}
+                            {p.jersey_number && (<Badge variant="outline">#{p.jersey_number}</Badge>)}
                           </div>
                         </SelectItem>
                       )
@@ -269,7 +218,7 @@ const PublicRegistration = () => {
                       <div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>
                     )}
                     {trialistsInvited.map(t => (
-                      <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!t.status}>
+                      <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={t.status === 'present' || t.status === 'absent'}>
                         <div className="flex items-center gap-2">
                           {t.first_name} {t.last_name}
                           {t.status && (<Badge variant="outline">{t.status === 'present' ? 'già presente' : 'già assente'}</Badge>)}
@@ -282,65 +231,51 @@ const PublicRegistration = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Presenza</label>
-                <Select value={selectedStatus} onValueChange={(value: 'present' | 'absent') => setSelectedStatus(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={selectedStatus} onValueChange={(v: 'present' | 'absent') => setSelectedStatus(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="present">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        Sarò presente
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="absent">
-                      <div className="flex items-center gap-2">
-                        <XCircle className="h-4 w-4 text-red-600" />
-                        Non sarò presente
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Sarò presente</div></SelectItem>
+                    <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Non sarò presente</div></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <Button 
-                onClick={handleSubmit} 
-                disabled={submitting || !selectedEntity}
-                className="w-full"
-              >
-                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Conferma Registrazione
+              <Button onClick={handleSubmit} disabled={submitting || !selectedEntity} className="w-full">
+                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Conferma Registrazione
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Riepilogo registrazioni */}
         <Card>
-          <CardHeader>
-            <CardTitle>Riepilogo Registrazioni</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Riepilogo Registrazioni</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-green-600">
-                  {existingAttendance.filter(a => a.status === 'present').length}
-                </div>
-                <div className="text-sm text-muted-foreground">Presenti</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-red-600">
-                  {existingAttendance.filter(a => a.status === 'absent').length}
-                </div>
-                <div className="text-sm text-muted-foreground">Assenti</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-muted-foreground">
-                  {players.length - existingAttendance.length}
-                </div>
-                <div className="text-sm text-muted-foreground">Non risposto</div>
-              </div>
+              <div><div className="text-2xl font-bold text-green-600">{existingAttendance.filter(a => a.status === 'present').length}</div><div className="text-sm text-muted-foreground">Presenti</div></div>
+              <div><div className="text-2xl font-bold text-red-600">{existingAttendance.filter(a => a.status === 'absent').length}</div><div className="text-sm text-muted-foreground">Assenti</div></div>
+              <div><div className="text-2xl font-bold text-muted-foreground">{players.length - existingAttendance.length}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
             </div>
+          </CardContent>
+        </Card>
+
+        {lineup && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Target className="h-4 w-4" />Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}</CardTitle>
+                <Button variant="outline" size="sm" onClick={downloadFormation} className="flex items-center gap-2 text-xs sm:text-sm"><Download className="h-4 w-4" />Scarica PNG</Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4">
+              {/* ... */}
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="shadow-lg">
+          <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati {bench.length > 0 && `(${bench.length})`}</CardTitle></CardHeader>
+          <CardContent className="p-4">
+            {/* ... */}
           </CardContent>
         </Card>
       </div>
@@ -348,4 +283,4 @@ const PublicRegistration = () => {
   )
 }
 
-export default PublicRegistration
+export default MatchPublicRegistration
