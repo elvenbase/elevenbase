@@ -36,7 +36,7 @@ serve(async (req) => {
       if ((match as any).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
       const now = new Date()
-      const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : now
+      const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
 
       const { data: players, error: playersError } = await supabase
         .from('players')
@@ -111,8 +111,8 @@ serve(async (req) => {
       if ((match as any).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
       const now = new Date()
-      const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : now
-      if (now > deadline) return new Response(JSON.stringify({ error: 'Tempo scaduto per le registrazioni' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : null
+      if (deadline && now > deadline) return new Response(JSON.stringify({ error: 'Tempo scaduto per le registrazioni' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
       if (playerId) {
         const { data, error } = await supabase

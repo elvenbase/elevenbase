@@ -85,15 +85,26 @@ const MatchPublicRegistration = () => {
       const payload: any = { token, status: selectedStatus }
       if (kind === 'player') payload.playerId = id
       if (kind === 'trialist') payload.trialistId = id
-      const { data, error } = await supabase.functions.invoke('public-match-registration', { body: payload })
-      if (error) throw error
-      if (data.error) { toast.error(data.error); return }
+
+      const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/public-match-registration`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabase.supabaseKey}` },
+        body: JSON.stringify(payload)
+      })
+      const data = await resp.json().catch(() => ({} as any))
+      if (!resp.ok) {
+        console.error('Public match registration error:', { status: resp.status, data })
+        toast.error(data?.error || `HTTP ${resp.status}`)
+        return
+      }
+      if (data?.error) { toast.error(data.error); return }
       toast.success('Registrazione completata!')
       await loadData()
       setSelectedEntity(''); setSelectedStatus('present')
     } catch (err: any) {
       console.error('Errore nella registrazione:', err)
-      toast.error('Errore nella registrazione')
+      const msg = err?.message || 'Errore nella registrazione'
+      toast.error(msg)
     } finally { setSubmitting(false) }
   }
 

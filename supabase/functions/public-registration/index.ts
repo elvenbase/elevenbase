@@ -150,7 +150,7 @@ serve(async (req) => {
 
       // Calcola se il tempo limite è scaduto (ma non bloccare l'accesso)
       const now = new Date()
-      const deadline = new Date(session.allow_responses_until)
+      const deadline = session.allow_responses_until ? new Date(session.allow_responses_until) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       const isRegistrationExpired = now > deadline
 
       // Prendi tutti i giocatori attivi
@@ -308,9 +308,8 @@ serve(async (req) => {
 
       // Verifica tempo limite
       const now = new Date()
-      const deadline = new Date(session.allow_responses_until)
-      
-      if (now > deadline) {
+      const deadline = session.allow_responses_until ? new Date(session.allow_responses_until) : null
+      if (deadline && now > deadline) {
         return new Response(JSON.stringify({ error: 'Tempo scaduto per le registrazioni' }), {
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
