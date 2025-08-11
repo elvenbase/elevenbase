@@ -202,11 +202,17 @@ const PublicSession = () => {
       if (kind === 'player') payload.playerId = id
       if (kind === 'trialist') payload.trialistId = id
 
-      const { data, error } = await supabase.functions.invoke('public-registration', { body: payload })
-
-      if (error) throw error
-
-      if (data.error) {
+      const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/public-registration`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabase.supabaseKey}` },
+        body: JSON.stringify(payload)
+      })
+      const data = await resp.json()
+      if (!resp.ok) {
+        toast.error(data?.error || `HTTP ${resp.status}`)
+        return
+      }
+      if (data?.error) {
         toast.error(data.error)
         return
       }
@@ -733,208 +739,53 @@ const PublicSession = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">Presenza</label>
-                  <Select value={selectedStatus} onValueChange={(value: 'pending' | 'present' | 'absent') => setSelectedStatus(value)}>
+                  <label className="text-sm font-medium">Stato</label>
+                  <Select value={selectedStatus} onValueChange={(v: 'pending' | 'present' | 'absent') => setSelectedStatus(v)}>
                     <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Seleziona" />
+                      <SelectValue placeholder="Seleziona lo stato" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-gray-500" />
-                          In attesa
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="present">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          Presente
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="absent">
-                        <div className="flex items-center gap-2">
-                          <XCircle className="h-4 w-4 text-red-600" />
-                          Assente
-                        </div>
-                      </SelectItem>
+                      <SelectItem value="present">Presente</SelectItem>
+                      <SelectItem value="absent">Assente</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-
-                <Button onClick={handleSubmit} disabled={submitting || !selectedEntity} className="w-full h-12 text-lg" size="lg">
-                  {submitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                  Conferma Registrazione
+                <Button onClick={handleSubmit} disabled={submitting} className="w-full">
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Registrando...
+                    </>
+                  ) : (
+                    'Registrati'
+                  )}
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <Card className="shadow-lg border-amber-200 bg-amber-50">
+            <Card className="shadow-lg">
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-amber-800">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                  Registrazioni chiuse
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                  Registrazione Completata
                 </CardTitle>
-                <CardDescription className="text-sm sm:text-base text-amber-700">
-                  Il tempo per registrarsi è scaduto (4 ore prima dell'inizio)
+                <CardDescription className="text-sm sm:text-base">
+                  La tua presenza per la sessione è stata registrata.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-amber-800">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm font-medium">
-                      Le registrazioni si sono chiuse {deadline && format(deadline, "EEEE d MMMM 'alle' HH:mm", { locale: it })}
-                    </span>
-                  </div>
-                  <p className="text-sm text-amber-700">
-                    Le informazioni sulla sessione rimangono visibili per tua consultazione. 
-                    Per ulteriori comunicazioni contatta direttamente lo staff.
-                  </p>
-                </div>
+              <CardContent className="p-4 sm:p-6 text-center">
+                <p className="text-lg font-semibold text-green-600">
+                  {selectedEntity.includes('player') ? getPlayerInitials(players.find(p => p.id === selectedEntity.split(':')[1]) || { first_name: '?', last_name: '?' }) : trialistsInvited.find(t => t.id === selectedEntity.split(':')[1])?.first_name}
+                  {selectedStatus === 'present' ? ' Presente' : ' Assente'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedEntity.includes('player') ? `Hai registrato la tua presenza come giocatore.` : `Hai registrato la tua presenza come provinante.`}
+                </p>
               </CardContent>
             </Card>
           )}
-
-          {/* Riepilogo registrazioni */}
-          <Card className="shadow-lg">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                Riepilogo Registrazioni
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
-                <div className="space-y-1 sm:space-y-2">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">
-                    {existingAttendance.filter(a => a.status === 'present').length}
-                  </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Presenti</div>
-                </div>
-                <div className="space-y-1 sm:space-y-2">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">
-                    {existingAttendance.filter(a => a.status === 'absent').length}
-                  </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Assenti</div>
-                </div>
-                <div className="space-y-1 sm:space-y-2">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-muted-foreground">
-                    {players.length - existingAttendance.length}
-                  </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Non risposto</div>
-                </div>
-              </div>
-
-              {existingAttendance.length > 0 && (
-                <div className="mt-6 space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-                    Risposte ricevute
-                  </h4>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {existingAttendance.map(attendance => {
-                      const player = players.find(p => p.id === attendance.player_id)
-                      if (!player) return null
-                      
-                      return (
-                        <div key={attendance.player_id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                          <span className="text-sm">
-                            {player.first_name} {player.last_name}
-                          </span>
-                          <Badge 
-                            variant={attendance.status === 'present' ? "default" : "secondary"}
-                            className="text-xs"
-                          >
-                            {attendance.status === 'present' ? 'Presente' : 'Assente'}
-                          </Badge>
-                        </div>
-                      )}
-                    )}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
-
-        {/* Convocati: mostra sotto se non scaduto */}
-        {!isExpired && (
-          <Card className="shadow-lg">
-            <CardHeader className="p-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="h-4 w-4" />
-                Convocati {convocati.length > 0 && `(${convocati.length})`}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              {convocati.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {convocati.map((convocato) => {
-                    const player = convocato.players
-                    if (!player) return null
-
-                    return (
-                      <div
-                        key={convocato.id}
-                        className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
-                      >
-                        <PlayerAvatar
-                          firstName={player.first_name}
-                          lastName={player.last_name}
-                          avatarUrl={player.avatar_url}
-                          size="md"
-                          className="mb-2"
-                        />
-                        <div className="text-center">
-                          <p className="text-xs font-medium leading-tight">
-                            {player.first_name}
-                          </p>
-                          <p className="text-xs font-medium leading-tight">
-                            {player.last_name}
-                          </p>
-                          {player.jersey_number && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              #{player.jersey_number}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground text-sm">
-                    Nessun giocatore convocato per questa sessione
-                  </p>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    I convocati verranno mostrati qui quando l'allenatore li selezionerà
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Hidden Formation Exporter for PNG generation */}
-        {lineup && getFormationFromLineup(lineup.formation) && (
-          <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
-            <FormationExporter
-              lineup={lineup.players_data?.positions ? Object.entries(lineup.players_data.positions).map(([positionId, playerId]) => ({
-                player_id: playerId as string,
-                position_x: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.x || 50,
-                position_y: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.y || 50,
-                player: players.find(p => p.id === playerId)
-              })) : []}
-              formation={getFormationFromLineup(lineup.formation)!}
-              sessionTitle={session?.title || 'Sessione di allenamento'}
-              teamName="Team"
-              jerseyUrl={defaultJersey?.image_url}
-            />
-          </div>
-        )}
       </div>
     </div>
   )

@@ -87,8 +87,13 @@ const MatchPublicRegistration = () => {
       const payload: any = { token, status: statusToSave }
       if (kind === 'player') payload.playerId = id
       if (kind === 'trialist') payload.trialistId = id
-      const { data, error } = await supabase.functions.invoke('public-match-registration', { body: payload })
-      if (error) throw error
+      const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/public-match-registration`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabase.supabaseKey}` },
+        body: JSON.stringify(payload)
+      })
+      const data = await resp.json()
+      if (!resp.ok) { toast.error(data?.error || `HTTP ${resp.status}`); return }
       if (data.error) { toast.error(data.error); return }
       toast.success('Registrazione completata!')
       await loadData()
