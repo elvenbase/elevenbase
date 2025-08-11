@@ -69,7 +69,7 @@ const PublicSession = () => {
   const [trialistsInvited, setTrialistsInvited] = useState<Trialist[]>([])
   const [existingAttendance, setExistingAttendance] = useState<AttendanceRecord[]>([])
   const [selectedEntity, setSelectedEntity] = useState<SelectEntity | ''>('')
-  const [selectedStatus, setSelectedStatus] = useState<'present' | 'absent'>('present')
+  const [selectedStatus, setSelectedStatus] = useState<'pending' | 'present' | 'absent'>('present')
   const [deadline, setDeadline] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
@@ -197,7 +197,8 @@ const PublicSession = () => {
 
     try {
       const [kind, id] = selectedEntity.split(':') as ['player' | 'trialist', string]
-      const payload: any = { token, status: selectedStatus }
+      const statusToSave = selectedStatus === 'pending' ? 'present' : selectedStatus
+      const payload: any = { token, status: statusToSave }
       if (kind === 'player') payload.playerId = id
       if (kind === 'trialist') payload.trialistId = id
 
@@ -735,7 +736,7 @@ const PublicSession = () => {
 
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Presenza</label>
-                  <Select value={selectedStatus} onValueChange={(value: 'present' | 'absent') => setSelectedStatus(value)}>
+                  <Select value={selectedStatus} onValueChange={(value: 'pending' | 'present' | 'absent') => setSelectedStatus(value)}>
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Seleziona" />
                     </SelectTrigger>
