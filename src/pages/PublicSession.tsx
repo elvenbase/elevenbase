@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Navigate } from 'react-router-dom'
+import { useParams, Navigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -62,6 +62,8 @@ interface Formation {
 
 const PublicSession = () => {
   const { token } = useParams<{ token: string }>()
+  const location = useLocation()
+  const debug = new URLSearchParams(location.search).get('debug') === '1'
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
@@ -409,6 +411,11 @@ const PublicSession = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        {debug && (
+          <div className="p-2 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900">
+            Debug: trialistsInvited={trialistsInvited.length} • players={players.length} • token={(token || '').slice(0,8)}...
+          </div>
+        )}
         {/* Header */}
         <div className="text-center py-4 sm:py-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Registrazione Allenamento</h1>
