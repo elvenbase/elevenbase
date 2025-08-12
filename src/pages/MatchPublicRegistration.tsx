@@ -105,7 +105,9 @@ const MatchPublicRegistration = () => {
       if (!resp.ok) { toast.error(data?.error || `HTTP ${resp.status}`); return }
       if (data.error) { toast.error(data.error); return }
       toast.success('Registrazione completata!')
+      console.log('Registrazione completata, ricarico dati...')
       await loadData()
+      console.log('Dati ricaricati dopo registrazione')
       setSelectedEntity(''); setSelectedStatus('present')
     } catch (err: any) {
       console.error('Errore nella registrazione:', err)
@@ -119,6 +121,8 @@ const MatchPublicRegistration = () => {
     const trialist = trialistsInvited.find(t => t.id === trialistId)
     // Debug per verificare la logica
     console.log(`Checking trialist ${trialistId}:`, trialist)
+    console.log(`Trialist status: ${trialist?.status}`)
+    console.log(`Should disable: ${trialist && (trialist.status === 'present' || trialist.status === 'absent')}`)
     return trialist && (trialist.status === 'present' || trialist.status === 'absent') ? trialist : null
   }
   const formatMatchDateTime = (date: string, time: string) => format(new Date(date + 'T' + time), "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
@@ -249,6 +253,7 @@ const MatchPublicRegistration = () => {
                     )}
                     {trialistsInvited.map(t => {
                       const registration = getTrialistRegistration(t.id)
+                      console.log(`Rendering trialist ${t.id}:`, { trialist: t, registration, disabled: !!registration })
                       return (
                         <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!registration}>
                           <div className="flex items-center gap-3 w-full">
