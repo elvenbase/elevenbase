@@ -80,7 +80,17 @@ export const TrainingSessionModal = ({
     const totalEntities = players.length + trialistInvites.length;
     const responded = attendance.length + trialistPresent + trialistAbsent;
     const noResponse = Math.max(0, totalEntities - responded);
-    return { present, absent, late: attendance.filter(a => a.status === 'late').length, noResponse };
+    return { 
+      present, 
+      absent, 
+      late: attendance.filter(a => a.status === 'late').length, 
+      noResponse,
+      totalEntities,
+      playerPresent,
+      playerAbsent,
+      trialistPresent,
+      trialistAbsent
+    };
   })();
 
   const publicLinkStats = {
@@ -182,13 +192,21 @@ export const TrainingSessionModal = ({
           <TabsContent value="lineup" className="mt-3 sm:mt-6">
             <LineupManager 
               sessionId={session.id}
-              presentPlayers={players?.filter(player => {
-                const playerAttendance = attendance?.find(a => a.player_id === player.id);
-                // Mostra solo i giocatori che hanno risposto e sono stati marcati come presenti
-                // (sia auto-registrati che marcati dall'allenatore)
-                // NON mostra giocatori senza risposta o marcati come assenti
-                return playerAttendance && playerAttendance.status === 'present';
-              }) || []}
+              presentPlayers={[
+                // Giocatori presenti
+                ...(players?.filter(player => {
+                  const playerAttendance = attendance?.find(a => a.player_id === player.id);
+                  return playerAttendance && playerAttendance.status === 'present';
+                }) || []),
+                // Trialist presenti
+                ...(trialistInvites?.filter((trialist: any) => trialist.status === 'present').map((trialist: any) => ({
+                  id: trialist.trialist_id,
+                  first_name: trialist.trialists?.first_name || 'Unknown',
+                  last_name: trialist.trialists?.last_name || 'Unknown',
+                  is_trialist: true,
+                  trialist_data: trialist
+                })) || [])
+              ]}
             />
           </TabsContent>
 
