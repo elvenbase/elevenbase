@@ -136,10 +136,10 @@ SUPABASE_ACCESS_TOKEN=sbp_fa64cfe857dac90f0fc1ffd9b005eb8b47f9e244
 SUPABASE_URL=https://cuthalxqxkonmfzqjdvw.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1dGhhbHhxeGtvbm1jenFqZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MTc4MTIsImV4cCI6MjA3MDA5MzgxMn0.-W7haFEUs1IaQRXY_M-aL-lpAtXPhcVsQFbQhQbMpSI
 
-# Netlify (da configurare)
-NETLIFY_AUTH_TOKEN=your_netlify_token
-NETLIFY_SITE_ID_STAGING=your_staging_site_id
-NETLIFY_SITE_ID_PRODUCTION=your_production_site_id
+# Netlify (configurato)
+NETLIFY_AUTH_TOKEN=nfp_x5V2DU5J6pd9tWo2xEKuGnmD5Q83qPVie507
+NETLIFY_SITE_ID_STAGING=ff2374c2-19b7-4a4e-86fa-fcd44ff751bd
+NETLIFY_SITE_ID_PRODUCTION=ff2374c2-19b7-4a4e-86fa-fcd44ff751bd
 ```
 
 ## 🎉 **Sei Pronto!**
