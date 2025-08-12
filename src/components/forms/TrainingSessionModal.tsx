@@ -11,7 +11,7 @@ import { AttendanceForm } from './AttendanceForm';
 import { TrainingForm } from './TrainingForm';
 import LineupManager from '../LineupManager';
 import PublicLinkSharing from '../PublicLinkSharing';
-import { useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData';
+import { useTrainingAttendance, usePlayers, useTrainingTrialistInvites } from '@/hooks/useSupabaseData';
 
 interface TrainingSession {
   id: string;
@@ -45,6 +45,7 @@ export const TrainingSessionModal = ({
   const [editModalOpen, setEditModalOpen] = useState(false);
   
   const { data: attendance = [] } = useTrainingAttendance(session?.id || '');
+  const { data: trialistInvites = [] } = useTrainingTrialistInvites(session?.id || '');
   const { data: players = [] } = usePlayers();
 
   if (!session) return null;
@@ -69,13 +70,18 @@ export const TrainingSessionModal = ({
     }
   };
 
-  const attendanceStats = {
-    present: attendance.filter(a => a.status === 'present').length,
-    absent: attendance.filter(a => a.status === 'absent').length,
-    late: attendance.filter(a => a.status === 'late').length,
-    noResponse: players.length - attendance.length,
-    totalPlayers: players.length
-  };
+  const attendanceStats = (() => {
+    const playerPresent = attendance.filter(a => a.status === 'present').length;
+    const playerAbsent = attendance.filter(a => a.status === 'absent').length;
+    const trialistPresent = trialistInvites.filter((t: any) => t.status === 'present').length;
+    const trialistAbsent = trialistInvites.filter((t: any) => t.status === 'absent').length;
+    const present = playerPresent + trialistPresent;
+    const absent = playerAbsent + trialistAbsent;
+    const totalEntities = players.length + trialistInvites.length;
+    const responded = attendance.length + trialistPresent + trialistAbsent;
+    const noResponse = Math.max(0, totalEntities - responded);
+    return { present, absent, late: attendance.filter(a => a.status === 'late').length, noResponse };
+  })();
 
   const publicLinkStats = {
     present: attendanceStats.present,
@@ -189,7 +195,7 @@ export const TrainingSessionModal = ({
           <TabsContent value="public-link" className="mt-3 sm:mt-6">
             <PublicLinkSharing
               session={session}
-              attendanceStats={publicLinkStats}
+              attendanceStats={{ ...publicLinkStats, totalPlayers: players.length + trialistInvites.length }}
               onRefresh={handleRefresh}
             />
           </TabsContent>

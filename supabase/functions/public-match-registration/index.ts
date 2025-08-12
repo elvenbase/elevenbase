@@ -76,6 +76,8 @@ serve(async (req) => {
         .from('match_trialist_invites')
         .select(`
           trialist_id,
+          status,
+          self_registered,
           trialists:trialist_id ( id, first_name, last_name )
         `)
         .eq('match_id', match.id)
@@ -90,7 +92,9 @@ serve(async (req) => {
         trialistsInvited: (trialistInvites || []).map((t: any) => ({
           id: t.trialist_id,
           first_name: t.trialists?.first_name,
-          last_name: t.trialists?.last_name
+          last_name: t.trialists?.last_name,
+          status: t.status,
+          self_registered: t.self_registered
         })),
 
         deadline: deadline.toISOString(),

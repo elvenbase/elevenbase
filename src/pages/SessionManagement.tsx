@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { useTrainingSessions, useTrainingAttendance, usePlayers } from '@/hooks/useSupabaseData'
+import { useTrainingSessions, useTrainingAttendance, usePlayers, useTrainingTrialistInvites } from '@/hooks/useSupabaseData'
 
 import { useLineupManager } from '@/hooks/useLineupManager'
 import { AttendanceForm } from '@/components/forms/AttendanceForm'
@@ -45,6 +45,7 @@ const SessionManagement = () => {
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
+  const { data: trialistInvites = [] } = useTrainingTrialistInvites(sessionId!)
   const { data: players, error: playersError, isLoading: loadingPlayers } = usePlayers()
   
 
@@ -119,12 +120,18 @@ const SessionManagement = () => {
 
 
   // Calcola statistiche presenze
-  const attendanceStats = {
-    present: attendance?.filter(a => a.status === 'present').length || 0,
-    absent: attendance?.filter(a => a.status === 'absent').length || 0,
-    noResponse: (players?.length || 0) - (attendance?.length || 0),
-    totalPlayers: players?.length || 0
-  }
+  const attendanceStats = (() => {
+    const playerPresent = attendance?.filter(a => a.status === 'present').length || 0
+    const playerAbsent = attendance?.filter(a => a.status === 'absent').length || 0
+    const trialistPresent = trialistInvites.filter((t: any) => t.status === 'present').length
+    const trialistAbsent = trialistInvites.filter((t: any) => t.status === 'absent').length
+    const present = playerPresent + trialistPresent
+    const absent = playerAbsent + trialistAbsent
+    const totalEntities = (players?.length || 0) + trialistInvites.length
+    const responded = (attendance?.length || 0) + trialistPresent + trialistAbsent
+    const noResponse = Math.max(0, totalEntities - responded)
+    return { present, absent, noResponse, totalPlayers: totalEntities }
+  })()
 
   if (loadingSessions) {
     return (
