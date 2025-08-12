@@ -71,17 +71,37 @@ serve(async (req) => {
         console.warn('bench fetch error', benchError)
       }
 
-      // Invited trialists
+      // Invited trialists - query con join per ottenere i dati completi
       const { data: trialistInvites, error: tiErr } = await supabase
         .from('match_trialist_invites')
         .select(`
           trialist_id,
           status,
           self_registered,
-          trialists:trialist_id ( id, first_name, last_name )
+          trialists!inner (
+            id,
+            first_name,
+            last_name
+          )
         `)
         .eq('match_id', match.id)
       if (tiErr) console.warn('trialist invites fetch error', tiErr)
+
+      // Debug logging per trialist
+      console.log('Trialist invites raw data:', trialistInvites)
+      console.log('Match ID:', match.id)
+
+      const trialistsInvited = (trialistInvites || []).map((t: any) => ({
+        id: t.trialist_id,
+        first_name: t.trialists?.first_name || 'Unknown',
+        last_name: t.trialists?.last_name || 'Unknown',
+        status: t.status,
+        self_registered: t.self_registered
+      }))
+
+      console.log('Trialists mapped:', trialistsInvited)
+      console.log('Trialists with status present:', trialistsInvited.filter(t => t.status === 'present'))
+      console.log('Trialists with status absent:', trialistsInvited.filter(t => t.status === 'absent'))
 
       return new Response(JSON.stringify({
         match,
@@ -89,13 +109,7 @@ serve(async (req) => {
         existingAttendance,
         lineup: lineupRow ? { formation: (lineupRow as any).formation, players_data: (lineupRow as any).players_data } : null,
         bench: bench || [],
-        trialistsInvited: (trialistInvites || []).map((t: any) => ({
-          id: t.trialist_id,
-          first_name: t.trialists?.first_name,
-          last_name: t.trialists?.last_name,
-          status: t.status,
-          self_registered: t.self_registered
-        })),
+        trialistsInvited: trialistsInvited,
 
         deadline: deadline.toISOString(),
         isRegistrationExpired: now > deadline
