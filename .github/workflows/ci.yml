@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, feat/multi-team ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, feat/multi-team ]
   workflow_dispatch:
     inputs:
       environment:
