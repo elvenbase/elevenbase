@@ -158,6 +158,11 @@ jobs:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_PRODUCTION }}
     
+    - name: 🔧 Install Supabase CLI
+      run: |
+        curl -fsSL https://supabase.com/install.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        
     - name: 🔗 Deploy Edge Functions
       run: |
         echo ${{ secrets.SUPABASE_ACCESS_TOKEN }} | supabase login
@@ -197,6 +202,11 @@ jobs:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_PRODUCTION }}
     
+    - name: 🔧 Install Supabase CLI
+      run: |
+        curl -fsSL https://supabase.com/install.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        
     - name: 🔗 Deploy Edge Functions
       run: |
         echo ${{ secrets.SUPABASE_ACCESS_TOKEN }} | supabase login
