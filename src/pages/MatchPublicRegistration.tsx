@@ -73,12 +73,7 @@ const MatchPublicRegistration = () => {
         existingAttendance: data.existingAttendance?.length
       })
       
-      // Debug dettagliato dei trialist
-      console.log('TrialistsInvited raw data:', data.trialistsInvited)
-      if (data.trialistsInvited && data.trialistsInvited.length > 0) {
-        console.log('First trialist details:', data.trialistsInvited[0])
-        console.log('First trialist keys:', Object.keys(data.trialistsInvited[0]))
-      }
+
       
       setMatch(data.match)
       setPlayers(data.players)
@@ -126,11 +121,6 @@ const MatchPublicRegistration = () => {
   
   const getTrialistRegistration = (trialistId: string) => {
     const trialist = trialistsInvited.find(t => t.id === trialistId)
-    // Debug per verificare la logica
-    console.log(`Checking trialist ${trialistId}:`, trialist)
-    console.log(`Trialist status: ${trialist?.status}`)
-    console.log(`Trialist full object:`, JSON.stringify(trialist, null, 2))
-    console.log(`Should disable: ${trialist && (trialist.status === 'present' || trialist.status === 'absent')}`)
     return trialist && (trialist.status === 'present' || trialist.status === 'absent') ? trialist : null
   }
   const formatMatchDateTime = (date: string, time: string) => format(new Date(date + 'T' + time), "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
@@ -366,51 +356,7 @@ const MatchPublicRegistration = () => {
           </CardContent>
         </Card>
 
-        {/* DEBUG WINDOW - Rimuovere dopo la risoluzione */}
-        <Card className="border-2 border-red-500 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-700">🔍 DEBUG - Dati Trialist</CardTitle>
-            <CardDescription className="text-red-600">Finestra di debug temporanea - Rimuovere dopo la risoluzione - FORZATO DEPLOY</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-semibold text-red-700 mb-2">Dati Raw dall'API:</h4>
-                <pre className="text-xs bg-white p-2 rounded border overflow-auto max-h-40">
-                  {JSON.stringify({
-                    playersCount: players.length,
-                    trialistsCount: trialistsInvited.length,
-                    attendanceCount: existingAttendance.length,
-                    trialistsRaw: trialistsInvited
-                  }, null, 2)}
-                </pre>
-              </div>
-              <div>
-                <h4 className="font-semibold text-red-700 mb-2">Analisi Trialist:</h4>
-                <div className="text-sm space-y-1">
-                  <div><strong>Totale trialist:</strong> {trialistsInvited.length}</div>
-                  <div><strong>Con status 'present':</strong> {trialistsInvited.filter(t => t.status === 'present').length}</div>
-                  <div><strong>Con status 'absent':</strong> {trialistsInvited.filter(t => t.status === 'absent').length}</div>
-                  <div><strong>Con status undefined:</strong> {trialistsInvited.filter(t => t.status === undefined).length}</div>
-                  <div><strong>Con status null:</strong> {trialistsInvited.filter(t => t.status === null).length}</div>
-                  <div><strong>Chiavi disponibili:</strong> {trialistsInvited.length > 0 ? Object.keys(trialistsInvited[0]).join(', ') : 'Nessun trialist'}</div>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-red-700 mb-2">Dettaglio Primo Trialist:</h4>
-              <pre className="text-xs bg-white p-2 rounded border overflow-auto max-h-40">
-                {trialistsInvited.length > 0 ? JSON.stringify(trialistsInvited[0], null, 2) : 'Nessun trialist disponibile'}
-              </pre>
-            </div>
-            
-            <div className="text-xs text-red-600">
-              <strong>Problema identificato:</strong> Il campo 'status' non è presente nei dati dei trialist. 
-              Questo indica che l'Edge Function non è stata aggiornata o c'è un problema di cache.
-            </div>
-          </CardContent>
-        </Card>
+
 
         {lineup && (
           <Card className="shadow-lg">
