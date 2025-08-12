@@ -26,19 +26,29 @@ BEGIN
     RAISE NOTICE 'Tabella training_trialist_invites non trovata';
   END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_catalog.pg_policies WHERE schemaname = 'public' AND tablename = 'training_trialist_invites'
-  ) THEN
-    -- Abilita RLS e crea policy permissive di base (adatta se necessario)
-    ALTER TABLE public.training_trialist_invites ENABLE ROW LEVEL SECURITY;
+  -- Abilita RLS
+  ALTER TABLE public.training_trialist_invites ENABLE ROW LEVEL SECURITY;
 
-    -- Permetti inserimenti da funzioni o contesti server per registrazioni pubbliche
-    CREATE POLICY IF NOT EXISTS training_trialist_invites_insert ON public.training_trialist_invites
+  -- Crea policy insert se manca
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_policies 
+    WHERE schemaname = 'public' 
+      AND tablename = 'training_trialist_invites'
+      AND policyname = 'training_trialist_invites_insert'
+  ) THEN
+    CREATE POLICY training_trialist_invites_insert ON public.training_trialist_invites
       FOR INSERT TO anon, authenticated
       WITH CHECK (true);
+  END IF;
 
-    -- Permetti select limitata
-    CREATE POLICY IF NOT EXISTS training_trialist_invites_select ON public.training_trialist_invites
+  -- Crea policy select se manca
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_policies 
+    WHERE schemaname = 'public' 
+      AND tablename = 'training_trialist_invites'
+      AND policyname = 'training_trialist_invites_select'
+  ) THEN
+    CREATE POLICY training_trialist_invites_select ON public.training_trialist_invites
       FOR SELECT TO anon, authenticated
       USING (true);
   END IF;
