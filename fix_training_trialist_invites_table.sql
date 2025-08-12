@@ -10,8 +10,9 @@ CREATE TABLE IF NOT EXISTS public.training_trialist_invites (
     PRIMARY KEY (session_id, trialist_id)
 );
 
--- 2. Aggiungi la colonna self_registered se non esiste
+-- 2. Aggiungi le colonne mancanti se non esistono
 ALTER TABLE public.training_trialist_invites 
+ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending',
 ADD COLUMN IF NOT EXISTS self_registered BOOLEAN NOT NULL DEFAULT false;
 
 -- 3. Aggiungi commento per documentazione
