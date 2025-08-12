@@ -64,6 +64,15 @@ const MatchPublicRegistration = () => {
       const data = await response.json()
       if (!response.ok) { setError(data.error || `HTTP ${response.status}`); return }
       if (data.error) { setError(data.error); return }
+      
+      // Debug per verificare i dati caricati
+      console.log('Dati caricati:', {
+        match: data.match,
+        players: data.players?.length,
+        trialistsInvited: data.trialistsInvited?.length,
+        existingAttendance: data.existingAttendance?.length
+      })
+      
       setMatch(data.match)
       setPlayers(data.players)
       setTrialistsInvited(data.trialistsInvited || [])
@@ -105,6 +114,13 @@ const MatchPublicRegistration = () => {
   }
 
   const getPlayerRegistration = (playerId: string) => existingAttendance.find(a => a.player_id === playerId)
+  
+  const getTrialistRegistration = (trialistId: string) => {
+    const trialist = trialistsInvited.find(t => t.id === trialistId)
+    // Debug per verificare la logica
+    console.log(`Checking trialist ${trialistId}:`, trialist)
+    return trialist && (trialist.status === 'present' || trialist.status === 'absent') ? trialist : null
+  }
   const formatMatchDateTime = (date: string, time: string) => format(new Date(date + 'T' + time), "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })
 
   const predefinedFormations: Record<string, { name: string; positions: { id: string; name: string; x: number; y: number; roleShort?: string }[] }> = {
@@ -231,18 +247,22 @@ const MatchPublicRegistration = () => {
                     {trialistsInvited.length > 0 && (
                       <div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>
                     )}
-                    {trialistsInvited.map(t => (
-                      <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={t.status === 'present' || t.status === 'absent'}>
-                        <div className="flex items-center gap-2">
-                          {t.first_name} {t.last_name}
-                          {t.status && (
-                            <Badge variant={t.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
-                              {t.status === 'present' ? 'Presente' : 'Assente'}
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {trialistsInvited.map(t => {
+                      const registration = getTrialistRegistration(t.id)
+                      return (
+                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!registration}>
+                          <div className="flex items-center gap-3 w-full">
+                            <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
+                            <span className="font-medium">{t.first_name} {t.last_name}</span>
+                            {registration && (
+                              <Badge variant={registration.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
+                                {registration.status === 'present' ? 'Presente' : 'Assente'}
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -270,7 +290,7 @@ const MatchPublicRegistration = () => {
 
         <Card>
           <CardHeader><CardTitle>Riepilogo Registrazioni</CardTitle></CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             {(() => {
               const playerPresent = existingAttendance.filter(a => a.status === 'present').length
               const playerAbsent = existingAttendance.filter(a => a.status === 'absent').length
@@ -281,12 +301,30 @@ const MatchPublicRegistration = () => {
               const totalEntities = players.length + trialistsInvited.length
               const responded = existingAttendance.length + trialistPresent + trialistAbsent
               const noResponse = Math.max(0, totalEntities - responded)
+              
               return (
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div><div className="text-2xl font-bold text-green-600">{presentTotal}</div><div className="text-sm text-muted-foreground">Presenti</div></div>
-                  <div><div className="text-2xl font-bold text-red-600">{absentTotal}</div><div className="text-sm text-muted-foreground">Assenti</div></div>
-                  <div><div className="text-2xl font-bold text-muted-foreground">{noResponse}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
-                </div>
+                <>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div><div className="text-2xl font-bold text-green-600">{presentTotal}</div><div className="text-sm text-muted-foreground">Presenti</div></div>
+                    <div><div className="text-2xl font-bold text-red-600">{absentTotal}</div><div className="text-sm text-muted-foreground">Assenti</div></div>
+                    <div><div className="text-2xl font-bold text-muted-foreground">{noResponse}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                    <div className="text-center">
+                      <div className="text-lg font-semibold text-blue-600">Giocatori</div>
+                      <div className="text-sm text-muted-foreground">
+                        Presenti: {playerPresent} | Assenti: {playerAbsent} | Non risposto: {Math.max(0, players.length - existingAttendance.length)}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-semibold text-orange-600">Provinanti</div>
+                      <div className="text-sm text-muted-foreground">
+                        Presenti: {trialistPresent} | Assenti: {trialistAbsent} | Non risposto: {Math.max(0, trialistsInvited.length - trialistPresent - trialistAbsent)}
+                      </div>
+                    </div>
+                  </div>
+                </>
               )
             })()}
           </CardContent>
