@@ -370,7 +370,7 @@ const MatchPublicRegistration = () => {
         <Card className="border-2 border-red-500 bg-red-50">
           <CardHeader>
             <CardTitle className="text-red-700">🔍 DEBUG - Dati Trialist</CardTitle>
-            <CardDescription className="text-red-600">Finestra di debug temporanea - Rimuovere dopo la risoluzione</CardDescription>
+            <CardDescription className="text-red-600">Finestra di debug temporanea - Rimuovere dopo la risoluzione - FORZATO DEPLOY</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
