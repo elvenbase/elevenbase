@@ -26,11 +26,17 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   const updateTrialistInvite = useUpdateTrainingTrialistInvite();
 
 
-  const presentCount = existingAttendance.filter(a => a.status === 'present' || a.coach_confirmation_status === 'present').length;
-  const absentCount = existingAttendance.filter(a => a.status === 'absent' || a.coach_confirmation_status === 'absent').length;
-  const selfRegisteredCount = existingAttendance.filter(a => a.self_registered).length;
+  const playerPresentCount = existingAttendance.filter(a => a.status === 'present' || a.coach_confirmation_status === 'present').length;
+  const playerAbsentCount = existingAttendance.filter(a => a.status === 'absent' || a.coach_confirmation_status === 'absent').length;
+  const trialistPresentCount = trialistInvites.filter((t: any) => t.status === 'present').length;
+  const trialistAbsentCount = trialistInvites.filter((t: any) => t.status === 'absent').length;
+  const presentCount = playerPresentCount + trialistPresentCount;
+  const absentCount = playerAbsentCount + trialistAbsentCount;
+  const selfRegisteredCount = existingAttendance.filter(a => a.self_registered).length + trialistInvites.filter((t: any) => t.self_registered).length;
   const coachConfirmedCount = existingAttendance.filter(a => a.coach_confirmation_status && a.coach_confirmation_status !== 'pending').length;
-  const noResponseCount = allPlayers.length - existingAttendance.length;
+  const totalEntities = allPlayers.length + trialistInvites.length;
+  const respondedCount = existingAttendance.length + trialistPresentCount + trialistAbsentCount;
+  const noResponseCount = Math.max(0, totalEntities - respondedCount);
 
   const handleStatusChange = async (playerId: string, status: string) => {
     try {
@@ -625,7 +631,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       {/* Azioni */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          {allPlayers.length} giocatori totali • {selfRegisteredCount} auto-registrati
+          {totalEntities} totali (giocatori + provinanti) • {selfRegisteredCount} auto-registrati
         </div>
         <div className="flex gap-2">
           <Button 
