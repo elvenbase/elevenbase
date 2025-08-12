@@ -227,17 +227,17 @@ const MatchPublicRegistration = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Giocatore o Provinante</label>
                 <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
-                  <SelectTrigger className="h-12">
+                  <SelectTrigger className="h-12 min-h-[48px] sm:min-h-[48px]">
                     <SelectValue placeholder="Seleziona il tuo nome" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px] sm:max-h-[250px]">
                     {players.length > 0 && (
                       <div className="px-2 py-1 text-xs text-muted-foreground">Giocatori</div>
                     )}
                     {players.map(p => {
                       const registration = getPlayerRegistration(p.id)
                       return (
-                        <SelectItem key={p.id} value={`player:${p.id}` as SelectEntity} disabled={!!registration}>
+                        <SelectItem key={p.id} value={`player:${p.id}` as SelectEntity} disabled={!!registration} className="py-3">
                           <div className="flex items-center gap-3 w-full">
                             <PlayerAvatar firstName={p.first_name} lastName={p.last_name} size="sm" />
                             <span className="font-medium">{p.first_name} {p.last_name}</span>
@@ -253,7 +253,7 @@ const MatchPublicRegistration = () => {
                       const registration = getTrialistRegistration(t.id)
                       console.log(`Rendering trialist ${t.id}:`, { trialist: t, registration, disabled: !!registration })
                       return (
-                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!registration}>
+                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!registration} className="py-3">
                           <div className="flex items-center gap-3 w-full">
                             <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
                             <span className="font-medium">{t.first_name} {t.last_name}</span>
@@ -273,10 +273,10 @@ const MatchPublicRegistration = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Presenza</label>
                 <Select value={selectedStatus} onValueChange={(v: 'pending' | 'present' | 'absent') => setSelectedStatus(v)}>
-                  <SelectTrigger className="h-12">
+                  <SelectTrigger className="h-12 min-h-[48px] sm:min-h-[48px]">
                     <SelectValue placeholder="Seleziona" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px] sm:max-h-[250px]">
                     <SelectItem value="pending"><div className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-500" /> In attesa</div></SelectItem>
                     <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Presente</div></SelectItem>
                     <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Assente</div></SelectItem>
