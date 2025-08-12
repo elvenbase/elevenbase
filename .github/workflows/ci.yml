@@ -124,7 +124,7 @@ jobs:
     - name: 🔐 Login to Supabase
       run: |
         echo ${{ secrets.SUPABASE_ACCESS_TOKEN }} | supabase login
-        supabase link --project-ref ${{ env.SUPABASE_PROJECT_REF }}
+        echo "Viola.035256234" | supabase link --project-ref ${{ env.SUPABASE_PROJECT_REF }}
     
     - name: 🔍 Check database status
       run: supabase status
