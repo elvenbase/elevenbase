@@ -118,9 +118,12 @@ jobs:
       run: |
         curl -fsSL https://supabase.com/install.sh | sh
         echo "$HOME/.local/bin" >> $GITHUB_PATH
+        export PATH="$HOME/.local/bin:$PATH"
+        supabase --version
     
     - name: 🔐 Login to Supabase
       run: |
+        export PATH="$HOME/.local/bin:$PATH"
         echo ${{ secrets.SUPABASE_ACCESS_TOKEN }} | supabase login
         supabase link --project-ref ${{ env.SUPABASE_PROJECT_REF }}
     
