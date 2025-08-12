@@ -1,0 +1,23 @@
+{
+  "path": "cz-conventional-changelog",
+  "defaultScope": "app",
+  "defaultSubject": "update",
+  "defaultBody": "",
+  "defaultIssues": "",
+  "types": [
+    "feat",
+    "fix",
+    "docs",
+    "style",
+    "refactor",
+    "perf",
+    "test",
+    "build",
+    "ci",
+    "chore",
+    "revert",
+    "supabase",
+    "db",
+    "ui"
+  ]
+}
