@@ -729,10 +729,15 @@ const PublicSession = () => {
                       })}
                       {trialistsInvited.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>)}
                       {trialistsInvited.map(t => (
-                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity}>
+                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={t.status === 'present' || t.status === 'absent'}>
                           <div className="flex items-center gap-3 w-full">
                             <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
                             <span className="font-medium">{t.first_name} {t.last_name}</span>
+                            {t.status && (
+                              <Badge variant={t.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
+                                {t.status === 'present' ? 'Presente' : 'Assente'}
+                              </Badge>
+                            )}
                           </div>
                         </SelectItem>
                       ))}
@@ -792,20 +797,33 @@ const PublicSession = () => {
               <CardTitle className="text-lg sm:text-xl">Riepilogo Registrazioni</CardTitle>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-green-600">{existingAttendance.filter(a => a.status === 'present').length}</div>
-                  <div className="text-sm text-muted-foreground">Presenti</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-600">{existingAttendance.filter(a => a.status === 'absent').length}</div>
-                  <div className="text-sm text-muted-foreground">Assenti</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-muted-foreground">{Math.max(0, players.length - existingAttendance.length)}</div>
-                  <div className="text-sm text-muted-foreground">Non risposto</div>
-                </div>
-              </div>
+              {(() => {
+                const playerPresent = existingAttendance.filter(a => a.status === 'present').length
+                const playerAbsent = existingAttendance.filter(a => a.status === 'absent').length
+                const trialistPresent = trialistsInvited.filter(t => t.status === 'present').length
+                const trialistAbsent = trialistsInvited.filter(t => t.status === 'absent').length
+                const presentTotal = playerPresent + trialistPresent
+                const absentTotal = playerAbsent + trialistAbsent
+                const totalEntities = players.length + trialistsInvited.length
+                const responded = existingAttendance.length + trialistPresent + trialistAbsent
+                const noResponse = Math.max(0, totalEntities - responded)
+                return (
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">{presentTotal}</div>
+                      <div className="text-sm text-muted-foreground">Presenti</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-red-600">{absentTotal}</div>
+                      <div className="text-sm text-muted-foreground">Assenti</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-muted-foreground">{noResponse}</div>
+                      <div className="text-sm text-muted-foreground">Non risposto</div>
+                    </div>
+                  </div>
+                )
+              })()}
             </CardContent>
           </Card>
         </div>
