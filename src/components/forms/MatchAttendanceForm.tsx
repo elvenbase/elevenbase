@@ -24,10 +24,16 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
   const upsert = useUpsertMatchAttendance();
   const bulkUpdate = useBulkUpdateMatchAttendance();
 
-  const presentCount = attendance.filter(a => a.status === 'present' || a.coach_confirmation_status === 'present').length;
-  const absentCount = attendance.filter(a => a.status === 'absent' || a.coach_confirmation_status === 'absent').length;
+  const playerPresentCount = attendance.filter(a => a.status === 'present' || a.coach_confirmation_status === 'present').length;
+  const playerAbsentCount = attendance.filter(a => a.status === 'absent' || a.coach_confirmation_status === 'absent').length;
+  const trialistPresentCount = trialistInvites.filter((t: any) => t.status === 'present').length;
+  const trialistAbsentCount = trialistInvites.filter((t: any) => t.status === 'absent').length;
+  const presentCount = playerPresentCount + trialistPresentCount;
+  const absentCount = playerAbsentCount + trialistAbsentCount;
   const lateCount = attendance.filter(a => a.arrival_time).length;
-  const noResponseCount = allPlayers.length - attendance.length;
+  const totalEntities = allPlayers.length + trialistInvites.length;
+  const responded = attendance.length + trialistPresentCount + trialistAbsentCount;
+  const noResponseCount = Math.max(0, totalEntities - responded);
 
   const handleSelfStatusChange = async (playerId: string, status: string) => {
     try {
@@ -326,7 +332,7 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
       {/* Azioni */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          {allPlayers.length} giocatori totali
+          {totalEntities} totali (giocatori + provinanti)
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => { /* no explicit save needed */ }} disabled={isLoading}>

@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Target, Share, ArrowLeft } from 'lucide-react'
-import { useMatch, useMatchEvents, useMatchAttendance, useEnsureMatchPublicSettings } from '@/hooks/useSupabaseData'
+import { useMatch, useMatchEvents, useMatchAttendance, useEnsureMatchPublicSettings, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
@@ -56,15 +56,23 @@ const MatchDetail = () => {
   const { data: match, isLoading } = useMatch(id || '')
   const { data: events = [] } = useMatchEvents(id || '')
   const { data: matchAttendance = [] } = useMatchAttendance(id || '')
+  const { data: trialistInvites = [] } = useMatchTrialistInvites(id || '')
+  const { data: allPlayers = [] } = usePlayers()
   const ensurePublic = useEnsureMatchPublicSettings()
 
   const score = useMemo(() => computeScore(events), [events])
-  const attendanceStats = useMemo(() => ({
-    present: matchAttendance.filter((a: any) => a.status === 'present').length,
-    absent: matchAttendance.filter((a: any) => a.status === 'absent').length,
-    noResponse: 0,
-    totalPlayers: matchAttendance.length
-  }), [matchAttendance])
+  const attendanceStats = useMemo(() => {
+    const playerPresent = matchAttendance.filter((a: any) => a.status === 'present').length
+    const playerAbsent = matchAttendance.filter((a: any) => a.status === 'absent').length
+    const trialistPresent = trialistInvites.filter((t: any) => t.status === 'present').length
+    const trialistAbsent = trialistInvites.filter((t: any) => t.status === 'absent').length
+    const present = playerPresent + trialistPresent
+    const absent = playerAbsent + trialistAbsent
+    const totalEntities = (allPlayers?.length || 0) + (trialistInvites?.length || 0)
+    const responded = matchAttendance.length + trialistPresent + trialistAbsent
+    const noResponse = Math.max(0, totalEntities - responded)
+    return { present, absent, noResponse, totalPlayers: totalEntities }
+  }, [matchAttendance, trialistInvites, allPlayers])
 
   useEffect(() => {
     // future: subscribe realtime
