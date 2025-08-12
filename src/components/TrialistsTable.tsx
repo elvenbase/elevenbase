@@ -56,7 +56,7 @@ const TrialistsTable = () => {
   };
 
   const filteredAndSortedTrialists = useMemo(() => {
-    let filtered = trialists.filter(trialist => {
+    const filtered = trialists.filter(trialist => {
       const matchesSearch = searchTerm === '' || 
         `${trialist.first_name} ${trialist.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || trialist.status === statusFilter;

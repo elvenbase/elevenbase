@@ -1801,7 +1801,7 @@ export const useEnsureMatchPublicSettings = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (matchId: string) => {
-      let updates: any = {}
+      const updates: any = {}
       // fetch match
       const { data: match, error } = await supabase.from('matches').select('public_link_token, allow_responses_until, match_date, match_time').eq('id', matchId).maybeSingle()
       if (error) throw error
