@@ -43,7 +43,7 @@ const Dashboard = () => {
             Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Panoramica generale del club Ca De Rissi SG Esport
+            Panoramica generale del tuo club
           </p>
         </div>
 
