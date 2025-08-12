@@ -63,3 +63,22 @@ WHERE tablename = 'match_trialist_invites';
 - Questo fix è sicuro e non modifica dati esistenti
 - La colonna `self_registered` avrà valore `false` per i record esistenti
 - Le nuove registrazioni avranno `self_registered = true` se fatte tramite link pubblico
+
+## ❌ **Problema identificato (training):**
+```
+Could not find the 'self_registered' column of 'training_trialist_invites' in the schema cache
+```
+
+## 🚀 **Soluzione (training):**
+Esegui lo script `fix_training_trialist_invites_table.sql` nel SQL Editor di Supabase.
+
+### Cosa fa lo script
+1. Crea la tabella `training_trialist_invites` se non esiste (schema minimo)
+2. Aggiunge la colonna `self_registered` (BOOLEAN, default false) se manca
+3. Abilita RLS e crea policy minime per consentire l’uso via funzione pubblica
+4. Manda `NOTIFY pgrst, 'reload schema'` per aggiornare la cache
+
+### Verifica
+- Riesegui la registrazione pubblica per un allenamento: l’errore non deve più apparire
+
+> Nota: se usi policy personalizzate, adatta le policy nello script secondo i ruoli del tuo progetto.
