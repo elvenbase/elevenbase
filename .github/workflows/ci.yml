@@ -84,7 +84,7 @@ jobs:
         VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
     
     - name: 🔨 Build application (production)
-      run: npm run build:prod
+      run: npm run build
       env:
         VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
