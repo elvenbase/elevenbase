@@ -73,6 +73,13 @@ const MatchPublicRegistration = () => {
         existingAttendance: data.existingAttendance?.length
       })
       
+      // Debug dettagliato dei trialist
+      console.log('TrialistsInvited raw data:', data.trialistsInvited)
+      if (data.trialistsInvited && data.trialistsInvited.length > 0) {
+        console.log('First trialist details:', data.trialistsInvited[0])
+        console.log('First trialist keys:', Object.keys(data.trialistsInvited[0]))
+      }
+      
       setMatch(data.match)
       setPlayers(data.players)
       setTrialistsInvited(data.trialistsInvited || [])
@@ -122,6 +129,7 @@ const MatchPublicRegistration = () => {
     // Debug per verificare la logica
     console.log(`Checking trialist ${trialistId}:`, trialist)
     console.log(`Trialist status: ${trialist?.status}`)
+    console.log(`Trialist full object:`, JSON.stringify(trialist, null, 2))
     console.log(`Should disable: ${trialist && (trialist.status === 'present' || trialist.status === 'absent')}`)
     return trialist && (trialist.status === 'present' || trialist.status === 'absent') ? trialist : null
   }
