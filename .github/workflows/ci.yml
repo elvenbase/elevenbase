@@ -124,13 +124,10 @@ jobs:
     - name: 🔐 Login to Supabase
       run: |
         echo ${{ secrets.SUPABASE_ACCESS_TOKEN }} | supabase login
-        echo "Viola.035256234" | supabase link --project-ref ${{ env.SUPABASE_PROJECT_REF }}
     
-    - name: 🔍 Check database status
-      run: supabase status
-    
-    - name: 📤 Push database changes
-      run: supabase db push
+    - name: 🔗 Deploy Edge Function
+      run: |
+        supabase functions deploy public-match-registration --project-ref ${{ env.SUPABASE_PROJECT_REF }}
       env:
         SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
