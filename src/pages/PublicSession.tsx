@@ -154,6 +154,23 @@ const PublicSession = () => {
 
       if (data.session?.id) {
         await loadLineup(data.session.id)
+        // Fallback: se i provinanti non hanno status nello payload della funzione edge, recuperali direttamente da Supabase
+        try {
+          const missingStatus = !Array.isArray(data.trialistsInvited) || (data.trialistsInvited || []).some((t: any) => typeof t.status === 'undefined')
+          if (missingStatus) {
+            const { data: tiRows, error: tiErr } = await supabase
+              .from('training_trialist_invites')
+              .select('trialist_id, status, self_registered')
+              .eq('session_id', data.session.id)
+            if (!tiErr && Array.isArray(tiRows)) {
+              const map = new Map<string, { status?: string; self_registered?: boolean }>()
+              tiRows.forEach((r: any) => map.set(r.trialist_id, { status: r.status, self_registered: r.self_registered }))
+              setTrialistsInvited((prev) => (prev || []).map((t: any) => ({ ...t, ...map.get(t.id) })))
+            }
+          }
+        } catch (e) {
+          console.warn('Fallback trialist status fetch failed:', e)
+        }
       }
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
