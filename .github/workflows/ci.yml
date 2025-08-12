@@ -19,6 +19,8 @@ on:
 env:
   NODE_VERSION: '18'
   SUPABASE_PROJECT_REF: cuthalxqxkonmfzqjdvw
+  SUPABASE_URL: https://cuthalxqxkonmfzqjdvw.supabase.co
+  SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1dGhhbHhxeGtvbm1menFqZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MTc4MTIsImV4cCI6MjA3MDA5MzgxMn0.-W7haFEUs1IaQRXY_M-aL-lpAtXPhcVsQFbQhQbMpSI
 
 jobs:
   test:
