@@ -292,35 +292,58 @@ const MatchPublicRegistration = () => {
           <CardHeader><CardTitle>Riepilogo Registrazioni</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             {(() => {
+              // Debug per verificare i dati
+              console.log('Conteggio - Dati disponibili:', {
+                players: players.length,
+                trialistsInvited: trialistsInvited.length,
+                existingAttendance: existingAttendance.length,
+                trialistsWithStatus: trialistsInvited.filter(t => t.status === 'present' || t.status === 'absent').length
+              })
+              
+              // Conteggio giocatori (da existingAttendance)
               const playerPresent = existingAttendance.filter(a => a.status === 'present').length
               const playerAbsent = existingAttendance.filter(a => a.status === 'absent').length
+              const playerResponded = existingAttendance.length
+              const playerNoResponse = Math.max(0, players.length - playerResponded)
+              
+              // Conteggio trialist (da trialistsInvited.status)
               const trialistPresent = trialistsInvited.filter(t => t.status === 'present').length
               const trialistAbsent = trialistsInvited.filter(t => t.status === 'absent').length
+              const trialistResponded = trialistPresent + trialistAbsent
+              const trialistNoResponse = Math.max(0, trialistsInvited.length - trialistResponded)
+              
+              // Totali
               const presentTotal = playerPresent + trialistPresent
               const absentTotal = playerAbsent + trialistAbsent
               const totalEntities = players.length + trialistsInvited.length
-              const responded = existingAttendance.length + trialistPresent + trialistAbsent
-              const noResponse = Math.max(0, totalEntities - responded)
+              const totalResponded = playerResponded + trialistResponded
+              const totalNoResponse = totalEntities - totalResponded
+              
+              console.log('Conteggio - Risultati:', {
+                playerPresent, playerAbsent, playerResponded, playerNoResponse,
+                trialistPresent, trialistAbsent, trialistResponded, trialistNoResponse,
+                presentTotal, absentTotal, totalResponded, totalNoResponse
+              })
               
               return (
                 <>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div><div className="text-2xl font-bold text-green-600">{presentTotal}</div><div className="text-sm text-muted-foreground">Presenti</div></div>
                     <div><div className="text-2xl font-bold text-red-600">{absentTotal}</div><div className="text-sm text-muted-foreground">Assenti</div></div>
-                    <div><div className="text-2xl font-bold text-muted-foreground">{noResponse}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
+                    <div><div className="text-2xl font-bold text-muted-foreground">{totalNoResponse}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                     <div className="text-center">
                       <div className="text-lg font-semibold text-blue-600">Giocatori</div>
                       <div className="text-sm text-muted-foreground">
-                        Presenti: {playerPresent} | Assenti: {playerAbsent} | Non risposto: {Math.max(0, players.length - existingAttendance.length)}
+                        Presenti: {playerPresent} | Assenti: {playerAbsent} | Non risposto: {playerNoResponse}
                       </div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-orange-600">Provinanti</div>
                       <div className="text-sm text-muted-foreground">
-                        Presenti: {trialistPresent} | Assenti: {trialistAbsent} | Non risposto: {Math.max(0, trialistsInvited.length - trialistPresent - trialistAbsent)}
+                        Presenti: {trialistPresent} | Assenti: {trialistAbsent} | Non risposto: {trialistNoResponse}
                       </div>
                     </div>
                   </div>
