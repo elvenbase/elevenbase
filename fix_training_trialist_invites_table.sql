@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.training_trialist_invites (
     trialist_id uuid NOT NULL,
     status text DEFAULT 'pending',
     created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
     PRIMARY KEY (session_id, trialist_id)
 );
 
@@ -17,6 +18,21 @@ ADD COLUMN IF NOT EXISTS self_registered BOOLEAN NOT NULL DEFAULT false;
 
 -- 3. Aggiungi commento per documentazione
 COMMENT ON COLUMN public.training_trialist_invites.self_registered IS 'Indica se il trialist si è registrato autonomamente tramite il link pubblico';
+
+-- 3b. Trigger per aggiornare updated_at automaticamente
+CREATE OR REPLACE FUNCTION public.update_training_trialist_invites_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_training_trialist_invites_updated_at ON public.training_trialist_invites;
+CREATE TRIGGER update_training_trialist_invites_updated_at
+BEFORE UPDATE ON public.training_trialist_invites
+FOR EACH ROW
+EXECUTE FUNCTION public.update_training_trialist_invites_updated_at();
 
 -- 4. Abilita RLS se non già abilitato
 DO $$
