@@ -17,7 +17,7 @@ serve(async (req) => {
     const url = new URL(req.url)
     let token = url.searchParams.get('token')
     let method = req.method
-    let body: any = null
+    let body: Record<string, unknown> | null = null
 
     if (req.method === 'POST') {
       const raw = await req.text()
@@ -33,7 +33,7 @@ serve(async (req) => {
 
       const { data: match, error: matchError } = await supabase.from('matches').select('*').eq('public_link_token', token).single()
       if (matchError || !match) return new Response(JSON.stringify({ error: 'Token non valido' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      if ((match as any).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      if ((match as { is_closed?: boolean }).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
       const now = new Date()
       const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
@@ -91,7 +91,12 @@ serve(async (req) => {
       console.log('Trialist invites raw data:', trialistInvites)
       console.log('Match ID:', match.id)
 
-      const trialistsInvited = (trialistInvites || []).map((t: any) => ({
+      const trialistsInvited = (trialistInvites || []).map((t: { 
+        trialist_id: string; 
+        status: string | null; 
+        self_registered: boolean; 
+        trialists: { first_name: string; last_name: string } | null 
+      }) => ({
         id: t.trialist_id,
         first_name: t.trialists?.first_name || 'Unknown',
         last_name: t.trialists?.last_name || 'Unknown',
@@ -107,7 +112,10 @@ serve(async (req) => {
         match,
         players,
         existingAttendance,
-        lineup: lineupRow ? { formation: (lineupRow as any).formation, players_data: (lineupRow as any).players_data } : null,
+        lineup: lineupRow ? { 
+          formation: (lineupRow as { formation: string; players_data: Record<string, unknown> }).formation, 
+          players_data: (lineupRow as { formation: string; players_data: Record<string, unknown> }).players_data 
+        } : null,
         bench: bench || [],
         trialistsInvited: trialistsInvited,
 
@@ -118,7 +126,7 @@ serve(async (req) => {
 
     if (method === 'POST' || (req.method === 'POST' && method !== 'GET')) {
       if (!body) return new Response(JSON.stringify({ error: 'Body JSON non valido' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      const { playerId, trialistId, status } = body
+      const { playerId, trialistId, status } = body as { playerId?: string; trialistId?: string; status?: string }
       if (!token || (!playerId && !trialistId) || !status) return new Response(JSON.stringify({ error: 'Missing required parameters' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       if (playerId && !validateUuid(playerId)) return new Response(JSON.stringify({ error: 'Invalid player ID format' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       if (trialistId && !validateUuid(trialistId)) return new Response(JSON.stringify({ error: 'Invalid trialist ID format' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -126,7 +134,7 @@ serve(async (req) => {
 
       const { data: match, error: matchError } = await supabase.from('matches').select('*').eq('public_link_token', token).single()
       if (matchError || !match) return new Response(JSON.stringify({ error: 'Token non valido' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      if ((match as any).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      if ((match as { is_closed?: boolean }).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
       const now = new Date()
       const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : null
@@ -154,7 +162,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Metodo non supportato' }), { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
     console.error('Errore in public-match-registration:', error)
-    // @ts-ignore
-    return new Response(JSON.stringify({ error: error.message || 'Errore server' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const errorMessage = error instanceof Error ? error.message : 'Errore server'
+    return new Response(JSON.stringify({ error: errorMessage }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   }
 })
