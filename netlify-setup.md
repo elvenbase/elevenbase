@@ -7,12 +7,9 @@
 NETLIFY_AUTH_TOKEN=nfp_x5V2DU5J6pd9tWo2xEKuGnmD5Q83qPVie507
 ```
 
-### **Site IDs**
+### **Site ID**
 ```bash
-# Staging (usa production site per ora)
-NETLIFY_SITE_ID_STAGING=ff2374c2-19b7-4a4e-86fa-fcd44ff751bd
-
-# Production
+# Production (unico sito)
 NETLIFY_SITE_ID_PRODUCTION=ff2374c2-19b7-4a4e-86fa-fcd44ff751bd
 ```
 
@@ -23,8 +20,8 @@ Vai su GitHub → Settings → Secrets and variables → Actions e aggiungi:
 ```bash
 # Netlify
 NETLIFY_AUTH_TOKEN=nfp_x5V2DU5J6pd9tWo2xEKuGnmD5Q83qPVie507
-NETLIFY_SITE_ID_STAGING=ff2374c2-19b7-4a4e-86fa-fcd44ff751bd
 NETLIFY_SITE_ID_PRODUCTION=ff2374c2-19b7-4a4e-86fa-fcd44ff751bd
+```
 
 # Supabase (già configurati)
 SUPABASE_ACCESS_TOKEN=sbp_fa64cfe857dac90f0fc1ffd9b005eb8b47f9e244
@@ -34,15 +31,17 @@ SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 
 ## 🚀 **Deployment Strategy**
 
-### **Staging (Branch: develop)**
-- **Site**: Usa il sito di produzione con preview
-- **URL**: Preview URL generato automaticamente
+### **Preview (Pull Requests)**
+- **Site**: Sito di produzione con deploy preview
+- **URL**: Preview URL generato automaticamente per ogni PR
 - **Build**: `npm run build:dev`
+- **Trigger**: Ogni Pull Request
 
 ### **Production (Branch: main)**
 - **Site**: Sito di produzione principale
 - **URL**: URL principale del sito
 - **Build**: `npm run build:prod`
+- **Trigger**: Push su main
 
 ## 🔧 **Configurazione Netlify**
 
@@ -72,21 +71,20 @@ VITE_APP_ENV=production
 - **Site URL**: https://ff2374c2-19b7-4a4e-86fa-fcd44ff751bd.netlify.app
 - **Custom Domain**: (se configurato)
 
-### **Staging/Preview**
-- **Preview URL**: Generato automaticamente per ogni PR/branch
+### **Preview (Pull Requests)**
+- **Preview URL**: Generato automaticamente per ogni PR
 - **Deploy Preview**: https://deploy-preview-XXX--ff2374c2-19b7-4a4e-86fa-fcd44ff751bd.netlify.app
 
 ## 🔄 **Workflow di Deployment**
 
 ### **Automatico (GitHub Actions)**
-1. **Push su develop** → Deploy staging (preview)
+1. **Pull Request** → Deploy preview automatico
 2. **Push su main** → Deploy production
-3. **Pull Request** → Deploy preview automatico
 
 ### **Manuale**
 ```bash
-# Deploy staging
-./scripts/deploy.sh staging
+# Deploy preview (per PR)
+./scripts/deploy.sh preview
 
 # Deploy production
 ./scripts/deploy.sh production
@@ -94,24 +92,24 @@ VITE_APP_ENV=production
 
 ## 🎯 **Vantaggi di Questa Configurazione**
 
-✅ **Un solo sito Netlify** per entrambi gli ambienti
-✅ **Preview automatici** per staging/PR
+✅ **Un solo sito Netlify** per produzione
+✅ **Preview automatici** per ogni Pull Request
 ✅ **Deployment automatico** su main
-✅ **Environment variables** separate per staging/production
+✅ **Environment variables** separate per preview/production
 ✅ **Build ottimizzati** per ogni ambiente
 
 ## 🚨 **Note Importanti**
 
-⚠️ **Staging e Production usano lo stesso sito Netlify**
-- Staging = Deploy preview
+⚠️ **Preview e Production usano lo stesso sito Netlify**
+- Preview = Deploy preview per PR
 - Production = Deploy principale
-- Ogni branch/PR genera un preview URL unico
+- Ogni PR genera un preview URL unico
 
 ## 🎉 **Setup Completato**
 
 Il tuo ambiente Netlify è ora **completamente configurato** per:
 - ✅ Deployment automatico
-- ✅ Preview per staging
+- ✅ Preview per Pull Request
 - ✅ Production deployment
 - ✅ Environment variables separate
 - ✅ Build ottimizzati
