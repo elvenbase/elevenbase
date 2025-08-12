@@ -785,6 +785,29 @@ const PublicSession = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Riepilogo Registrazioni */}
+          <Card className="shadow-lg">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Riepilogo Registrazioni</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-green-600">{existingAttendance.filter(a => a.status === 'present').length}</div>
+                  <div className="text-sm text-muted-foreground">Presenti</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-red-600">{existingAttendance.filter(a => a.status === 'absent').length}</div>
+                  <div className="text-sm text-muted-foreground">Assenti</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-muted-foreground">{Math.max(0, players.length - existingAttendance.length)}</div>
+                  <div className="text-sm text-muted-foreground">Non risposto</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
