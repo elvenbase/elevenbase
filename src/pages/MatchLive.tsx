@@ -193,6 +193,7 @@ const MatchLive = () => {
     const p = playersById[id] || trialistsById[id]
     return p ? `${p.first_name} ${p.last_name}` : id
   }
+  const isTrialistId = (id: string) => !!trialistsById[id]
 
   // Substitution dialog
   const [subOpen, setSubOpen] = useState(false)
@@ -216,6 +217,7 @@ const MatchLive = () => {
     const { error } = await supabase.from('match_events').insert({ match_id: id, event_type: 'substitution', metadata: { out_id: subOutId, in_id: subInId }, team: 'us' })
     if (!error) {
       queryClient.invalidateQueries({ queryKey: ['match-events', id] })
+      await loadBench()
     } else {
       console.error('Errore inserimento sostituzione:', error)
     }
@@ -378,7 +380,7 @@ const MatchLive = () => {
             </CardHeader>
             <CardContent>
               <div className="max-h-80 overflow-y-auto space-y-1">
-                {convocati.map((p: any) => (
+                {convocati.filter((p: any) => !onFieldIds.has(p.id)).map((p: any) => (
                   <div key={p.id} className={`flex items-center gap-2 p-2 rounded border cursor-pointer ${selectedPlayerId===p.id ? 'border-primary bg-primary/5' : ''}`} onClick={()=>setSelectedPlayerId(p.id)}>
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     <div className="truncate">{p.first_name} {p.last_name}</div>

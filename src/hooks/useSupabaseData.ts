@@ -1215,7 +1215,7 @@ export const useMatchEvents = (matchId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('match_events')
-        .select(`*, players:player_id(first_name,last_name)`).eq('match_id', matchId)
+        .select(`*, players:player_id(first_name,last_name), trialists:trialist_id(id,first_name,last_name)`).eq('match_id', matchId)
         .order('created_at', { ascending: true })
       if (error) throw error
       return data
