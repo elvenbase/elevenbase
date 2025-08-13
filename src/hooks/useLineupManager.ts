@@ -62,43 +62,20 @@ export const useLineupManager = (sessionId: string) => {
     if (!sessionId) return
 
     try {
+      const user = (await supabase.auth.getUser()).data.user
       const lineupData = {
         formation,
         players_data: playersData,
-        session_id: sessionId
+        session_id: sessionId,
+        created_by: user?.id || null
       }
 
-      // Prima controlla se esiste già una formazione per questa sessione
-      const { data: existingLineup } = await supabase
+      // Usa upsert per semplificare inserimento/aggiornamento
+      const { data, error } = await supabase
         .from('training_lineups')
-        .select('id')
-        .eq('session_id', sessionId)
+        .upsert(lineupData as any, { onConflict: 'session_id' })
+        .select()
         .single()
-
-      let data, error
-
-      if (existingLineup) {
-        // Aggiorna la formazione esistente
-        const { data: updateData, error: updateError } = await supabase
-          .from('training_lineups')
-          .update(lineupData)
-          .eq('session_id', sessionId)
-          .select()
-          .single()
-        
-        data = updateData
-        error = updateError
-      } else {
-        // Crea una nuova formazione
-        const { data: insertData, error: insertError } = await supabase
-          .from('training_lineups')
-          .insert(lineupData)
-          .select()
-          .single()
-        
-        data = insertData
-        error = insertError
-      }
 
       if (error) throw error
 
@@ -109,7 +86,6 @@ export const useLineupManager = (sessionId: string) => {
           : (data.players_data as any) || { positions: {} }
       }
       setLineup(typedLineup)
-      
       toast.success('Formazione salvata con successo')
     } catch (error) {
       console.error('Errore nel salvare la formazione:', error)

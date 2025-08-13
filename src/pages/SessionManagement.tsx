@@ -46,6 +46,20 @@ const SessionManagement = () => {
   const [showDebug, setShowDebug] = useState(false)
   const [includeTrialistsInLineup, setIncludeTrialistsInLineup] = useState(false)
   
+  // Persist toggle in localStorage and auto-enable if lineup has unknown IDs (likely trialists)
+  useEffect(() => {
+    const saved = localStorage.getItem('include_trialists_lineup')
+    if (saved === 'true') setIncludeTrialistsInLineup(true)
+  }, [])
+  useEffect(() => {
+    localStorage.setItem('include_trialists_lineup', includeTrialistsInLineup ? 'true' : 'false')
+  }, [includeTrialistsInLineup])
+  useEffect(() => {
+    if (!players || playersInLineup.length === 0) return
+    const unknown = playersInLineup.filter(id => !players.some(p => p.id === id))
+    if (unknown.length > 0) setIncludeTrialistsInLineup(true)
+  }, [playersInLineup, players])
+
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
   const { data: trialistInvites = [] } = useTrainingTrialistInvites(sessionId!)
