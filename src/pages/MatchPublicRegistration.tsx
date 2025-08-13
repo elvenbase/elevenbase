@@ -4,13 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Calendar, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { Loader2, Calendar, Clock, CheckCircle, XCircle, MapPin, Users, Target, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
-import { Users, Target, Download } from 'lucide-react'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import FormationExporter from '@/components/FormationExporter'
@@ -18,7 +17,7 @@ import html2canvas from 'html2canvas'
 
 interface Player { id: string; first_name: string; last_name: string; jersey_number?: number }
 interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
-interface MatchInfo { id: string; opponent_name: string; match_date: string; match_time: string }
+interface MatchInfo { id: string; opponent_name: string; match_date: string; match_time: string; location?: string }
 interface AttendanceRecord { player_id: string; status: string; self_registered: boolean }
 
 type SelectEntity = `player:${string}` | `trialist:${string}`
@@ -37,6 +36,7 @@ const MatchPublicRegistration = () => {
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [lineup, setLineup] = useState<any | null>(null)
+  const [score, setScore] = useState<{ us: number; opp: number }>({ us: 0, opp: 0 })
   const [bench, setBench] = useState<any[]>([])
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
@@ -80,8 +80,25 @@ const MatchPublicRegistration = () => {
       setTrialistsInvited(data.trialistsInvited || [])
       setExistingAttendance(data.existingAttendance)
       setDeadline(new Date(data.deadline))
-      setLineup(data.lineup || null)
+      setLineup(data.lineup || [])
       setBench(data.bench || [])
+
+      // Calcolo punteggio opzionale
+      try {
+        const { data: events } = await supabase
+          .from('match_events')
+          .select('event_type, team')
+          .eq('match_id', data.match.id)
+        if (Array.isArray(events)) {
+          let us = 0, opp = 0
+          for (const e of events as any[]) {
+            if (e.event_type === 'goal') { e.team === 'us' ? us++ : opp++ }
+            if (e.event_type === 'own_goal') { e.team === 'us' ? opp++ : us++ }
+            if (e.event_type === 'pen_scored') { e.team === 'us' ? us++ : opp++ }
+          }
+          setScore({ us, opp })
+        }
+      } catch { /* ignore */ }
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
       setError('Errore nel caricamento dei dati')
@@ -201,18 +218,35 @@ const MatchPublicRegistration = () => {
   const isExpired = deadline && new Date() > deadline
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Partita: {match.opponent_name}</CardTitle>
-            <CardDescription>{formatMatchDateTime(match.match_date, match.match_time)}</CardDescription>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="text-center py-4 sm:py-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Registrazione Partita</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Conferma la tua presenza per questa partita</p>
+        </div>
+
+        {/* Match Info */}
+        <Card className="border-primary/20 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl lg:text-2xl">
+              <Calendar className="h-5 w-5 text-primary" />
+              <span className="break-words">{match.opponent_name}</span>
+            </CardTitle>
+            <CardDescription className="text-sm sm:text-base flex items-center gap-2 flex-wrap">
+              <span>{formatMatchDateTime(match.match_date, match.match_time)}</span>
+              {match.location && (<span className="inline-flex items-center gap-1 text-muted-foreground"><MapPin className="h-4 w-4" />{match.location}</span>)}
+              <span className="ml-auto font-semibold">Risultato: {score.us} - {score.opp}</span>
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             {deadline && (
-              <Badge variant={isExpired ? 'destructive' : 'secondary'}>
-                {isExpired ? 'Tempo scaduto' : `Tempo rimasto: ${timeLeft}`}
-              </Badge>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 sm:p-4 bg-muted/50 rounded-lg">
+                <span className="font-medium text-sm sm:text-base">{isExpired ? 'Registrazioni chiuse' : 'Tempo per registrarsi (chiude 4h prima):'}</span>
+                <Badge variant={isExpired ? 'destructive' : 'default'} className="text-xs sm:text-sm px-2 sm:px-3 py-1 self-start sm:self-center">
+                  {isExpired ? 'Tempo scaduto' : timeLeft}
+                </Badge>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -416,12 +450,10 @@ const MatchPublicRegistration = () => {
           </Card>
         )}
 
-        <Card className="shadow-lg">
-          <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati {bench.length > 0 && `(${bench.length})`}</CardTitle></CardHeader>
-          <CardContent className="p-4">
-            {bench.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nessun convocato</p>
-            ) : (
+        {bench.length > 0 && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati ({bench.length})</CardTitle></CardHeader>
+            <CardContent className="p-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {bench.map((b) => (
                   <div key={b.id} className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
@@ -434,9 +466,9 @@ const MatchPublicRegistration = () => {
                   </div>
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {lineup && getFormationFromLineup(lineup.formation) && (
           <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
