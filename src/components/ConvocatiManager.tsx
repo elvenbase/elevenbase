@@ -294,12 +294,12 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
             {/* Pulsanti di controllo selezione */}
             {presentPlayers.length > 0 && (
               <div className="mb-4 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
                     onClick={selectAllPresentPlayers}
                     disabled={allPresentSelected}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <CheckCircle className="h-4 w-4" />
                     {allPresentSelected ? 'Tutti selezionati' : `Convoca tutti (${presentPlayers.length})`}
@@ -308,7 +308,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     <Button
                       variant="outline"
                       onClick={deselectAllPlayers}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 w-full sm:w-auto"
                     >
                       <XCircle className="h-4 w-4" />
                       Deseleziona tutti
