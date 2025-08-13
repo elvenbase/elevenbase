@@ -19,6 +19,7 @@ interface Player {
   position?: string
   avatar_url?: string
   status: 'active' | 'inactive' | 'injured' | 'suspended'
+  isTrialist?: boolean
 }
 
 interface Attendance {
@@ -345,8 +346,9 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     size="sm"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {player.first_name} {player.last_name}
+                    <p className="text-sm font-medium flex items-center gap-2">
+                      <span className="truncate">{player.first_name} {player.last_name}</span>
+                      {player.isTrialist && <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>}
                     </p>
                     {player.jersey_number && (
                       <p className="text-xs text-muted-foreground">
@@ -410,6 +412,9 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                         <p className="font-medium">
                           {player.first_name} {player.last_name}
                         </p>
+                        {player.isTrialist && (
+                          <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>
+                        )}
                         {player.jersey_number && (
                           <Badge variant="outline" className="text-xs">
                             #{player.jersey_number}

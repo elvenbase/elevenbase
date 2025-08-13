@@ -162,7 +162,8 @@ const SessionManagement = () => {
       first_name: (t.trialists?.first_name as string) || 'Trialist',
       last_name: (t.trialists?.last_name as string) || '',
       position: undefined,
-      avatar_url: undefined
+      avatar_url: undefined,
+      isTrialist: true
     }))
   } catch (e) {
     console.error('SessionManagement trialistsAsPlayers compute error:', e)
@@ -193,6 +194,7 @@ const SessionManagement = () => {
           position: undefined,
           avatar_url: undefined,
           status: 'active' as const,
+          isTrialist: true,
         }))
       : []
     allPlayersForBench = includeTrialistsInLineup

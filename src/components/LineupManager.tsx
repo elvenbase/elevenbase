@@ -59,6 +59,7 @@ interface Player {
   jersey_number?: number
   position?: string
   avatar_url?: string
+  isTrialist?: boolean
 }
 
 interface LineupManagerProps {
@@ -772,7 +773,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         )}
                         
                         <div className="text-sm font-medium text-gray-800 bg-white/90 px-2 py-1 rounded-lg shadow-sm">
-                          {assignedPlayer ? `${assignedPlayer.first_name} ${assignedPlayer.last_name}` : position.name}
+                          {assignedPlayer ? (
+                            <span className="inline-flex items-center gap-1">
+                              {assignedPlayer.first_name} {assignedPlayer.last_name}
+                              {assignedPlayer.isTrialist && (
+                                <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>
+                              )}
+                            </span>
+                          ) : position.name}
                         </div>
                       </div>
                     </div>
