@@ -424,26 +424,49 @@ const SessionManagement = () => {
                 )}
                 
                 {/* Panchina - appare solo con formazione completa */}
-                {sessionId && players && playersInLineup.length === 11 && (
-                  <div className="mt-8 pt-8 border-t">
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Panchina
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Gestisci i giocatori in panchina per questa sessione di allenamento
-                      </p>
-                    </div>
-                    <ConvocatiManager 
-                      sessionId={sessionId}
-                      allPlayers={players}
-                      attendance={attendance}
-                      playersInLineup={playersInLineup}
-                      key={`convocati-${refreshKey}`}
-                    />
-                  </div>
-                )}
+                {(() => {
+                  const trialistAttendanceForBench = includeTrialistsInLineup
+                    ? (presentTrialists as any[]).map((t: any) => ({ id: `trialist-${t.trialist_id}`, player_id: t.trialist_id as string, status: 'present' }))
+                    : []
+                  const attendanceForBench = includeTrialistsInLineup
+                    ? ([...(attendance || []), ...trialistAttendanceForBench] as any)
+                    : attendance
+                  const trialistsAsPlayersForBench = includeTrialistsInLineup
+                    ? (presentTrialists as any[]).map((t: any) => ({
+                        id: t.trialist_id as string,
+                        first_name: (t.trialists?.first_name as string) || 'Trialist',
+                        last_name: (t.trialists?.last_name as string) || '',
+                        position: undefined,
+                        avatar_url: undefined,
+                        status: 'active' as const,
+                      }))
+                    : []
+                  const allPlayersForBench = includeTrialistsInLineup
+                    ? ([...(players || []), ...trialistsAsPlayersForBench] as any)
+                    : players
+                  return (
+                    sessionId && players && playersInLineup.length === 11 && (
+                      <div className="mt-8 pt-8 border-t">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <Users className="h-5 w-5" />
+                            Panchina
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            Gestisci i giocatori in panchina per questa sessione di allenamento
+                          </p>
+                        </div>
+                        <ConvocatiManager 
+                          sessionId={sessionId}
+                          allPlayers={allPlayersForBench as any}
+                          attendance={attendanceForBench as any}
+                          playersInLineup={playersInLineup}
+                          key={`convocati-${refreshKey}`}
+                        />
+                      </div>
+                    )
+                  )
+                })()}
                 
                 {/* Messaggio quando formazione non è completa */}
                 {playersInLineup.length < 11 && (
