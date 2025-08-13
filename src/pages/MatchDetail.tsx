@@ -87,28 +87,30 @@ const MatchDetail = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
         <Card>
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" className="text-foreground" asChild>
-                <Link to="/matches">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Torna alle Partite
-                </Link>
-              </Button>
-              <div className="h-8 w-px bg-border" />
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-primary">{match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}</h1>
-                  <MiniJersey o={match.opponents} />
-                  <Badge variant="outline">{new Date(match.match_date).toLocaleDateString()} {match.match_time}</Badge>
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="sm" className="text-foreground" asChild>
+                  <Link to="/matches">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Torna alle Partite
+                  </Link>
+                </Button>
+                <div className="h-8 w-px bg-border hidden sm:block" />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <h1 className="text-xl sm:text-2xl font-bold text-primary truncate">{match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}</h1>
+                    <MiniJersey o={match.opponents} />
+                    <Badge variant="outline" className="text-xs sm:text-sm whitespace-nowrap">{new Date(match.match_date).toLocaleDateString()} {match.match_time}</Badge>
+                  </div>
+                  {match.location && (
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{match.location}</p>
+                  )}
                 </div>
-                {match.location && (
-                  <p className="text-sm text-muted-foreground">{match.location}</p>
-                )}
               </div>
-            </div>
-            <div className="text-3xl font-bold">
-              {score.us} - {score.opp}
+              <div className="text-2xl sm:text-3xl font-bold text-center sm:text-right">
+                {score.us} - {score.opp}
+              </div>
             </div>
           </CardContent>
         </Card>
