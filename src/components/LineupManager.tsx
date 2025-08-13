@@ -632,7 +632,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
-                                  <span className="font-medium">{player.first_name} {player.last_name}</span>
+                                  <span className="font-medium flex items-center gap-1">{player.first_name} {player.last_name}{player.isTrialist && (<span className="text-[10px] text-muted-foreground"> provinante</span>)}</span>
                                   {player.position && (
                                     <span className="text-xs text-muted-foreground">{player.position}</span>
                                   )}
@@ -813,7 +813,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
-                                  <span className="font-medium">{player.first_name} {player.last_name}</span>
+                                  <span className="font-medium flex items-center gap-1">{player.first_name} {player.last_name}{player.isTrialist && (<span className="text-[10px] text-muted-foreground"> provinante</span>)}</span>
                                   {player.position && (
                                     <span className="text-xs text-muted-foreground">{player.position}</span>
                                   )}
