@@ -274,6 +274,19 @@ const MatchLive = () => {
     return m
   }, [onFieldEntries, roleByPosId])
 
+  // Substituted players (events-based), exclude those currently on field
+  const substitutionEvents = useMemo(() => (events || []).filter((e: any) => e.event_type === 'substitution'), [events])
+  const substitutedList = useMemo(() => {
+    const lastOutMinuteById = new Map<string, number | undefined>()
+    substitutionEvents.forEach((e: any) => {
+      const outId = e.metadata?.out_id as string | undefined
+      if (outId) lastOutMinuteById.set(outId, e.minute)
+    })
+    return Array.from(lastOutMinuteById.entries())
+      .map(([id, minute]) => ({ id, minute }))
+      .filter(it => !onFieldIds.has(it.id))
+  }, [substitutionEvents, onFieldIds])
+
   // Substitution dialog
   const [subOpen, setSubOpen] = useState(false)
   const [subOutId, setSubOutId] = useState<string>('')
