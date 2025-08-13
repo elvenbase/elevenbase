@@ -617,10 +617,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         <SelectContent>
                           <SelectItem value="none">Rimuovi giocatore</SelectItem>
                           {getAvailablePlayers(position.id).map(player => (
-                            <SelectItem key={player.id} value={player.id}>
+                            <SelectItem key={player.id} value={player.id} className="py-2 min-h-10">
                               <div className="flex items-center gap-3">
                                 <Avatar 
-                                  className="w-8 h-8"
+                                  className="w-8 h-8 shrink-0"
                                   style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
@@ -798,10 +798,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         <SelectContent>
                           <SelectItem value="none">Nessun giocatore</SelectItem>
                                                      {getAvailablePlayers(position.id).map(player => (
-                            <SelectItem key={player.id} value={player.id}>
+                            <SelectItem key={player.id} value={player.id} className="py-2 min-h-10">
                               <div className="flex items-center gap-3">
                                 <Avatar 
-                                  className="w-8 h-8"
+                                  className="w-8 h-8 shrink-0"
                                   style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
