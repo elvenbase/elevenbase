@@ -1494,45 +1494,20 @@ export const useCreateAttendance = () => {
 export const useUpdatePlayerStatistics = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ sessionId }: { sessionId: string }) => {
-      // Prendi tutte le presenze per questa sessione
-      const { data: attendance, error: attendanceError } = await supabase
-        .from('training_attendance')
-        .select('player_id, status')
-        .eq('session_id', sessionId);
-
-      if (attendanceError) throw attendanceError;
-
-      // Aggiorna le statistiche per ogni giocatore
-      for (const record of attendance || []) {
-        const { data: existingStats, error: statsError } = await supabase
+    mutationFn: async ({ records }: { records: Array<{ player_id: string; attendanceRate: number }> }) => {
+      for (const record of records) {
+        const attendanceRate = record.attendanceRate;
+        const { data: existingStats, error: fetchError } = await supabase
           .from('player_statistics')
           .select('*')
           .eq('player_id', record.player_id)
-          .maybeSingle();
-
-        if (statsError) throw statsError;
-
-        // Calcola le nuove statistiche basate su tutte le presenze del giocatore
-        const { data: allAttendance, error: allAttendanceError } = await supabase
-          .from('training_attendance')
-          .select('status')
-          .eq('player_id', record.player_id);
-
-        if (allAttendanceError) throw allAttendanceError;
-
-        const totalSessions = allAttendance?.length || 0;
-        const presentSessions = allAttendance?.filter(a => a.status === 'present').length || 0;
-        const attendanceRate = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
+          .single();
+        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
 
         if (existingStats) {
-          // Aggiorna statistiche esistenti
           const { error: updateError } = await supabase
             .from('player_statistics')
-            .update({
-              training_attendance_rate: attendanceRate,
-              updated_at: new Date().toISOString()
-            })
+            .update({ training_attendance_rate: attendanceRate })
             .eq('id', existingStats.id);
 
           if (updateError) throw updateError;
@@ -1553,7 +1528,6 @@ export const useUpdatePlayerStatistics = () => {
       return { success: true };
     },
     onSuccess: () => {
-      const queryClient = useQueryClient();
       queryClient.invalidateQueries({ queryKey: ['player-statistics'] });
     }
   });
