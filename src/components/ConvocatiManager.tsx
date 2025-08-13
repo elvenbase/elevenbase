@@ -428,11 +428,10 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                         <AlertDialogTrigger asChild>
                           <Button
                             variant="destructive"
-                            size="sm"
-                            className="flex items-center gap-1"
+                            size="icon"
+                            className="shrink-0"
                           >
                             <X className="h-4 w-4" />
-                            Elimina
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

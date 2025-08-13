@@ -854,12 +854,12 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
         </div>
 
         {/* Azioni formazione */}
-        <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={!canSave || !isDirty}>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-start">
+          <Button className="w-full sm:w-auto" onClick={handleSave} disabled={!canSave || !isDirty}>
             <Save className="mr-2 h-4 w-4" />
             {getSaveButtonText()}
           </Button>
-          <Button variant="outline" onClick={handleClear} disabled={loading}>
+          <Button variant="outline" className="w-full sm:w-auto" onClick={handleClear} disabled={loading}>
             <Trash2 className="mr-2 h-4 w-4" />
             Cancella Tutto
           </Button>
