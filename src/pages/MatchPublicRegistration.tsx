@@ -420,12 +420,15 @@ const MatchPublicRegistration = () => {
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-b-2 border-white" />
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-t-2 border-white" />
                     {getFormationFromLineup(lineup.formation)?.positions.map(position => {
-                      const playerId = lineup.players_data?.positions?.[position.id]
-                      const player = playerId ? players.find(p => p.id === playerId) : null
+                      const pid = lineup.players_data?.positions?.[position.id]
+                      const person: any = pid ? (players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)) : null
+                      const firstName = person?.first_name || ''
+                      const lastName = person?.last_name || ''
+                      const avatarUrl = person?.avatar_url
                       return (
-                        <div key={position.id} className="absolute transform -translate-x-1/2 -translate-y-1/2" style={{ left: `${position.x}%`, top: `${position.y}%` }} title={player ? `${player.first_name} ${player.last_name}` : position.name}>
-                          {player ? (
-                            <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="md" className="border-2 border-white shadow-lg" />
+                        <div key={position.id} className="absolute transform -translate-x-1/2 -translate-y-1/2" style={{ left: `${position.x}%`, top: `${position.y}%` }} title={person ? `${firstName} ${lastName}` : position.name}>
+                          {person ? (
+                            <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="md" className="border-2 border-white shadow-lg" />
                           ) : (
                             <div className="w-10 h-10 rounded-full border-2 border-dashed border-white bg-white/20 flex items-center justify-center"><Users className="w-5 h-5 text-white/70" /></div>
                           )}
@@ -512,12 +515,18 @@ const MatchPublicRegistration = () => {
           <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
             <FormationExporter
               id="formation-export"
-              lineup={lineup.players_data?.positions ? Object.entries(lineup.players_data.positions).map(([positionId, playerId]) => ({
-                player_id: playerId as string,
-                position_x: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.x || 50,
-                position_y: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.y || 50,
-                player: players.find(p => p.id === playerId)
-              })) : []}
+              lineup={lineup.players_data?.positions ? Object.entries(lineup.players_data.positions).map(([positionId, playerId]) => {
+                const pid = playerId as string
+                const p = players.find(p => p.id === pid)
+                const t = trialistsInvited.find(t => t.id === pid)
+                const player = p || (t ? { id: t.id, first_name: t.first_name, last_name: t.last_name, jersey_number: undefined as number | undefined, avatar_url: t.avatar_url } as any : undefined)
+                return {
+                  player_id: pid,
+                  position_x: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.x || 50,
+                  position_y: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.y || 50,
+                  player
+                }
+              }) : []}
               formation={getFormationFromLineup(lineup.formation)!}
               sessionTitle={match?.opponent_name || 'Partita'}
               teamName="Team"

@@ -23,7 +23,7 @@ interface Player {
   avatar_url?: string
 }
 
-interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
+interface Trialist { id: string; first_name: string; last_name: string; avatar_url?: string; status?: string; self_registered?: boolean }
 
 type SelectEntity = `player:${string}` | `trialist:${string}`
 
@@ -645,27 +645,26 @@ const PublicSession = () => {
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-b-2 border-white" />
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-t-2 border-white" />
 
-                    {/* Posizioni giocatori - semplificate */}
+                    {/* Posizioni giocatori - con fallback trialist */}
                     {getFormationFromLineup(lineup.formation)?.positions.map(position => {
-                      const playerId = lineup.players_data?.positions?.[position.id]
-                      const player = playerId ? players.find(p => p.id === playerId) : null
-                      
+                      const pid = lineup.players_data?.positions?.[position.id]
+                      const person: any = pid ? (players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)) : null
+                      const firstName = person?.first_name || ''
+                      const lastName = person?.last_name || ''
+                      const avatarUrl = person?.avatar_url
                       return (
                         <div
                           key={position.id}
                           className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-                          style={{ 
-                            left: `${position.x}%`, 
-                            top: `${position.y}%` 
-                          }}
-                          title={player ? `${player.first_name} ${player.last_name} - ${position.roleShort || position.name}` : position.roleShort || position.name}
+                          style={{ left: `${position.x}%`, top: `${position.y}%` }}
+                          title={person ? `${firstName} ${lastName} - ${position.roleShort || position.name}` : position.roleShort || position.name}
                         >
-                          {player ? (
+                          {person ? (
                             <div className="relative">
                               <PlayerAvatar
-                                firstName={player.first_name}
-                                lastName={player.last_name}
-                                avatarUrl={player.avatar_url}
+                                firstName={firstName}
+                                lastName={lastName}
+                                avatarUrl={avatarUrl}
                                 size="lg"
                                 className="border-3 border-white shadow-lg hover:scale-110 transition-transform"
                               />
@@ -719,27 +718,17 @@ const PublicSession = () => {
                         </div>
                         <div className="space-y-1 pl-5">
                           {sectorPlayers.map(position => {
-                            const playerId = lineup.players_data?.positions?.[position.id]
-                            const player = players.find(p => p.id === playerId)
-                            
-                            if (!player) return null
-                            
+                            const pid = lineup.players_data?.positions?.[position.id]
+                            const person: any = players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)
+                            if (!person) return null
+                            const firstName = person.first_name || ''
+                            const lastName = person.last_name || ''
+                            const avatarUrl = person.avatar_url
                             return (
-                              <div 
-                                key={position.id}
-                                className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
-                              >
-                                <PlayerAvatar
-                                  firstName={player.first_name}
-                                  lastName={player.last_name}
-                                  avatarUrl={player.avatar_url}
-                                  size="sm"
-                                  className="border-2 border-white"
-                                />
+                              <div key={position.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
+                                <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="sm" className="border-2 border-white" />
                                 <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-sm truncate">
-                                    {player.first_name} {player.last_name}
-                                  </div>
+                                  <div className="font-medium text-sm truncate">{firstName} {lastName}</div>
                                   <div className="text-xs text-muted-foreground flex items-center gap-1">
                                     <span className="font-medium">{position.roleShort || position.name}</span>
                                   </div>
