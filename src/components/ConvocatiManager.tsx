@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle } from 'lucide-react'
+import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -183,6 +183,10 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
            playerAttendance?.status === 'absent' || 
            playerAttendance?.status === 'excused'
   }).length
+  const senzaRispostaCount = allPlayers.filter(player => {
+    const a = attendance?.find(x => x.player_id === player.id)
+    return !a || a.status === 'pending'
+  }).length
   const totaleConvocati = titolariCount + convocatiCount
   
   const allPresentSelected = presentPlayers.length > 0 && presentPlayers.every(player => selectedPlayers.includes(player.id))
@@ -190,7 +194,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
   return (
     <div className="space-y-6">
       {/* Statistiche */}
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -242,6 +246,17 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
               <div>
                 <p className="text-2xl font-bold text-red-600">{indisponibiliCount}</p>
                 <p className="text-sm text-muted-foreground">Indisponibili</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-600" />
+              <div>
+                <p className="text-2xl font-bold text-amber-600">{senzaRispostaCount}</p>
+                <p className="text-sm text-muted-foreground">Senza risposta</p>
               </div>
             </div>
           </CardContent>
