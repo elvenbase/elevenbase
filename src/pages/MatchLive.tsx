@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useUpdateMatch } from '@/hooks/useSupabaseData'
+import { useQueryClient } from '@tanstack/react-query'
 
 const computeScore = (events: any[]) => {
   let us = 0, opp = 0
@@ -32,6 +33,7 @@ const MatchLive = () => {
   const { lineup, loadLineup } = useMatchLineupManager(id || '')
   useEffect(() => { if (id) loadLineup() }, [id])
   const updateMatch = useUpdateMatch()
+  const queryClient = useQueryClient()
 
   const score = useMemo(() => computeScore(events), [events])
   const presentIds = useMemo(() => new Set(attendance.filter((a: any) => a.status === 'present').map((a: any) => a.player_id)), [attendance])
@@ -73,7 +75,12 @@ const MatchLive = () => {
 
   const postEvent = async (evt: { event_type: string; team?: 'us'|'opponent'; player_id?: string|null; assister_id?: string|null; comment?: string|null }) => {
     if (!id) return
-    await supabase.from('match_events').insert({ match_id: id, ...evt, team: evt.team || 'us', metadata: { live: true } })
+    const { error } = await supabase.from('match_events').insert({ match_id: id, ...evt, team: evt.team || 'us', metadata: { live: true } })
+    if (!error) {
+      queryClient.invalidateQueries({ queryKey: ['match-events', id] })
+    } else {
+      console.error('Errore inserimento evento live:', error)
+    }
   }
   const [lastEvents, setLastEvents] = useState<any[]>([])
   useEffect(() => {
@@ -105,7 +112,12 @@ const MatchLive = () => {
   const availableInIds = useMemo(() => convocati.map((c: any) => c.id).filter((id: string) => !onFieldIds.has(id)), [convocati, onFieldIds])
   const doSubstitution = async () => {
     if (!id || !subOutId || !subInId) return
-    await supabase.from('match_events').insert({ match_id: id, event_type: 'substitution', metadata: { out_id: subOutId, in_id: subInId }, team: 'us' })
+    const { error } = await supabase.from('match_events').insert({ match_id: id, event_type: 'substitution', metadata: { out_id: subOutId, in_id: subInId }, team: 'us' })
+    if (!error) {
+      queryClient.invalidateQueries({ queryKey: ['match-events', id] })
+    } else {
+      console.error('Errore inserimento sostituzione:', error)
+    }
     setSubOpen(false); setSubOutId(''); setSubInId('')
   }
 
