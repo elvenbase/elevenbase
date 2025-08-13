@@ -188,6 +188,7 @@ serve(async (req) => {
           id,
           session_id,
           player_id,
+          trialist_id,
           confirmed,
           notes,
           created_at,
@@ -197,6 +198,12 @@ serve(async (req) => {
             last_name,
             jersey_number,
             position,
+            avatar_url
+          ),
+          trialists:trialist_id (
+            id,
+            first_name,
+            last_name,
             avatar_url
           )
         `)
