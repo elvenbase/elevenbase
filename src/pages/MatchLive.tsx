@@ -87,6 +87,20 @@ const MatchLive = () => {
     setLastEvents(events.slice(-6).reverse())
   }, [events])
 
+  // Realtime updates: refresh events on INSERT
+  useEffect(() => {
+    if (!id) return
+    const channel = supabase
+      .channel(`match-events-${id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_events', filter: `match_id=eq.${id}` }, (_payload) => {
+        queryClient.invalidateQueries({ queryKey: ['match-events', id] })
+      })
+      .subscribe()
+    return () => {
+      try { supabase.removeChannel(channel) } catch { /* ignore */ }
+    }
+  }, [id])
+
   // Player selection for events
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
   const getDisplayName = (id: string) => {
