@@ -428,12 +428,13 @@ const SessionManagement = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex justify-end mb-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-4">
+                  <div className="sr-only sm:not-sr-only sm:text-sm text-muted-foreground"></div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowDebug(prev => !prev)}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 w-full sm:w-auto"
                   >
                     {showDebug ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     Debug Formazione
@@ -464,14 +465,16 @@ const SessionManagement = () => {
                   </div>
                 )}
 
-                {sessionId && (
-                  <LineupManager 
-                    sessionId={sessionId} 
-                    key={`lineup-${refreshKey}`} 
-                    presentPlayers={presentPlayersForLineup}
-                    onLineupChange={handleLineupChange}
-                  />
-                )}
+                <div className="overflow-x-hidden">
+                  {sessionId && (
+                    <LineupManager 
+                      sessionId={sessionId} 
+                      key={`lineup-${refreshKey}`} 
+                      presentPlayers={presentPlayersForLineup}
+                      onLineupChange={handleLineupChange}
+                    />
+                  )}
+                </div>
                 
                 {/* Panchina - appare solo con formazione completa */}
                 {sessionId && players && playersInLineup.length === 11 && (
