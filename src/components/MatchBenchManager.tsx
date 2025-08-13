@@ -17,6 +17,7 @@ interface Player {
   position?: string
   avatar_url?: string
   status?: string
+  isTrialist?: boolean
 }
 
 interface AttendanceRec {
@@ -159,7 +160,13 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
                 <div key={player.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedPlayers.includes(player.id) ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`} onClick={() => togglePlayerSelection(player.id)}>
                   <Checkbox checked={selectedPlayers.includes(player.id)} onChange={() => togglePlayerSelection(player.id)} />
                   <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" />
-                  <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{player.first_name} {player.last_name}</p>{player.jersey_number && (<p className="text-xs text-muted-foreground">#{player.jersey_number} • {player.position}</p>)}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium flex items-center gap-2">
+                      <span className="truncate">{player.first_name} {player.last_name}</span>
+                      {player.isTrialist && <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>}
+                    </p>
+                    {player.jersey_number && (<p className="text-xs text-muted-foreground">#{player.jersey_number} • {player.position}</p>)}
+                  </div>
                 </div>
               ))}
             </div>
@@ -190,6 +197,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{player.first_name} {player.last_name}</p>
+                        {player.isTrialist && (<Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>)}
                         {player.jersey_number && (<Badge variant="outline" className="text-xs">#{player.jersey_number}</Badge>)}
                         {player.position && (<Badge variant="secondary" className="text-xs">{player.position}</Badge>)}
                       </div>
