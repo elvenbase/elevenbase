@@ -590,7 +590,62 @@ const PublicSession = () => {
           </div>
         )}
 
-        {/* Formazione */}
+        {/* Convocati: sopra la Formazione */}
+        {convocati.length > 0 && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="h-4 w-4" />
+                Convocati ({convocati.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {convocati.map((convocato) => {
+                  const person = convocato.players || convocato.trialists
+                  if (!person) return null
+                  const isTrialist = !!convocato.trialist_id && !convocato.players
+                  const firstName = person.first_name || ''
+                  const lastName = person.last_name || ''
+                  const avatarUrl = person.avatar_url
+                  const jerseyNumber = convocato.players?.jersey_number
+                  return (
+                    <div
+                      key={convocato.id}
+                      className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                    >
+                      <PlayerAvatar
+                        firstName={firstName}
+                        lastName={lastName}
+                        avatarUrl={avatarUrl}
+                        size="md"
+                        className="mb-2"
+                      />
+                      <div className="text-center">
+                        <p className="text-xs font-medium leading-tight">
+                          {firstName}
+                        </p>
+                        <p className="text-xs font-medium leading-tight">
+                          {lastName}
+                        </p>
+                        {jerseyNumber && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            #{jerseyNumber}
+                          </p>
+                        )}
+                        {isTrialist && (
+                          <p className="text-[10px] text-muted-foreground mt-1">provinante</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Formazione (sotto) */}
         {lineup && hasFullEleven && (
           <Card className="shadow-lg">
             <CardHeader className="p-4 sm:p-6">
@@ -646,7 +701,7 @@ const PublicSession = () => {
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-t-2 border-white" />
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-b-2 border-white" />
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-t-2 border-white" />
-
+                    
                     {/* Posizioni giocatori - con fallback trialist */}
                     {getFormationFromLineup(lineup.formation)?.positions.map(position => {
                       const pid = lineup.players_data?.positions?.[position.id]
@@ -681,7 +736,7 @@ const PublicSession = () => {
                     })}
                   </div>
                 </div>
-
+                
                 {/* Lista giocatori organizzata per ruoli (classificazione euristica) */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -753,62 +808,9 @@ const PublicSession = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* Convocati: render solo se presenti */}
-        {convocati.length > 0 && (
-          <Card className="shadow-lg">
-            <CardHeader className="p-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="h-4 w-4" />
-                Convocati ({convocati.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {convocati.map((convocato) => {
-                  const person = convocato.players || convocato.trialists
-                  if (!person) return null
-                  const isTrialist = !!convocato.trialist_id && !convocato.players
-                  const firstName = person.first_name || ''
-                  const lastName = person.last_name || ''
-                  const avatarUrl = person.avatar_url
-                  const jerseyNumber = convocato.players?.jersey_number
-                  return (
-                    <div
-                      key={convocato.id}
-                      className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
-                    >
-                      <PlayerAvatar
-                        firstName={firstName}
-                        lastName={lastName}
-                        avatarUrl={avatarUrl}
-                        size="md"
-                        className="mb-2"
-                      />
-                      <div className="text-center">
-                        <p className="text-xs font-medium leading-tight">
-                          {firstName}
-                        </p>
-                        <p className="text-xs font-medium leading-tight">
-                          {lastName}
-                        </p>
-                        {jerseyNumber && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            #{jerseyNumber}
-                          </p>
-                        )}
-                        {isTrialist && (
-                          <p className="text-[10px] text-muted-foreground mt-1">provinante</p>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
+         
+        {/* Convocati già spostati sopra */}
+ 
         <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {/* Riepilogo Registrazioni */}
           <Card className="shadow-lg">

@@ -417,6 +417,30 @@ const SessionManagement = () => {
           </TabsContent>
 
           <TabsContent value="lineup" className="space-y-6">
+            {/* Panchina (Convocati) - sopra la Formazione */}
+            {sessionId && players && playersInLineup.length === 11 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Panchina
+                  </CardTitle>
+                  <CardDescription>
+                    Gestisci i giocatori in panchina per questa sessione di allenamento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ConvocatiManager 
+                    sessionId={sessionId}
+                    allPlayers={allPlayersForBench as any}
+                    attendance={attendanceForBench as any}
+                    playersInLineup={playersInLineup}
+                    key={`convocati-${refreshKey}`}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
             {/* Formazione */}
             <Card>
               <CardHeader>
@@ -430,7 +454,7 @@ const SessionManagement = () => {
               </CardHeader>
               <CardContent>
                 
-
+ 
                 <div className="overflow-x-hidden">
                   {sessionId && (
                     <LineupManager 
@@ -441,28 +465,6 @@ const SessionManagement = () => {
                     />
                   )}
                 </div>
-                
-                {/* Panchina - appare solo con formazione completa */}
-                {sessionId && players && playersInLineup.length === 11 && (
-                  <div className="mt-8 pt-8 border-t">
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Panchina
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Gestisci i giocatori in panchina per questa sessione di allenamento
-                      </p>
-                    </div>
-                    <ConvocatiManager 
-                      sessionId={sessionId}
-                      allPlayers={allPlayersForBench as any}
-                      attendance={attendanceForBench as any}
-                      playersInLineup={playersInLineup}
-                      key={`convocati-${refreshKey}`}
-                    />
-                  </div>
-                )}
                 
                 {/* Messaggio quando formazione non è completa */}
                 {playersInLineup.length < 11 && (
@@ -478,7 +480,7 @@ const SessionManagement = () => {
                 )}
               </CardContent>
             </Card>
-
+ 
           </TabsContent>
 
           <TabsContent value="public-link" className="space-y-6">

@@ -402,6 +402,34 @@ const MatchPublicRegistration = () => {
 
 
 
+        {bench.length > 0 && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati ({bench.length})</CardTitle></CardHeader>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {bench.map((b) => {
+                  const firstName = b.players?.first_name || b.trialists?.first_name || ''
+                  const lastName = b.players?.last_name || b.trialists?.last_name || ''
+                  const avatarUrl = b.players?.avatar_url || b.trialists?.avatar_url || undefined
+                  const jerseyNumber = b.players?.jersey_number
+                  const isTrialist = !!b.trialist_id && !b.players
+                  return (
+                    <div key={b.id} className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
+                      <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="md" className="mb-2" />
+                      <div className="text-center">
+                        <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{firstName}</p>
+                        <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{lastName}</p>
+                        {jerseyNumber && (<p className="text-xs text-muted-foreground mt-1">#{jerseyNumber}</p>)}
+                        {isTrialist && (<p className="text-[10px] text-muted-foreground mt-1">provinante</p>)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {lineup && hasFullEleven && (
           <Card className="shadow-lg">
             <CardHeader className="p-4">
@@ -496,34 +524,6 @@ const MatchPublicRegistration = () => {
                     })
                   })()}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {bench.length > 0 && (
-          <Card className="shadow-lg">
-            <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati ({bench.length})</CardTitle></CardHeader>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {bench.map((b) => {
-                  const firstName = b.players?.first_name || b.trialists?.first_name || ''
-                  const lastName = b.players?.last_name || b.trialists?.last_name || ''
-                  const avatarUrl = b.players?.avatar_url || b.trialists?.avatar_url || undefined
-                  const jerseyNumber = b.players?.jersey_number
-                  const isTrialist = !!b.trialist_id && !b.players
-                  return (
-                    <div key={b.id} className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
-                      <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="md" className="mb-2" />
-                      <div className="text-center">
-                        <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{firstName}</p>
-                        <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{lastName}</p>
-                        {jerseyNumber && (<p className="text-xs text-muted-foreground mt-1">#{jerseyNumber}</p>)}
-                        {isTrialist && (<p className="text-[10px] text-muted-foreground mt-1">provinante</p>)}
-                      </div>
-                    </div>
-                  )
-                })}
               </div>
             </CardContent>
           </Card>
