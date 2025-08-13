@@ -151,45 +151,75 @@ const SessionManagement = () => {
   })()
 
   // Liste per debug e selezione formazione
-  const presentPlayersList = (players?.filter(player => {
-    const playerAttendance = attendance?.find(a => a.player_id === player.id);
-    return playerAttendance?.status === 'present';
-  }) || [])
+  let presentPlayersList: any[] = []
+  try {
+    presentPlayersList = (players?.filter(player => {
+      const playerAttendance = attendance?.find(a => a.player_id === player.id);
+      return playerAttendance?.status === 'present';
+    }) || [])
+  } catch (e) {
+    console.error('SessionManagement presentPlayersList compute error:', e)
+    presentPlayersList = []
+  }
 
-  const presentTrialists = (trialistInvites as any[]).filter((t: any) => t.status === 'present')
+  let presentTrialists: any[] = []
+  try {
+    presentTrialists = (trialistInvites as any[]).filter((t: any) => t.status === 'present')
+  } catch (e) {
+    console.error('SessionManagement presentTrialists compute error:', e)
+    presentTrialists = []
+  }
 
-  const trialistsAsPlayers = presentTrialists.map((t: any) => ({
-    id: t.trialist_id as string,
-    first_name: (t.trialists?.first_name as string) || 'Trialist',
-    last_name: (t.trialists?.last_name as string) || '',
-    position: undefined,
-    avatar_url: undefined
-  }))
+  let trialistsAsPlayers: any[] = []
+  try {
+    trialistsAsPlayers = presentTrialists.map((t: any) => ({
+      id: t.trialist_id as string,
+      first_name: (t.trialists?.first_name as string) || 'Trialist',
+      last_name: (t.trialists?.last_name as string) || '',
+      position: undefined,
+      avatar_url: undefined
+    }))
+  } catch (e) {
+    console.error('SessionManagement trialistsAsPlayers compute error:', e)
+    trialistsAsPlayers = []
+  }
 
   const presentPlayersForLineup = includeTrialistsInLineup
     ? [...presentPlayersList, ...trialistsAsPlayers]
     : presentPlayersList
 
   // Precompute bench lists to avoid inline IIFEs in render
-  const trialistAttendanceForBench = includeTrialistsInLineup
-    ? (presentTrialists as any[]).map((t: any) => ({ id: `trialist-${t.trialist_id}`, player_id: t.trialist_id as string, status: 'present' }))
-    : []
-  const attendanceForBench = includeTrialistsInLineup
-    ? ([...(attendance || []), ...trialistAttendanceForBench] as any)
-    : attendance
-  const trialistsAsPlayersForBench = includeTrialistsInLineup
-    ? (presentTrialists as any[]).map((t: any) => ({
-        id: t.trialist_id as string,
-        first_name: (t.trialists?.first_name as string) || 'Trialist',
-        last_name: (t.trialists?.last_name as string) || '',
-        position: undefined,
-        avatar_url: undefined,
-        status: 'active' as const,
-      }))
-    : []
-  const allPlayersForBench = includeTrialistsInLineup
-    ? ([...(players || []), ...trialistsAsPlayersForBench] as any)
-    : players
+  let trialistAttendanceForBench: any[] = []
+  let attendanceForBench: any = attendance
+  let trialistsAsPlayersForBench: any[] = []
+  let allPlayersForBench: any = players
+  try {
+    trialistAttendanceForBench = includeTrialistsInLineup
+      ? (presentTrialists as any[]).map((t: any) => ({ id: `trialist-${t.trialist_id}`, player_id: t.trialist_id as string, status: 'present' }))
+      : []
+    attendanceForBench = includeTrialistsInLineup
+      ? ([...(attendance || []), ...trialistAttendanceForBench] as any)
+      : attendance
+    trialistsAsPlayersForBench = includeTrialistsInLineup
+      ? (presentTrialists as any[]).map((t: any) => ({
+          id: t.trialist_id as string,
+          first_name: (t.trialists?.first_name as string) || 'Trialist',
+          last_name: (t.trialists?.last_name as string) || '',
+          position: undefined,
+          avatar_url: undefined,
+          status: 'active' as const,
+        }))
+      : []
+    allPlayersForBench = includeTrialistsInLineup
+      ? ([...(players || []), ...trialistsAsPlayersForBench] as any)
+      : players
+  } catch (e) {
+    console.error('SessionManagement bench compute error:', e)
+    trialistAttendanceForBench = []
+    attendanceForBench = attendance || []
+    trialistsAsPlayersForBench = []
+    allPlayersForBench = players || []
+  }
 
   if (loadingSessions) {
     return (
