@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle } from 'lucide-react'
+import { Users, UserCheck, UserX, Plus, Trash2, Info, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -160,13 +160,13 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
 
             {presentPlayers.length > 0 && (
               <div className="mb-4 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setSelectedPlayers(presentPlayers.map(p => p.id))} disabled={allPresentSelected} className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Button variant="outline" onClick={() => setSelectedPlayers(presentPlayers.map(p => p.id))} disabled={allPresentSelected} className="flex items-center gap-2 w-full sm:w-auto">
                     <CheckCircle className="h-4 w-4" />
                     {allPresentSelected ? 'Tutti selezionati' : `Convoca tutti (${presentPlayers.length})`}
                   </Button>
                   {selectedPlayers.length > 0 && (
-                    <Button variant="outline" onClick={() => setSelectedPlayers([])} className="flex items-center gap-2">
+                    <Button variant="outline" onClick={() => setSelectedPlayers([])} className="flex items-center gap-2 w-full sm:w-auto">
                       <XCircle className="h-4 w-4" /> Deseleziona tutti
                     </Button>
                   )}
@@ -225,7 +225,9 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
                     {!isReadOnly && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm" className="flex items-center gap-1"><X className="h-4 w-4" />Elimina</Button>
+                          <Button variant="destructive" size="icon" className="shrink-0">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
