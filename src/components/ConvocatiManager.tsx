@@ -293,8 +293,8 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
 
             {/* Pulsanti di controllo selezione */}
             {presentPlayers.length > 0 && (
-              <div className="mb-4 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
-                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <div className="grid grid-cols-1 sm:auto-cols-max sm:grid-flow-col gap-2 w-full">
                   <Button
                     variant="outline"
                     onClick={selectAllPresentPlayers}
