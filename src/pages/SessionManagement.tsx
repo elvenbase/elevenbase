@@ -43,6 +43,7 @@ const SessionManagement = () => {
   const { id: sessionId } = useParams<{ id: string }>()
   const [refreshKey, setRefreshKey] = useState(0)
   const [playersInLineup, setPlayersInLineup] = useState<string[]>([])
+  const [convocatiSelectedIds, setConvocatiSelectedIds] = useState<string[]>([])
   const [includeTrialistsInLineup] = useState(true)
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
@@ -435,6 +436,7 @@ const SessionManagement = () => {
                     allPlayers={allPlayersForBench as any}
                     attendance={attendanceForBench as any}
                     playersInLineup={playersInLineup}
+                    onConvocatiChange={setConvocatiSelectedIds}
                     key={`convocati-${refreshKey}`}
                   />
                 </CardContent>
@@ -456,7 +458,7 @@ const SessionManagement = () => {
                 
  
                 <div className="overflow-x-hidden">
-                  {sessionId && (
+                  {sessionId && convocatiSelectedIds.length >= 11 && (
                     <LineupManager 
                       sessionId={sessionId} 
                       key={`lineup-${refreshKey}`} 
@@ -465,8 +467,19 @@ const SessionManagement = () => {
                     />
                   )}
                 </div>
-                
-                {/* Messaggio rimosso: la gestione panchina è sempre disponibile */}
+ 
+                {/* Messaggio: abilita formazione quando almeno 11 convocati */}
+                {convocatiSelectedIds.length < 11 && (
+                  <div className="mt-8 pt-8 border-t">
+                    <div className="text-center p-6 bg-muted/50 rounded-lg">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Convoca almeno 11 giocatori</h3>
+                      <p className="text-muted-foreground">
+                        Seleziona almeno 11 convocati ({convocatiSelectedIds.length}/11) per abilitare la gestione della formazione
+                      </p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
  

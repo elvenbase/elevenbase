@@ -44,21 +44,24 @@ interface ConvocatiManagerProps {
   attendance?: Attendance[]
   playersInLineup?: string[]
   isReadOnly?: boolean
+  onConvocatiChange?: (ids: string[]) => void
 }
 
-export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInLineup = [], isReadOnly = false }: ConvocatiManagerProps) => {
+export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInLineup = [], isReadOnly = false, onConvocatiChange }: ConvocatiManagerProps) => {
   const [convocati, setConvocati] = useState<Convocato[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
 
-  // Filtra i giocatori escludendo quelli già nella formazione
-  const availablePlayers = allPlayers.filter(player => !playersInLineup.includes(player.id))
-
-  // Usa lo stesso criterio delle formazioni: solo giocatori presenti (e non nella formazione)
-  const presentPlayers = availablePlayers.filter(player => {
+  // Tutti i presenti (inclusi eventuali titolari) sono eleggibili ai convocati
+  const presentPlayers = allPlayers.filter(player => {
     const playerAttendance = attendance?.find(a => a.player_id === player.id);
     return playerAttendance?.status === 'present';
   })
+  
+  // Notifica al parent ogni volta che cambia la selezione dei convocati
+  useEffect(() => {
+    onConvocatiChange?.(selectedPlayers)
+  }, [selectedPlayers])
 
   // Carica i convocati esistenti
   useEffect(() => {
@@ -85,7 +88,9 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
       // Type assertion per gestire il tipo che arriva dal database
       const typedData = (data || []) as Convocato[]
       setConvocati(typedData)
-      setSelectedPlayers(typedData.map(c => (c.player_id || c.trialist_id) as string).filter(Boolean))
+      const preSelected = typedData.map(c => (c.player_id || c.trialist_id) as string).filter(Boolean)
+      setSelectedPlayers(preSelected)
+      onConvocatiChange?.(preSelected)
     } catch (error) {
       console.error('Errore nel caricare i convocati:', error)
       toast.error('Errore nel caricare i convocati')
@@ -149,10 +154,10 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
       }
 
       await loadConvocati()
-      toast.success('Panchina salvata con successo')
+      toast.success('Convocati salvati con successo')
     } catch (error: any) {
-      console.error('Errore nel salvare la panchina:', error?.message || error, error)
-      toast.error(`Errore nel salvare la panchina${error?.message ? `: ${error.message}` : ''}`)
+      console.error('Errore nel salvare i convocati:', error?.message || error, error)
+      toast.error(`Errore nel salvare i convocati${error?.message ? `: ${error.message}` : ''}`)
     } finally {
       setLoading(false)
     }
@@ -198,7 +203,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
   // Calcolo nuove statistiche richieste
   const titolariCount = playersInLineup.length
   const presentiCount = attendance?.filter(a => a.status === 'present').length || 0
-  const eleggibiliCount = presentPlayers.length // presenti non titolari
+  const eleggibiliCount = presentPlayers.length // tutti i presenti
   const convocatiCount = convocati.length
   const disponibiliNonSelezionati = Math.max(0, eleggibiliCount - convocatiCount)
   const indisponibiliCount = allPlayers.filter(player => {
@@ -247,7 +252,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
               <UserCheck className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-2xl font-bold text-blue-600">{convocatiCount}</p>
-                <p className="text-sm text-muted-foreground">Panchina</p>
+                <p className="text-sm text-muted-foreground">Convocati</p>
               </div>
             </div>
           </CardContent>
@@ -289,7 +294,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
 
       {/* Riepilogo sintetico */}
       <div className="text-sm text-muted-foreground">
-        {titolariCount} titolari + {convocatiCount} panchina = {totaleConvocati} convocati totali
+        {titolariCount} titolari + {convocatiCount} convocati = {totaleConvocati} convocati totali
       </div>
 
       {/* Selezione convocati */}
@@ -301,7 +306,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
               Seleziona Convocati
             </CardTitle>
             <CardDescription>
-              Seleziona i presenti non titolari da aggiungere alla panchina
+              Seleziona i presenti da convocare
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -310,7 +315,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center gap-2 text-blue-800">
                   <Info className="h-4 w-4" />
-                  <p className="text-sm">Nessun presente disponibile per la panchina oltre ai titolari.</p>
+                  <p className="text-sm">Nessun giocatore presente disponibile per la convocazione.</p>
                 </div>
               </div>
             )}
@@ -390,7 +395,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                 className="w-full"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {loading ? 'Salvando...' : 'Salva Panchina'}
+                {loading ? 'Salvando...' : 'Salva Convocati'}
               </Button>
             </div>
           </CardContent>
@@ -403,12 +408,12 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Lista Panchina
+              Lista Convocati
             </CardTitle>
             <CardDescription>
               {isReadOnly 
-                ? 'Giocatori in panchina per questa sessione'
-                : 'Giocatori selezionati per la panchina (oltre agli 11 titolari)'
+                ? 'Giocatori convocati per questa sessione'
+                : 'Giocatori selezionati come convocati'
               }
             </CardDescription>
           </CardHeader>
@@ -464,9 +469,9 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Rimuovi dalla panchina</AlertDialogTitle>
+                            <AlertDialogTitle>Rimuovi convocato</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Sei sicuro di voler rimuovere <strong>{player.first_name} {player.last_name}</strong> dalla panchina?
+                              Sei sicuro di voler rimuovere <strong>{player.first_name} {player.last_name}</strong> dai convocati?
                               <br />
                               Questa azione non può essere annullata.
                             </AlertDialogDescription>
@@ -487,7 +492,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     {isReadOnly && (
                       <Badge variant="default" className="flex items-center gap-1">
                         <UserCheck className="h-3 w-3" />
-                        In Panchina
+                        Convocato
                       </Badge>
                     )}
                   </div>
