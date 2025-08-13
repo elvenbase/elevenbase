@@ -498,6 +498,86 @@ const PublicSession = () => {
           </CardContent>
         </Card>
 
+        {/* Registrazione (fino alla scadenza) */}
+        {!isExpired ? (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                Conferma la tua presenza
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente all'allenamento
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Giocatore o Provinante</label>
+                  <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Seleziona il tuo nome" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {players.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Giocatori</div>)}
+                      {players.map(player => {
+                        const registration = getPlayerRegistration(player.id)
+                        return (
+                          <SelectItem key={player.id} value={`player:${player.id}` as SelectEntity} disabled={!!registration}>
+                            <div className="flex items-center gap-3 w-full">
+                              <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" />
+                              <span className="font-medium">{player.first_name} {player.last_name}</span>
+                              {registration && (
+                                <Badge variant={registration.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
+                                  {registration.status === 'present' ? 'Presente' : 'Assente'}
+                                </Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        )
+                      })}
+                      {trialistsInvited.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>)}
+                      {trialistsInvited.map(t => (
+                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={t.status === 'present' || t.status === 'absent'}>
+                          <div className="flex items-center gap-3 w-full">
+                            <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
+                            <span className="font-medium">{t.first_name} {t.last_name}</span>
+                            {t.status && (
+                              <Badge variant={t.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
+                                {t.status === 'present' ? 'Presente' : 'Assente'}
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Stato</label>
+                  <Select value={selectedStatus} onValueChange={(v: 'pending' | 'present' | 'absent') => setSelectedStatus(v)}>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Seleziona lo stato" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="present">Presente</SelectItem>
+                      <SelectItem value="absent">Assente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleSubmit} disabled={submitting} className="w-full">
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Registrando...
+                    </>
+                  ) : (
+                    'Registrati'
+                  )}
+                </Button>
+              </CardContent>
+          </Card>
+        ) : null}
+
         {/* Formazione */}
         {lineup && (
           <Card className="shadow-lg">
@@ -716,106 +796,6 @@ const PublicSession = () => {
         )}
 
         <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-          {!isExpired ? (
-            <Card className="shadow-lg">
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                  Conferma la tua presenza
-                </CardTitle>
-                <CardDescription className="text-sm sm:text-base">
-                  Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente all'allenamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">Giocatore o Provinante</label>
-                  <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Seleziona il tuo nome" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {players.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Giocatori</div>)}
-                      {players.map(player => {
-                        const registration = getPlayerRegistration(player.id)
-                        return (
-                          <SelectItem key={player.id} value={`player:${player.id}` as SelectEntity} disabled={!!registration}>
-                            <div className="flex items-center gap-3 w-full">
-                              <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" />
-                              <span className="font-medium">{player.first_name} {player.last_name}</span>
-                              {registration && (
-                                <Badge variant={registration.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
-                                  {registration.status === 'present' ? 'Presente' : 'Assente'}
-                                </Badge>
-                              )}
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
-                      {trialistsInvited.length > 0 && (<div className="px-2 py-1 text-xs text-muted-foreground">Provinanti</div>)}
-                      {trialistsInvited.map(t => (
-                        <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={t.status === 'present' || t.status === 'absent'}>
-                          <div className="flex items-center gap-3 w-full">
-                            <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
-                            <span className="font-medium">{t.first_name} {t.last_name}</span>
-                            {t.status && (
-                              <Badge variant={t.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
-                                {t.status === 'present' ? 'Presente' : 'Assente'}
-                              </Badge>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">Stato</label>
-                  <Select value={selectedStatus} onValueChange={(v: 'pending' | 'present' | 'absent') => setSelectedStatus(v)}>
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Seleziona lo stato" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="present">Presente</SelectItem>
-                      <SelectItem value="absent">Assente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button onClick={handleSubmit} disabled={submitting} className="w-full">
-                  {submitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Registrando...
-                    </>
-                  ) : (
-                    'Registrati'
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="shadow-lg">
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                  Registrazione Completata
-                </CardTitle>
-                <CardDescription className="text-sm sm:text-base">
-                  La tua presenza per la sessione è stata registrata.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 text-center">
-                <p className="text-lg font-semibold text-green-600">
-                  {selectedEntity.includes('player') ? getPlayerInitials(players.find(p => p.id === selectedEntity.split(':')[1]) || { first_name: '?', last_name: '?' }) : trialistsInvited.find(t => t.id === selectedEntity.split(':')[1])?.first_name}
-                  {selectedStatus === 'present' ? ' Presente' : ' Assente'}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {selectedEntity.includes('player') ? `Hai registrato la tua presenza come giocatore.` : `Hai registrato la tua presenza come provinante.`}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Riepilogo Registrazioni */}
           <Card className="shadow-lg">
             <CardHeader className="p-4 sm:p-6">
