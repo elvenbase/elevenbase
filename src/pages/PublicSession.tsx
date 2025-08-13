@@ -576,7 +576,12 @@ const PublicSession = () => {
                 </Button>
               </CardContent>
           </Card>
-        ) : null}
+        ) : (
+          <div className="p-3 sm:p-4 bg-muted/50 rounded-lg flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium">Registrazioni chiuse</span>
+          </div>
+        )}
 
         {/* Formazione */}
         {lineup && (
