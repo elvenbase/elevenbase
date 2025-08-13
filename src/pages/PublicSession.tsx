@@ -680,66 +680,67 @@ const PublicSession = () => {
                   </div>
                 </div>
 
-                {/* Lista giocatori organizzata per ruoli */}
+                {/* Lista giocatori organizzata per ruoli (classificazione euristica) */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Users className="h-5 w-5" />
                     Titolari ({getFormationFromLineup(lineup.formation)?.positions
                       .filter(position => lineup.players_data?.positions?.[position.id]).length || 0})
                   </h3>
-                  
-                  {/* Organizzazione per settori */}
-                  {[
-                    { name: 'Portiere', roles: ['P', 'Portiere'], color: 'bg-yellow-500' },
-                    { name: 'Difesa', roles: ['TD', 'DC', 'DCD', 'DCS', 'TS', 'Difensore centrale', 'Difensore centrale sinistro', 'Difensore centrale destro', 'Terzino destro', 'Terzino sinistro'], color: 'bg-blue-500' },
-                    { name: 'Centrocampo', roles: ['ED', 'MC', 'ES', 'MED', 'MD', 'MS', 'REG', 'QD', 'QS', 'Centrocampista', 'Mediano', 'Mezzala', 'Quinto', 'Regista'], color: 'bg-green-500' },
-                    { name: 'Attacco', roles: ['ATT', 'PU', 'AD', 'AS', 'Attaccante', 'Punta', 'Ala'], color: 'bg-red-500' }
-                  ].map(sector => {
-                    const sectorPlayers = getFormationFromLineup(lineup.formation)?.positions
-                      .filter(position => {
-                        const hasPlayer = lineup.players_data?.positions?.[position.id]
-                        // Prova prima con roleShort, poi con role come fallback, infine con name
-                        const roleToCheck = position.roleShort || (position as any).role || position.name || ''
-                        const matchesRole = sector.roles.some(role => 
-                          roleToCheck.toLowerCase() === role.toLowerCase()
-                        )
-                        return hasPlayer && matchesRole
-                      }) || []
-
-                    if (sectorPlayers.length === 0) return null
-
-                    return (
-                      <div key={sector.name} className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${sector.color}`} />
-                          <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                            {sector.name}
-                          </h4>
-                        </div>
-                        <div className="space-y-1 pl-5">
-                          {sectorPlayers.map(position => {
-                            const pid = lineup.players_data?.positions?.[position.id]
-                            const person: any = players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)
-                            if (!person) return null
-                            const firstName = person.first_name || ''
-                            const lastName = person.last_name || ''
-                            const avatarUrl = person.avatar_url
-                            return (
-                              <div key={position.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
-                                <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="sm" className="border-2 border-white" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-sm truncate">{firstName} {lastName}</div>
-                                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <span className="font-medium">{position.roleShort || position.name}</span>
+                  {(() => {
+                    const classifySector = (position: any): 'Portiere' | 'Difesa' | 'Centrocampo' | 'Attacco' | 'Altri' => {
+                      const r = (position.roleShort || (position as any).role || position.name || '').toString().toLowerCase()
+                      if (r === 'p' || r === 'gk' || r.includes('port') || r.includes('goal')) return 'Portiere'
+                      if (r.includes('dif') || r.includes('terzin') || r.includes('cb') || r.includes('rb') || r.includes('lb') || r.includes('dc') || r.includes('dcd') || r.includes('dcs')) return 'Difesa'
+                      if (r.includes('med') || r.includes('reg') || r.includes('mez') || r.includes('centro') || r.includes('cm') || r.includes('cdm') || r.includes('rwb') || r.includes('lwb') || r.includes('qd') || r.includes('qs')) return 'Centrocampo'
+                      if (r.includes('att') || r.includes('pun') || r.includes('st') || r.includes('fw') || r.includes('forward') || r.includes('ala') || r.includes('wing')) return 'Attacco'
+                      return 'Altri'
+                    }
+                    const positions = getFormationFromLineup(lineup.formation)?.positions || []
+                    const assigned = positions.filter((p: any) => lineup.players_data?.positions?.[p.id])
+                    const grouped: Record<string, any[]> = { Portiere: [], Difesa: [], Centrocampo: [], Attacco: [], Altri: [] }
+                    assigned.forEach((p: any) => { grouped[classifySector(p)].push(p) })
+                    const order = [
+                      { name: 'Portiere', color: 'bg-yellow-500' },
+                      { name: 'Difesa', color: 'bg-blue-500' },
+                      { name: 'Centrocampo', color: 'bg-green-500' },
+                      { name: 'Attacco', color: 'bg-red-500' },
+                      { name: 'Altri', color: 'bg-gray-500' }
+                    ] as const
+                    return order.map(sec => {
+                      const list = grouped[sec.name]
+                      if (!list || list.length === 0) return null
+                      return (
+                        <div key={sec.name} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${sec.color}`} />
+                            <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">{sec.name}</h4>
+                          </div>
+                          <div className="space-y-1 pl-5">
+                            {list.map((position: any) => {
+                              const pid = lineup.players_data?.positions?.[position.id]
+                              const person: any = players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)
+                              if (!person) return null
+                              const firstName = person.first_name || ''
+                              const lastName = person.last_name || ''
+                              const avatarUrl = person.avatar_url
+                              return (
+                                <div key={position.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
+                                  <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="sm" className="border-2 border-white" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-sm truncate">{firstName} {lastName}</div>
+                                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <span className="font-medium">{position.roleShort || (position as any).role || position.name}</span>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )
-                          })}
+                              )
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  })()}
                 </div>
               </div>
             </CardContent>
