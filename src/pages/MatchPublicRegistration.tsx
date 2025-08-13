@@ -322,9 +322,14 @@ const MatchPublicRegistration = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="p-3 sm:p-4 bg-muted/50 rounded-lg flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">Registrazioni chiuse</span>
+          <div className="p-3 sm:p-4 bg-muted/50 rounded-lg flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">Registrazioni chiuse</span>
+            </div>
+            {deadline && (
+              <span className="text-xs sm:text-sm text-muted-foreground">(chiusura: {deadline.toLocaleString()})</span>
+            )}
           </div>
         )}
 
