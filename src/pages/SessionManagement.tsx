@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useTrainingSessions, useTrainingAttendance, usePlayers, useTrainingTrialistInvites } from '@/hooks/useSupabaseData'
@@ -43,8 +43,7 @@ const SessionManagement = () => {
   const { id: sessionId } = useParams<{ id: string }>()
   const [refreshKey, setRefreshKey] = useState(0)
   const [playersInLineup, setPlayersInLineup] = useState<string[]>([])
-  const [showDebug, setShowDebug] = useState(false)
-  const [includeTrialistsInLineup, setIncludeTrialistsInLineup] = useState(true)
+  const [includeTrialistsInLineup] = useState(true)
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
@@ -430,42 +429,7 @@ const SessionManagement = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-4">
-                  <div className="sr-only sm:not-sr-only sm:text-sm text-muted-foreground"></div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowDebug(prev => !prev)}
-                    className="flex items-center gap-1 w-full sm:w-auto"
-                  >
-                    {showDebug ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    Debug Formazione
-                  </Button>
-                </div>
-
-                {showDebug && (
-                  <div className="p-4 mb-6 rounded-lg border bg-amber-50 dark:bg-amber-950/20">
-                    <div className="text-sm space-y-2">
-                      <div className="font-medium">Stato conteggi</div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div>Giocatori presenti (tesserati): <span className="font-semibold">{presentPlayersList.length}</span></div>
-                        <div>Trialist presenti: <span className="font-semibold">{presentTrialists.length}</span></div>
-                        <div>Totale presenti attesi: <span className="font-semibold">{presentPlayersList.length + presentTrialists.length}</span></div>
-                        <div>Passati a formazione: <span className="font-semibold">{presentPlayersForLineup.length}</span> {includeTrialistsInLineup ? '(inclusi trialist)' : '(solo tesserati)'}</div>
-                        <div>Selezionati in formazione: <span className="font-semibold">{playersInLineup.length}</span>/11</div>
-                      </div>
-                      {presentTrialists.length > 0 && (
-                        <div className="text-xs text-muted-foreground">
-                          Trialist presenti: {(presentTrialists as any[]).map((t: any) => `${t.trialists?.first_name || ''} ${t.trialists?.last_name || ''}`.trim()).join(', ')}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 pt-2">
-                        <Checkbox checked={includeTrialistsInLineup} onCheckedChange={(checked) => setIncludeTrialistsInLineup(!!checked)} />
-                        <span>Includi trialist nella selezione formazione (debug)</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                
 
                 <div className="overflow-x-hidden">
                   {sessionId && (
