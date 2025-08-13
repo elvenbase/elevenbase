@@ -689,6 +689,11 @@ const PublicSession = () => {
                   </h3>
                   {(() => {
                     const classifySector = (position: any): 'Portiere' | 'Difesa' | 'Centrocampo' | 'Attacco' | 'Altri' => {
+                      const code = (position.role_code || '').toString().toUpperCase()
+                      if (code === 'P') return 'Portiere'
+                      if (['TD','DC','DCD','DCS','TS'].includes(code)) return 'Difesa'
+                      if (['MED','REG','MC','MD','MS','QD','QS'].includes(code)) return 'Centrocampo'
+                      if (['ATT','PU','AD','AS'].includes(code)) return 'Attacco'
                       const r = (position.roleShort || (position as any).role || position.name || '').toString().toLowerCase()
                       if (r === 'p' || r === 'gk' || r.includes('port') || r.includes('goal')) return 'Portiere'
                       if (r.includes('dif') || r.includes('terzin') || r.includes('cb') || r.includes('rb') || r.includes('lb') || r.includes('dc') || r.includes('dcd') || r.includes('dcs')) return 'Difesa'

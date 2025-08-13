@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { CustomFormation } from '@/hooks/useCustomFormations'
+import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
 import { useFieldOptions } from '@/hooks/useFieldOptions'
 import { Trash2, Save, Plus } from 'lucide-react'
 
@@ -147,9 +148,12 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
   }, [])
 
   const updatePositionRole = (positionId: string, role: string, roleShort?: string) => {
-    setPositions(prev => prev.map(pos => 
-      pos.id === positionId ? { ...pos, role, roleShort } : pos
-    ))
+    setPositions(prev => prev.map(pos => {
+      if (pos.id !== positionId) return pos
+      const next = { ...pos, role, roleShort }
+      const role_code = normalizeRoleCodeFrom(next)
+      return { ...next, role_code }
+    }))
   }
 
   const handleSave = () => {
@@ -162,7 +166,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
       defenders,
       midfielders,
       forwards,
-      positions
+      positions: positions.map(p => ({ ...p, role_code: normalizeRoleCodeFrom(p) }))
     })
   }
 
