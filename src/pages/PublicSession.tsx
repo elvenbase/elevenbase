@@ -171,6 +171,26 @@ const PublicSession = () => {
         } catch (e) {
           console.warn('Fallback trialist status fetch failed:', e)
         }
+
+        // Fallback: carica convocati direttamente dal DB se la funzione edge non li ha forniti
+        if (!Array.isArray(data.convocati)) {
+          try {
+            const { data: convRows, error: convErr } = await supabase
+              .from('training_convocati')
+              .select('id, player_id')
+              .eq('session_id', data.session.id)
+
+            if (!convErr && Array.isArray(convRows)) {
+              const convWithPlayers = convRows.map((row: any) => ({
+                ...row,
+                players: (players || []).find(p => p.id === row.player_id) || null
+              }))
+              setConvocati(convWithPlayers)
+            }
+          } catch (e) {
+            console.warn('Fallback convocati fetch failed:', e)
+          }
+        }
       }
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
@@ -647,65 +667,63 @@ const PublicSession = () => {
           </Card>
         )}
 
-        {/* Convocati: mostra qui solo dopo la scadenza */}
-        {isExpired && (
-          <Card className="shadow-lg">
-            <CardHeader className="p-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="h-4 w-4" />
-                Convocati {convocati.length > 0 && `(${convocati.length})`}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              {convocati.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {convocati.map((convocato) => {
-                    const player = convocato.players
-                    if (!player) return null
+        {/* Convocati: sempre visibili se presenti */}
+        <Card className="shadow-lg">
+          <CardHeader className="p-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-4 w-4" />
+              Convocati {convocati.length > 0 && `(${convocati.length})`}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            {convocati.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {convocati.map((convocato) => {
+                  const player = convocato.players
+                  if (!player) return null
 
-                    return (
-                      <div
-                        key={convocato.id}
-                        className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
-                      >
-                        <PlayerAvatar
-                          firstName={player.first_name}
-                          lastName={player.last_name}
-                          avatarUrl={player.avatar_url}
-                          size="md"
-                          className="mb-2"
-                        />
-                        <div className="text-center">
-                          <p className="text-xs font-medium leading-tight">
-                            {player.first_name}
+                  return (
+                    <div
+                      key={convocato.id}
+                      className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                    >
+                      <PlayerAvatar
+                        firstName={player.first_name}
+                        lastName={player.last_name}
+                        avatarUrl={player.avatar_url}
+                        size="md"
+                        className="mb-2"
+                      />
+                      <div className="text-center">
+                        <p className="text-xs font-medium leading-tight">
+                          {player.first_name}
+                        </p>
+                        <p className="text-xs font-medium leading-tight">
+                          {player.last_name}
+                        </p>
+                        {player.jersey_number && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            #{player.jersey_number}
                           </p>
-                          <p className="text-xs font-medium leading-tight">
-                            {player.last_name}
-                          </p>
-                          {player.jersey_number && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              #{player.jersey_number}
-                            </p>
-                          )}
-                        </div>
+                        )}
                       </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground text-sm">
-                    Nessun giocatore convocato per questa sessione
-                  </p>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    I convocati verranno mostrati qui quando l'allenatore li selezionerà
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground text-sm">
+                  Nessun giocatore convocato per questa sessione
+                </p>
+                <p className="text-muted-foreground text-xs mt-1">
+                  I convocati verranno mostrati qui quando l'allenatore li selezionerà
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {!isExpired ? (
