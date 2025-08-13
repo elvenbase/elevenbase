@@ -428,22 +428,44 @@ const MatchPublicRegistration = () => {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5" />Titolari</h3>
-                  <div className="space-y-1">
-                    {getFormationFromLineup(lineup.formation)?.positions.filter(pos => lineup.players_data?.positions?.[pos.id]).map(pos => {
-                      const pid = lineup.players_data?.positions?.[pos.id]
-                      const player = players.find(p => p.id === pid)
-                      if (!player) return null
-                      return (
-                        <div key={pos.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
-                          <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" className="border-2 border-white" />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate">{player.first_name} {player.last_name}</div>
-                            <div className="text-xs text-muted-foreground truncate">{pos.roleShort || pos.name}</div>
-                          </div>
+                  {[
+                    { name: 'Portiere', roles: ['P', 'Portiere'], color: 'bg-yellow-500' },
+                    { name: 'Difesa', roles: ['TD','DC','DCD','DCS','TS','Difensore centrale','Difensore centrale sinistro','Difensore centrale destro','Terzino destro','Terzino sinistro'], color: 'bg-blue-500' },
+                    { name: 'Centrocampo', roles: ['ED','MC','ES','MED','MD','MS','REG','QD','QS','Centrocampista','Mediano','Mezzala','Quinto','Regista'], color: 'bg-green-500' },
+                    { name: 'Attacco', roles: ['ATT','PU','AD','AS','Attaccante','Punta','Ala'], color: 'bg-red-500' }
+                  ].map(sector => {
+                    const sectorPlayers = getFormationFromLineup(lineup.formation)?.positions
+                      .filter(position => {
+                        const hasPlayer = lineup.players_data?.positions?.[position.id]
+                        const roleToCheck = position.roleShort || (position as any).role || position.name || ''
+                        return hasPlayer && sector.roles.some(r => roleToCheck.toLowerCase() === r.toLowerCase())
+                      }) || []
+                    if (sectorPlayers.length === 0) return null
+                    return (
+                      <div key={sector.name} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${sector.color}`} />
+                          <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">{sector.name}</h4>
                         </div>
-                      )
-                    })}
-                  </div>
+                        <div className="space-y-1 pl-5">
+                          {sectorPlayers.map(position => {
+                            const pid = lineup.players_data?.positions?.[position.id]
+                            const player = players.find(p => p.id === pid)
+                            if (!player) return null
+                            return (
+                              <div key={position.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
+                                <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" className="border-2 border-white" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm truncate">{player.first_name} {player.last_name}</div>
+                                  <div className="text-xs text-muted-foreground truncate">{position.roleShort || position.name}</div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </CardContent>

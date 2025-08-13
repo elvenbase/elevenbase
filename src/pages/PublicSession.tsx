@@ -825,28 +825,35 @@ const PublicSession = () => {
               {(() => {
                 const playerPresent = existingAttendance.filter(a => a.status === 'present').length
                 const playerAbsent = existingAttendance.filter(a => a.status === 'absent').length
+                const playerResponded = existingAttendance.length
+                const playerNoResponse = Math.max(0, players.length - playerResponded)
                 const trialistPresent = trialistsInvited.filter(t => t.status === 'present').length
                 const trialistAbsent = trialistsInvited.filter(t => t.status === 'absent').length
+                const trialistResponded = trialistPresent + trialistAbsent
+                const trialistNoResponse = Math.max(0, trialistsInvited.length - trialistResponded)
                 const presentTotal = playerPresent + trialistPresent
                 const absentTotal = playerAbsent + trialistAbsent
                 const totalEntities = players.length + trialistsInvited.length
-                const responded = existingAttendance.length + trialistPresent + trialistAbsent
-                const noResponse = Math.max(0, totalEntities - responded)
+                const totalResponded = playerResponded + trialistResponded
+                const totalNoResponse = totalEntities - totalResponded
                 return (
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-green-600">{presentTotal}</div>
-                      <div className="text-sm text-muted-foreground">Presenti</div>
+                  <>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div><div className="text-2xl font-bold text-green-600">{presentTotal}</div><div className="text-sm text-muted-foreground">Presenti</div></div>
+                      <div><div className="text-2xl font-bold text-red-600">{absentTotal}</div><div className="text-sm text-muted-foreground">Assenti</div></div>
+                      <div><div className="text-2xl font-bold text-muted-foreground">{totalNoResponse}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-red-600">{absentTotal}</div>
-                      <div className="text-sm text-muted-foreground">Assenti</div>
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-blue-600">Giocatori</div>
+                        <div className="text-sm text-muted-foreground">Presenti: {playerPresent} | Assenti: {playerAbsent} | Non risposto: {playerNoResponse}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-orange-600">Provinanti</div>
+                        <div className="text-sm text-muted-foreground">Presenti: {trialistPresent} | Assenti: {trialistAbsent} | Non risposto: {trialistNoResponse}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-muted-foreground">{noResponse}</div>
-                      <div className="text-sm text-muted-foreground">Non risposto</div>
-                    </div>
-                  </div>
+                  </>
                 )
               })()}
             </CardContent>
