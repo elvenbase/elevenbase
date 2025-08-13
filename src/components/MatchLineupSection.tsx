@@ -46,7 +46,9 @@ const MatchLineupSection = ({ matchId }: MatchLineupSectionProps) => {
 
   return (
     <div>
-      <LineupManager sessionId={matchId} presentPlayers={presentPlayersForLineup} onLineupChange={setPlayersInLineup} mode="match" />
+      <div className="overflow-x-hidden">
+        <LineupManager sessionId={matchId} presentPlayers={presentPlayersForLineup} onLineupChange={setPlayersInLineup} mode="match" />
+      </div>
       <div className="mt-8 pt-8 border-t">
         <MatchBenchManager matchId={matchId} allPlayers={allPlayersForBench} attendance={attendanceForBench} playersInLineup={playersInLineup} />
       </div>
