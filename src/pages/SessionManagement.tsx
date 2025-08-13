@@ -418,7 +418,7 @@ const SessionManagement = () => {
 
           <TabsContent value="lineup" className="space-y-6">
             {/* Panchina (Convocati) - sopra la Formazione */}
-            {sessionId && players && playersInLineup.length === 11 && (
+            {sessionId && players && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -466,18 +466,7 @@ const SessionManagement = () => {
                   )}
                 </div>
                 
-                {/* Messaggio quando formazione non è completa */}
-                {playersInLineup.length < 11 && (
-                  <div className="mt-8 pt-8 border-t">
-                    <div className="text-center p-6 bg-muted/50 rounded-lg">
-                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">Completa la formazione</h3>
-                      <p className="text-muted-foreground">
-                        Seleziona tutti gli 11 titolari ({playersInLineup.length}/11) per accedere alla gestione della panchina
-                      </p>
-                    </div>
-                  </div>
-                )}
+                {/* Messaggio rimosso: la gestione panchina è sempre disponibile */}
               </CardContent>
             </Card>
  
