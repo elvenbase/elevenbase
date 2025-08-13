@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat } from 'lucide-react'
+import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2 } from 'lucide-react'
 import { useMatch, useMatchEvents, useMatchAttendance, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 import { supabase } from '@/integrations/supabase/client'
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useUpdateMatch } from '@/hooks/useSupabaseData'
 import { useQueryClient } from '@tanstack/react-query'
+import { useCustomFormations } from '@/hooks/useCustomFormations'
 
 const computeScore = (events: any[]) => {
   let us = 0, opp = 0
@@ -34,6 +35,50 @@ const MatchLive = () => {
   useEffect(() => { if (id) loadLineup() }, [id])
   const updateMatch = useUpdateMatch()
   const queryClient = useQueryClient()
+  const { formations: customFormations } = useCustomFormations()
+
+  // Static formations (subset) for role mapping
+  const staticFormations: any = {
+    '4-4-2': { positions: [
+      { id: 'gk', roleShort: 'P', role: 'Portiere' },
+      { id: 'rb', roleShort: 'TD', role: 'Terzino Destro' },
+      { id: 'cb1', roleShort: 'DC', role: 'Difensore Centrale' },
+      { id: 'cb2', roleShort: 'DC', role: 'Difensore Centrale' },
+      { id: 'lb', roleShort: 'TS', role: 'Terzino Sinistro' },
+      { id: 'rm', roleShort: 'ED', role: 'Esterno Destro' },
+      { id: 'cm1', roleShort: 'MC', role: 'Centrocampista' },
+      { id: 'cm2', roleShort: 'MC', role: 'Centrocampista' },
+      { id: 'lm', roleShort: 'ES', role: 'Esterno Sinistro' },
+      { id: 'st1', roleShort: 'ATT', role: 'Attaccante' },
+      { id: 'st2', roleShort: 'ATT', role: 'Attaccante' }
+    ] },
+    '4-3-3': { positions: [
+      { id: 'gk', roleShort: 'P', role: 'Portiere' },
+      { id: 'rb', roleShort: 'TD', role: 'Terzino Destro' },
+      { id: 'cb1', roleShort: 'DC', role: 'Difensore Centrale' },
+      { id: 'cb2', roleShort: 'DC', role: 'Difensore Centrale' },
+      { id: 'lb', roleShort: 'TS', role: 'Terzino Sinistro' },
+      { id: 'cdm', roleShort: 'MED', role: 'Mediano' },
+      { id: 'cm1', roleShort: 'MD', role: 'Mezzala Dx' },
+      { id: 'cm2', roleShort: 'MS', role: 'Mezzala Sx' },
+      { id: 'rw', roleShort: 'AD', role: 'Ala Destra' },
+      { id: 'st', roleShort: 'PU', role: 'Punta' },
+      { id: 'lw', roleShort: 'AS', role: 'Ala Sinistra' }
+    ] },
+    '3-5-2': { positions: [
+      { id: 'gk', roleShort: 'P', role: 'Portiere' },
+      { id: 'cb1', roleShort: 'DCD', role: 'Centrale Dx' },
+      { id: 'cb2', roleShort: 'DC', role: 'Centrale' },
+      { id: 'cb3', roleShort: 'DCS', role: 'Centrale Sx' },
+      { id: 'rwb', roleShort: 'QD', role: 'Quinto Dx' },
+      { id: 'cm1', roleShort: 'MC', role: 'Centrocampista' },
+      { id: 'cm2', roleShort: 'REG', role: 'Regista' },
+      { id: 'cm3', roleShort: 'MC', role: 'Centrocampista' },
+      { id: 'lwb', roleShort: 'QS', role: 'Quinto Sx' },
+      { id: 'st1', roleShort: 'ATT', role: 'Attaccante' },
+      { id: 'st2', roleShort: 'ATT', role: 'Attaccante' }
+    ] }
+  }
 
   // Bench (convocati) from DB
   const [bench, setBench] = useState<any[]>([])
@@ -71,6 +116,26 @@ const MatchLive = () => {
   const playersById = useMemo(() => Object.fromEntries(players.map((p: any) => [p.id, p])), [players])
   const trialistsById = useMemo(() => Object.fromEntries(trialistInvites.map((t: any) => [t.trialist_id, { id: t.trialist_id, first_name: t.trialists?.first_name || 'Trialist', last_name: t.trialists?.last_name || '', isTrialist: true }])), [trialistInvites])
 
+  // Role mapping per posizione (id -> role label)
+  const roleByPosId = useMemo(() => {
+    const map: Record<string,string> = {}
+    const lf = lineup?.formation
+    // custom formations
+    const cf = (customFormations || []).find(f => f.id === lf)
+    if (cf) {
+      cf.positions.forEach((p: any) => { if (p.id) map[p.id] = p.roleShort || p.role || p.name || '' })
+    } else if (lf && staticFormations[lf]) {
+      staticFormations[lf].positions.forEach((p: any) => { map[p.id] = p.roleShort || p.role })
+    }
+    return map
+  }, [lineup?.formation, customFormations])
+  const roleByPlayerId = useMemo(() => {
+    const entries = Object.entries(lineup?.players_data?.positions || {})
+    const m: Record<string,string> = {}
+    entries.forEach(([posId, pid]) => { if (pid) m[pid as string] = roleByPosId[posId] || '' })
+    return m
+  }, [lineup, roleByPosId])
+
   const [running, setRunning] = useState(false)
   const [seconds, setSeconds] = useState(0)
   // Initialize timer from match fields
@@ -94,7 +159,9 @@ const MatchLive = () => {
 
   const postEvent = async (evt: { event_type: string; team?: 'us'|'opponent'; player_id?: string|null; assister_id?: string|null; comment?: string|null }) => {
     if (!id) return
-    const { error } = await supabase.from('match_events').insert({ match_id: id, ...evt, team: evt.team || 'us', metadata: { live: true } })
+    const minute = Math.max(0, Math.floor(seconds/60)) + 1
+    const period = (match as any)?.live_state || 'not_started'
+    const { error } = await supabase.from('match_events').insert({ match_id: id, ...evt, team: evt.team || 'us', minute, period, metadata: { live: true } })
     if (!error) {
       queryClient.invalidateQueries({ queryKey: ['match-events', id] })
     } else {
@@ -284,12 +351,22 @@ const MatchLive = () => {
                 <div className="font-semibold mb-2">Eventi recenti</div>
                 <div className="space-y-1">
                   {lastEvents.map((e: any) => (
-                    <div key={e.id} className="text-sm text-muted-foreground">
-                      <span className="mr-2">[{new Date(e.created_at).toLocaleTimeString()}]</span>
-                      <span className="mr-2">{e.event_type}</span>
-                      {e.player_id && <span className="mr-2">{getDisplayName(e.player_id)}</span>}
+                    <div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
+                       <div>
+                         <span className="mr-2">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
+                         <span className="mr-2">{e.event_type}</span>
+                         {e.player_id && <span className="mr-2">{getDisplayName(e.player_id)}</span>}
+                       </div>
+                       <Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>
+                         <Trash2 className="h-4 w-4" />
+                       </Button>
                     </div>
                   ))}
+                  {lastEvents.length > 0 && (
+                    <div>
+                      <Button size="sm" variant="outline" onClick={async()=>{ const last = lastEvents[0]; await supabase.from('match_events').delete().eq('id', last.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>Annulla ultimo evento</Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
