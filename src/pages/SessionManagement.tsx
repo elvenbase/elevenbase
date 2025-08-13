@@ -44,7 +44,7 @@ const SessionManagement = () => {
   const [refreshKey, setRefreshKey] = useState(0)
   const [playersInLineup, setPlayersInLineup] = useState<string[]>([])
   const [showDebug, setShowDebug] = useState(false)
-  const [includeTrialistsInLineup, setIncludeTrialistsInLineup] = useState(false)
+  const [includeTrialistsInLineup, setIncludeTrialistsInLineup] = useState(true)
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
