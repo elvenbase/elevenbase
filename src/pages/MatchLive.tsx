@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useUpdateMatch } from '@/hooks/useSupabaseData'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
+import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
 
 const computeScore = (events: any[]) => {
   let us = 0, opp = 0
@@ -361,13 +362,20 @@ const MatchLive = () => {
                 <div className="text-muted-foreground text-sm">Nessun titolare impostato. Imposta l'11 dalla sezione Formazione.</div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {titolari.map((p: any) => (
-                    <div key={p.id} className={`p-2 rounded border flex items-center gap-2 cursor-pointer ${selectedPlayerId===p.id ? 'border-primary bg-primary/5' : ''}`} onClick={()=>setSelectedPlayerId(p.id)}>
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                      <div className="truncate">{p.first_name} {p.last_name}</div>
-                      {renderEventBadges(p.id)}
-                    </div>
-                  ))}
+                  {titolari.map((p: any) => {
+                    const rawRole = roleByPlayerId[p.id] || ''
+                    const code = rawRole ? normalizeRoleCodeFrom({ roleShort: rawRole }) : ''
+                    return (
+                      <div key={p.id} className={`p-2 rounded border flex items-center gap-2 cursor-pointer ${selectedPlayerId===p.id ? 'border-primary bg-primary/5' : ''}`} onClick={()=>setSelectedPlayerId(p.id)}>
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <div className="truncate">{p.first_name} {p.last_name}</div>
+                        {code && code !== 'ALTRI' && (
+                          <Badge variant="secondary" className="shrink-0">{code}</Badge>
+                        )}
+                        {renderEventBadges(p.id)}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
 
@@ -429,7 +437,7 @@ const MatchLive = () => {
                        <div>
                          <span className="mr-2">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
                          <span className="mr-2">{e.event_type}</span>
-                         {(e.player_id || e.trialist_id) && <span className="mr-2">{getDisplayName(e.player_id || e.trialist_id)}</span>}
+                       {(e.player_id || e.trialist_id) && <span className="mr-2">{getDisplayName(e.player_id || e.trialist_id)}</span>}
                        </div>
                        <Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>
                          <Trash2 className="h-4 w-4" />
