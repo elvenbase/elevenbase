@@ -150,9 +150,9 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
 
       await loadConvocati()
       toast.success('Panchina salvata con successo')
-    } catch (error) {
-      console.error('Errore nel salvare la panchina:', error)
-      toast.error('Errore nel salvare la panchina')
+    } catch (error: any) {
+      console.error('Errore nel salvare la panchina:', error?.message || error, error)
+      toast.error(`Errore nel salvare la panchina${error?.message ? `: ${error.message}` : ''}`)
     } finally {
       setLoading(false)
     }
