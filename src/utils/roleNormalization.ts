@@ -16,7 +16,7 @@ const textToCode = (text: string): RoleCode => {
   const r = text.trim().toLowerCase()
   if (!r) return 'ALTRI'
   // direct codes
-  const direct = ['p','td','dc','dcd','dcs','ts','med','reg','mc','md','ms','qd','qs','att','pu','ad','as']
+  const direct = ['p','td','dc','dcd','dcs','ts','med','reg','mc','md','ms','qd','qs','att','pu','ad','as','ed','es']
   if (direct.includes(r)) return r.toUpperCase() as RoleCode
 
   // goalkeeper
@@ -40,8 +40,8 @@ const textToCode = (text: string): RoleCode => {
 
   // attack
   if (r.includes('punta') || r === 'pu' || r.includes('centravanti')) return 'PU'
-  if (r.includes('ala dx') || r === 'ad' || (r.includes('ala') && r.includes('dx'))) return 'AD'
-  if (r.includes('ala sx') || r === 'as' || (r.includes('ala') && r.includes('sx'))) return 'AS'
+  if (r.includes('ala dx') || r === 'ad' || r === 'ed' || (r.includes('ala') && r.includes('dx')) || (r.includes('esterno') && r.includes('dx'))) return 'AD'
+  if (r.includes('ala sx') || r === 'as' || r === 'es' || (r.includes('ala') && r.includes('sx')) || (r.includes('esterno') && r.includes('sx'))) return 'AS'
   if (r.includes('attacc') || r === 'a' || r.includes('seconda punta') || r.includes('trequart')) return 'ATT'
 
   return 'ALTRI'

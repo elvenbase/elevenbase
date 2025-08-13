@@ -699,6 +699,8 @@ const PublicSession = () => {
                       if (r.includes('dif') || r.includes('terzin') || r.includes('cb') || r.includes('rb') || r.includes('lb') || r.includes('dc') || r.includes('dcd') || r.includes('dcs')) return 'Difesa'
                       if (r.includes('med') || r.includes('reg') || r.includes('mez') || r.includes('centro') || r.includes('cm') || r.includes('cdm') || r.includes('rwb') || r.includes('lwb') || r.includes('qd') || r.includes('qs')) return 'Centrocampo'
                       if (r.includes('att') || r.includes('pun') || r.includes('st') || r.includes('fw') || r.includes('forward') || r.includes('ala') || r.includes('wing')) return 'Attacco'
+                      if (r.includes('esterno dx') || r === 'ed') return 'Attacco'
+                      if (r.includes('esterno sx') || r === 'es') return 'Attacco'
                       return 'Altri'
                     }
                     const positions = getFormationFromLineup(lineup.formation)?.positions || []
