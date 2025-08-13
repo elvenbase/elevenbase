@@ -35,6 +35,21 @@ const MatchLive = () => {
   const updateMatch = useUpdateMatch()
   const queryClient = useQueryClient()
 
+  // Bench (convocati) from DB
+  const [bench, setBench] = useState<any[]>([])
+  const loadBench = async () => {
+    if (!id) return
+    const { data, error } = await supabase
+      .from('match_bench')
+      .select(`id, match_id, player_id, trialist_id,
+        players:player_id(id, first_name, last_name, avatar_url),
+        trialists:trialist_id(id, first_name, last_name, avatar_url)
+      `)
+      .eq('match_id', id)
+    if (!error) setBench(data || [])
+  }
+  useEffect(() => { loadBench() }, [id])
+
   const score = useMemo(() => computeScore(events), [events])
   const presentIds = useMemo(() => new Set(attendance.filter((a: any) => a.status === 'present').map((a: any) => a.player_id)), [attendance])
   const titolariIds = useMemo(() => new Set(Object.values(lineup?.players_data?.positions || {})), [lineup])
@@ -45,10 +60,14 @@ const MatchLive = () => {
     return [...roster, ...tr]
   }, [players, titolariIds, trialistsPresent])
   const convocati = useMemo(() => {
-    const roster = players.filter((p: any) => presentIds.has(p.id))
-    const tr = trialistsPresent
-    return [...roster, ...tr]
-  }, [players, presentIds, trialistsPresent])
+    // Convocati = lista panchina (match_bench)
+    return (bench || []).map((b: any) => {
+      const p = b.players || b.trialists
+      if (p) return { id: p.id, first_name: p.first_name, last_name: p.last_name, isTrialist: !!b.trialist_id }
+      // Fallback se join missing
+      return { id: (b.player_id || b.trialist_id), first_name: 'N/A', last_name: '', isTrialist: !!b.trialist_id }
+    })
+  }, [bench])
   const playersById = useMemo(() => Object.fromEntries(players.map((p: any) => [p.id, p])), [players])
   const trialistsById = useMemo(() => Object.fromEntries(trialistInvites.map((t: any) => [t.trialist_id, { id: t.trialist_id, first_name: t.trialists?.first_name || 'Trialist', last_name: t.trialists?.last_name || '', isTrialist: true }])), [trialistInvites])
 
@@ -114,7 +133,7 @@ const MatchLive = () => {
   const [subInId, setSubInId] = useState<string>('')
   const onFieldIds = useMemo(() => {
     // derive on field applying substitution events
-    const start = new Set<string>(titolariIds as any)
+    const start = new Set<string>(Array.from(titolariIds).filter(Boolean) as string[])
     events.filter((e: any) => e.event_type === 'substitution').forEach((e: any) => {
       const outId = e.metadata?.out_id as string | undefined
       const inId = e.metadata?.in_id as string | undefined
@@ -123,7 +142,8 @@ const MatchLive = () => {
     })
     return start
   }, [titolariIds, events])
-  const availableInIds = useMemo(() => convocati.map((c: any) => c.id).filter((id: string) => !onFieldIds.has(id)), [convocati, onFieldIds])
+  const benchIds = useMemo(() => new Set(convocati.map((c: any) => c.id)), [convocati])
+  const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id)), [benchIds, onFieldIds])
   const doSubstitution = async () => {
     if (!id || !subOutId || !subInId) return
     const { error } = await supabase.from('match_events').insert({ match_id: id, event_type: 'substitution', metadata: { out_id: subOutId, in_id: subInId }, team: 'us' })
@@ -277,7 +297,7 @@ const MatchLive = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />Convocati ({convocati.length})</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />Convocati (Panchina) ({convocati.length})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-80 overflow-y-auto space-y-1">
