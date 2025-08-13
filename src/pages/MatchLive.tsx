@@ -262,6 +262,32 @@ const MatchLive = () => {
     const { error } = await supabase.from('match_events').insert({ match_id: id, event_type: 'substitution', metadata: { out_id: subOutId, in_id: subInId }, team: 'us' })
     if (!error) {
       queryClient.invalidateQueries({ queryKey: ['match-events', id] })
+      try {
+        // Ensure OUT player is added to bench
+        if (isTrialistId(subOutId)) {
+          const { data: existsOut } = await supabase
+            .from('match_bench')
+            .select('id').eq('match_id', id).eq('trialist_id', subOutId).limit(1).maybeSingle()
+          if (!existsOut) {
+            await supabase.from('match_bench').insert({ match_id: id, trialist_id: subOutId })
+          }
+        } else {
+          const { data: existsOut } = await supabase
+            .from('match_bench')
+            .select('id').eq('match_id', id).eq('player_id', subOutId).limit(1).maybeSingle()
+          if (!existsOut) {
+            await supabase.from('match_bench').insert({ match_id: id, player_id: subOutId })
+          }
+        }
+        // Ensure IN player is removed from bench
+        if (isTrialistId(subInId)) {
+          await supabase.from('match_bench').delete().eq('match_id', id).eq('trialist_id', subInId)
+        } else {
+          await supabase.from('match_bench').delete().eq('match_id', id).eq('player_id', subInId)
+        }
+      } catch (benchErr) {
+        console.error('Errore aggiornamento panchina dopo sostituzione:', benchErr)
+      }
       await loadBench()
     } else {
       console.error('Errore inserimento sostituzione:', error)
