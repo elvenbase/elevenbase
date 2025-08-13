@@ -31,7 +31,8 @@ interface Attendance {
 interface Convocato {
   id: string
   session_id: string
-  player_id: string
+  player_id?: string
+  trialist_id?: string
   notes?: string
   created_at: string
   players?: Player
@@ -69,10 +70,14 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
 
     setLoading(true)
     try {
-      // Query diretta senza join per evitare problemi con i types
+      // Query diretta con join a players e trialists
       const { data, error } = await supabase
         .from('training_convocati')
-        .select('*')
+        .select(`
+          *,
+          players:player_id(id, first_name, last_name, jersey_number, avatar_url),
+          trialists:trialist_id(id, first_name, last_name, avatar_url)
+        `)
         .eq('session_id', sessionId)
 
       if (error) throw error
@@ -80,7 +85,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
       // Type assertion per gestire il tipo che arriva dal database
       const typedData = (data || []) as Convocato[]
       setConvocati(typedData)
-      setSelectedPlayers(typedData.map(c => c.player_id) || [])
+      setSelectedPlayers(typedData.map(c => (c.player_id || c.trialist_id) as string).filter(Boolean))
     } catch (error) {
       console.error('Errore nel caricare i convocati:', error)
       toast.error('Errore nel caricare i convocati')
@@ -134,9 +139,13 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         if (error) throw error
       }
 
-      // Avviso temporaneo: i provinanti non possono essere persistiti in questa tabella
+      // Inserisce anche i provinanti (colonna trialist_id)
       if (trialistIds.length > 0) {
-        toast.info(`${trialistIds.length} provinante/i non salvati in panchina (limite schema).`)
+        const trialRows = trialistIds.map(trialist_id => ({ session_id: sessionId, trialist_id }))
+        const { error: trialErr } = await supabase
+          .from('training_convocati')
+          .insert(trialRows)
+        if (trialErr) throw trialErr
       }
 
       await loadConvocati()
@@ -406,7 +415,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
           <CardContent>
             <div className="space-y-3">
               {convocati.map((convocato) => {
-                const player = convocato.players || getPlayerById(convocato.player_id)
+                const player = convocato.players || getPlayerById((convocato.player_id || convocato.trialist_id) as string)
                 if (!player) return null
 
                 return (

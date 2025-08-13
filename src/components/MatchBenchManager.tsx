@@ -28,7 +28,8 @@ interface AttendanceRec {
 interface BenchRec {
   id: string
   match_id: string
-  player_id: string
+  player_id?: string
+  trialist_id?: string
   notes?: string
   created_at: string
 }
@@ -55,11 +56,14 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
     if (!matchId) return
     setLoading(true)
     try {
-      const { data, error } = await supabase.from('match_bench').select('*').eq('match_id', matchId)
+      const { data, error } = await supabase
+        .from('match_bench')
+        .select(`*, players:player_id(id, first_name, last_name, jersey_number, avatar_url), trialists:trialist_id(id, first_name, last_name, avatar_url)`) 
+        .eq('match_id', matchId)
       if (error) throw error
       const typed = (data || []) as BenchRec[]
       setBench(typed)
-      setSelectedPlayers(typed.map(b => b.player_id))
+      setSelectedPlayers(typed.map(b => (b.player_id || b.trialist_id) as string).filter(Boolean))
     } catch (e) {
       console.error('Errore nel caricare la panchina match:', e)
       toast.error('Errore nel caricare la panchina')
@@ -94,7 +98,9 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
         }
 
         if (trialistIds.length > 0) {
-          toast.info(`${trialistIds.length} provinante/i non salvati in panchina (limite schema).`)
+          const trows = trialistIds.map(trialist_id => ({ match_id: matchId, trialist_id }))
+          const { error: terr } = await supabase.from('match_bench').insert(trows)
+          if (terr) throw terr
         }
       }
       await loadBench()
@@ -203,7 +209,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
           <CardContent>
             <div className="space-y-3">
               {bench.map((rec) => {
-                const player = getPlayerById(rec.player_id)
+                const player = getPlayerById(rec.player_id || rec.trialist_id || '')
                 if (!player) return null
                 return (
                   <div key={rec.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
