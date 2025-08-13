@@ -172,22 +172,25 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
   }
 
   // Calcolo nuove statistiche richieste
+  const titolariCount = playersInLineup.length
   const presentiCount = attendance?.filter(a => a.status === 'present').length || 0
+  const eleggibiliCount = presentPlayers.length // presenti non titolari
   const convocatiCount = convocati.length
-  const nonConvocatiCount = allPlayers.length - convocatiCount - playersInLineup.length
+  const disponibiliNonSelezionati = Math.max(0, eleggibiliCount - convocatiCount)
   const indisponibiliCount = allPlayers.filter(player => {
     const playerAttendance = attendance?.find(a => a.player_id === player.id)
     return player.status !== 'active' || 
            playerAttendance?.status === 'absent' || 
            playerAttendance?.status === 'excused'
   }).length
+  const totaleConvocati = titolariCount + convocatiCount
   
   const allPresentSelected = presentPlayers.length > 0 && presentPlayers.every(player => selectedPlayers.includes(player.id))
 
   return (
     <div className="space-y-6">
       {/* Statistiche */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -202,10 +205,21 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-2xl font-bold text-purple-600">{titolariCount}</p>
+                <p className="text-sm text-muted-foreground">Titolari</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
               <UserCheck className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-2xl font-bold text-blue-600">{convocatiCount}</p>
-                <p className="text-sm text-muted-foreground">Convocati</p>
+                <p className="text-sm text-muted-foreground">Panchina</p>
               </div>
             </div>
           </CardContent>
@@ -215,8 +229,8 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-gray-600" />
               <div>
-                <p className="text-2xl font-bold text-gray-600">{nonConvocatiCount}</p>
-                <p className="text-sm text-muted-foreground">Non Convocati</p>
+                <p className="text-2xl font-bold text-gray-600">{disponibiliNonSelezionati}</p>
+                <p className="text-sm text-muted-foreground">Disponibili non selezionati</p>
               </div>
             </div>
           </CardContent>
@@ -234,6 +248,11 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         </Card>
       </div>
 
+      {/* Riepilogo sintetico */}
+      <div className="text-sm text-muted-foreground">
+        {titolariCount} titolari + {convocatiCount} panchina = {totaleConvocati} convocati totali
+      </div>
+
       {/* Selezione convocati */}
       {!isReadOnly && (
         <Card>
@@ -243,39 +262,17 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
               Seleziona Convocati
             </CardTitle>
             <CardDescription>
-              Seleziona i giocatori presenti da convocare per questa sessione
+              Seleziona i presenti non titolari da aggiungere alla panchina
             </CardDescription>
           </CardHeader>
           <CardContent>
             {/* Messaggio informativo sul filtro */}
-            {allPlayers.length > presentPlayers.length && (
+            {presentPlayers.length === 0 && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center gap-2 text-blue-800">
                   <Info className="h-4 w-4" />
-                  <p className="text-sm">
-                    Vengono mostrati solo i <strong>{presentPlayers.length} giocatori presenti</strong>. 
-                    {allPlayers.length - presentPlayers.length > 0 && (
-                      <span className="ml-1">
-                        {allPlayers.length - presentPlayers.length} giocatori esclusi (assenti o non hanno confermato entro 4 ore dall'allenamento).
-                      </span>
-                    )}
-                  </p>
+                  <p className="text-sm">Nessun presente disponibile per la panchina oltre ai titolari.</p>
                 </div>
-              </div>
-            )}
-
-            {presentPlayers.length === 0 && (
-              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-center gap-2 text-amber-800">
-                  <Info className="h-4 w-4" />
-                  <p className="text-sm">
-                    <strong>Nessun giocatore presente.</strong> I giocatori diventano "presenti" quando:
-                  </p>
-                </div>
-                <ul className="mt-2 text-sm text-amber-700 list-disc list-inside space-y-1">
-                  <li>Confermano la presenza entro 4 ore dall'inizio dell'allenamento</li>
-                  <li>Vengono segnati come presenti dall'allenatore nella sezione Presenze</li>
-                </ul>
               </div>
             )}
 
