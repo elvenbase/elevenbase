@@ -15,7 +15,7 @@ import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
 
-interface Player { id: string; first_name: string; last_name: string; jersey_number?: number }
+interface Player { id: string; first_name: string; last_name: string; jersey_number?: number; avatar_url?: string }
 interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
 interface MatchInfo { id: string; opponent_name: string; match_date: string; match_time: string; location?: string }
 interface AttendanceRecord { player_id: string; status: string; self_registered: boolean }
@@ -485,16 +485,24 @@ const MatchPublicRegistration = () => {
             <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati ({bench.length})</CardTitle></CardHeader>
             <CardContent className="p-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {bench.map((b) => (
-                  <div key={b.id} className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
-                    <PlayerAvatar firstName={b.players?.first_name} lastName={b.players?.last_name} avatarUrl={b.players?.avatar_url} size="md" className="mb-2" />
-                    <div className="text-center">
-                      <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{b.players?.first_name}</p>
-                      <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{b.players?.last_name}</p>
-                      {b.players?.jersey_number && (<p className="text-xs text-muted-foreground mt-1">#{b.players.jersey_number}</p>)}
+                {bench.map((b) => {
+                  const firstName = b.players?.first_name || b.trialists?.first_name || ''
+                  const lastName = b.players?.last_name || b.trialists?.last_name || ''
+                  const avatarUrl = b.players?.avatar_url || b.trialists?.avatar_url || undefined
+                  const jerseyNumber = b.players?.jersey_number
+                  const isTrialist = !!b.trialist_id && !b.players
+                  return (
+                    <div key={b.id} className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
+                      <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="md" className="mb-2" />
+                      <div className="text-center">
+                        <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{firstName}</p>
+                        <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{lastName}</p>
+                        {jerseyNumber && (<p className="text-xs text-muted-foreground mt-1">#{jerseyNumber}</p>)}
+                        {isTrialist && (<p className="text-[10px] text-muted-foreground mt-1">provinante</p>)}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </CardContent>
           </Card>

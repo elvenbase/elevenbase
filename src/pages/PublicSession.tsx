@@ -769,32 +769,39 @@ const PublicSession = () => {
             <CardContent className="p-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {convocati.map((convocato) => {
-                  const player = convocato.players
-                  if (!player) return null
-
+                  const person = convocato.players || convocato.trialists
+                  if (!person) return null
+                  const isTrialist = !!convocato.trialist_id && !convocato.players
+                  const firstName = person.first_name || ''
+                  const lastName = person.last_name || ''
+                  const avatarUrl = person.avatar_url
+                  const jerseyNumber = convocato.players?.jersey_number
                   return (
                     <div
                       key={convocato.id}
                       className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
                     >
                       <PlayerAvatar
-                        firstName={player.first_name}
-                        lastName={player.last_name}
-                        avatarUrl={player.avatar_url}
+                        firstName={firstName}
+                        lastName={lastName}
+                        avatarUrl={avatarUrl}
                         size="md"
                         className="mb-2"
                       />
                       <div className="text-center">
                         <p className="text-xs font-medium leading-tight">
-                          {player.first_name}
+                          {firstName}
                         </p>
                         <p className="text-xs font-medium leading-tight">
-                          {player.last_name}
+                          {lastName}
                         </p>
-                        {player.jersey_number && (
+                        {jerseyNumber && (
                           <p className="text-xs text-muted-foreground mt-1">
-                            #{player.jersey_number}
+                            #{jerseyNumber}
                           </p>
+                        )}
+                        {isTrialist && (
+                          <p className="text-[10px] text-muted-foreground mt-1">provinante</p>
                         )}
                       </div>
                     </div>
