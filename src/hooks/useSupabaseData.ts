@@ -1224,6 +1224,31 @@ export const useMatchEvents = (matchId: string) => {
   })
 }
 
+export const useUpdateMatch = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<{ opponent_name: string; match_date: string; match_time: string; home_away: 'home'|'away'; location?: string|null; competition_id?: string|null; notes?: string|null; allow_trialists?: boolean }> }) => {
+      const { data, error } = await supabase
+        .from('matches')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      queryClient.invalidateQueries({ queryKey: ['match', data.id] })
+      toast({ title: 'Partita aggiornata' })
+    },
+    onError: (e: any) => {
+      toast({ title: 'Errore aggiornamento partita', description: e?.message, variant: 'destructive' })
+    }
+  })
+}
+
 export const useCreateMatchEvent = () => {
   const queryClient = useQueryClient()
   return useMutation({
@@ -1351,33 +1376,6 @@ export const useDeleteOpponent = () => {
     },
     onError: (e: any) => toast({ title: 'Errore eliminazione avversario', description: e?.message, variant: 'destructive' })
   })
-}
-
-export const useUpdateMatch = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: async (payload: { id: string; data: Record<string, any> }) => {
-      const { id, data } = payload;
-      const { data: res, error } = await supabase
-        .from('matches')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
-      if (error) throw error;
-      return res;
-    },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['match', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      toast({ title: 'Partita aggiornata' });
-    },
-    onError: (error: any) => {
-      toast({ title: 'Errore aggiornando la partita', description: error?.message, variant: 'destructive' });
-    }
-  });
 }
 
 export const useDeleteMatch = () => {

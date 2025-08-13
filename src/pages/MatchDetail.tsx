@@ -1,11 +1,14 @@
 import { useParams, Link } from 'react-router-dom'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Target, Share, ArrowLeft } from 'lucide-react'
-import { useMatch, useMatchEvents, useMatchAttendance, useEnsureMatchPublicSettings, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
+import { useMatch, useMatchEvents, useMatchAttendance, useEnsureMatchPublicSettings, useMatchTrialistInvites, usePlayers, useUpdateMatch, useSetMatchTrialistInvites, useTrialists } from '@/hooks/useSupabaseData'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
@@ -59,6 +62,12 @@ const MatchDetail = () => {
   const { data: trialistInvites = [] } = useMatchTrialistInvites(id || '')
   const { data: allPlayers = [] } = usePlayers()
   const ensurePublic = useEnsureMatchPublicSettings()
+  const updateMatch = useUpdateMatch()
+  const setMatchTrialistInvites = useSetMatchTrialistInvites()
+  const { data: allTrialists = [] } = useTrialists()
+  const [editOpen, setEditOpen] = useState(false)
+  const [allowTrialists, setAllowTrialists] = useState(false)
+  const [selectedTrialists, setSelectedTrialists] = useState<string[]>([])
 
   const score = useMemo(() => computeScore(events), [events])
   const attendanceStats = useMemo(() => {
@@ -82,6 +91,24 @@ const MatchDetail = () => {
   if (!id) return null
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Caricamento partita...</div>
   if (!match) return <div className="min-h-screen flex items-center justify-center">Partita non trovata</div>
+  
+  // Initialize edit state when dialog opens
+  const openEdit = () => {
+    setAllowTrialists(!!(match as any).allow_trialists)
+    setSelectedTrialists((trialistInvites || []).map((t: any) => t.trialist_id))
+    setEditOpen(true)
+  }
+  
+  const handleSaveEdit = async () => {
+    if (!id) return
+    await updateMatch.mutateAsync({ id, updates: { allow_trialists: allowTrialists } })
+    if (allowTrialists) {
+      await setMatchTrialistInvites.mutateAsync({ matchId: id, trialistIds: selectedTrialists })
+    } else {
+      await setMatchTrialistInvites.mutateAsync({ matchId: id, trialistIds: [] })
+    }
+    setEditOpen(false)
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -108,8 +135,46 @@ const MatchDetail = () => {
                   )}
                 </div>
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-center sm:text-right">
-                {score.us} - {score.opp}
+              <div className="flex items-center gap-2">
+                <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={openEdit}>Modifica</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Modifica Partita</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <input id="allow_trialists" type="checkbox" checked={allowTrialists} onChange={(e: any) => setAllowTrialists(e.target.checked)} />
+                        <label htmlFor="allow_trialists" className="text-sm">Abilita provinanti per questa partita</label>
+                      </div>
+                      {allowTrialists && (
+                        <div className="space-y-2">
+                          <Label className="text-sm">Seleziona provinanti</Label>
+                          <div className="max-h-40 overflow-y-auto border rounded p-2 space-y-1">
+                            {(allTrialists || []).map((t: any) => {
+                              const checked = selectedTrialists.includes(t.id)
+                              return (
+                                <label key={t.id} className="flex items-center gap-2 text-sm">
+                                  <input type="checkbox" checked={checked} onChange={(e) => setSelectedTrialists((prev: string[]) => e.target.checked ? [...prev, t.id] : prev.filter((id: string) => id !== t.id))} />
+                                  <span className="truncate">{t.first_name} {t.last_name}</span>
+                                </label>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setEditOpen(false)}>Annulla</Button>
+                        <Button onClick={handleSaveEdit} disabled={updateMatch.isPending}>Salva</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <div className="text-2xl sm:text-3xl font-bold text-center sm:text-right">
+                  {score.us} - {score.opp}
+                </div>
               </div>
             </div>
           </CardContent>
