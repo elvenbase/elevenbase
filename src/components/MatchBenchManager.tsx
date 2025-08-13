@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, UserCheck, UserX, Plus, Trash2, Info, CheckCircle, XCircle } from 'lucide-react'
+import { Users, UserCheck, UserX, Plus, Trash2, Info, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -132,18 +132,33 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
   const getPlayerById = (id: string) => allPlayers.find(p => p.id === id)
 
   const presentiCount = attendance.filter(a => a.status === 'present').length
+  const titolariCount = playersInLineup.length
   const convocatiCount = bench.length
-  const nonConvocatiCount = allPlayers.length - convocatiCount - playersInLineup.length
+  const eleggibiliCount = presentPlayers.length
+  const disponibiliNonSelezionati = Math.max(0, eleggibiliCount - convocatiCount)
+  const indisponibiliCount = allPlayers.filter(player => {
+    const a = attendance.find(x => x.player_id === player.id)
+    return player.status !== 'active' || a?.status === 'absent' || a?.status === 'excused'
+  }).length
+  const senzaRispostaCount = allPlayers.filter(player => {
+    const a = attendance.find(x => x.player_id === player.id)
+    return !a || a.status === 'pending'
+  }).length
+  const totaleConvocati = titolariCount + convocatiCount
 
   const allPresentSelected = presentPlayers.length > 0 && presentPlayers.every(p => selectedPlayers.includes(p.id))
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
         <Card><CardContent className="p-4"><div className="flex items-center gap-2"><CheckCircle className="h-5 w-5 text-green-600" /><div><p className="text-2xl font-bold text-green-600">{presentiCount}</p><p className="text-sm text-muted-foreground">Presenti</p></div></div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="flex items-center gap-2"><UserCheck className="h-5 w-5 text-blue-600" /><div><p className="text-2xl font-bold text-blue-600">{convocatiCount}</p><p className="text-sm text-muted-foreground">Convocati</p></div></div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="flex items-center gap-2"><Users className="h-5 w-5 text-gray-600" /><div><p className="text-2xl font-bold text-gray-600">{nonConvocatiCount}</p><p className="text-sm text-muted-foreground">Non Convocati</p></div></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center gap-2"><Users className="h-5 w-5 text-purple-600" /><div><p className="text-2xl font-bold text-purple-600">{titolariCount}</p><p className="text-sm text-muted-foreground">Titolari</p></div></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center gap-2"><UserCheck className="h-5 w-5 text-blue-600" /><div><p className="text-2xl font-bold text-blue-600">{convocatiCount}</p><p className="text-sm text-muted-foreground">Panchina</p></div></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center gap-2"><Users className="h-5 w-5 text-gray-600" /><div><p className="text-2xl font-bold text-gray-600">{disponibiliNonSelezionati}</p><p className="text-sm text-muted-foreground">Disponibili non selezionati</p></div></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center gap-2"><UserX className="h-5 w-5 text-red-600" /><div><p className="text-2xl font-bold text-red-600">{indisponibiliCount}</p><p className="text-sm text-muted-foreground">Indisponibili</p></div></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center gap-2"><Clock className="h-5 w-5 text-amber-600" /><div><p className="text-2xl font-bold text-amber-600">{senzaRispostaCount}</p><p className="text-sm text-muted-foreground">Senza risposta</p></div></div></CardContent></Card>
       </div>
+      <div className="text-sm text-muted-foreground">{titolariCount} titolari + {convocatiCount} panchina = {totaleConvocati} convocati totali</div>
 
       {!isReadOnly && (
         <Card>
