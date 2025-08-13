@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, build]
     name: 🗄️ Database Migration
-    if: (github.ref == 'refs/heads/main') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: false
     
     steps:
     - name: 📥 Checkout code
@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, build]
     name: 🚀 Deploy Preview
-    if: github.event_name == 'pull_request'
+    if: false
     environment: preview
     
     steps:
@@ -176,7 +176,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, build]
     name: 🚀 Deploy to Production
-    if: github.ref == 'refs/heads/feat/multi-team'
+    if: false
     environment: production
     
     steps:
@@ -227,7 +227,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, build]
     name: 🔒 Security Scan
-    if: github.ref == 'refs/heads/feat/multi-team'
+    if: false
     
     steps:
     - name: 📥 Checkout code
