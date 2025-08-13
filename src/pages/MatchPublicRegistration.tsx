@@ -251,7 +251,7 @@ const MatchPublicRegistration = () => {
           </CardContent>
         </Card>
 
-        {!isExpired && (
+        {!isExpired ? (
           <Card>
             <CardHeader>
               <CardTitle>Conferma la tua presenza</CardTitle>
@@ -303,7 +303,6 @@ const MatchPublicRegistration = () => {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium">Presenza</label>
                 <Select value={selectedStatus} onValueChange={(v: 'pending' | 'present' | 'absent') => setSelectedStatus(v)}>
@@ -317,12 +316,16 @@ const MatchPublicRegistration = () => {
                   </SelectContent>
                 </Select>
               </div>
-
               <Button onClick={handleSubmit} disabled={submitting || !selectedEntity} className="w-full h-12 text-lg">
                 {submitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />} Conferma Registrazione
               </Button>
             </CardContent>
           </Card>
+        ) : (
+          <div className="p-3 sm:p-4 bg-muted/50 rounded-lg flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium">Registrazioni chiuse</span>
+          </div>
         )}
 
         <Card>
