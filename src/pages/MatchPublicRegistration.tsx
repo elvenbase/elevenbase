@@ -216,6 +216,8 @@ const MatchPublicRegistration = () => {
   if (!match) return <Navigate to="/not-found" replace />
 
   const isExpired = deadline && new Date() > deadline
+  const assignedCount = lineup ? (((getFormationFromLineup(lineup.formation)?.positions) || []).filter(position => lineup.players_data?.positions?.[position.id]).length) : 0
+  const hasFullEleven = assignedCount >= 11
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
@@ -400,7 +402,7 @@ const MatchPublicRegistration = () => {
 
 
 
-        {lineup && (
+        {lineup && hasFullEleven && (
           <Card className="shadow-lg">
             <CardHeader className="p-4">
               <div className="flex items-center justify-between">
@@ -527,22 +529,16 @@ const MatchPublicRegistration = () => {
           </Card>
         )}
 
-        {lineup && getFormationFromLineup(lineup.formation) && (
+        {lineup && hasFullEleven && getFormationFromLineup(lineup.formation) && (
           <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
             <FormationExporter
               id="formation-export"
-              lineup={lineup.players_data?.positions ? Object.entries(lineup.players_data.positions).map(([positionId, playerId]) => {
-                const pid = playerId as string
-                const p = players.find(p => p.id === pid)
-                const t = trialistsInvited.find(t => t.id === pid)
-                const player = p || (t ? { id: t.id, first_name: t.first_name, last_name: t.last_name, jersey_number: undefined as number | undefined, avatar_url: t.avatar_url } as any : undefined)
-                return {
-                  player_id: pid,
-                  position_x: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.x || 50,
-                  position_y: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.y || 50,
-                  player
-                }
-              }) : []}
+              lineup={lineup.players_data?.positions ? Object.entries(lineup.players_data.positions).map(([positionId, playerId]) => ({
+                player_id: playerId as string,
+                position_x: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.x || 50,
+                position_y: getFormationFromLineup(lineup.formation)?.positions.find((p: any) => p.id === positionId)?.y || 50,
+                player: players.find(p => p.id === playerId)
+              })) : []}
               formation={getFormationFromLineup(lineup.formation)!}
               sessionTitle={match?.opponent_name || 'Partita'}
               teamName="Team"

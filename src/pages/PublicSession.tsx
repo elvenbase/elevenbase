@@ -449,6 +449,8 @@ const PublicSession = () => {
   }
 
   const isExpired = deadline && new Date() > deadline
+  const assignedCount = lineup ? (((getFormationFromLineup(lineup.formation)?.positions) || []).filter(position => lineup.players_data?.positions?.[position.id]).length) : 0
+  const hasFullEleven = assignedCount >= 11
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
@@ -589,7 +591,7 @@ const PublicSession = () => {
         )}
 
         {/* Formazione */}
-        {lineup && (
+        {lineup && hasFullEleven && (
           <Card className="shadow-lg">
             <CardHeader className="p-4 sm:p-6">
               <div className="space-y-3">
