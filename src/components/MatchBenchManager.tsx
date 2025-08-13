@@ -105,9 +105,9 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
       }
       await loadBench()
       toast.success('Panchina partita salvata')
-    } catch (e) {
-      console.error('Errore salvataggio panchina match:', e)
-      toast.error('Errore nel salvare la panchina')
+    } catch (e: any) {
+      console.error('Errore salvataggio panchina match:', e?.message || e, e)
+      toast.error(`Errore nel salvare la panchina${e?.message ? `: ${e.message}` : ''}`)
     } finally {
       setLoading(false)
     }
