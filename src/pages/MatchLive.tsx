@@ -157,11 +157,28 @@ const MatchLive = () => {
     return () => clearInterval(iv)
   }, [running])
 
-  const postEvent = async (evt: { event_type: string; team?: 'us'|'opponent'; player_id?: string|null; assister_id?: string|null; comment?: string|null }) => {
+  const postEvent = async (evt: { event_type: string; team?: 'us'|'opponent'; player_id?: string|null; assister_id?: string|null; comment?: string|null; metadata?: any }) => {
     if (!id) return
     const minute = Math.max(0, Math.floor(seconds/60)) + 1
     const period = (match as any)?.live_state || 'not_started'
-    const { error } = await supabase.from('match_events').insert({ match_id: id, ...evt, team: evt.team || 'us', minute, period, metadata: { live: true } })
+    const payload: any = {
+      match_id: id,
+      event_type: evt.event_type,
+      team: evt.team || 'us',
+      minute,
+      period,
+      comment: evt.comment || null,
+      metadata: { ...(evt.metadata || {}), live: true }
+    }
+    if (evt.player_id) {
+      if (isTrialistId(evt.player_id)) payload.trialist_id = evt.player_id
+      else payload.player_id = evt.player_id
+    }
+    if (evt.assister_id) {
+      if (!isTrialistId(evt.assister_id)) payload.assister_id = evt.assister_id
+      else payload.metadata = { ...(payload.metadata || {}), assister_trialist_id: evt.assister_id }
+    }
+    const { error } = await supabase.from('match_events').insert(payload)
     if (!error) {
       queryClient.invalidateQueries({ queryKey: ['match-events', id] })
     } else {
@@ -194,6 +211,34 @@ const MatchLive = () => {
     return p ? `${p.first_name} ${p.last_name}` : id
   }
   const isTrialistId = (id: string) => !!trialistsById[id]
+  const eventStatsById = useMemo(() => {
+    const stats: Record<string, { goals: number; assists: number; yellows: number; reds: number; fouls: number }> = {}
+    ;(events || []).forEach((e: any) => {
+      const pid = e.player_id || e.trialist_id
+      if (!pid) return
+      const s = stats[pid] || (stats[pid] = { goals: 0, assists: 0, yellows: 0, reds: 0, fouls: 0 })
+      switch (e.event_type) {
+        case 'goal': s.goals++; break
+        case 'assist': s.assists++; break
+        case 'yellow_card': s.yellows++; break
+        case 'red_card': s.reds++; break
+        case 'foul': s.fouls++; break
+      }
+    })
+    return stats
+  }, [events])
+  const renderEventBadges = (pid: string) => {
+    const s = eventStatsById[pid]
+    if (!s) return null
+    return (
+      <div className="ml-auto flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
+        {s.goals > 0 && (<span className="inline-flex items-center gap-0.5"><Plus className="h-3 w-3" />{s.goals}</span>)}
+        {s.assists > 0 && (<span className="inline-flex items-center gap-0.5"><Redo2 className="h-3 w-3" />{s.assists}</span>)}
+        {s.yellows > 0 && (<span className="inline-flex items-center gap-0.5 text-yellow-600"><Shield className="h-3 w-3" />{s.yellows}</span>)}
+        {s.reds > 0 && (<span className="inline-flex items-center gap-0.5 text-red-600"><Shield className="h-3 w-3" />{s.reds}</span>)}
+      </div>
+    )
+  }
 
   // Substitution dialog
   const [subOpen, setSubOpen] = useState(false)
@@ -294,6 +339,7 @@ const MatchLive = () => {
                     <div key={p.id} className={`p-2 rounded border flex items-center gap-2 cursor-pointer ${selectedPlayerId===p.id ? 'border-primary bg-primary/5' : ''}`} onClick={()=>setSelectedPlayerId(p.id)}>
                       <div className="w-2 h-2 rounded-full bg-green-500" />
                       <div className="truncate">{p.first_name} {p.last_name}</div>
+                      {renderEventBadges(p.id)}
                     </div>
                   ))}
                 </div>
@@ -357,7 +403,7 @@ const MatchLive = () => {
                        <div>
                          <span className="mr-2">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
                          <span className="mr-2">{e.event_type}</span>
-                         {e.player_id && <span className="mr-2">{getDisplayName(e.player_id)}</span>}
+                         {(e.player_id || e.trialist_id) && <span className="mr-2">{getDisplayName(e.player_id || e.trialist_id)}</span>}
                        </div>
                        <Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>
                          <Trash2 className="h-4 w-4" />
@@ -384,6 +430,7 @@ const MatchLive = () => {
                   <div key={p.id} className={`flex items-center gap-2 p-2 rounded border cursor-pointer ${selectedPlayerId===p.id ? 'border-primary bg-primary/5' : ''}`} onClick={()=>setSelectedPlayerId(p.id)}>
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     <div className="truncate">{p.first_name} {p.last_name}</div>
+                    {renderEventBadges(p.id)}
                   </div>
                 ))}
               </div>
