@@ -697,7 +697,7 @@ const PublicSession = () => {
                       const r = (position.roleShort || (position as any).role || position.name || '').toString().toLowerCase()
                       if (r === 'p' || r === 'gk' || r.includes('port') || r.includes('goal')) return 'Portiere'
                       if (r.includes('td') || r.includes('terzino dest') || r.includes('ts') || r.includes('terzino sin') || r.includes('dif') || r.includes('cb') || r.includes('rb') || r.includes('lb') || r.includes('dc') || r.includes('dcd') || r.includes('dcs')) return 'Difesa'
-                      if (r.includes('ed') || r.includes('es') || r.includes('esterno dx') || r.includes('esterno sx') || r.includes('med') || r.includes('reg') || r.includes('mez') || r.includes('centro') || r.includes('cm') || r.includes('cdm') || r.includes('rwb') || r.includes('lwb') || r.includes('qd') || r.includes('qs')) return 'Centrocampo'
+                      if (r.includes('ed') || r.includes('es') || r.includes('esterno dx') || r.includes('esterno sx') || r.includes('med') || r.includes('reg') || r.includes('mez') || r.includes('centro') || r.includes('cm') || r.includes('mc') || r.includes('md') || r.includes('ms') || r.includes('cdm') || r.includes('rwb') || r.includes('lwb') || r.includes('qd') || r.includes('qs')) return 'Centrocampo'
                       if (r.includes('att') || r.includes('pun') || r.includes('st') || r.includes('fw') || r.includes('forward') || r.includes('ala') || r.includes('wing')) return 'Attacco'
                       return 'Altri'
                     }
