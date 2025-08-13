@@ -241,21 +241,36 @@ const MatchLive = () => {
     )
   }
 
+  // Derive current on-field from lineup + substitutions
+  const onFieldEntries = useMemo(() => {
+    const baseEntries = Object.entries(lineup?.players_data?.positions || {}) as Array<[string, string]>
+    const entries = [...baseEntries]
+    ;(events || []).filter((e: any) => e.event_type === 'substitution').forEach((e: any) => {
+      const outId = e.metadata?.out_id as string | undefined
+      const inId = e.metadata?.in_id as string | undefined
+      if (!outId || !inId) return
+      const idx = entries.findIndex(([, pid]) => pid === outId)
+      if (idx >= 0) entries[idx] = [entries[idx][0], inId]
+    })
+    return entries
+  }, [lineup, events])
+  const onFieldIds = useMemo(() => new Set(onFieldEntries.map(([, pid]) => pid).filter(Boolean) as string[]), [onFieldEntries])
+  const onFieldPlayers = useMemo(() => {
+    return onFieldEntries.map(([, pid]) => {
+      const p = playersById[pid] || trialistsById[pid]
+      return p ? { ...p, id: pid } : { id: pid, first_name: 'N/A', last_name: '' }
+    })
+  }, [onFieldEntries, playersById, trialistsById])
+  const roleByCurrentOnFieldPlayerId = useMemo(() => {
+    const m: Record<string, string> = {}
+    onFieldEntries.forEach(([posId, pid]) => { if (pid) m[pid] = roleByPosId[posId] || '' })
+    return m
+  }, [onFieldEntries, roleByPosId])
+
   // Substitution dialog
   const [subOpen, setSubOpen] = useState(false)
   const [subOutId, setSubOutId] = useState<string>('')
   const [subInId, setSubInId] = useState<string>('')
-  const onFieldIds = useMemo(() => {
-    // derive on field applying substitution events
-    const start = new Set<string>(Array.from(titolariIds).filter(Boolean) as string[])
-    events.filter((e: any) => e.event_type === 'substitution').forEach((e: any) => {
-      const outId = e.metadata?.out_id as string | undefined
-      const inId = e.metadata?.in_id as string | undefined
-      if (outId) start.delete(outId)
-      if (inId) start.add(inId)
-    })
-    return start
-  }, [titolariIds, events])
   const benchIds = useMemo(() => new Set(convocati.map((c: any) => c.id)), [convocati])
   const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id)), [benchIds, onFieldIds])
   const doSubstitution = async () => {
@@ -358,12 +373,12 @@ const MatchLive = () => {
               <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
             </CardHeader>
             <CardContent>
-              {titolari.length === 0 ? (
+              {onFieldPlayers.length === 0 ? (
                 <div className="text-muted-foreground text-sm">Nessun titolare impostato. Imposta l'11 dalla sezione Formazione.</div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {titolari.map((p: any) => {
-                    const rawRole = roleByPlayerId[p.id] || ''
+                  {onFieldPlayers.map((p: any) => {
+                    const rawRole = roleByCurrentOnFieldPlayerId[p.id] || ''
                     const code = rawRole ? normalizeRoleCodeFrom({ roleShort: rawRole }) : ''
                     return (
                       <div key={p.id} className={`p-2 rounded border flex items-center gap-2 cursor-pointer ${selectedPlayerId===p.id ? 'border-primary bg-primary/5' : ''}`} onClick={()=>setSelectedPlayerId(p.id)}>
