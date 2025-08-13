@@ -111,9 +111,18 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         .delete()
         .eq('session_id', sessionId)
 
-      // Poi inserisce i nuovi convocati (senza campo confirmed)
-      if (selectedPlayers.length > 0) {
-        const convocatiToInsert = selectedPlayers.map(playerId => ({
+      // Partiziona selezioni: tesserati vs provinanti
+      const rosterIds: string[] = []
+      const trialistIds: string[] = []
+      selectedPlayers.forEach(id => {
+        const p = allPlayers.find(pl => pl.id === id)
+        if (p?.isTrialist) trialistIds.push(id)
+        else rosterIds.push(id)
+      })
+
+      // Inserisce solo i tesserati nel DB (FK su players)
+      if (rosterIds.length > 0) {
+        const convocatiToInsert = rosterIds.map(playerId => ({
           session_id: sessionId,
           player_id: playerId
         }))
@@ -123,6 +132,11 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
           .insert(convocatiToInsert)
 
         if (error) throw error
+      }
+
+      // Avviso temporaneo: i provinanti non possono essere persistiti in questa tabella
+      if (trialistIds.length > 0) {
+        toast.info(`${trialistIds.length} provinante/i non salvati in panchina (limite schema).`)
       }
 
       await loadConvocati()

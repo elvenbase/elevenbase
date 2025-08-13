@@ -79,9 +79,23 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
     try {
       await supabase.from('match_bench').delete().eq('match_id', matchId)
       if (selectedPlayers.length > 0) {
-        const rows = selectedPlayers.map(player_id => ({ match_id: matchId, player_id }))
-        const { error } = await supabase.from('match_bench').insert(rows)
-        if (error) throw error
+        const rosterIds: string[] = []
+        const trialistIds: string[] = []
+        selectedPlayers.forEach(id => {
+          const p = allPlayers.find(pl => pl.id === id)
+          if (p?.isTrialist) trialistIds.push(id)
+          else rosterIds.push(id)
+        })
+
+        if (rosterIds.length > 0) {
+          const rows = rosterIds.map(player_id => ({ match_id: matchId, player_id }))
+          const { error } = await supabase.from('match_bench').insert(rows)
+          if (error) throw error
+        }
+
+        if (trialistIds.length > 0) {
+          toast.info(`${trialistIds.length} provinante/i non salvati in panchina (limite schema).`)
+        }
       }
       await loadBench()
       toast.success('Panchina partita salvata')
