@@ -60,9 +60,12 @@ serve(async (req) => {
       const { data: bench, error: benchError } = await supabase
         .from('match_bench')
         .select(`
-          id, match_id, player_id, notes,
+          id, match_id, player_id, trialist_id, notes,
           players (
             id, first_name, last_name, jersey_number, position, avatar_url
+          ),
+          trialists:trialist_id (
+            id, first_name, last_name, avatar_url
           )
         `)
         .eq('match_id', match.id)
