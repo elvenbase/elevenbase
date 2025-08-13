@@ -190,6 +190,38 @@ export const TrainingSessionModal = ({
           </TabsContent>
 
           <TabsContent value="lineup" className="mt-3 sm:mt-6">
+            {/* DEBUG TEMPORANEO - RIMUOVERE DOPO LA RISOLUZIONE */}
+            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <h4 className="font-semibold text-yellow-800 mb-2">🔍 DEBUG - Training Formation</h4>
+              <div className="text-xs text-yellow-700 space-y-1">
+                <div><strong>Session ID:</strong> {session.id}</div>
+                <div><strong>Players totali:</strong> {players?.length || 0}</div>
+                <div><strong>Trialist invites totali:</strong> {trialistInvites?.length || 0}</div>
+                <div><strong>Attendance totali:</strong> {attendance?.length || 0}</div>
+                <div><strong>Trialist con status 'present':</strong> {trialistInvites?.filter((t: any) => t.status === 'present').length || 0}</div>
+                <div><strong>Players con status 'present':</strong> {attendance?.filter(a => a.status === 'present').length || 0}</div>
+                <div><strong>PresentPlayers passati a LineupManager:</strong> {[
+                  ...(players?.filter(player => {
+                    const playerAttendance = attendance?.find(a => a.player_id === player.id);
+                    return playerAttendance && playerAttendance.status === 'present';
+                  }) || []),
+                  ...(trialistInvites?.filter((trialist: any) => trialist.status === 'present').map((trialist: any) => ({
+                    id: trialist.trialist_id,
+                    first_name: trialist.trialists?.first_name || 'Unknown',
+                    last_name: trialist.trialists?.last_name || 'Unknown',
+                    is_trialist: true,
+                    trialist_data: trialist
+                  })) || [])
+                ].length}</div>
+              </div>
+              <div className="mt-2 text-xs text-yellow-600">
+                <strong>Raw trialistInvites:</strong>
+                <pre className="mt-1 bg-yellow-100 p-2 rounded text-xs overflow-auto max-h-32">
+                  {JSON.stringify(trialistInvites, null, 2)}
+                </pre>
+              </div>
+            </div>
+            
             <LineupManager 
               sessionId={session.id}
               presentPlayers={[
