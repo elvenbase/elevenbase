@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote } from 'lucide-react'
 import { useMatch, useMatchEvents, useMatchAttendance, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
+import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
+import { supabase } from '@/integrations/supabase/client'
 
 const computeScore = (events: any[]) => {
   let us = 0, opp = 0
@@ -23,12 +25,15 @@ const MatchLive = () => {
   const { data: attendance = [] } = useMatchAttendance(id || '')
   const { data: trialistInvites = [] } = useMatchTrialistInvites(id || '')
   const { data: players = [] } = usePlayers()
+  const { lineup, loadLineup } = useMatchLineupManager(id || '')
+  useEffect(() => { if (id) loadLineup() }, [id])
 
   const score = useMemo(() => computeScore(events), [events])
   const presentIds = useMemo(() => new Set(attendance.filter((a: any) => a.status === 'present').map((a: any) => a.player_id)), [attendance])
-  const titolariIds = useMemo(() => new Set([] as string[]), []) // TODO: derive from lineup live state
+  const titolariIds = useMemo(() => new Set(Object.values(lineup?.players_data?.positions || {})), [lineup])
   const titolari = useMemo(() => players.filter((p: any) => titolariIds.has(p.id)), [players, titolariIds])
   const convocati = useMemo(() => players.filter((p: any) => presentIds.has(p.id)), [players, presentIds])
+  const playersById = useMemo(() => Object.fromEntries(players.map((p: any) => [p.id, p])), [players])
 
   const [running, setRunning] = useState(false)
   const [seconds, setSeconds] = useState(0)
@@ -37,6 +42,15 @@ const MatchLive = () => {
     const iv = setInterval(() => setSeconds(s => s + 1), 1000)
     return () => clearInterval(iv)
   }, [running])
+
+  const postEvent = async (evt: { event_type: string; team?: 'us'|'opponent'; player_id?: string|null; assister_id?: string|null; comment?: string|null }) => {
+    if (!id) return
+    await supabase.from('match_events').insert({ match_id: id, ...evt, team: evt.team || 'us', metadata: { live: true } })
+  }
+  const [lastEvents, setLastEvents] = useState<any[]>([])
+  useEffect(() => {
+    setLastEvents(events.slice(-6).reverse())
+  }, [events])
 
   if (!id) return null
 
@@ -80,12 +94,25 @@ const MatchLive = () => {
               )}
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-1" /> Gol</Button>
-                <Button size="sm" variant="outline"><Redo2 className="h-4 w-4 mr-1" /> Assist</Button>
-                <Button size="sm" variant="outline"><Shield className="h-4 w-4 mr-1" /> Giallo</Button>
-                <Button size="sm" variant="destructive"><Shield className="h-4 w-4 mr-1" /> Rosso</Button>
+                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'goal', team: 'us' })}><Plus className="h-4 w-4 mr-1" /> Gol</Button>
+                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'assist' })}><Redo2 className="h-4 w-4 mr-1" /> Assist</Button>
+                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'yellow_card' })}><Shield className="h-4 w-4 mr-1" /> Giallo</Button>
+                <Button size="sm" variant="destructive" onClick={() => postEvent({ event_type: 'red_card' })}><Shield className="h-4 w-4 mr-1" /> Rosso</Button>
                 <Button size="sm" variant="outline"><Users className="h-4 w-4 mr-1" /> Sostituzione</Button>
-                <Button size="sm" variant="outline"><StickyNote className="h-4 w-4 mr-1" /> Nota</Button>
+                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'note', comment: 'Nota partita' })}><StickyNote className="h-4 w-4 mr-1" /> Nota</Button>
+              </div>
+
+              <div className="mt-6">
+                <div className="font-semibold mb-2">Eventi recenti</div>
+                <div className="space-y-1">
+                  {lastEvents.map((e: any) => (
+                    <div key={e.id} className="text-sm text-muted-foreground">
+                      <span className="mr-2">[{new Date(e.created_at).toLocaleTimeString()}]</span>
+                      <span className="mr-2">{e.event_type}</span>
+                      {e.player_id && <span className="mr-2">{playersById[e.player_id]?.first_name} {playersById[e.player_id]?.last_name}</span>}
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
