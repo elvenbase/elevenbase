@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -431,7 +431,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                             size="icon"
                             className="shrink-0"
                           >
-                            <X className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
