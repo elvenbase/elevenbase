@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share } from 'lucide-react'
+import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share, ChevronDown, ChevronUp } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useTrainingSessions, useTrainingAttendance, usePlayers, useTrainingTrialistInvites } from '@/hooks/useSupabaseData'
@@ -17,6 +17,7 @@ import { TrainingForm } from '@/components/forms/TrainingForm'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
+import { Checkbox } from '@/components/ui/checkbox'
 
 import { toast } from 'sonner'
 
@@ -42,6 +43,8 @@ const SessionManagement = () => {
   const { id: sessionId } = useParams<{ id: string }>()
   const [refreshKey, setRefreshKey] = useState(0)
   const [playersInLineup, setPlayersInLineup] = useState<string[]>([])
+  const [showDebug, setShowDebug] = useState(false)
+  const [includeTrialistsInLineup, setIncludeTrialistsInLineup] = useState(false)
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
@@ -133,6 +136,26 @@ const SessionManagement = () => {
     return { present, absent, noResponse, totalPlayers: totalEntities }
   })()
 
+  // Liste per debug e selezione formazione
+  const presentPlayersList = (players?.filter(player => {
+    const playerAttendance = attendance?.find(a => a.player_id === player.id);
+    return playerAttendance?.status === 'present';
+  }) || [])
+
+  const presentTrialists = (trialistInvites as any[]).filter((t: any) => t.status === 'present')
+
+  const trialistsAsPlayers = presentTrialists.map((t: any) => ({
+    id: t.trialist_id as string,
+    first_name: (t.trialists?.first_name as string) || 'Trialist',
+    last_name: (t.trialists?.last_name as string) || '',
+    position: undefined,
+    avatar_url: undefined
+  }))
+
+  const presentPlayersForLineup = includeTrialistsInLineup
+    ? [...presentPlayersList, ...trialistsAsPlayers]
+    : presentPlayersList
+
   if (loadingSessions) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -214,9 +237,10 @@ const SessionManagement = () => {
               </TrainingForm>
             </div>
           </div>
+                </div>
         </div>
-
-        {/* Session Details */}
+ 
+         {/* Session Details */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card>
             <CardContent className="p-3 sm:pt-6">
@@ -258,27 +282,11 @@ const SessionManagement = () => {
                         // Usa i nuovi campi strutturati se disponibili
                         if (session.communication_type) {
                           const type = session.communication_type.charAt(0).toUpperCase() + session.communication_type.slice(1);
-                          if (session.communication_type === 'discord' && session.communication_details) {
-                            return (
-                              <div className="space-y-1">
-                                <div>{type}</div>
-                                <a 
-                                  href={session.communication_details} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800 underline truncate block"
-                                >
-                                  {session.communication_details}
-                                </a>
-                              </div>
-                            );
-                          } else if (session.communication_type === 'altro' && session.communication_details) {
-                            return <span className="truncate">{session.communication_details}</span>;
-                          }
-                          return <span>{type}</span>;
+                          if (type === 'Party') return 'Party - In game';
+                          if (type === 'Discord') return 'Discord - Server di squadra';
+                          return session.communication_details || 'Altro';
                         }
-                        // Fallback per retrocompatibilità
-                        return <span className="truncate">{session.location || 'Non specificato'}</span>;
+                        return session.location || '—'
                       })()}
                     </div>
                   </div>
@@ -292,9 +300,9 @@ const SessionManagement = () => {
               <div className="flex items-center space-x-2">
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-medium">Presenze</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {attendanceStats.present} presenti, {attendanceStats.absent} assenti
+                  <p className="text-xs sm:text-sm font-medium">Partecipanti</p>
+                  <p className="text-xs text-muted-foreground">
+                    {attendanceStats.present} presenti • {attendanceStats.absent} assenti • {attendanceStats.noResponse} senza risposta
                   </p>
                 </div>
               </div>
@@ -302,21 +310,11 @@ const SessionManagement = () => {
           </Card>
         </div>
 
-        {/* Main Content */}
         <Tabs defaultValue="attendance" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="attendance" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Presenze
-            </TabsTrigger>
-            <TabsTrigger value="lineup" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Formazione
-            </TabsTrigger>
-            <TabsTrigger value="public-link" className="flex items-center gap-2">
-              <Share className="h-4 w-4" />
-              Link Pubblico
-            </TabsTrigger>
+          <TabsList>
+            <TabsTrigger value="attendance">Presenze</TabsTrigger>
+            <TabsTrigger value="lineup">Formazione</TabsTrigger>
+            <TabsTrigger value="share">Condivisione</TabsTrigger>
           </TabsList>
 
           <TabsContent value="attendance" className="space-y-6">
@@ -355,14 +353,47 @@ const SessionManagement = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="flex justify-end mb-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowDebug(prev => !prev)}
+                    className="flex items-center gap-1"
+                  >
+                    {showDebug ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    Debug Formazione
+                  </Button>
+                </div>
+
+                {showDebug && (
+                  <div className="p-4 mb-6 rounded-lg border bg-amber-50 dark:bg-amber-950/20">
+                    <div className="text-sm space-y-2">
+                      <div className="font-medium">Stato conteggi</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>Giocatori presenti (tesserati): <span className="font-semibold">{presentPlayersList.length}</span></div>
+                        <div>Trialist presenti: <span className="font-semibold">{presentTrialists.length}</span></div>
+                        <div>Totale presenti attesi: <span className="font-semibold">{presentPlayersList.length + presentTrialists.length}</span></div>
+                        <div>Passati a formazione: <span className="font-semibold">{presentPlayersForLineup.length}</span> {includeTrialistsInLineup ? '(inclusi trialist)' : '(solo tesserati)'}</div>
+                        <div>Selezionati in formazione: <span className="font-semibold">{playersInLineup.length}</span>/11</div>
+                      </div>
+                      {presentTrialists.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          Trialist presenti: {(presentTrialists as any[]).map((t: any) => `${t.trialists?.first_name || ''} ${t.trialists?.last_name || ''}`.trim()).join(', ')}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 pt-2">
+                        <Checkbox checked={includeTrialistsInLineup} onCheckedChange={(checked) => setIncludeTrialistsInLineup(!!checked)} />
+                        <span>Includi trialist nella selezione formazione (debug)</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {sessionId && (
                   <LineupManager 
                     sessionId={sessionId} 
                     key={`lineup-${refreshKey}`} 
-                    presentPlayers={players?.filter(player => {
-                      const playerAttendance = attendance?.find(a => a.player_id === player.id);
-                      return playerAttendance?.status === 'present';
-                    }) || []}
+                    presentPlayers={presentPlayersForLineup}
                     onLineupChange={handleLineupChange}
                   />
                 )}
@@ -404,30 +435,23 @@ const SessionManagement = () => {
               </CardContent>
             </Card>
 
-          </TabsContent>
-
-          <TabsContent value="public-link" className="space-y-6">
+            {/* Condivisione */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Share className="h-5 w-5" />
-                  Link Pubblico per Registrazioni
+                  Condivisione Pubblica
                 </CardTitle>
                 <CardDescription>
-                  Condividi il link pubblico per permettere ai giocatori di registrare la loro presenza
+                  Condividi il link pubblico per permettere ai giocatori di confermare la presenza
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <PublicLinkSharing 
-                  session={session} 
-                  attendanceStats={attendanceStats}
-                  onRefresh={handleRefresh}
-                />
+                <PublicLinkSharing sessionId={sessionId || ''} token={session.public_link_token} />
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-        </div>
       </div>
     </div>
   )
