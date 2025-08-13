@@ -172,6 +172,7 @@ const MatchDetail = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
+                <Button asChild size="sm"><Link to={`/match/${id}/live`}>Live</Link></Button>
                 <div className="text-2xl sm:text-3xl font-bold text-center sm:text-right">
                   {score.us} - {score.opp}
                 </div>
