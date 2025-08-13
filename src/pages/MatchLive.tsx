@@ -190,6 +190,9 @@ const MatchLive = () => {
   useEffect(() => {
     setLastEvents(events.slice(-6).reverse())
   }, [events])
+  // Optimistic substitutions to reflect immediately before realtime/query refresh
+  const [optimisticSubs, setOptimisticSubs] = useState<{ out_id: string; in_id: string }[]>([])
+  useEffect(() => { if ((events || []).some((e: any) => e.event_type === 'substitution')) setOptimisticSubs([]) }, [events])
 
   // Realtime updates: refresh events on INSERT
   useEffect(() => {
@@ -252,6 +255,10 @@ const MatchLive = () => {
       const idx = entries.findIndex(([, pid]) => pid === outId)
       if (idx >= 0) entries[idx] = [entries[idx][0], inId]
     })
+    optimisticSubs.forEach(({ out_id, in_id }) => {
+      const idx = entries.findIndex(([, pid]) => pid === out_id)
+      if (idx >= 0) entries[idx] = [entries[idx][0], in_id]
+    })
     return entries
   }, [lineup, events])
   const onFieldIds = useMemo(() => new Set(onFieldEntries.map(([, pid]) => pid).filter(Boolean) as string[]), [onFieldEntries])
@@ -275,6 +282,7 @@ const MatchLive = () => {
   const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id)), [benchIds, onFieldIds])
   const doSubstitution = async () => {
     if (!id || !subOutId || !subInId) return
+    setOptimisticSubs(prev => [...prev, { out_id: subOutId, in_id: subInId }])
     const { error } = await supabase.from('match_events').insert({ match_id: id, event_type: 'substitution', metadata: { out_id: subOutId, in_id: subInId }, team: 'us' })
     if (!error) {
       queryClient.invalidateQueries({ queryKey: ['match-events', id] })
@@ -480,6 +488,26 @@ const MatchLive = () => {
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     <div className="truncate">{p.first_name} {p.last_name}</div>
                     {renderEventBadges(p.id)}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Repeat className="h-5 w-5" />Sostituti ({substitutedList.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-80 overflow-y-auto space-y-1">
+                {substitutedList.length === 0 && (
+                  <div className="text-sm text-muted-foreground">Nessun sostituito al momento.</div>
+                )}
+                {substitutedList.map((it) => (
+                  <div key={it.id} className="flex items-center gap-2 p-2 rounded border">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                    <div className="truncate">{getDisplayName(it.id)}</div>
+                    {typeof it.minute === 'number' && (<span className="ml-auto text-xs text-muted-foreground">{it.minute}'</span>)}
                   </div>
                 ))}
               </div>
