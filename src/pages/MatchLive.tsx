@@ -323,7 +323,9 @@ const MatchLive = () => {
     const raw = roleByCurrentOnFieldPlayerId[pid]
     if (raw) return normalizeRoleCodeFrom({ roleShort: raw })
     const pl: any = playersById[pid]
-    if (pl) return normalizeRoleCodeFrom({ roleShort: pl?.roleShort, role: pl?.role, name: pl?.position || pl?.position_name || '' })
+    if (pl) return normalizeRoleCodeFrom({ role_code: pl?.role_code as any, roleShort: pl?.roleShort, role: pl?.role, name: pl?.position || (pl as any)?.position_name || '' })
+    const tr = trialistsById[pid]
+    if (tr) return normalizeRoleCodeFrom({ role_code: (tr as any)?.role_code as any })
     return 'ALTRI' as const
   }
   const groupedOnField = useMemo(() => {
