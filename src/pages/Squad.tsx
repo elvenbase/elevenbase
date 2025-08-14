@@ -20,7 +20,7 @@ import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type SortField = 'name' | 'jersey_number' | 'position' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
+type SortField = 'name' | 'jersey_number' | 'role_code' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
 
 interface Player {
@@ -28,7 +28,7 @@ interface Player {
   first_name: string;
   last_name: string;
   jersey_number?: number;
-  position?: string;
+  role_code?: string;
   phone?: string;
   birth_date?: string;
   email?: string;
@@ -132,9 +132,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
             <div className="grid grid-cols-1 gap-3">
               <div>
                 <span className="text-xs text-muted-foreground uppercase tracking-wide">Ruolo</span>
-                <div className="text-sm font-medium mt-1">
-                  {player.position || 'Non specificato'}
-                </div>
+                <div className="text-sm font-medium mt-1">{(player as any).role_code || 'Non specificato'}</div>
               </div>
             </div>
           </div>
@@ -399,9 +397,9 @@ const Squad = () => {
           aValue = a.jersey_number || 0;
           bValue = b.jersey_number || 0;
           break;
-        case 'position':
-          aValue = a.position || '';
-          bValue = b.position || '';
+        case 'role_code':
+          aValue = (a as any).role_code || '';
+          bValue = (b as any).role_code || '';
           break;
         case 'phone':
           aValue = a.phone || '';
@@ -540,7 +538,7 @@ const Squad = () => {
                         <SelectContent>
                           <SelectItem value="name">Nome/Cognome</SelectItem>
                           <SelectItem value="jersey_number">Numero di maglia</SelectItem>
-                          <SelectItem value="position">Ruolo</SelectItem>
+                          <SelectItem value="role_code">Ruolo</SelectItem>
                           <SelectItem value="phone">Telefono</SelectItem>
                           <SelectItem value="presences">Presenze allenamenti</SelectItem>
                           <SelectItem value="tardiness">Ritardi allenamenti</SelectItem>
@@ -639,7 +637,7 @@ const Squad = () => {
                             <Badge variant="outline">#{player.jersey_number}</Badge>
                           )}
                         </TableCell>
-                        <TableCell>{player.position || '-'}</TableCell>
+                        <TableCell>{(player as any).role_code || '-'}</TableCell>
                         <TableCell>
                           {player.phone ? (
                             <div className="flex items-center gap-2">
