@@ -19,6 +19,7 @@ import EditPlayerForm from '@/components/forms/EditPlayerForm';
 import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useRoles } from '@/hooks/useRoles';
 
 type SortField = 'name' | 'jersey_number' | 'role_code' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -294,6 +295,8 @@ const Squad = () => {
   } | null>(null);
   
   const { data: players = [], isLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
+  const { data: roles = [] } = useRoles();
+  const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles]);
   const deletePlayer = useDeletePlayer();
 
   // Carica capitano attuale al mount e quando cambiano i players
@@ -398,8 +401,18 @@ const Squad = () => {
           bValue = b.jersey_number || 0;
           break;
         case 'role_code':
-          aValue = (a as any).role_code || '';
-          bValue = (b as any).role_code || '';
+          {
+            const ra: any = rolesByCode[(a as any).role_code || ''];
+            const rb: any = rolesByCode[(b as any).role_code || ''];
+            // Primary by sort_order if both exist, else by label, else by code
+            if (ra && rb) {
+              aValue = ra.sort_order;
+              bValue = rb.sort_order;
+            } else {
+              aValue = (ra?.label || (a as any).role_code || '');
+              bValue = (rb?.label || (b as any).role_code || '');
+            }
+          }
           break;
         case 'phone':
           aValue = a.phone || '';
@@ -432,7 +445,7 @@ const Squad = () => {
     });
 
     return sorted;
-  }, [players, searchTerm, statusFilter, sortField, sortDirection]);
+  }, [players, searchTerm, statusFilter, sortField, sortDirection, rolesByCode]);
 
   const handleDeletePlayer = async (playerId: string) => {
     console.log('🗑️ Attempting to delete player with ID:', playerId);
@@ -637,7 +650,7 @@ const Squad = () => {
                             <Badge variant="outline">#{player.jersey_number}</Badge>
                           )}
                         </TableCell>
-                        <TableCell>{(player as any).role_code || '-'}</TableCell>
+                        <TableCell>{rolesByCode[(player as any).role_code || '']?.label || (player as any).role_code || '-'}</TableCell>
                         <TableCell>
                           {player.phone ? (
                             <div className="flex items-center gap-2">
