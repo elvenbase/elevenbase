@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Edit, Trash2, BarChart3, MessageCircle, ChevronDown, ChevronUp, ArrowUpDown, Filter, Settings } from 'lucide-react';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
-import { usePlayersWithAttendance, useDeletePlayer } from '@/hooks/useSupabaseData';
+import { usePlayersWithAttendance, useDeletePlayer, useUpdatePlayer } from '@/hooks/useSupabaseData';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { subMonths } from 'date-fns';
@@ -135,7 +135,28 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
             <div className="grid grid-cols-1 gap-3">
               <div>
                 <span className="text-xs text-muted-foreground uppercase tracking-wide">Ruolo</span>
-                <div className="text-sm font-medium mt-1">{getRoleLabel((player as any).role_code)}</div>
+                <div className="mt-1 flex items-center gap-2">
+                  {editingRolePlayerId === player.id ? (
+                    <Select
+                      value={(player as any).role_code || ''}
+                      onValueChange={async (value) => {
+                        try { await updatePlayer.mutateAsync({ id: player.id, role_code: value as any }); setEditingRolePlayerId(null) } catch {}
+                      }}
+                    >
+                      <SelectTrigger className="h-8 w-[180px]"><SelectValue placeholder="Seleziona ruolo" /></SelectTrigger>
+                      <SelectContent>
+                        {roles.map(r => (
+                          <SelectItem key={r.code} value={r.code}>{r.label} ({r.abbreviation})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <>
+                      <div className="text-sm font-medium">{getRoleLabel((player as any).role_code)}</div>
+                      <Button variant="outline" size="sm" onClick={() => setEditingRolePlayerId(player.id)}>Modifica</Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -300,6 +321,8 @@ const Squad = () => {
   const { data: roles = [] } = useRoles();
   const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles]);
   const deletePlayer = useDeletePlayer();
+  const updatePlayer = useUpdatePlayer();
+  const [editingRolePlayerId, setEditingRolePlayerId] = useState<string|null>(null);
 
   // Carica capitano attuale al mount e quando cambiano i players
   React.useEffect(() => {
@@ -652,7 +675,28 @@ const Squad = () => {
                             <Badge variant="outline">#{player.jersey_number}</Badge>
                           )}
                         </TableCell>
-                        <TableCell>{rolesByCode[(player as any).role_code || '']?.label || (player as any).role_code || '-'}</TableCell>
+                        <TableCell>
+                          {editingRolePlayerId === player.id ? (
+                            <Select
+                              value={(player as any).role_code || ''}
+                              onValueChange={async (value) => {
+                                try { await updatePlayer.mutateAsync({ id: player.id, role_code: value as any }); setEditingRolePlayerId(null) } catch {}
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-[180px]"><SelectValue placeholder="Seleziona ruolo" /></SelectTrigger>
+                              <SelectContent>
+                                {roles.map(r => (
+                                  <SelectItem key={r.code} value={r.code}>{r.label} ({r.abbreviation})</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span>{rolesByCode[(player as any).role_code || '']?.label || (player as any).role_code || '-'}</span>
+                              <Button variant="outline" size="sm" onClick={() => setEditingRolePlayerId(player.id)}>Modifica</Button>
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell>
                           {player.phone ? (
                             <div className="flex items-center gap-2">
