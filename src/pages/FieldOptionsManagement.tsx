@@ -28,8 +28,8 @@ const FieldOptionsManagement = () => {
 
   const fieldConfigs = {
     player_role: {
-      label: 'Ruoli Giocatori',
-      description: 'Gestisci i ruoli disponibili per i giocatori',
+      label: 'Ruoli (label e sigla)',
+      description: 'Gestisci i ruoli disponibili: tutta l’app legge da qui (label e sigla)',
       icon: '⚽'
     },
     position: {

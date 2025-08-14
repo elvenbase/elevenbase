@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { CustomFormation } from '@/hooks/useCustomFormations'
 import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
-import { useFieldOptions } from '@/hooks/useFieldOptions'
+import { useRoles } from '@/hooks/useRoles'
 import { Trash2, Save, Plus } from 'lucide-react'
 
 interface FormationBuilderProps {
@@ -20,7 +20,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
   onSave,
   onCancel
 }) => {
-  const { options, loadOptions, getOptionsForField } = useFieldOptions();
+  const { data: roles = [] } = useRoles();
   const [name, setName] = useState(formation?.name || '')
   const [defenders, setDefenders] = useState(formation?.defenders || 4)
   const [midfielders, setMidfielders] = useState(formation?.midfielders || 4)
@@ -31,11 +31,11 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
 
   // Load field options on component mount
   useEffect(() => {
-    loadOptions();
-  }, [loadOptions]);
+    // roles are loaded via react-query
+  }, []);
 
-  // Get player roles from field_options
-  const playerRoles = getOptionsForField('player_role');
+  // Roles from roles table
+  const playerRoles = roles;
 
   const totalPlayers = defenders + midfielders + forwards
 
@@ -46,7 +46,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
     // Get default roles for each position type
     const getDefaultRole = (type: 'defender' | 'midfielder' | 'forward') => {
       const roles = playerRoles.filter(role => {
-        const value = role.option_value.toLowerCase();
+        const value = role.label.toLowerCase();
         switch (type) {
           case 'defender':
             return value.includes('difensore') || value.includes('terzino') || value.includes('esterno');
@@ -81,7 +81,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Difensore ${positionId}`,
         x,
         y: 70,
-        role: defaultDefenderRole?.option_label || 'Difensore',
+        role: defaultDefenderRole?.label || 'Difensore',
         roleShort: defaultDefenderRole?.abbreviation || 'D'
       })
       positionId++
@@ -97,7 +97,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Centrocampista ${positionId}`,
         x,
         y: 45,
-        role: defaultMidfielderRole?.option_label || 'Centrocampista',
+        role: defaultMidfielderRole?.label || 'Centrocampista',
         roleShort: defaultMidfielderRole?.abbreviation || 'C'
       })
       positionId++
@@ -113,7 +113,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Attaccante ${positionId}`,
         x,
         y: 20,
-        role: defaultForwardRole?.option_label || 'Attaccante',
+        role: defaultForwardRole?.label || 'Attaccante',
         roleShort: defaultForwardRole?.abbreviation || 'A'
       })
       positionId++
@@ -464,10 +464,10 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                              <select
                                value={position.role || ''}
                                onChange={(e) => {
-                                 const selectedRole = playerRoles.find(role => role.option_label === e.target.value);
+                                 const selectedRole = playerRoles.find(role => role.label === e.target.value);
                                  updatePositionRole(
-                                   position.id, 
-                                   selectedRole?.option_label || e.target.value,
+                                   position.id,
+                                   selectedRole?.label || e.target.value,
                                    selectedRole?.abbreviation || ''
                                  );
                                }}
@@ -476,8 +476,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                              >
                                <option value="">Seleziona ruolo...</option>
                                {playerRoles.map((role) => (
-                                 <option key={role.id} value={role.option_label}>
-                                   {role.option_label} ({role.abbreviation})
+                                 <option key={role.code} value={role.label}>
+                                   {role.label} ({role.abbreviation})
                                  </option>
                                ))}
                              </select>
