@@ -414,40 +414,40 @@ const MatchLive = () => {
               {orderedOnFieldPlayers.length === 0 ? (
                 <div className="text-muted-foreground text-sm">Nessun titolare impostato. Imposta l'11 dalla sezione Formazione.</div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {orderedOnFieldPlayers.map((p: any) => {
                     const code = p._roleCode as string
                     const firstInitial = (p.first_name || '').trim().charAt(0)
                     const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
                     return (
-                      <div key={p.id} className="p-2 rounded border flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                      <div key={p.id} className="px-2 py-1 rounded border flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                         {code && code !== 'ALTRI' && (
-                          <Badge variant="secondary" className="shrink-0">{code}</Badge>
+                          <Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
                         )}
-                        <div className="truncate">{displayName}</div>
+                        <div className="truncate text-sm leading-tight">{displayName}</div>
                         {renderEventBadges(p.id)}
                         <div className="ml-auto flex items-center gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'goal', team: 'us', player_id: p.id })}>
-                            <span className="material-symbols-outlined text-base">sports_soccer</span>
+                          <Button aria-label="Gol" variant="ghost" size="icon" className="hover:bg-transparent focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'goal', team: 'us', player_id: p.id })}>
+                            <span className="material-symbols-outlined text-[18px]">sports_soccer</span>
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'assist', player_id: p.id })}>
-                            <span className="material-symbols-outlined text-base">switch_access_shortcut_add</span>
+                          <Button aria-label="Assist" variant="ghost" size="icon" className="hover:bg-transparent focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'assist', player_id: p.id })}>
+                            <span className="material-symbols-outlined text-[18px]">switch_access_shortcut_add</span>
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'yellow_card', player_id: p.id })}>
-                            <span className="material-symbols-outlined text-yellow-500">crop_9_16</span>
+                          <Button aria-label="Ammonizione" variant="ghost" size="icon" className="hover:bg-transparent focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'yellow_card', player_id: p.id })}>
+                            <span className="material-symbols-outlined text-[18px] text-yellow-500">crop_9_16</span>
                           </Button>
-                          <Button variant="destructive" size="icon" onClick={() => postEvent({ event_type: 'red_card', player_id: p.id })}>
-                            <span className="material-symbols-outlined text-red-600">crop_9_16</span>
+                          <Button aria-label="Espulsione" variant="ghost" size="icon" className="hover:bg-transparent focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'red_card', player_id: p.id })}>
+                            <span className="material-symbols-outlined text-[18px]">crop_9_16</span>
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'foul', player_id: p.id })}>
-                            <span className="material-symbols-outlined text-base">shield_person</span>
+                          <Button aria-label="Fallo" variant="ghost" size="icon" className="hover:bg-transparent focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'foul', player_id: p.id })}>
+                            <span className="material-symbols-outlined text-[18px]">shield_person</span>
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => { setSubOutId(p.id); setSubOpen(true) }}>
-                            <span className="material-symbols-outlined text-base">transfer_within_a_station</span>
+                          <Button aria-label="Sostituzione" variant="outline" size="icon" className="hover:bg-transparent focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { setSubOutId(p.id); setSubOpen(true) }}>
+                            <span className="material-symbols-outlined text-[18px]">transfer_within_a_station</span>
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'note', player_id: p.id, comment: `Nota su ${getDisplayName(p.id)}` })}>
-                            <span className="material-symbols-outlined text-base">note_add</span>
+                          <Button aria-label="Nota" variant="ghost" size="icon" className="hover:bg-transparent focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'note', player_id: p.id, comment: `Nota su ${getDisplayName(p.id)}` })}>
+                            <span className="material-symbols-outlined text-[18px]">note_add</span>
                           </Button>
                         </div>
                       </div>
