@@ -68,7 +68,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
       x: 50,
       y: 85,
       role: 'Portiere',
-      roleShort: 'P'
+      roleShort: 'P',
+      role_code: 'P'
     })
 
     // Defenders
@@ -82,7 +83,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         x,
         y: 70,
         role: defaultDefenderRole?.label || 'Difensore',
-        roleShort: defaultDefenderRole?.abbreviation || 'D'
+        roleShort: defaultDefenderRole?.abbreviation || 'D',
+        role_code: defaultDefenderRole?.code || 'DC'
       })
       positionId++
     }
@@ -98,7 +100,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         x,
         y: 45,
         role: defaultMidfielderRole?.label || 'Centrocampista',
-        roleShort: defaultMidfielderRole?.abbreviation || 'C'
+        roleShort: defaultMidfielderRole?.abbreviation || 'C',
+        role_code: defaultMidfielderRole?.code || 'MC'
       })
       positionId++
     }
@@ -114,7 +117,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         x,
         y: 20,
         role: defaultForwardRole?.label || 'Attaccante',
-        roleShort: defaultForwardRole?.abbreviation || 'A'
+        roleShort: defaultForwardRole?.abbreviation || 'A',
+        role_code: defaultForwardRole?.code || 'ATT'
       })
       positionId++
     }
@@ -147,11 +151,11 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
     ))
   }, [])
 
-  const updatePositionRole = (positionId: string, role: string, roleShort?: string) => {
+  const updatePositionRole = (positionId: string, role: string, roleShort?: string, roleCode?: string) => {
     setPositions(prev => prev.map(pos => {
       if (pos.id !== positionId) return pos
       const next = { ...pos, role, roleShort }
-      const role_code = normalizeRoleCodeFrom(next)
+      const role_code = roleCode || normalizeRoleCodeFrom(next)
       return { ...next, role_code }
     }))
   }
@@ -335,25 +339,34 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                       
                       {/* Role display/edit - mobile */}
                       {editingRole === position.id ? (
-                        <input
-                          type="text"
-                          value={position.roleShort || ''}
-                          onChange={(e) => updatePositionRole(position.id, e.target.value)}
-                          onBlur={() => setEditingRole(null)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              setEditingRole(null)
-                            }
+                        <select
+                          value={position.role || ''}
+                          onChange={(e) => {
+                            const selectedRole = playerRoles.find(role => role.label === e.target.value)
+                            updatePositionRole(
+                              position.id,
+                              selectedRole?.label || e.target.value,
+                              selectedRole?.abbreviation || '',
+                              selectedRole?.code
+                            );
+                            setEditingRole(null)
                           }}
-                          className="text-xs bg-white border border-gray-300 rounded px-1 py-0.5 w-8 text-center"
+                          className="text-xs bg-white border border-gray-300 rounded px-1 py-0.5 min-w-[90px]"
                           autoFocus
-                        />
+                        >
+                          <option value="">Seleziona ruolo...</option>
+                          {playerRoles.map((role) => (
+                            <option key={role.code} value={role.label}>
+                              {role.label} ({role.abbreviation})
+                            </option>
+                          ))}
+                        </select>
                       ) : (
                         <div
                           className="text-xs font-semibold text-gray-800 bg-white bg-opacity-90 px-1 py-0.5 rounded cursor-pointer hover:bg-opacity-100 transition-all"
                           onClick={() => setEditingRole(position.id)}
                         >
-                          {position.roleShort || position.role || 'Ruolo'}
+                          {position.role || position.name}
                         </div>
                       )}
                     </div>
@@ -468,7 +481,8 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                                  updatePositionRole(
                                    position.id,
                                    selectedRole?.label || e.target.value,
-                                   selectedRole?.abbreviation || ''
+                                   selectedRole?.abbreviation || '',
+                                   selectedRole?.code
                                  );
                                }}
                                className="w-full text-sm h-9 px-3 py-1 border border-gray-300 rounded-md bg-white"
