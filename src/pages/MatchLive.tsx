@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2 } from 'lucide-react'
+import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2, RotateCcw } from 'lucide-react'
 import { useMatch, useMatchEvents, useMatchAttendance, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 import { supabase } from '@/integrations/supabase/client'
@@ -19,6 +19,36 @@ import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
 const PARATA_SVG = `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="16" height="16" viewBox="0 0 256 256" xml:space="preserve"><g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;" transform="translate(1.4110902877301328 1.4110902877301044) scale(2.82 2.82)"><path d="M 58.979 50.299 l 5.826 -5.826 c 1.283 -1.283 1.283 -3.381 0 -4.664 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l 5.978 -5.978 c 1.283 -1.283 1.283 -3.381 0 -4.664 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l 2.714 -2.714 c 1.283 -1.283 1.283 -3.381 0 -4.664 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l -1.95 1.95 c 1.283 -1.283 1.283 -3.381 0 -4.664 s -3.381 -1.283 -4.664 0 l -9.785 9.785 l -6.238 6.238 l 1.088 -6.17 c 0.315 -1.786 -0.889 -3.506 -2.675 -3.821 l -0.444 -0.078 c -1.786 -0.315 -3.506 0.889 -3.821 2.675 l -2.679 15.192 c -0.462 2.197 -1.183 4.136 -2.216 5.761 l 14.078 14.078 C 45.323 61.404 54.842 54.436 58.979 50.299 L 58.979 50.299 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(87,89,93); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 28.362 50.899 l -2.241 -2.241 c 1.033 -1.625 1.754 -3.564 2.216 -5.761 l 2.679 -15.192 c 0.315 -1.786 2.034 -2.99 3.821 -2.675 l 0.444 0.078 C 33.451 37.047 33.013 45.818 28.362 50.899 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 36.867 35.098 l 6.238 -6.238 l 9.785 -9.785 c 1.283 -1.283 3.381 -1.283 4.664 0 L 39.2 37.43 L 36.867 35.098 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 43.841 42.071 l 20.305 -20.305 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l -9.785 9.785 l -8.188 8.188 L 43.841 42.071 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 48.558 46.745 l 17.564 -17.564 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l -9.785 9.785 l -5.447 5.447 L 48.558 46.745 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 53.225 51.361 L 64.79 39.796 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l -9.233 9.233 L 53.225 51.361 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 32.625 68.706 L 19.986 56.067 c -1.253 -1.253 -1.253 -3.303 0 -4.556 l 2.216 -2.216 c 1.253 -1.253 3.303 -1.253 4.556 0 l 12.639 12.639 c 1.253 1.253 1.253 3.303 0 4.556 l -2.216 2.216 C 35.928 69.959 33.878 69.959 32.625 68.706 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 24.971 57.944 c -1.005 -1.005 -1.005 -2.649 0 -3.654 l 3.391 -3.391 l -2.055 -2.055 c -1.005 -1.005 -2.649 -1.005 -3.654 0 l -3.118 3.118 c -1.005 1.005 -1.005 2.649 0 3.654 l 13.541 13.541 c 0.911 0.911 2.344 0.987 3.353 0.245 L 24.971 57.944 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><rect x="44.55" y="39.62" rx="0" ry="0" width="1" height="16.5" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -20.6576 45.8728) "/><rect x="41.77" y="42.23" rx="0" ry="0" width="1" height="15.72" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7106 -0.7036 0.7036 0.7106 -23.0108 44.2408) "/><rect x="39.06" y="44.76" rx="0" ry="0" width="1" height="14.85" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7034 -0.7108 0.7108 0.7034 -25.3634 43.5968) "/><rect x="36.44" y="47.19" rx="0" ry="0" width="1" height="13.94" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -27.4777 41.9858) "/><rect x="-2.91" y="67.05" rx="0" ry="0" width="24.67" height="2" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -45.3568 26.5992) "/><rect x="2.44" y="72.39" rx="0" ry="0" width="24.67" height="2" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -47.57 31.9418) "/><rect x="7.78" y="77.74" rx="0" ry="0" width="24.67" height="2" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -49.7831 37.2844) "/><path d="M 82.813 7.756 c -3.871 -3.676 -9.067 -5.965 -14.8 -6.077 l 1.297 5.363 l 6.605 2.707 L 82.813 7.756 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><polygon points="80.41,31.74 82.55,24.6 76.19,18.91 68.8,21.11 66.36,28.34 70.5,33.08 " style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform="  matrix(1 0 0 1 0 0) "/><polygon points="67.38,20.64 63.01,14.77 53.69,16.7 52.12,22.28 58.3,29.43 64.94,27.89 " style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform="  matrix(1 0 0 1 0 0) "/><path d="M 84.001 8.966 l -6.975 2.016 v 6.683 l 6.793 6.066 l 5.876 -0.443 C 89.567 17.783 87.442 12.773 84.001 8.966 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.482 1.7 c -6.804 0.331 -12.803 3.727 -16.638 8.843 l 3.573 4.691 l 9.344 -1.942 l 5.067 -6.021 L 66.482 1.7 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.664 45.236 V 45.17 l -0.852 -5.039 l -7.584 -2.258 l -4.711 3.017 c 3.637 2.997 8.237 4.865 13.275 5.04 l -0.117 -0.694 H 66.664 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 57.474 36.584 v -5.828 l -6.498 -7.518 l -5.544 0.571 c 0 6.326 2.657 12.027 6.911 16.062 L 57.474 36.584 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 70.86 34.539 L 67.26 39.74 l 1.047 6.19 c 6.062 -0.198 11.506 -2.828 15.386 -6.953 l -3.188 -5.746 L 70.86 34.539 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.769 2.468 c -0.027 0.027 -0.055 0.054 -0.082 0.081 L 66.482 1.7 c -6.804 0.331 -12.803 3.727 -16.638 8.843 l 3.573 4.691 l 5.042 -1.048 c 1.681 -3.945 4.455 -7.849 8.309 -11.714 V 2.468 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 53.691 16.702 l -1.568 5.581 l 4.835 5.594 c -0.81 -4.051 -0.52 -8.062 0.862 -12.033 L 53.691 16.702 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.664 45.236 V 45.17 l -0.04 -0.234 c 0.013 0.014 0.026 0.028 0.04 0.042 v -0.016 c -1.864 -2.016 -3.491 -4.023 -4.841 -6.019 c 0 0 0 0 0 0 l -3.596 -1.07 l -4.711 3.017 c 3.637 2.997 8.237 4.865 13.275 5.04 l -0.117 -0.694 H 66.664 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 57.474 36.584 v -5.828 l -6.498 -7.518 l -5.544 0.571 c 0 6.326 2.657 12.027 6.911 16.062 L 57.474 36.584 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 57.474 30.756 v 5.828 l -5.132 3.287 c 0.375 0.356 0.758 0.702 1.157 1.031 l 4.729 -3.029 l 7.584 2.258 l 0.981 5.799 c 0.26 0.009 0.519 0.02 0.78 0.02 c 0.246 0 0.489 -0.011 0.734 -0.019 L 67.26 39.74 l 3.601 -5.201 l 9.644 -1.308 l 3.188 5.747 c 0.033 -0.036 0.068 -0.07 0.101 -0.106 c 0.112 -0.119 0.22 -0.241 0.329 -0.362 c 1.57 -1.766 2.864 -3.784 3.808 -5.988 c 0.043 -0.103 0.086 -0.205 0.127 -0.309 c 0.055 -0.133 0.106 -0.268 0.159 -0.403 c 0.945 -2.512 1.441 -5.271 1.49 -8.275 c -0.001 -0.083 -0.004 -0.165 -0.006 -0.248 l -5.882 0.443 l -6.793 -6.066 v -6.683 l 6.975 -2.016 c -0.379 -0.42 -0.778 -0.821 -1.188 -1.21 l -6.898 1.994 l -6.605 -2.707 l -1.297 -5.364 c -0.147 -0.003 -0.292 -0.011 -0.44 -0.011 c -0.366 0 -0.73 0.01 -1.092 0.028 l 1.348 5.576 l -5.067 6.021 l -9.344 1.942 l -3.573 -4.691 c -0.001 0.002 -0.003 0.003 -0.004 0.005 c -1.433 1.966 -2.495 4.002 -3.219 6.101 c -0.049 0.142 -0.099 0.284 -0.145 0.428 c -0.04 0.124 -0.076 0.248 -0.114 0.372 c -0.067 0.225 -0.132 0.451 -0.193 0.678 c -0.023 0.085 -0.045 0.17 -0.067 0.254 c -0.075 0.298 -0.145 0.597 -0.208 0.9 c -0.006 0.028 -0.013 0.056 -0.018 0.084 c -0.071 0.347 -0.133 0.698 -0.188 1.051 c -0.006 0.037 -0.01 0.074 -0.015 0.111 c -0.043 0.289 -0.079 0.581 -0.111 0.874 c -0.013 0.117 -0.023 0.234 -0.034 0.351 c -0.02 0.221 -0.037 0.443 -0.051 0.665 c -0.008 0.129 -0.017 0.258 -0.023 0.387 c -0.015 0.333 -0.025 0.667 -0.025 1.003 l 5.544 -0.571 L 57.474 30.756 z M 68.801 21.107 l 7.384 -2.192 l 6.363 5.683 l -2.136 7.14 l -9.907 1.343 l -4.144 -4.736 L 68.801 21.107 z M 53.691 16.702 l 9.314 -1.936 l 4.377 5.873 l -2.445 7.253 l -6.642 1.533 l -6.173 -7.142 L 53.691 16.702 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(87,89,93); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.687 2.549 c 0.292 -0.294 0.581 -0.588 0.886 -0.882 c -0.366 0 -0.73 0.01 -1.092 0.028 L 66.687 2.549 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 57.474 30.756 v 5.828 l -5.132 3.287 c 0.375 0.356 0.758 0.702 1.157 1.031 c 0 0 0 0 0 0 l 4.729 -3.029 l 3.596 1.07 c -2.516 -3.722 -4.135 -7.41 -4.865 -11.067 l -4.835 -5.594 l 1.568 -5.581 l 4.128 -0.858 c 0.193 -0.553 0.404 -1.106 0.639 -1.658 l -5.042 1.048 l -3.573 -4.691 c -0.001 0.002 -0.003 0.003 -0.004 0.005 c -1.433 1.966 -2.494 4.001 -3.219 6.101 c -0.023 0.069 -0.047 0.137 -0.07 0.206 c -0.025 0.074 -0.051 0.147 -0.075 0.222 c -0.04 0.124 -0.076 0.248 -0.114 0.372 c -0.066 0.22 -0.129 0.441 -0.188 0.664 c -0.001 0.005 -0.003 0.01 -0.004 0.015 c -0.023 0.085 -0.045 0.169 -0.067 0.254 c -0.075 0.298 -0.145 0.598 -0.208 0.9 c -0.006 0.028 -0.013 0.055 -0.018 0.083 c -0.071 0.347 -0.133 0.698 -0.188 1.051 c -0.006 0.036 -0.01 0.073 -0.015 0.109 c -0.041 0.274 -0.074 0.549 -0.105 0.826 c -0.002 0.016 -0.004 0.033 -0.006 0.049 c -0.013 0.117 -0.023 0.234 -0.034 0.351 c -0.018 0.196 -0.032 0.392 -0.045 0.589 c -0.002 0.025 -0.004 0.051 -0.006 0.076 c -0.008 0.129 -0.017 0.258 -0.023 0.387 c -0.015 0.333 -0.025 0.667 -0.025 1.003 l 5.544 -0.571 L 57.474 30.756 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.792 45.93 c 0.26 0.009 0.519 0.02 0.78 0.02 c -0.326 -0.338 -0.637 -0.676 -0.949 -1.014 L 66.792 45.93 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/></g></svg>`
 const ParataIcon = ({ className = 'inline-block h-4 w-4' }: { className?: string }) => (
 	<span className={className} dangerouslySetInnerHTML={{ __html: PARATA_SVG }} />
+)
+
+const GOAL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" xml:space="preserve"><g transform="translate(1.4066 1.4066) scale(2.81 2.81)"><path d="M 78.362 27.04 c -4.492 -4.266 -10.521 -6.921 -17.174 -7.052 l 1.505 6.224 l 7.664 3.141 L 78.362 27.04 z" fill="#f1f1f1"/><polygon points="75.58,54.87 78.06,46.58 70.67,39.99 62.1,42.53 59.27,50.93 64.08,56.43 " fill="#f1f1f1"/><polygon points="60.46,41.99 55.38,35.17 44.57,37.42 42.75,43.9 49.91,52.19 57.62,50.41 " fill="#f1f1f1"/><path d="M 79.741 28.445 l -8.093 2.339 v 7.755 l 7.882 7.039 l 6.818 -0.513 C 86.2 38.676 83.734 32.862 79.741 28.445 z" fill="#f1f1f1"/><path d="M 59.413 20.014 c -7.895 0.384 -14.856 4.324 -19.306 10.261 l 4.146 5.443 l 10.843 -2.254 l 5.88 -6.986 L 59.413 20.014 z" fill="#f1f1f1"/><path d="M 59.624 70.531 v -0.077 l -0.989 -5.847 l -8.8 -2.62 l -5.467 3.501 c 4.221 3.477 9.557 5.645 15.404 5.848 l -0.136 -0.805 H 59.624 z" fill="#f1f1f1"/><path d="M 48.96 60.492 v -6.763 l -7.54 -8.723 l -6.433 0.662 c 0 7.34 3.083 13.956 8.019 18.637 L 48.96 60.492 z" fill="#f1f1f1"/><path d="M 64.493 58.119 l -4.178 6.035 l 1.215 7.183 c 7.034 -0.23 13.351 -3.282 17.853 -8.068 l -3.699 -6.667 L 64.493 58.119 z" fill="#f1f1f1"/><path d="M 59.746 20.905 c -0.031 0.031 -0.063 0.063 -0.095 0.094 l -0.238 -0.985 c -7.895 0.384 -14.856 4.324 -19.306 10.261 l 4.146 5.443 l 5.85 -1.216 c 1.95 -4.577 5.17 -9.108 9.642 -13.592 V 20.905 z" fill="#dbdbdb"/><path d="M 44.571 37.422 l -1.819 6.476 l 5.61 6.491 c -0.939 -4.701 -0.603 -9.355 1 -13.962 L 44.571 37.422 z" fill="#dbdbdb"/><path d="M 59.624 70.531 v -0.077 l -0.046 -0.271 c 0.015 0.016 0.031 0.033 0.046 0.049 v -0.018 c -2.163 -2.339 -4.051 -4.668 -5.617 -6.985 l -4.172 -1.242 l -5.467 3.501 c 4.221 3.477 9.557 5.645 15.404 5.848 l -0.136 -0.805 H 59.624 z" fill="#dbdbdb"/><path d="M 48.96 60.492 v -6.763 l -7.54 -8.723 l -6.433 0.662 c 0 7.34 3.083 13.956 8.019 18.637 L 48.96 60.492 z" fill="#dbdbdb"/><path d="M 48.96 53.729 v 6.763 l -5.955 3.814 c 0.435 0.413 0.879 0.815 1.342 1.197 l 5.487 -3.514 l 8.8 2.62 l 1.138 6.729 c 0.301 0.01 0.602 0.023 0.906 0.023 c 0.285 0 0.568 -0.012 0.851 -0.022 l -1.215 -7.184 l 4.178 -6.035 l 11.191 -1.517 l 3.7 6.668 c 0.039 -0.041 0.079 -0.082 0.117 -0.123 c 0.13 -0.138 0.255 -0.279 0.381 -0.42 c 1.822 -2.05 3.323 -4.391 4.419 -6.948 c 0.05 -0.119 0.1 -0.238 0.148 -0.358 c 0.064 -0.155 0.124 -0.311 0.184 -0.467 c 1.097 -2.915 1.672 -6.117 1.729 -9.602 c -0.001 -0.096 -0.005 -0.192 -0.007 -0.288 l -6.826 0.514 l -7.882 -7.039 v -7.755 l 8.093 -2.339 c -0.44 -0.487 -0.903 -0.952 -1.378 -1.404 l -8.005 2.313 l -7.664 -3.141 l -1.505 -6.224 c -0.17 -0.003 -0.339 -0.013 -0.51 -0.013 c -0.425 0 -0.847 0.012 -1.267 0.032 l 1.564 6.47 l -5.88 6.986 l -10.843 2.254 l -4.146 -5.443 c -0.002 0.002 -0.003 0.004 -0.005 0.006 c -1.663 2.281 -2.895 4.643 -3.735 7.08 c -0.056 0.165 -0.115 0.33 -0.168 0.496 c -0.046 0.143 -0.088 0.288 -0.132 0.431 c -0.078 0.261 -0.154 0.523 -0.224 0.787 c -0.026 0.098 -0.052 0.197 -0.077 0.295 c -0.087 0.345 -0.168 0.693 -0.241 1.044 c -0.007 0.032 -0.015 0.065 -0.021 0.097 c -0.082 0.403 -0.155 0.81 -0.218 1.219 c -0.007 0.043 -0.011 0.086 -0.018 0.128 c -0.05 0.336 -0.092 0.674 -0.129 1.014 c -0.015 0.136 -0.027 0.272 -0.04 0.408 c -0.024 0.256 -0.043 0.514 -0.059 0.772 c -0.009 0.15 -0.019 0.299 -0.026 0.449 c -0.017 0.386 -0.029 0.774 -0.029 1.164 l 6.433 -0.662 L 48.96 53.729 z" fill="#57595d"/><path d="M 59.651 20.999 c 0.339 -0.341 0.674 -0.682 1.028 -1.023 c -0.425 0 -0.847 0.012 -1.267 0.032 L 59.651 20.999 z" fill="#3f4042"/><path d="M 48.96 53.729 v 6.763 l -5.955 3.814 c 0.435 0.413 0.879 0.815 1.342 1.197 l 5.487 -3.514 l 4.172 1.242 c -2.919 -4.318 -4.798 -8.599 -5.645 -12.841 l -5.61 -6.491 l 1.819 -6.476 l 4.791 -0.996 c 0.223 -0.642 0.469 -1.283 0.742 -1.923 l -5.85 1.216 l -4.146 -5.443 c -1.663 2.281 -2.894 4.643 -3.735 7.079 c -0.061 0.195 -0.12 0.391 -0.177 0.587 c -0.087 0.346 -0.168 0.693 -0.241 1.044 c -0.082 0.403 -0.155 0.81 -0.218 1.219 c -0.062 0.504 -0.111 1.012 -0.147 1.524 c -0.009 0.15 -0.019 0.299 -0.026 0.449 c -0.017 0.386 -0.029 0.774 -0.029 1.164 l 6.433 -0.662 L 48.96 53.729 z" fill="#3f4042"/><path d="M 59.773 71.337 c 0.301 0.01 0.602 0.023 0.906 0.023 c -0.379 -0.393 -0.739 -0.785 -1.101 -1.176 L 59.773 71.337 z" fill="#3f4042"/><path d="M 3.085 90 c -0.578 0 -1.047 -0.468 -1.047 -1.047 c 0 -0.578 0.469 -1.047 1.047 -1.047 c 45.647 0 82.783 -19.248 82.783 -42.907 S 48.732 2.093 3.085 2.093 c -0.578 0 -1.047 -0.469 -1.047 -1.047 S 2.507 0 3.085 0 c 46.801 0 84.876 20.187 84.876 45 C 87.961 69.813 49.886 90 3.085 90 z" fill="#3f4042"/><path d="M 3.085 67.102 c -0.578 0 -1.047 -0.468 -1.047 -1.047 c 0 -0.578 0.469 -1.047 1.047 -1.047 c 49.518 0 82.783 -9.966 82.783 -19.276 c 0 -9.309 -33.265 -19.276 -82.783 -19.276 c -0.578 0 -1.047 -0.469 -1.047 -1.047 s 0.469 -1.047 1.047 -1.047 c 41.721 0 84.876 7.993 84.876 21.369 S 44.807 67.102 3.085 67.102 z" fill="#3f4042"/><path d="M 58.664 78.95 c -0.182 0 -0.366 -0.047 -0.533 -0.146 c -0.497 -0.295 -0.66 -0.937 -0.366 -1.435 c 13.368 -22.522 13.376 -44.29 0.025 -64.698 c -0.317 -0.483 -0.181 -1.132 0.303 -1.449 c 0.484 -0.317 1.132 -0.181 1.449 0.303 c 13.825 21.132 13.834 43.644 0.025 66.913 C 59.369 78.767 59.022 78.95 58.664 78.95 z" fill="#3f4042"/><path d="M 33.364 86.895 c -0.138 0 -0.278 -0.028 -0.413 -0.085 c -0.531 -0.229 -0.776 -0.845 -0.547 -1.376 c 10.926 -25.371 10.951 -52.636 0.076 -81.04 c -0.206 -0.54 0.063 -1.145 0.603 -1.352 c 0.539 -0.205 1.145 0.063 1.352 0.603 c 11.076 28.93 11.039 56.727 -0.109 82.616 C 34.155 86.658 33.769 86.895 33.364 86.895 z" fill="#3f4042"/></g></svg>`
+const GoalIcon = ({ className = 'inline-block h-4 w-4' }: { className?: string }) => (
+	<span className={className} dangerouslySetInnerHTML={{ __html: GOAL_SVG }} />
+)
+
+const YELLOW_CARD_SVG = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"16\" viewBox=\"0 0 256 256\" xml:space=\"preserve\"><g transform=\"translate(1.4066 1.4066) scale(2.81 2.81)\"><path d=\"M 54.932 62.504 c 3.739 0 6.771 -3.031 6.771 -6.771 V 6.771 C 61.703 3.031 58.672 0 54.932 0 H 36.04 c -4.052 0 -7.337 3.285 -7.337 7.337 v 47.829 c 0 4.052 3.285 7.337 7.337 7.337\" fill=\"#f7d33e\"/></g></svg>`
+const YellowCardIcon = ({ className = 'inline-block h-3 w-3' }: { className?: string }) => (
+	<span className={className} dangerouslySetInnerHTML={{ __html: YELLOW_CARD_SVG }} />
+)
+
+const RED_CARD_SVG = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"16\" viewBox=\"0 0 256 256\" xml:space=\"preserve\"><g transform=\"translate(1.4066 1.4066) scale(2.81 2.81)\"><path d=\"M 54.932 62.504 c 3.739 0 6.771 -3.031 6.771 -6.771 V 6.771 C 61.703 3.031 58.672 0 54.932 0 H 36.04 c -4.052 0 -7.337 3.285 -7.337 7.337 v 47.829 c 0 4.052 3.285 7.337 7.337 7.337\" fill=\"#f73e42\"/></g></svg>`
+const RedCardIcon = ({ className = 'inline-block h-3 w-3' }: { className?: string }) => (
+	<span className={className} dangerouslySetInnerHTML={{ __html: RED_CARD_SVG }} />
+)
+
+const SUB_SVG = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" xml:space=\"preserve\"><g transform=\"translate(1.4038 1.4038) scale(2.81 2.81)\"><path d=\"M 28.513 25.461 L 12.135 38.394 c -1.204 0.951 -2.951 0.745 -3.902 -0.459 l -7.634 -9.669 c -0.951 -1.204 -0.745 -2.951 0.459 -3.902 l 16.379 -12.932 c 1.204 -0.951 2.951 -0.745 3.902 0.459 l 7.634 9.669 C 29.923 22.763 29.718 24.511 28.513 25.461 z\" fill=\"#e5393d\"/><path d=\"M 61.676 25.512 l 16.379 12.932 c 1.204 0.951 2.951 0.745 3.902 -0.459 l 7.634 -9.669 c 0.951 -1.204 0.745 -2.951 -0.459 -3.902 L 72.753 11.482 c -1.204 -0.951 -2.951 -0.745 -3.902 0.459 l -7.634 9.669 C 60.266 22.814 60.471 24.561 61.676 25.512 z\" fill=\"#749e29\"/></g></svg>`
+const SubIcon = ({ className = 'inline-block h-4 w-4' }: { className?: string }) => (
+	<span className={className} dangerouslySetInnerHTML={{ __html: SUB_SVG }} />
+)
+
+const ASSIST_SVG = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" xml:space=\"preserve\"><g transform=\"translate(1.4222 1.4222) scale(2.84 2.84)\"><path d=\"M 88.921 70.832 C 65.445 59.386 58.165 42.96 38.486 30.257 c -5.663 -1.416 -9.653 -3.337 -12.187 -5.698 c 0.227 6.706 3.271 12.965 12.5 18.241 C 26.364 45.648 13.326 44.637 0 41.788 c 0.093 6.46 7.473 13.831 23.934 17.461 c 6.257 1.226 11.196 4.319 15.59 7.203 c -9.956 -2.716 -18.233 -2.048 -24.581 2.504 c 5.985 1.199 10.985 2.307 15.625 5.281 C 44.104 83.366 77.657 96.693 88.921 70.832 z\" fill=\"#f9a83d\"/><path d=\"M 26.123 51.528 c 5.516 0.577 11.21 0.659 17.113 -1.46 c 13.689 -5.099 26.939 -1.726 26.939 -1.726 l 14.352 19.285 c -6.167 5.789 -12.444 11.259 -21.071 9.952 c -9.784 -1.461 -19.72 -10.749 -23.839 -16.805 c 2.642 0.591 5.479 0.638 8.547 0.036 C 38.611 58.33 30.77 55.374 26.123 51.528 z\" fill=\"#f7d33e\"/><path d=\"M 87.746 68.571 L 76.805 53.352 c -6.133 -8.978 -11.801 -19.723 -17.318 -31.04 c -0.482 -0.989 -1.602 -1.492 -2.661 -1.196 c -7.524 2.098 -14.305 0.244 -20.177 -6.444 c -0.149 -0.17 -0.281 -0.369 -0.378 -0.573 c -1.56 -3.252 -2.288 -6.15 -2.457 -8.808 c -0.084 -1.329 -1.243 -2.382 -2.558 -2.168 c -2.103 0.342 -4.615 2.115 -7.71 5.921 l -9.944 14.444 c -0.682 0.99 -0.479 2.339 0.463 3.085 l 3.124 2.473 l -1.329 2.685 c -0.304 0.614 -0.138 1.357 0.399 1.783 l 1.564 1.241 c 0.508 0.403 1.222 0.421 1.75 0.043 l 2.562 -1.836 l 3.919 3.103 l -1.268 2.562 c -0.304 0.614 -0.138 1.357 0.399 1.783 l 1.564 1.241 c 0.508 0.403 1.222 0.421 1.75 0.043 l 2.449 -1.755 l 18.221 14.427 c 2.415 1.743 4.814 3.364 7.204 4.91 l -0.743 2.633 c -0.162 0.575 0.099 1.185 0.627 1.464 l 1.539 0.814 c 0.5 0.264 1.115 0.165 1.506 -0.243 l 1.757 -1.832 c 1.303 0.779 2.601 1.526 3.897 2.248 l -0.574 2.032 c -0.162 0.575 0.099 1.185 0.627 1.464 l 1.539 0.814 c 0.5 0.264 1.115 0.165 1.506 -0.243 l 1.529 -1.594 c 1.462 0.744 2.92 1.456 4.373 2.129 l -0.612 2.167 c 0.162 0.575 0.099 1.185 0.627 1.464 l 1.539 0.814 c 0.5 0.264 1.115 0.165 1.506 -0.243 l 1.926 -2.008 c 0.005 -0.005 0.007 -0.011 0.012 -0.016 c 1.16 0.476 2.319 0.941 3.474 1.373 C 87.302 74.897 90.73 72.785 88.044 68.985 z\" fill=\"#f73e42\"/><path d=\"M 27.711 31.241 l -12.667 -9.863 c 0 0 8.458 -12.281 8.502 -12.335 C 29.767 15.644 32.139 22.88 27.711 31.241 z\" fill=\"#e5393d\"/><path d=\"M 88.044 68.985 c -1.012 -0.028 -2.211 -0.298 -3.516 -0.856 c -10.825 -4.046 -21.892 -10.031 -33.233 -18.215 L 16.19 22.119 c -0.414 -0.328 -0.676 -0.775 -0.792 -1.255 l -1.921 2.791 c -0.682 0.99 -0.479 2.339 0.463 3.085 l 3.124 2.473 l -1.329 2.685 c -0.304 0.614 -0.138 1.357 0.399 1.783 l 1.564 1.241 c 0.508 0.403 1.222 0.421 1.75 0.043 l 2.562 -1.836 l 3.919 3.103 l -1.268 2.562 c -0.304 0.614 -0.138 1.357 0.399 1.783 l 1.564 1.241 c 0.508 0.403 1.222 0.421 1.75 0.043 l 2.449 -1.755 l 18.221 14.427 c 2.415 1.743 4.814 3.364 7.204 4.91 l -0.743 2.633 c -0.162 0.575 0.099 1.185 0.627 1.464 l 1.539 0.814 c 0.5 0.264 1.115 0.165 1.506 -0.243 l 1.757 -1.832 c 1.303 0.779 2.601 1.526 3.897 2.248 l -0.574 2.032 c 0.162 0.575 0.099 1.185 0.627 1.464 l 1.539 0.814 c 0.5 0.264 1.115 0.165 1.506 -0.243 l 1.529 -1.594 c 1.462 0.744 2.92 1.456 4.373 2.129 l -0.612 2.167 c 0.162 0.575 0.099 1.185 0.627 1.464 l 1.539 0.814 c 0.5 0.264 1.115 0.165 1.506 -0.243 l 1.926 -2.008 c 0.005 -0.005 0.007 -0.011 0.012 -0.016 c 1.16 0.476 2.319 0.941 3.474 1.373 C 87.302 74.897 90.73 72.785 88.044 68.985 z\" fill=\"#57595d\"/></g></svg>`
+const AssistIcon = ({ className = 'inline-block h-4 w-4' }: { className?: string }) => (
+	<span className={className} dangerouslySetInnerHTML={{ __html: ASSIST_SVG }} />
+)
+
+const FOUL_SVG = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" xml:space=\"preserve\"><g transform=\"translate(1.4066 1.4066) scale(2.81 2.81)\"><circle cx=\"62.194\" cy=\"46.144\" r=\"17.734\" fill=\"#f1f1f1\"/><path d=\"M 43.269 47.239 c -0.024 -7.691 -6.535 -16.784 -14 -17.146 l -15.014 3.259 l 2.137 2.288 l 11.663 -0.129 c 5.559 0.259 7.939 3.997 7.957 9.489 c 0 7.621 3.182 14.488 8.273 19.385 C 41.516 59.056 43.269 53.725 43.269 47.239 z\" fill=\"#3f4042\"/><path d=\"M 51.168 45.041 c 0 -6.039 2.42 -11.508 6.333 -15.51 c -6.426 2.256 -11.042 8.36 -11.042 15.556 c 0 7.245 4.676 13.384 11.169 15.603 C 53.636 56.678 51.168 51.148 51.168 45.041 z\" fill=\"#dbdbdb\"/><circle cx=\"84.496\" cy=\"23.596\" r=\"5.506\" fill=\"#57595d\"/><circle cx=\"62.941\" cy=\"45.111\" r=\"4.641\" fill=\"#dbdbdb\"/><path d=\"M 62.924 18.087 h -9.638 v 4.994 l -4.994 -4.994 H 0 l 14.636 15.674 l -0.382 -0.409 l 15.005 -0.173 c 7.465 0.362 10.661 5.597 10.685 13.288 c 0 6.473 1.567 12.564 4.323 17.885 c 4.836 4.672 11.401 7.562 18.657 7.562 c 14.864 0 26.913 -12.049 26.913 -26.913 C 89.837 30.136 77.788 18.087 62.924 18.087 z M 63.023 61.029 c -8.817 0 -15.965 -7.148 -15.965 -15.965 c 0 -8.817 7.148 -15.965 15.965 -15.965 c 8.817 0 15.965 7.148 15.965 15.965 C 78.988 53.881 71.84 61.029 63.023 61.029 z\" fill=\"#57595d\"/></g></svg>`
+const FoulIcon = ({ className = 'inline-block h-4 w-4' }: { className?: string }) => (
+	<span className={className} dangerouslySetInnerHTML={{ __html: FOUL_SVG }} />
 )
 
 const computeScore = (events: any[]) => {
@@ -262,11 +292,11 @@ const MatchLive = () => {
     if (!s) return null
     return (
       <div className="ml-auto flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
-        {s.goals > 0 && (<span className="inline-flex items-center gap-0.5"><Plus className="h-3 w-3" />{s.goals}</span>)}
-        {s.assists > 0 && (<span className="inline-flex items-center gap-0.5"><Redo2 className="h-3 w-3" />{s.assists}</span>)}
-        {s.yellows > 0 && (<span className="inline-flex items-center gap-0.5 text-yellow-600"><Shield className="h-3 w-3" />{s.yellows}</span>)}
-        {s.reds > 0 && (<span className="inline-flex items-center gap-0.5 text-red-600"><Shield className="h-3 w-3" />{s.reds}</span>)}
-        {s.saves > 0 && (<span className="inline-flex items-center gap-0.5 text-blue-600"><Shield className="h-3 w-3" />{s.saves}</span>)}
+        {s.goals > 0 && (<span className="inline-flex items-center gap-0.5"><GoalIcon className="h-3 w-3" />{s.goals}</span>)}
+        {s.assists > 0 && (<span className="inline-flex items-center gap-0.5"><AssistIcon className="h-3 w-3" />{s.assists}</span>)}
+        {s.yellows > 0 && (<span className="inline-flex items-center gap-0.5 text-yellow-600"><YellowCardIcon className="h-3 w-3" />{s.yellows}</span>)}
+        {s.reds > 0 && (<span className="inline-flex items-center gap-0.5 text-red-600"><RedCardIcon className="h-3 w-3" />{s.reds}</span>)}
+        {s.saves > 0 && (<span className="inline-flex items-center gap-0.5 text-blue-600"><ParataIcon className="h-3 w-3" />{s.saves}</span>)}
       </div>
     )
   }
@@ -352,13 +382,31 @@ const MatchLive = () => {
     ;(events || []).forEach((e: any) => { const id = e.player_id || e.trialist_id; if (e.event_type === 'red_card' && id) s.add(id) })
     return s
   }, [events])
+  // Yellow card state map
+  const hasYellowById = useMemo(() => {
+    const s = new Set<string>()
+    ;(events || []).forEach((e: any) => { const id = e.player_id || e.trialist_id; if (e.event_type === 'yellow_card' && id) s.add(id) })
+    return s
+  }, [events])
+  // Players who entered via substitution (for grey border highlight)
+  const enteredOnFieldIds = useMemo(() => {
+    const s = new Set<string>()
+    ;(events || []).forEach((e: any) => { const inId = e.metadata?.in_id as string | undefined; if (e.event_type === 'substitution' && inId) s.add(inId) })
+    return s
+  }, [events])
+  // Players who have been subbed OUT at least once (cannot re-enter)
+  const subOutIds = useMemo(() => {
+    const s = new Set<string>()
+    ;(events || []).forEach((e: any) => { const outId = e.metadata?.out_id as string | undefined; if (e.event_type === 'substitution' && outId) s.add(outId) })
+    return s
+  }, [events])
 
   // Substitution dialog
   const [subOpen, setSubOpen] = useState(false)
   const [subOutId, setSubOutId] = useState<string>('')
   const [subInId, setSubInId] = useState<string>('')
   const benchIds = useMemo(() => new Set(convocati.map((c: any) => c.id)), [convocati])
-  const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id)), [benchIds, onFieldIds])
+  const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id) && !subOutIds.has(id)), [benchIds, onFieldIds, subOutIds])
   const [benchRoleFilter, setBenchRoleFilter] = useState<'ALL'|'P'|'DIF'|'CEN'|'ATT'>('ALL')
   const filteredBench = useMemo(() => {
     return convocati
@@ -370,6 +418,17 @@ const MatchLive = () => {
         return sector === benchRoleFilter
       })
   }, [convocati, onFieldIds, benchRoleFilter, roleByCurrentOnFieldPlayerId, playersById])
+  // List of substituted-out players (not on field)
+  const substitutedList = useMemo(() => {
+    const outIds = new Set<string>()
+    ;(events || []).forEach((e: any) => { const outId = e.metadata?.out_id as string | undefined; if (e.event_type === 'substitution' && outId) outIds.add(outId) })
+    return Array.from(outIds)
+      .filter((id) => !onFieldIds.has(id))
+      .map((id) => {
+        const p = (playersById as any)[id] || (trialistsById as any)[id]
+        return p ? { id, first_name: p.first_name, last_name: p.last_name } : { id, first_name: 'N/A', last_name: '' }
+      })
+  }, [events, onFieldIds, playersById, trialistsById])
   const doSubstitution = async () => {
     if (!id || !subOutId || !subInId) return
     setOptimisticSubs(prev => [...prev, { out_id: subOutId, in_id: subInId }])
@@ -431,6 +490,12 @@ const MatchLive = () => {
       setSeconds(newOffset)
     }
   }
+  const resetTimer = async () => {
+    if (!id) return
+    await updateMatch.mutateAsync({ id, updates: { clock_started_at: null as any, clock_offset_seconds: 0 } })
+    setRunning(false)
+    setSeconds(0)
+  }
 
   if (!id) return null
 
@@ -461,7 +526,9 @@ const MatchLive = () => {
                             const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
                             const jersey = (playersById[p.id] as any)?.jersey_number
                             const red = hasRedById.has(p.id)
-                            const borderCls = red ? 'border-red-600' : ''
+                            const yellow = hasYellowById.has(p.id)
+                                const entered = enteredOnFieldIds.has(p.id)
+                                const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
                             return (
                               <div
                                 key={p.id}
@@ -538,7 +605,13 @@ const MatchLive = () => {
                       </Button>
                       <Badge variant="outline">{match?.opponent_name}</Badge>
                     </div>
-                    <div className="text-2xl font-bold text-center col-span-2 md:col-span-1">{score.us} - {score.opp}</div>
+                    <div className="text-2xl font-bold text-center col-span-2 md:col-span-1">
+                      {(() => {
+                        const us = 'NOS'
+                        const opp = (match?.opponent_name || 'OPP').slice(0,3).toUpperCase()
+                        return `${us} ${score.us} - ${score.opp} ${opp}`
+                      })()}
+                    </div>
                     <div className="flex items-center justify-end gap-2">
                       <Select value={period} onValueChange={setPeriod as any}>
                         <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
@@ -558,28 +631,31 @@ const MatchLive = () => {
                       <Button variant="ghost" size="sm" onClick={toggleTimer} className="h-6 px-2">
                         {running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                       </Button>
+                      <Button variant="ghost" size="sm" onClick={resetTimer} className="h-6 px-2">
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                  {/* Event toolbar under scoreboard (no substitution here) */}
+                  {/* Event toolbar */}
                   <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
                     <Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8">
-                      <span className="material-symbols-outlined text-[18px] mr-1">sports_soccer</span>
+                      <GoalIcon className="inline-block h-4 w-4 mr-1" />
                       Gol
                     </Button>
                     <Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8">
-                      <span className="material-symbols-outlined text-[18px] mr-1">switch_access_shortcut_add</span>
+                      <AssistIcon className="inline-block h-4 w-4 mr-1" />
                       Assist
                     </Button>
                     <Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8">
-                      <span className="material-symbols-outlined text-[18px] mr-1 text-yellow-500">crop_9_16</span>
+                      <YellowCardIcon className="inline-block h-3 w-3 mr-2" />
                       Giallo
                     </Button>
                     <Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8">
-                      <span className="material-symbols-outlined text-[18px] mr-1 text-red-600">crop_9_16</span>
+                      <RedCardIcon className="inline-block h-3 w-3 mr-2" />
                       Rosso
                     </Button>
                     <Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8">
-                      <span className="material-symbols-outlined text-[18px] mr-1">shield_person</span>
+                      <FoulIcon className="inline-block h-4 w-4 mr-1" />
                       Fallo
                     </Button>
                     <Button variant={eventMode==='save'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('save')} className="h-8">
@@ -599,8 +675,40 @@ const MatchLive = () => {
                 </CardContent>
               </Card>
             </div>
+            {/* Event log under scoreboard */}
+            <Card className="mt-3">
+              <CardHeader>
+                <CardTitle>Eventi</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  {[...events].slice().reverse().map((e: any) => (
+                    <div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
+                        {e.event_type === 'goal' && <GoalIcon className="h-4 w-4" />}
+                        {e.event_type === 'assist' && <AssistIcon className="h-4 w-4" />}
+                        {e.event_type === 'yellow_card' && <YellowCardIcon className="h-3 w-3" />}
+                        {e.event_type === 'red_card' && <RedCardIcon className="h-3 w-3" />}
+                        {e.event_type === 'foul' && <FoulIcon className="h-4 w-4" />}
+                        {e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
+                        {e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
+                        <span>{e.event_type}</span>
+                        {(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-            <Card className="mt-3 flex-1 overflow-y-auto">
+          {/* Colonna destra: Panchina + Sostituti */}
+          <div className="flex flex-col overflow-hidden">
+            <Card className="flex-1 overflow-y-auto">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Panchina</span>
@@ -625,7 +733,7 @@ const MatchLive = () => {
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       <div className="truncate">{p.first_name} {p.last_name}</div>
                       <Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto" onClick={()=>{ setSubInId(p.id); setSubOpen(true) }}>
-                        <span className="material-symbols-outlined text-[18px]">transfer_within_a_station</span>
+                        <SubIcon className="text-[18px]" />
                       </Button>
                     </div>
                   ))}
@@ -635,35 +743,21 @@ const MatchLive = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Colonna destra: Log eventi */}
-          <div className="flex flex-col overflow-hidden">
-            <Card className="flex-1 overflow-y-auto">
+            <Card className="mt-3 flex-1 overflow-y-auto">
               <CardHeader>
-                <CardTitle>Eventi</CardTitle>
+                <CardTitle>Sostituiti</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {[...events].slice().reverse().map((e: any) => (
-                    <div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
-                        {e.event_type === 'save' ? (
-                          <ParataIcon className="h-4 w-4" />
-                        ) : (
-                          <span className="material-symbols-outlined text-[16px]">
-                            {e.event_type === 'goal' ? 'sports_soccer' : e.event_type === 'assist' ? 'switch_access_shortcut_add' : e.event_type === 'yellow_card' ? 'crop_9_16' : e.event_type === 'red_card' ? 'crop_9_16' : e.event_type === 'foul' ? 'shield_person' : 'note_add'}
-                          </span>
-                        )}
-                        <span>{e.event_type}</span>
-                        {(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                  {substitutedList.map((p: any) => (
+                    <div key={p.id} className="flex items-center gap-2 p-2 rounded border">
+                      <div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
+                      <div className="truncate">{p.first_name} {p.last_name}</div>
                     </div>
                   ))}
+                  {substitutedList.length === 0 && (
+                    <div className="text-sm text-muted-foreground">Nessun sostituito.</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
