@@ -210,7 +210,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
         last_name: formData.last_name,
         phone: phoneNumber ? `${phonePrefix}${phoneNumber}` : undefined,
         birth_date: formData.birth_date || undefined,
-        position: formData.position || undefined,
+        position: undefined,
         role_code: (formData as any).role_code || undefined,
         status: formData.status,
         notes: formData.notes || undefined,
@@ -462,30 +462,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                     onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="position">Ruolo</Label>
-                  <Select
-                    value={formData.position}
-                    onValueChange={(value) => setFormData({ ...formData, position: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleziona posizione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getOptionsForField('position').length > 0 ? (
-                        getOptionsForField('position').map((option) => (
-                          <SelectItem key={option.id} value={option.option_value}>
-                            {option.option_label}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="loading" disabled>
-                          Caricamento opzioni...
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* posizione implicita nel ruolo: campo rimosso */}
                 <div className="space-y-2">
                   <Label htmlFor="role_code">Ruolo</Label>
                   <Select

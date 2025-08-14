@@ -173,7 +173,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         first_name: formData.first_name,
         last_name: formData.last_name,
         jersey_number: formData.jersey_number ? parseInt(formData.jersey_number.toString()) : null,
-        position: formData.position || null,
+        position: null,
         role_code: (formData as any).role_code || null,
         status: formData.status,
         phone: fullPhone || null,
@@ -321,30 +321,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                 onChange={(e) => setFormData(prev => ({ ...prev, jersey_number: e.target.value }))}
               />
             </div>
-            <div>
-              <Label htmlFor="position">Ruolo</Label>
-              <Select
-                value={formData.position}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleziona posizione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getOptionsForField('position').length > 0 ? (
-                    getOptionsForField('position').map((option) => (
-                      <SelectItem key={option.id} value={option.option_value}>
-                        {option.option_label}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="loading" disabled>
-                      Caricamento opzioni...
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+            
             <div>
               <Label htmlFor="role_code">Ruolo</Label>
               <Select

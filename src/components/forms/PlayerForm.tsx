@@ -50,7 +50,6 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
       first_name: formData.first_name,
       last_name: formData.last_name,
       jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
-      position: formData.position || undefined,
       role_code: formData.player_role || undefined,
       status: formData.status as 'active' | 'inactive' | 'injured' | 'suspended',
       phone: formData.phone || undefined,
@@ -137,27 +136,6 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
                 value={formData.jersey_number}
                 onChange={(e) => setFormData(prev => ({ ...prev, jersey_number: e.target.value }))}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Ruolo</label>
-              <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleziona posizione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getOptionsForField('position').length > 0 ? (
-                    getOptionsForField('position').map((option) => (
-                      <SelectItem key={option.id} value={option.option_value}>
-                        {option.option_label}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="loading" disabled>
-                      Caricamento opzioni...
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 

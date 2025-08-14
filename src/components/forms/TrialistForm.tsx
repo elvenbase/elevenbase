@@ -173,7 +173,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       last_name: formData.last_name,
       phone: phoneNumber ? `${phonePrefix}${phoneNumber}` : undefined,
       birth_date: formData.birth_date || undefined,
-      position: formData.position || undefined,
+      position: undefined,
       role_code: formData.player_role || undefined,
       notes: formData.notes || undefined,
       esperienza: formData.esperienza || undefined,
@@ -401,28 +401,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
               />
             </div>
             <div>
-              <Label htmlFor="position">Ruolo</Label>
-              <Select
-                value={formData.position}
-                onValueChange={(value) => setFormData({ ...formData, position: value })}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Seleziona posizione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getOptionsForField('position').length > 0 ? (
-                    getOptionsForField('position').map((option) => (
-                      <SelectItem key={option.id} value={option.option_value}>
-                        {option.option_label}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="loading" disabled>
-                      Caricamento opzioni...
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              {/* posizione implicita nel ruolo: campo rimosso */}
             </div>
             <div>
               <Label htmlFor="role_code">Ruolo</Label>
