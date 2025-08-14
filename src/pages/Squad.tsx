@@ -56,6 +56,8 @@ interface MobilePlayerCardProps {
   onDelete: (playerId: string) => void;
   formatWhatsAppLink: (phone: string, name: string) => string;
   getRoleLabel: (code?: string) => string;
+  roles: Array<{ code: string; label: string; abbreviation: string }>
+  onChangeRole: (playerId: string, roleCode: string) => Promise<void>
 }
 
 const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({ 
@@ -63,9 +65,12 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
   onImageClick, 
   onDelete, 
   formatWhatsAppLink,
-  getRoleLabel
+  getRoleLabel,
+  roles,
+  onChangeRole
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditingRole, setIsEditingRole] = useState(false);
 
   return (
     <Card className="p-4 sm:p-5 hover:shadow-md transition-shadow">
@@ -136,11 +141,12 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
               <div>
                 <span className="text-xs text-muted-foreground uppercase tracking-wide">Ruolo</span>
                 <div className="mt-1 flex items-center gap-2">
-                  {editingRolePlayerId === player.id ? (
+                  {isEditingRole ? (
                     <Select
                       value={(player as any).role_code || ''}
                       onValueChange={async (value) => {
-                        try { await updatePlayer.mutateAsync({ id: player.id, role_code: value as any }); setEditingRolePlayerId(null) } catch {}
+                        await onChangeRole(player.id, value)
+                        setIsEditingRole(false)
                       }}
                     >
                       <SelectTrigger className="h-8 w-[180px]"><SelectValue placeholder="Seleziona ruolo" /></SelectTrigger>
@@ -153,7 +159,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
                   ) : (
                     <>
                       <div className="text-sm font-medium">{getRoleLabel((player as any).role_code)}</div>
-                      <Button variant="outline" size="sm" onClick={() => setEditingRolePlayerId(player.id)}>Modifica</Button>
+                      <Button variant="outline" size="sm" onClick={() => setIsEditingRole(true)}>Modifica</Button>
                     </>
                   )}
                 </div>
@@ -799,6 +805,8 @@ const Squad = () => {
                     onDelete={handleDeletePlayer}
                     formatWhatsAppLink={formatWhatsAppLink}
                     getRoleLabel={(code?: string) => rolesByCode[code || '']?.label || (code || 'Non specificato')}
+                    roles={roles as any}
+                    onChangeRole={async (pid: string, rc: string) => { try { await updatePlayer.mutateAsync({ id: pid, role_code: rc as any }) } catch {} }}
                   />
                 ))}
               </div>
