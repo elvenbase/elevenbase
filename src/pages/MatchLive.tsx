@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2 } from 'lucide-react'
+import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2, Trophy, Square, Pencil } from 'lucide-react'
 import { useMatch, useMatchEvents, useMatchAttendance, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 import { supabase } from '@/integrations/supabase/client'
@@ -274,6 +274,23 @@ const MatchLive = () => {
     return m
   }, [onFieldEntries, roleByPosId])
 
+  // Order on-field list from GK -> DEF -> MID -> ATT
+  const orderedOnFieldPlayers = useMemo(() => {
+    const orderIndex = (code: string) => {
+      const c = (code || '').toUpperCase()
+      if (c === 'P') return 0
+      if (['TD','DCD','DC','DCS','TS'].includes(c)) return 1
+      if (['MED','REG','MC','MD','MS','QD','QS'].includes(c)) return 2
+      if (['PU','AD','AS','ATT'].includes(c)) return 3
+      return 4
+    }
+    return (onFieldPlayers as any[]).map((p: any) => {
+      const rawRole = roleByCurrentOnFieldPlayerId[p.id] || ''
+      const code = rawRole ? normalizeRoleCodeFrom({ roleShort: rawRole }) : 'ALTRI'
+      return { ...p, _roleCode: code, _order: orderIndex(code) }
+    }).sort((a, b) => a._order - b._order)
+  }, [onFieldPlayers, roleByCurrentOnFieldPlayerId])
+
   // Substituted players (events-based), exclude those currently on field
   const substitutionEvents = useMemo(() => (events || []).filter((e: any) => e.event_type === 'substitution'), [events])
   const substitutedList = useMemo(() => {
@@ -394,76 +411,86 @@ const MatchLive = () => {
               <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
             </CardHeader>
             <CardContent>
-              {onFieldPlayers.length === 0 ? (
+              {orderedOnFieldPlayers.length === 0 ? (
                 <div className="text-muted-foreground text-sm">Nessun titolare impostato. Imposta l'11 dalla sezione Formazione.</div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {onFieldPlayers.map((p: any) => {
-                    const rawRole = roleByCurrentOnFieldPlayerId[p.id] || ''
-                    const code = rawRole ? normalizeRoleCodeFrom({ roleShort: rawRole }) : ''
+                <div className="space-y-2">
+                  {orderedOnFieldPlayers.map((p: any) => {
+                    const code = p._roleCode as string
+                    const firstInitial = (p.first_name || '').trim().charAt(0)
+                    const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
                     return (
-                      <div key={p.id} className={`p-2 rounded border flex items-center gap-2 cursor-pointer ${selectedPlayerId===p.id ? 'border-primary bg-primary/5' : ''}`} onClick={()=>setSelectedPlayerId(p.id)}>
+                      <div key={p.id} className="p-2 rounded border flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <div className="truncate">{p.first_name} {p.last_name}</div>
                         {code && code !== 'ALTRI' && (
                           <Badge variant="secondary" className="shrink-0">{code}</Badge>
                         )}
+                        <div className="truncate">{displayName}</div>
                         {renderEventBadges(p.id)}
+                        <div className="ml-auto flex items-center gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'goal', team: 'us', player_id: p.id })}>
+                            <Trophy className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'assist', player_id: p.id })}>
+                            <Redo2 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'yellow_card', player_id: p.id })}>
+                            <Square className="h-4 w-4 text-yellow-500" />
+                          </Button>
+                          <Button variant="destructive" size="icon" onClick={() => postEvent({ event_type: 'red_card', player_id: p.id })}>
+                            <Square className="h-4 w-4 text-red-600" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'foul', player_id: p.id })}>
+                            <Shield className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="icon" onClick={() => { setSubOutId(p.id); setSubOpen(true) }}>
+                            <Repeat className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'note', player_id: p.id, comment: `Nota su ${getDisplayName(p.id)}` })}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     )
                   })}
                 </div>
               )}
 
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {selectedPlayerId && (
-                  <span className="text-sm text-muted-foreground">Giocatore selezionato: <span className="font-medium">{getDisplayName(selectedPlayerId)}</span></span>
-                )}
-                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'goal', team: 'us', player_id: selectedPlayerId || undefined })} disabled={!selectedPlayerId}><Plus className="h-4 w-4 mr-1" /> Gol</Button>
-                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'assist', player_id: selectedPlayerId || undefined })} disabled={!selectedPlayerId}><Redo2 className="h-4 w-4 mr-1" /> Assist</Button>
-                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'yellow_card', player_id: selectedPlayerId || undefined })} disabled={!selectedPlayerId}><Shield className="h-4 w-4 mr-1" /> Giallo</Button>
-                <Button size="sm" variant="destructive" onClick={() => postEvent({ event_type: 'red_card', player_id: selectedPlayerId || undefined })} disabled={!selectedPlayerId}><Shield className="h-4 w-4 mr-1" /> Rosso</Button>
-                <Dialog open={subOpen} onOpenChange={setSubOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline"><Users className="h-4 w-4 mr-1" /> Sostituzione</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Nuova sostituzione</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3">
-                      <div>
-                        <Label className="text-sm">Esce</Label>
-                        <Select value={subOutId} onValueChange={setSubOutId}>
-                          <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-                          <SelectContent>
-                            {Array.from(onFieldIds).map((id) => (
-                              <SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Entra</Label>
-                        <Select value={subInId} onValueChange={setSubInId}>
-                          <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-                          <SelectContent>
-                            {availableInIds.map((id) => (
-                              <SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
-                        <Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
-                      </div>
+              <Dialog open={subOpen} onOpenChange={setSubOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Nuova sostituzione</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm">Esce</Label>
+                      <Select value={subOutId} onValueChange={setSubOutId}>
+                        <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+                        <SelectContent>
+                          {Array.from(onFieldIds).map((id) => (
+                            <SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </DialogContent>
-                </Dialog>
-                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'foul', player_id: selectedPlayerId || undefined })} disabled={!selectedPlayerId}><Shield className="h-4 w-4 mr-1" /> Fallo</Button>
-                <Button size="sm" variant="outline" onClick={() => postEvent({ event_type: 'note', comment: selectedPlayerId ? `Nota su ${getDisplayName(selectedPlayerId)}` : 'Nota partita' })}><StickyNote className="h-4 w-4 mr-1" /> Nota</Button>
-              </div>
+                    <div>
+                      <Label className="text-sm">Entra</Label>
+                      <Select value={subInId} onValueChange={setSubInId}>
+                        <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+                        <SelectContent>
+                          {availableInIds.map((id) => (
+                            <SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
+                      <Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <div className="mt-6">
                 <div className="font-semibold mb-2">Eventi recenti</div>
