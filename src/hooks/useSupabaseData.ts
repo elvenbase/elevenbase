@@ -1809,8 +1809,16 @@ export const useFinalizeMatch = () => {
 export const useUpsertMatchPlayerStats = () => {
   return useMutation({
     mutationFn: async ({ rows }: { rows: Array<any> }) => {
-      const { error } = await supabase.from('match_player_stats').upsert(rows, { onConflict: 'match_id,player_id,trialist_id' as any })
-      if (error) throw error
+      const playerRows = rows.filter(r => !!r.player_id)
+      const trialistRows = rows.filter(r => !!r.trialist_id)
+      if (playerRows.length > 0) {
+        const { error } = await supabase.from('match_player_stats').upsert(playerRows, { onConflict: 'match_id,player_id' as any })
+        if (error) throw error
+      }
+      if (trialistRows.length > 0) {
+        const { error } = await supabase.from('match_player_stats').upsert(trialistRows, { onConflict: 'match_id,trialist_id' as any })
+        if (error) throw error
+      }
       return true
     }
   })

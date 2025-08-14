@@ -747,8 +747,11 @@ const MatchLive = () => {
 														await finalizeMatch.mutateAsync({ matchId: id, ourScore: score.us, opponentScore: score.opp })
 														queryClient.invalidateQueries({ queryKey: ['match', id] })
 														queryClient.invalidateQueries({ queryKey: ['match-events', id] })
-													} catch (e) {
-														console.error('Errore finalizzazione:', e)
+													} catch (e:any) {
+														console.error('Errore finalizzazione:', e?.message || e)
+														if (e?.code || e?.details) {
+															console.error('Supabase error code/details:', e.code, e.details)
+														}
 													}
 												}} disabled={isEnded}>Termina partita</Button>
 											</div>

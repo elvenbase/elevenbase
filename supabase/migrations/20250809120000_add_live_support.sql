@@ -47,6 +47,9 @@ CREATE INDEX IF NOT EXISTS match_player_stats_match_idx ON public.match_player_s
 CREATE INDEX IF NOT EXISTS match_player_stats_player_idx ON public.match_player_stats (player_id);
 CREATE INDEX IF NOT EXISTS match_player_stats_trialist_idx ON public.match_player_stats (trialist_id);
 CREATE UNIQUE INDEX IF NOT EXISTS match_player_stats_unique_per_entity ON public.match_player_stats (match_id, COALESCE(player_id::text, trialist_id::text));
+-- Unique partial indexes to support upsert on distinct keys
+CREATE UNIQUE INDEX IF NOT EXISTS match_player_stats_unique_player ON public.match_player_stats (match_id, player_id) WHERE player_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS match_player_stats_unique_trialist ON public.match_player_stats (match_id, trialist_id) WHERE trialist_id IS NOT NULL;
 
 -- RLS (optional: allow only service/admin roles)
 ALTER TABLE public.match_player_stats ENABLE ROW LEVEL SECURITY;
