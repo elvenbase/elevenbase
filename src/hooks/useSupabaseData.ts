@@ -1795,3 +1795,35 @@ export const useEnsureMatchPublicSettings = () => {
     }
   })
 }
+
+export const useFinalizeMatch = () => {
+  return useMutation({
+    mutationFn: async ({ matchId, ourScore, opponentScore }: { matchId: string; ourScore: number; opponentScore: number }) => {
+      const { error } = await supabase.from('matches').update({ live_state: 'ended', our_score: ourScore, opponent_score: opponentScore }).eq('id', matchId)
+      if (error) throw error
+      return true
+    }
+  })
+}
+
+export const useUpsertMatchPlayerStats = () => {
+  return useMutation({
+    mutationFn: async ({ rows }: { rows: Array<any> }) => {
+      const { error } = await supabase.from('match_player_stats').upsert(rows, { onConflict: 'match_id,player_id,trialist_id' as any })
+      if (error) throw error
+      return true
+    }
+  })
+}
+
+export const useMatchEventsRaw = (matchId: string) => {
+  return useQuery({
+    queryKey: ['match-events-raw', matchId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('match_events').select('*').eq('match_id', matchId).order('created_at', { ascending: true })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!matchId
+  })
+}

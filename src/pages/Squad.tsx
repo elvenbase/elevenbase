@@ -89,7 +89,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
           <div className="flex-1 min-w-0 space-y-2">
             <div className="space-y-1">
               <h3 className="font-semibold text-lg leading-tight">
-                {player.first_name} {player.last_name}
+                <a href={`/player/${player.id}`} className="hover:underline">{player.first_name} {player.last_name}</a>
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
                 {player.jersey_number && (

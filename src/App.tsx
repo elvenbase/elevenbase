@@ -37,6 +37,7 @@ const MatchPublicRegistration = lazy(() => import("@/pages/MatchPublicRegistrati
 const PublicSession = lazy(() => import("@/pages/PublicSession"));
 const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
@@ -256,6 +257,14 @@ function App() {
                             <FieldOptionsManagement />
                           </main>
                         </AdminRoute>
+                      } />
+                      <Route path="/player/:id" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <PlayerDetail />
+                          </main>
+                        </ProtectedRoute>
                       } />
                       
                       {/* Admin Routes */}
