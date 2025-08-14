@@ -520,30 +520,34 @@ const MatchLive = () => {
             <div className="sticky top-0 z-10">
               <Card>
                 <CardContent className="py-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Dettaglio</Link>
-                    </Button>
-                    <Badge variant="outline">{match?.opponent_name}</Badge>
-                    <div className="text-2xl font-bold">{score.us} - {score.opp}</div>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded border">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 items-center">
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Dettaglio</Link>
+                      </Button>
+                      <Badge variant="outline">{match?.opponent_name}</Badge>
+                    </div>
+                    <div className="text-2xl font-bold text-center col-span-2 md:col-span-1">{score.us} - {score.opp}</div>
+                    <div className="flex items-center justify-end gap-2">
+                      <Select value={period} onValueChange={setPeriod as any}>
+                        <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not_started">Pre partita</SelectItem>
+                          <SelectItem value="first_half">1° Tempo</SelectItem>
+                          <SelectItem value="half_time">Intervallo</SelectItem>
+                          <SelectItem value="second_half">2° Tempo</SelectItem>
+                          <SelectItem value="extra_time">Supplementari</SelectItem>
+                          <SelectItem value="ended">Fine</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="col-span-2 md:col-span-3 flex items-center justify-center gap-2">
                       <Clock3 className="h-4 w-4" />
                       <span className="tabular-nums">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
                       <Button variant="ghost" size="sm" onClick={toggleTimer} className="h-6 px-2">
                         {running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                       </Button>
                     </div>
-                    <Select value={period} onValueChange={setPeriod as any}>
-                      <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="not_started">Pre partita</SelectItem>
-                        <SelectItem value="first_half">1° Tempo</SelectItem>
-                        <SelectItem value="half_time">Intervallo</SelectItem>
-                        <SelectItem value="second_half">2° Tempo</SelectItem>
-                        <SelectItem value="extra_time">Supplementari</SelectItem>
-                        <SelectItem value="ended">Fine</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                   {/* Event toolbar under scoreboard (no substitution here) */}
                   <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
