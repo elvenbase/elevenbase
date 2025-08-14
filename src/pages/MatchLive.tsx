@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2, Trophy, Square, Pencil } from 'lucide-react'
+import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2 } from 'lucide-react'
 import { useMatch, useMatchEvents, useMatchAttendance, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 import { supabase } from '@/integrations/supabase/client'
@@ -429,25 +429,25 @@ const MatchLive = () => {
                         {renderEventBadges(p.id)}
                         <div className="ml-auto flex items-center gap-1">
                           <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'goal', team: 'us', player_id: p.id })}>
-                            <Trophy className="h-4 w-4" />
+                            <span className="material-symbols-outlined text-base">sports_soccer</span>
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'assist', player_id: p.id })}>
-                            <Redo2 className="h-4 w-4" />
+                            <span className="material-symbols-outlined text-base">switch_access_shortcut_add</span>
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'yellow_card', player_id: p.id })}>
-                            <Square className="h-4 w-4 text-yellow-500" />
+                            <span className="material-symbols-outlined text-yellow-500">crop_9_16</span>
                           </Button>
                           <Button variant="destructive" size="icon" onClick={() => postEvent({ event_type: 'red_card', player_id: p.id })}>
-                            <Square className="h-4 w-4 text-red-600" />
+                            <span className="material-symbols-outlined text-red-600">crop_9_16</span>
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'foul', player_id: p.id })}>
-                            <Shield className="h-4 w-4" />
+                            <span className="material-symbols-outlined text-base">shield_person</span>
                           </Button>
                           <Button variant="outline" size="icon" onClick={() => { setSubOutId(p.id); setSubOpen(true) }}>
-                            <Repeat className="h-4 w-4" />
+                            <span className="material-symbols-outlined text-base">transfer_within_a_station</span>
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => postEvent({ event_type: 'note', player_id: p.id, comment: `Nota su ${getDisplayName(p.id)}` })}>
-                            <Pencil className="h-4 w-4" />
+                            <span className="material-symbols-outlined text-base">note_add</span>
                           </Button>
                         </div>
                       </div>
