@@ -523,9 +523,9 @@ const MatchLive = () => {
 	return (
 		<div className="min-h-screen bg-background">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-				<div className="grid grid-cols-1 md:grid-cols-5 gap-4 h-[calc(100vh-2rem)]">
+				<div className="grid grid-cols-1 md:grid-cols-10 gap-4 h-[calc(100vh-2rem)]">
 					{/* Colonna sinistra: In campo per blocchi ruolo */}
-					<div className="flex flex-col overflow-y-auto md:col-span-2">
+					<div className="flex flex-col overflow-y-auto md:col-span-3">
 						<Card>
 							<CardHeader>
 								<CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
@@ -634,7 +634,7 @@ const MatchLive = () => {
 					</div>
 
 					{/* Colonna centrale: Scoreboard sticky + Panchina filtrabile */}
-					<div className="flex flex-col overflow-hidden md:col-span-2">
+					<div className="flex flex-col overflow-hidden md:col-span-5">
 						<div className="sticky top-0 z-10">
 							<Card>
 								<CardContent className="py-3">
@@ -747,7 +747,7 @@ const MatchLive = () => {
 					</div>
 
 					{/* Colonna destra: Panchina + Sostituti */}
-					<div className="flex flex-col overflow-hidden md:col-span-1">
+					<div className="flex flex-col overflow-hidden md:col-span-2">
 						<Card className="flex-1 overflow-y-auto">
 							<CardHeader>
 								<CardTitle className="flex items-center justify-between">
