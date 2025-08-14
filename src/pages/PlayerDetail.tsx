@@ -213,6 +213,7 @@ const PlayerDetail = () => {
                     <th className="py-2 pr-2">Ast</th>
                     <th className="py-2 pr-2">G</th>
                     <th className="py-2 pr-2">R</th>
+                    <th className="py-2 pr-2">Note</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -232,11 +233,12 @@ const PlayerDetail = () => {
                         <td className="py-2 pr-2">{r.assists}</td>
                         <td className="py-2 pr-2">{r.yellow_cards}</td>
                         <td className="py-2 pr-2">{r.red_cards}</td>
+                        <td className="py-2 pr-2 max-w-[320px] truncate" title={m?.notes || ''}>{m?.notes || ''}</td>
                       </tr>
                     )
                   })}
                   {stats.length === 0 && (
-                    <tr><td className="py-6 text-muted-foreground" colSpan={9}>Nessuna partita registrata.</td></tr>
+                    <tr><td className="py-6 text-muted-foreground" colSpan={10}>Nessuna partita registrata.</td></tr>
                   )}
                 </tbody>
               </table>
