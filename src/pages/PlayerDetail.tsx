@@ -1,15 +1,25 @@
 import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { usePlayers } from '@/hooks/useSupabaseData'
 import { usePlayerMatchStats } from '@/hooks/useSupabaseData'
 import { usePlayerById, useFormerTrialistData } from '@/hooks/useSupabaseData'
+import { usePlayerAttendanceSummary } from '@/hooks/useSupabaseData'
+import { useRoles } from '@/hooks/useRoles'
+import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
+import { Upload } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { useUpdatePlayer } from '@/hooks/useSupabaseData'
+import { useToast } from '@/hooks/use-toast'
 
 const PlayerDetail = () => {
   const { id } = useParams<{ id: string }>()
   const { data: player } = usePlayerById(id || '')
   const { data: stats = [] } = usePlayerMatchStats(id || '')
   const { data: formerTrialist } = useFormerTrialistData(player as any)
+  const { data: attendance } = usePlayerAttendanceSummary(id || '')
+  const { data: roles = [] } = useRoles()
+  const updatePlayer = useUpdatePlayer()
+  const { toast } = useToast()
 
   if (!id) return null
 
@@ -26,6 +36,37 @@ const PlayerDetail = () => {
     return acc
   }, { matches: 0, started: 0, minutes: 0, goals: 0, assists: 0, yellows: 0, reds: 0, fouls: 0, saves: 0 })
 
+  const roleMap = Object.fromEntries(roles.map((r:any)=>[r.code, r]))
+  const roleLabel = player?.role_code ? `${roleMap[player.role_code]?.label || player.role_code} (${roleMap[player.role_code]?.abbreviation || player.role_code})` : '-'
+
+  const parsePhone = (phone?: string) => {
+    if (!phone) return { prefix: '+39 (Italia)', number: '' }
+    const known = [
+      { p: '+39', l: '+39 (Italia)' },{ p: '+1', l: '+1 (USA/Canada)' },{ p: '+44', l: '+44 (Regno Unito)' },{ p: '+33', l: '+33 (Francia)' },{ p: '+49', l: '+49 (Germania)' },{ p: '+34', l: '+34 (Spagna)' }
+    ]
+    const m = known.find(k => phone.startsWith(k.p))
+    return m ? { prefix: m.l, number: phone.slice(m.p.length) } : { prefix: '+39 (Italia)', number: phone }
+  }
+  const phoneView = parsePhone(player?.phone || '')
+
+  const handleAvatarUpload = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const file = ev.target.files?.[0]
+    if (!file || !player) return
+    if (!file.type.startsWith('image/')) { toast({ title: 'Formato non valido', variant: 'destructive' }); return }
+    if (file.size > 5 * 1024 * 1024) { toast({ title: 'File troppo grande', description: 'Max 5MB', variant: 'destructive' }); return }
+    const ext = file.name.split('.').pop()
+    const fileName = `player-avatar-${player.id}-${Date.now()}.${ext}`
+    const { error: upErr } = await supabase.storage.from('avatars').upload(fileName, file, { cacheControl: '3600', upsert: false })
+    if (upErr) { toast({ title: 'Errore di caricamento', variant: 'destructive' }); return }
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName)
+    try {
+      await updatePlayer.mutateAsync({ id: player.id, avatar_url: publicUrl })
+      toast({ title: 'Avatar aggiornato' })
+    } catch (e) {
+      toast({ title: 'Errore salvataggio avatar', variant: 'destructive' })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
@@ -37,28 +78,73 @@ const PlayerDetail = () => {
         <Card>
           <CardHeader><CardTitle>Anagrafica</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div><div className="text-muted-foreground">Nome</div><div className="font-medium">{player?.first_name} {player?.last_name}</div></div>
-              <div><div className="text-muted-foreground">Email</div><div className="font-medium">{player?.email || '-'}</div></div>
-              <div><div className="text-muted-foreground">Telefono</div><div className="font-medium">{player?.phone || '-'}</div></div>
-              <div><div className="text-muted-foreground">Data nascita</div><div className="font-medium">{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '-'}</div></div>
-              <div><div className="text-muted-foreground">Numero maglia</div><div className="font-medium">{player?.jersey_number ?? '-'}</div></div>
-              <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{(player as any)?.role_code || '-'}</div></div>
-              <div><div className="text-muted-foreground">Stato</div><div className="font-medium">{player?.status || '-'}</div></div>
-              <div><div className="text-muted-foreground">Note</div><div className="font-medium whitespace-pre-wrap">{player?.notes || '-'}</div></div>
+            <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-6">
+              <div className="flex flex-col items-center gap-2">
+                <PlayerAvatar firstName={player?.first_name} lastName={player?.last_name} avatarUrl={player?.avatar_url} size={96} />
+                <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                  <Upload className="w-4 h-4" /> Carica
+                </label>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div><div className="text-muted-foreground">Nome</div><div className="font-medium">{player?.first_name}</div></div>
+                <div><div className="text-muted-foreground">Cognome</div><div className="font-medium">{player?.last_name}</div></div>
+                <div><div className="text-muted-foreground">Numero Maglia</div><div className="font-medium">{player?.jersey_number ?? '-'}</div></div>
+                <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{roleLabel}</div></div>
+                <div><div className="text-muted-foreground">Telefono</div><div className="font-medium">{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : '-'}</div></div>
+                <div><div className="text-muted-foreground">📅 Data di Nascita</div><div className="font-medium">{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '-'}</div></div>
+                <div><div className="text-muted-foreground">📧 Email</div><div className="font-medium">{player?.email || '-'}</div></div>
+                <div><div className="text-muted-foreground">🏆 Esperienza Sportiva</div><div className="font-medium whitespace-pre-wrap">{player?.esperienza || '-'}</div></div>
+                <div className="sm:col-span-2"><div className="text-muted-foreground">📝 Note</div><div className="font-medium whitespace-pre-wrap">{player?.notes || '-'}</div></div>
+                <div><div className="text-muted-foreground">Stato</div><div className="font-medium">{player?.status || '-'}</div></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Informazioni Gaming (opzionali)</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div><div className="text-muted-foreground">EA Sports ID</div><div className="font-medium">{(player as any)?.ea_sport_id || '-'}</div></div>
+              <div><div className="text-muted-foreground">Piattaforma Gaming</div><div className="font-medium">{(player as any)?.gaming_platform || 'Seleziona piattaforma'}</div></div>
+              <div><div className="text-muted-foreground">Platform ID</div><div className="font-medium">{(player as any)?.platform_id || '-'}</div></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Presenze e Ritardi</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <div className="text-muted-foreground">Allenamenti</div>
+                <div className="font-medium">Presenze: {attendance?.training.present ?? 0}</div>
+                <div className="font-medium">Ritardi: {attendance?.training.tardy ?? 0}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Partite</div>
+                <div className="font-medium">Presenze: {attendance?.match.present ?? 0}</div>
+                <div className="font-medium">Ritardi: {attendance?.match.tardy ?? 0}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Totale</div>
+                <div className="font-medium">Presenze: {attendance?.totals.present ?? 0}</div>
+                <div className="font-medium">Ritardi: {attendance?.totals.tardy ?? 0}</div>
+                <div className="font-medium">Tasso presenza: {attendance?.totals.attendanceRate ?? 0}%</div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {formerTrialist && (
           <Card>
-            <CardHeader><CardTitle>Storico provenienza (Provinante)</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Valutazioni dal Periodo di Prova</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
                 <div><div className="text-muted-foreground">Periodo prova</div><div className="font-medium">{formerTrialist?.created_at ? new Date(formerTrialist.created_at).toLocaleDateString() : '-'} → {formerTrialist?.updated_at ? new Date(formerTrialist.updated_at).toLocaleDateString() : '-'}</div></div>
                 <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{formerTrialist?.role_code || '-'}</div></div>
               </div>
-              <div className="text-sm font-semibold mb-2">Valutazioni in prova</div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -85,7 +171,7 @@ const PlayerDetail = () => {
                       </tr>
                     ))}
                     {(formerTrialist?.trial_evaluations || []).length === 0 && (
-                      <tr><td className="py-4 text-muted-foreground" colSpan={7}>Nessuna valutazione di prova trovata.</td></tr>
+                      <tr><td className="py-4 text-muted-foreground" colSpan={7}>Nessuna valutazione dal periodo di prova</td></tr>
                     )}
                   </tbody>
                 </table>

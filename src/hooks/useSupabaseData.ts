@@ -1809,18 +1809,80 @@ export const useFinalizeMatch = () => {
 export const useUpsertMatchPlayerStats = () => {
   return useMutation({
     mutationFn: async ({ rows }: { rows: Array<any> }) => {
+      const tryUpsert = async (batch: any[], conflict: 'match_id,player_id' | 'match_id,trialist_id') => {
+        if (batch.length === 0) return
+        const { error } = await supabase.from('match_player_stats').upsert(batch, { onConflict: conflict as any })
+        if (error) {
+          // Fallback for environments missing proper UNIQUE CONSTRAINTS (42P10)
+          const code = (error as any).code || (error as any)?.details || ''
+          if (String(code).includes('42P10') || /no unique|ON CONFLICT/.test(String((error as any).message || ''))) {
+            for (const rec of batch) {
+              const isPlayer = !!rec.player_id
+              const eqs = isPlayer
+                ? { match_id: rec.match_id, player_id: rec.player_id }
+                : { match_id: rec.match_id, trialist_id: rec.trialist_id }
+              const { data: existing, error: selErr } = await supabase
+                .from('match_player_stats')
+                .select('id')
+                .match(eqs as any)
+                .maybeSingle()
+              if (selErr) throw selErr
+              if (existing) {
+                const { error: updErr } = await supabase
+                  .from('match_player_stats')
+                  .update({ ...rec })
+                  .eq('id', (existing as any).id)
+                if (updErr) throw updErr
+              } else {
+                const { error: insErr } = await supabase
+                  .from('match_player_stats')
+                  .insert(rec)
+                if (insErr) throw insErr
+              }
+            }
+          } else {
+            throw error
+          }
+        }
+      }
+
       const playerRows = rows.filter(r => !!r.player_id)
       const trialistRows = rows.filter(r => !!r.trialist_id)
-      if (playerRows.length > 0) {
-        const { error } = await supabase.from('match_player_stats').upsert(playerRows, { onConflict: 'match_id,player_id' as any })
-        if (error) throw error
-      }
-      if (trialistRows.length > 0) {
-        const { error } = await supabase.from('match_player_stats').upsert(trialistRows, { onConflict: 'match_id,trialist_id' as any })
-        if (error) throw error
-      }
+
+      await tryUpsert(playerRows, 'match_id,player_id')
+      await tryUpsert(trialistRows, 'match_id,trialist_id')
       return true
     }
+  })
+}
+
+export const usePlayerAttendanceSummary = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player-attendance-summary', playerId],
+    queryFn: async () => {
+      const [trRes, mtRes] = await Promise.all([
+        supabase.from('training_attendance').select('status, arrival_time').eq('player_id', playerId),
+        supabase.from('match_attendance').select('status').eq('player_id', playerId)
+      ])
+      if (trRes.error) throw trRes.error
+      if (mtRes.error) throw mtRes.error
+      const training = trRes.data || []
+      const matches = mtRes.data || []
+      const trainingPresent = training.filter(t => t.status === 'present').length
+      const trainingTardy = training.filter(t => t.status === 'present' && t.arrival_time !== null).length
+      const matchPresent = matches.filter(m => m.status === 'present').length
+      const matchTardy = matches.filter(m => m.status === 'late').length
+      const totalEvents = training.length + matches.length
+      const totalPresences = trainingPresent + matchPresent
+      const totalTardiness = trainingTardy + matchTardy
+      const attendanceRate = totalEvents > 0 ? Math.round((totalPresences / totalEvents) * 100) : 0
+      return {
+        training: { present: trainingPresent, tardy: trainingTardy, total: training.length },
+        match: { present: matchPresent, tardy: matchTardy, total: matches.length },
+        totals: { present: totalPresences, tardy: totalTardiness, total: totalEvents, attendanceRate }
+      }
+    },
+    enabled: !!playerId
   })
 }
 
