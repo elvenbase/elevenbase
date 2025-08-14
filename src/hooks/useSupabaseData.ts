@@ -1951,3 +1951,20 @@ export const useFormerTrialistData = (player: any) => {
     enabled: !!player
   })
 }
+
+export const usePlayerNoteEvents = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player-note-events', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('match_events')
+        .select('id, match_id, event_type, comment, minute, period, created_at')
+        .eq('player_id', playerId)
+        .eq('event_type', 'note')
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!playerId
+  })
+}

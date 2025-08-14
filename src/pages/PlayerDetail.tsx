@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { usePlayerMatchStats } from '@/hooks/useSupabaseData'
+import { usePlayerNoteEvents } from '@/hooks/useSupabaseData'
 import { usePlayerById, useFormerTrialistData } from '@/hooks/useSupabaseData'
 import { usePlayerAttendanceSummary } from '@/hooks/useSupabaseData'
 import { useRoles } from '@/hooks/useRoles'
@@ -15,6 +16,7 @@ const PlayerDetail = () => {
   const { id } = useParams<{ id: string }>()
   const { data: player } = usePlayerById(id || '')
   const { data: stats = [] } = usePlayerMatchStats(id || '')
+  const { data: noteEvents = [] } = usePlayerNoteEvents(id || '')
   const { data: formerTrialist } = useFormerTrialistData(player as any)
   const { data: attendance } = usePlayerAttendanceSummary(id || '')
   const { data: roles = [] } = useRoles()
@@ -222,6 +224,9 @@ const PlayerDetail = () => {
                     const date = m?.match_date ? new Date(m.match_date).toLocaleDateString() : ''
                     const opp = m?.opponents?.name || m?.opponent_name || '-'
                     const res = `${m?.our_score ?? '-'} - ${m?.opponent_score ?? '-'}`
+                    const notesForMatch = (noteEvents as any[]).filter(ev => ev.match_id === r.match_id && ev.comment)
+                    const noteSummary = notesForMatch.length > 0 ? (notesForMatch[0].comment as string) : ''
+                    const noteFull = notesForMatch.map(ev => `${ev.minute ? ev.minute + "' " : ''}${ev.comment}`).join('\n')
                     return (
                       <tr key={r.id} className="border-t">
                         <td className="py-2 pr-2 whitespace-nowrap">{date}</td>
@@ -233,7 +238,7 @@ const PlayerDetail = () => {
                         <td className="py-2 pr-2">{r.assists}</td>
                         <td className="py-2 pr-2">{r.yellow_cards}</td>
                         <td className="py-2 pr-2">{r.red_cards}</td>
-                        <td className="py-2 pr-2 max-w-[320px] truncate" title={m?.notes || ''}>{m?.notes || ''}</td>
+                        <td className="py-2 pr-2 max-w-[320px] truncate" title={noteFull}>{noteSummary}</td>
                       </tr>
                     )
                   })}
