@@ -378,11 +378,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                       <span className="truncate">{player.first_name} {player.last_name}</span>
                       {player.isTrialist && <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>}
                     </p>
-                    {player.jersey_number && (
-                      <p className="text-xs text-muted-foreground">
-                        #{player.jersey_number} • {player.position}
-                      </p>
-                    )}
+                    <p className="text-xs text-muted-foreground">{player.jersey_number ? `#${player.jersey_number}` : ''}</p>
                   </div>
                 </div>
               ))}

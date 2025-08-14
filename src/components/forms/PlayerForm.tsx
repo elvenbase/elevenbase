@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreatePlayer } from '@/hooks/useSupabaseData';
 import { useFieldOptions } from '@/hooks/useFieldOptions';
+import { useRoles } from '@/hooks/useRoles';
 import { UserPlus } from 'lucide-react';
 
 interface PlayerFormProps {
@@ -33,6 +34,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
 
   const createPlayer = useCreatePlayer();
   const { getOptionsForField, loadOptions } = useFieldOptions();
+  const { data: roles = [] } = useRoles();
 
   // Load field options when component mounts
   useEffect(() => {
@@ -49,7 +51,7 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
       last_name: formData.last_name,
       jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
       position: formData.position || undefined,
-      player_role: formData.player_role || undefined,
+      role_code: formData.player_role || undefined,
       status: formData.status as 'active' | 'inactive' | 'injured' | 'suspended',
       phone: formData.phone || undefined,
       birth_date: formData.birth_date || undefined,
@@ -165,19 +167,19 @@ export const PlayerForm = ({ children }: PlayerFormProps) => {
               <SelectTrigger>
                 <SelectValue placeholder="Seleziona ruolo" />
               </SelectTrigger>
-                              <SelectContent>
-                  {getOptionsForField('player_role').length > 0 ? (
-                    getOptionsForField('player_role').map((option) => (
-                      <SelectItem key={option.id} value={option.option_value}>
-                        {option.option_label}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="loading" disabled>
-                      Caricamento opzioni...
+              <SelectContent>
+                {roles.length > 0 ? (
+                  roles.map((r) => (
+                    <SelectItem key={r.code} value={r.code}>
+                      {r.label} ({r.abbreviation})
                     </SelectItem>
-                  )}
-                </SelectContent>
+                  ))
+                ) : (
+                  <SelectItem value="loading" disabled>
+                    Caricamento opzioni...
+                  </SelectItem>
+                )}
+              </SelectContent>
             </Select>
           </div>
 

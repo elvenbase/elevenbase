@@ -200,7 +200,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
                       <span className="truncate">{player.first_name} {player.last_name}</span>
                       {player.isTrialist && <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>}
                     </p>
-                    {player.jersey_number && (<p className="text-xs text-muted-foreground">#{player.jersey_number} • {player.position}</p>)}
+                    {player.jersey_number && (<p className="text-xs text-muted-foreground">#{player.jersey_number}</p>)}
                   </div>
                 </div>
               ))}
@@ -234,7 +234,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
                         <p className="font-medium">{player.first_name} {player.last_name}</p>
                         {player.isTrialist && (<Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>)}
                         {player.jersey_number && (<Badge variant="outline" className="text-xs">#{player.jersey_number}</Badge>)}
-                        {player.position && (<Badge variant="secondary" className="text-xs">{player.position}</Badge>)}
+                        {(player as any).role_code && (<Badge variant="secondary" className="text-xs">{(player as any).role_code}</Badge>)}
                       </div>
                     </div>
                     {!isReadOnly && (

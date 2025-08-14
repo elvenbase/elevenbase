@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { useUpdateTrialist, usePromoteTrialist, useAvailableJerseyNumbers } from "@/hooks/useSupabaseData";
 import { useFieldOptions } from "@/hooks/useFieldOptions";
+import { useRoles } from '@/hooks/useRoles';
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X, MessageCircle, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -65,7 +66,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
     phone: trialist.phone || '',
     birth_date: trialist.birth_date || '',
     position: trialist.position || '',
-    player_role: trialist.player_role || '',
+    role_code: (trialist as any).role_code || '',
     status: trialist.status,
     notes: trialist.notes || '',
     esperienza: trialist.esperienza || '',
@@ -86,6 +87,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
   const { toast } = useToast();
 
   const { getOptionsForField, loadOptions } = useFieldOptions();
+  const { data: roles = [] } = useRoles();
 
   // Load field options when component mounts
   useEffect(() => {
@@ -209,7 +211,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
         phone: phoneNumber ? `${phonePrefix}${phoneNumber}` : undefined,
         birth_date: formData.birth_date || undefined,
         position: formData.position || undefined,
-        player_role: formData.player_role || undefined,
+        role_code: (formData as any).role_code || undefined,
         status: formData.status,
         notes: formData.notes || undefined,
         esperienza: formData.esperienza || undefined,
@@ -485,19 +487,19 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="player_role">Ruolo</Label>
+                  <Label htmlFor="role_code">Ruolo</Label>
                   <Select
-                    value={formData.player_role}
-                    onValueChange={(value) => setFormData({ ...formData, player_role: value })}
+                    value={(formData as any).role_code}
+                    onValueChange={(value) => setFormData({ ...formData, role_code: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleziona ruolo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {getOptionsForField('player_role').length > 0 ? (
-                        getOptionsForField('player_role').map((option) => (
-                          <SelectItem key={option.id} value={option.option_value}>
-                            {option.option_label}
+                      {roles.length > 0 ? (
+                        roles.map((r) => (
+                          <SelectItem key={r.code} value={r.code}>
+                            {r.label} ({r.abbreviation})
                           </SelectItem>
                         ))
                       ) : (
