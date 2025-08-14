@@ -523,9 +523,9 @@ const MatchLive = () => {
 	return (
 		<div className="min-h-screen bg-background">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[calc(100vh-2rem)]">
+				<div className="grid grid-cols-1 md:grid-cols-5 gap-4 h-[calc(100vh-2rem)]">
 					{/* Colonna sinistra: In campo per blocchi ruolo */}
-					<div className="flex flex-col overflow-y-auto md:col-span-1">
+					<div className="flex flex-col overflow-y-auto md:col-span-2">
 						<Card>
 							<CardHeader>
 								<CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
@@ -638,15 +638,17 @@ const MatchLive = () => {
 						<div className="sticky top-0 z-10">
 							<Card>
 								<CardContent className="py-3">
-									<div className="grid grid-cols-2 md:grid-cols-3 gap-2 items-center">
-										<div className="flex items-center gap-2">
+									<div className="grid grid-cols-3 gap-2 items-center">
+										<div className="flex items-center justify-start gap-2">
 											<Button variant="ghost" size="sm" asChild>
 												<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Gestione</Link>
 											</Button>
+										</div>
+										<div className="flex items-center justify-center gap-2">
 											{((match as any)?.opponents?.logo_url || (match as any)?.opponents?.jersey_image_url) && (
 												<img src={(match as any).opponents.logo_url || (match as any).opponents.jersey_image_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
 											)}
-											<span className="text-sm font-medium truncate max-w-[220px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
+											<span className="text-sm font-medium truncate max-w-[240px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
 										</div>
 										<div className="flex items-center justify-end gap-2">
 											<Select value={period} onValueChange={setPeriod as any}>
