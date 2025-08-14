@@ -210,6 +210,11 @@ const MatchLive = () => {
 
   // Player selection for events
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
+  const [flashId, setFlashId] = useState<string | null>(null)
+  const flashRow = (pid: string) => {
+    setFlashId(pid)
+    setTimeout(() => setFlashId(null), 180)
+  }
   const getDisplayName = (id: string) => {
     const p = playersById[id] || trialistsById[id]
     return p ? `${p.first_name} ${p.last_name}` : id
@@ -420,7 +425,7 @@ const MatchLive = () => {
                     const firstInitial = (p.first_name || '').trim().charAt(0)
                     const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
                     return (
-                      <div key={p.id} className="px-2 py-1 rounded border flex items-center gap-2">
+                      <div key={p.id} className={`px-2 py-1 rounded border flex items-center gap-2 ${flashId===p.id ? 'border-primary' : ''}`}>
                         <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                         {code && code !== 'ALTRI' && (
                           <Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
@@ -428,25 +433,25 @@ const MatchLive = () => {
                         <div className="truncate text-sm leading-tight">{displayName}</div>
                         {renderEventBadges(p.id)}
                         <div className="ml-auto flex items-center gap-1">
-                          <Button aria-label="Gol" variant="ghost" size="icon" className="hover:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'goal', team: 'us', player_id: p.id })}>
+                          <Button aria-label="Gol" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'goal', team: 'us', player_id: p.id }) }}>
                             <span className="material-symbols-outlined text-[18px]">sports_soccer</span>
                           </Button>
-                          <Button aria-label="Assist" variant="ghost" size="icon" className="hover:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'assist', player_id: p.id })}>
+                          <Button aria-label="Assist" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'assist', player_id: p.id }) }}>
                             <span className="material-symbols-outlined text-[18px]">switch_access_shortcut_add</span>
                           </Button>
-                          <Button aria-label="Ammonizione" variant="ghost" size="icon" className="hover:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'yellow_card', player_id: p.id })}>
+                          <Button aria-label="Ammonizione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'yellow_card', player_id: p.id }) }}>
                             <span className="material-symbols-outlined text-[18px] text-yellow-500">crop_9_16</span>
                           </Button>
-                          <Button aria-label="Espulsione" variant="ghost" size="icon" className="hover:bg-transparent hover:text-red-600 active:text-red-600 focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'red_card', player_id: p.id })}>
+                          <Button aria-label="Espulsione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'red_card', player_id: p.id }) }}>
                             <span className="material-symbols-outlined text-[18px] text-red-600">crop_9_16</span>
                           </Button>
-                          <Button aria-label="Fallo" variant="ghost" size="icon" className="hover:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'foul', player_id: p.id })}>
+                          <Button aria-label="Fallo" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'foul', player_id: p.id }) }}>
                             <span className="material-symbols-outlined text-[18px]">shield_person</span>
                           </Button>
-                          <Button aria-label="Sostituzione" variant="ghost" size="icon" className="hover:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { setSubOutId(p.id); setSubOpen(true) }}>
+                          <Button aria-label="Sostituzione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); setSubOutId(p.id); setSubOpen(true) }}>
                             <span className="material-symbols-outlined text-[18px]">transfer_within_a_station</span>
                           </Button>
-                          <Button aria-label="Nota" variant="ghost" size="icon" className="hover:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => postEvent({ event_type: 'note', player_id: p.id, comment: `Nota su ${getDisplayName(p.id)}` })}>
+                          <Button aria-label="Nota" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'note', player_id: p.id, comment: `Nota su ${getDisplayName(p.id)}` }) }}>
                             <span className="material-symbols-outlined text-[18px]">note_add</span>
                           </Button>
                         </div>
