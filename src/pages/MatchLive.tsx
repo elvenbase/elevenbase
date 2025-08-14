@@ -208,12 +208,26 @@ const MatchLive = () => {
     }
   }, [id])
 
-  // Player selection for events
+  // Player selection for events + event selection mode
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
   const [flashId, setFlashId] = useState<string | null>(null)
   const flashRow = (pid: string) => {
     setFlashId(pid)
     setTimeout(() => setFlashId(null), 180)
+  }
+  const [eventMode, setEventMode] = useState<null | 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'foul' | 'note'>(null)
+  const toggleEventMode = (mode: NonNullable<typeof eventMode>) => {
+    setEventMode(prev => prev === mode ? null : mode)
+  }
+  const handleAssignEvent = async (pid: string) => {
+    if (!eventMode) return
+    flashRow(pid)
+    if (eventMode === 'note') {
+      await postEvent({ event_type: 'note', player_id: pid, comment: `Nota su ${getDisplayName(pid)}` })
+    } else {
+      await postEvent({ event_type: eventMode, player_id: pid })
+    }
+    setEventMode(null)
   }
   const getDisplayName = (id: string) => {
     const p = playersById[id] || trialistsById[id]
@@ -438,9 +452,12 @@ const MatchLive = () => {
                             const jersey = (playersById[p.id] as any)?.jersey_number
                             const red = hasRedById.has(p.id)
                             const borderCls = red ? 'border-red-600' : ''
-                            const s = eventStatsById[p.id] || { goals: 0, assists: 0, yellows: 0, reds: 0 }
                             return (
-                              <div key={p.id} className={`px-2 py-1 rounded border flex items-center gap-2 ${borderCls}`}>
+                              <div
+                                key={p.id}
+                                className={`px-2 py-1 rounded border flex items-center gap-2 ${borderCls} ${eventMode ? 'cursor-pointer ring-1 ring-primary/40' : ''}`}
+                                onClick={() => { if (eventMode) handleAssignEvent(p.id) }}
+                              >
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                                 {code && code !== 'ALTRI' && (
                                   <Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
@@ -448,27 +465,8 @@ const MatchLive = () => {
                                 {typeof jersey === 'number' && (
                                   <span className="text-xs text-muted-foreground">#{jersey}</span>
                                 )}
-                                <div className="truncate text-sm leading-tight">{displayName}</div>
-                                <div className="ml-auto flex items-center gap-1">
-                                  <Button aria-label="Gol" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'goal', team: 'us', player_id: p.id }) }}>
-                                    <span className="material-symbols-outlined text-[18px]">sports_soccer</span>
-                                    {s.goals > 1 && (<span className="ml-0.5 text-[10px]">{s.goals}</span>)}
-                                  </Button>
-                                  <Button aria-label="Assist" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'assist', player_id: p.id }) }}>
-                                    <span className="material-symbols-outlined text-[18px]">switch_access_shortcut_add</span>
-                                    {s.assists > 1 && (<span className="ml-0.5 text-[10px]">{s.assists}</span>)}
-                                  </Button>
-                                  <Button aria-label="Ammonizione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'yellow_card', player_id: p.id }) }}>
-                                    <span className="material-symbols-outlined text-[18px] text-yellow-500">crop_9_16</span>
-                                    {s.yellows > 1 && (<span className="ml-0.5 text-[10px]">{s.yellows}</span>)}
-                                  </Button>
-                                  <Button aria-label="Espulsione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'red_card', player_id: p.id }) }}>
-                                    <span className="material-symbols-outlined text-[18px] text-red-600">crop_9_16</span>
-                                  </Button>
-                                  <Button aria-label="Sostituzione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); setSubOutId(p.id); setSubOpen(true) }}>
-                                    <span className="material-symbols-outlined text-[18px]">transfer_within_a_station</span>
-                                  </Button>
-                                </div>
+                                <div className="text-xs sm:text-sm leading-tight">{displayName}</div>
+                                {/* No per-player action icons here in new interaction model */}
                               </div>
                             )
                           })}
@@ -547,6 +545,38 @@ const MatchLive = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                  {/* Event toolbar under scoreboard (no substitution here) */}
+                  <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
+                    <Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8">
+                      <span className="material-symbols-outlined text-[18px] mr-1">sports_soccer</span>
+                      Gol
+                    </Button>
+                    <Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8">
+                      <span className="material-symbols-outlined text-[18px] mr-1">switch_access_shortcut_add</span>
+                      Assist
+                    </Button>
+                    <Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8">
+                      <span className="material-symbols-outlined text-[18px] mr-1 text-yellow-500">crop_9_16</span>
+                      Giallo
+                    </Button>
+                    <Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8">
+                      <span className="material-symbols-outlined text-[18px] mr-1 text-red-600">crop_9_16</span>
+                      Rosso
+                    </Button>
+                    <Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8">
+                      <span className="material-symbols-outlined text-[18px] mr-1">shield_person</span>
+                      Fallo
+                    </Button>
+                    <Button variant={eventMode==='note'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('note')} className="h-8">
+                      <span className="material-symbols-outlined text-[18px] mr-1">note_add</span>
+                      Nota
+                    </Button>
+                  </div>
+                  {eventMode && (
+                    <div className="mt-1 text-center text-xs text-muted-foreground">
+                      Seleziona un giocatore in campo per {eventMode === 'goal' ? 'registrare un gol' : eventMode === 'assist' ? 'registrare un assist' : eventMode === 'yellow_card' ? 'ammonire' : eventMode === 'red_card' ? 'espellere' : eventMode === 'foul' ? 'registrare un fallo' : 'aggiungere una nota'}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
