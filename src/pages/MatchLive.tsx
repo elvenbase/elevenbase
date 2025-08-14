@@ -279,6 +279,23 @@ const MatchLive = () => {
     return m
   }, [onFieldEntries, roleByPosId])
 
+  // Order on-field list from GK -> DEF -> MID -> ATT
+  const orderedOnFieldPlayers = useMemo(() => {
+    const orderIndex = (code: string) => {
+      const c = (code || '').toUpperCase()
+      if (c === 'P') return 0
+      if (['TD','DCD','DC','DCS','TS'].includes(c)) return 1
+      if (['MED','REG','MC','MD','MS','QD','QS'].includes(c)) return 2
+      if (['PU','AD','AS','ATT'].includes(c)) return 3
+      return 4
+    }
+    return (onFieldPlayers as any[]).map((p: any) => {
+      const rawRole = roleByCurrentOnFieldPlayerId[p.id] || ''
+      const code = rawRole ? normalizeRoleCodeFrom({ roleShort: rawRole }) : 'ALTRI'
+      return { ...p, _roleCode: code, _order: orderIndex(code) }
+    }).sort((a, b) => a._order - b._order)
+  }, [onFieldPlayers, roleByCurrentOnFieldPlayerId])
+
   // Sector helpers
   const sectorFromCode = (code: string): 'P'|'DIF'|'CEN'|'ATT'|'ALTRI' => {
     const c = (code || '').toUpperCase()
