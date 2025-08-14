@@ -26,39 +26,28 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   render() {
     if (this.state.hasError) {
+      const { error, errorInfo } = this.state
+      const isMimeError = typeof error?.message === 'string' && error.message.includes("'text/html' is not a valid JavaScript MIME type")
       return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-red-50 text-red-800">
-          <div className="max-w-xl w-full space-y-3">
-            <h2 className="text-lg font-semibold">Si è verificato un errore nell'app</h2>
-            {this.state.message && (
-              <p className="text-sm">{this.state.message}</p>
-            )}
-            {this.state.stack && (
-              <pre className="text-xs overflow-auto bg-white p-3 border rounded max-h-64">
-                {this.state.stack}
-              </pre>
-            )}
-            {this.state.componentStack && (
-              <details className="text-xs">
-                <summary className="cursor-pointer">Dettagli componente</summary>
-                <pre className="overflow-auto bg-white p-3 border rounded max-h-40 whitespace-pre-wrap">{this.state.componentStack}</pre>
-              </details>
-            )}
-            <button
-              className="text-xs underline"
-              onClick={() => {
-                const text = `Message: ${this.state.message || ''}\n\nStack:\n${this.state.stack || ''}\n\nComponent:\n${this.state.componentStack || ''}`
-                navigator.clipboard?.writeText(text).catch(() => {})
-              }}
-            >
-              Copia dettagli
-            </button>
-            <p className="text-[11px] text-red-700">Se usi Safari su iPhone e non vedi la console, questi dettagli sono visibili qui sopra.</p>
-          </div>
+        <div className="p-4">
+          <h2 className="font-bold mb-2">Si è verificato un errore</h2>
+          <pre className="whitespace-pre-wrap text-sm bg-muted p-2 rounded mb-2">{String(error)}</pre>
+          {isMimeError && (
+            <div className="text-sm text-amber-600 mb-2">
+              Potrebbe trattarsi di cache vecchia dell'app. Prova ad aggiornare la pagina con un hard-refresh.
+            </div>
+          )}
+          {errorInfo && (
+            <details className="text-xs opacity-80">
+              <summary>Dettagli</summary>
+              <pre className="whitespace-pre-wrap">{String(errorInfo?.componentStack || '')}</pre>
+            </details>
+          )}
+          <button className="mt-3 px-3 py-1 border rounded" onClick={() => window.location.reload()}>Ricarica</button>
         </div>
       )
     }
-    return this.props.children as React.ReactElement
+    return this.props.children
   }
 }
 
