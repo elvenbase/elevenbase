@@ -605,13 +605,6 @@ const MatchLive = () => {
                       </Button>
                       <Badge variant="outline">{match?.opponent_name}</Badge>
                     </div>
-                    <div className="text-2xl font-bold text-center col-span-2 md:col-span-1">
-                      {(() => {
-                        const us = 'NOS'
-                        const opp = (match?.opponent_name || 'OPP').slice(0,3).toUpperCase()
-                        return `${us} ${score.us} - ${score.opp} ${opp}`
-                      })()}
-                    </div>
                     <div className="flex items-center justify-end gap-2">
                       <Select value={period} onValueChange={setPeriod as any}>
                         <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
@@ -625,6 +618,7 @@ const MatchLive = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="col-span-2 md:col-span-3 text-2xl font-bold text-center">{score.us} - {score.opp}</div>
                     <div className="col-span-2 md:col-span-3 flex items-center justify-center gap-2">
                       <Clock3 className="h-4 w-4" />
                       <span className="tabular-nums">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
