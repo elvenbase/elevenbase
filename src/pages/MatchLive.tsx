@@ -525,6 +525,9 @@ const MatchLive = () => {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 items-center">
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/matches`}><ArrowLeft className="h-4 w-4 mr-2" />Admin</Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" asChild>
                         <Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Dettaglio</Link>
                       </Button>
                       <Badge variant="outline">{match?.opponent_name}</Badge>
