@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { usePlayers } from '@/hooks/useSupabaseData'
 import { usePlayerMatchStats } from '@/hooks/useSupabaseData'
+import { usePlayerById, useFormerTrialistData } from '@/hooks/useSupabaseData'
 
 const PlayerDetail = () => {
   const { id } = useParams<{ id: string }>()
-  const { data: players = [] } = usePlayers()
-  const player = players.find((p:any)=>p.id === id)
+  const { data: player } = usePlayerById(id || '')
   const { data: stats = [] } = usePlayerMatchStats(id || '')
+  const { data: formerTrialist } = useFormerTrialistData(player as any)
 
   if (!id) return null
 
@@ -32,6 +33,66 @@ const PlayerDetail = () => {
           <h1 className="text-xl font-bold">{player ? `${player.first_name} ${player.last_name}` : 'Giocatore'}</h1>
           <Button asChild variant="ghost" size="sm"><Link to="/squad">Torna a Squad</Link></Button>
         </div>
+
+        <Card>
+          <CardHeader><CardTitle>Anagrafica</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div><div className="text-muted-foreground">Nome</div><div className="font-medium">{player?.first_name} {player?.last_name}</div></div>
+              <div><div className="text-muted-foreground">Email</div><div className="font-medium">{player?.email || '-'}</div></div>
+              <div><div className="text-muted-foreground">Telefono</div><div className="font-medium">{player?.phone || '-'}</div></div>
+              <div><div className="text-muted-foreground">Data nascita</div><div className="font-medium">{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '-'}</div></div>
+              <div><div className="text-muted-foreground">Numero maglia</div><div className="font-medium">{player?.jersey_number ?? '-'}</div></div>
+              <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{(player as any)?.role_code || '-'}</div></div>
+              <div><div className="text-muted-foreground">Stato</div><div className="font-medium">{player?.status || '-'}</div></div>
+              <div><div className="text-muted-foreground">Note</div><div className="font-medium whitespace-pre-wrap">{player?.notes || '-'}</div></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {formerTrialist && (
+          <Card>
+            <CardHeader><CardTitle>Storico provenienza (Provinante)</CardTitle></CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
+                <div><div className="text-muted-foreground">Periodo prova</div><div className="font-medium">{formerTrialist?.created_at ? new Date(formerTrialist.created_at).toLocaleDateString() : '-'} → {formerTrialist?.updated_at ? new Date(formerTrialist.updated_at).toLocaleDateString() : '-'}</div></div>
+                <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{formerTrialist?.role_code || '-'}</div></div>
+              </div>
+              <div className="text-sm font-semibold mb-2">Valutazioni in prova</div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th className="py-2 pr-2">Data</th>
+                      <th className="py-2 pr-2">Tecnica</th>
+                      <th className="py-2 pr-2">Fisica</th>
+                      <th className="py-2 pr-2">Tattica</th>
+                      <th className="py-2 pr-2">Atteggiamento</th>
+                      <th className="py-2 pr-2">Media</th>
+                      <th className="py-2 pr-2">Note</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(formerTrialist?.trial_evaluations || []).map((ev:any)=> (
+                      <tr key={ev.id} className="border-t">
+                        <td className="py-2 pr-2 whitespace-nowrap">{ev.evaluation_date ? new Date(ev.evaluation_date).toLocaleDateString() : '-'}</td>
+                        <td className="py-2 pr-2">{ev.technical_score ?? '-'}</td>
+                        <td className="py-2 pr-2">{ev.physical_score ?? '-'}</td>
+                        <td className="py-2 pr-2">{ev.tactical_score ?? '-'}</td>
+                        <td className="py-2 pr-2">{ev.attitude_score ?? '-'}</td>
+                        <td className="py-2 pr-2">{ev.overall_rating ? Number(ev.overall_rating).toFixed(1) : '-'}</td>
+                        <td className="py-2 pr-2 max-w-[320px] truncate" title={ev.notes || ''}>{ev.notes || '-'}</td>
+                      </tr>
+                    ))}
+                    {(formerTrialist?.trial_evaluations || []).length === 0 && (
+                      <tr><td className="py-4 text-muted-foreground" colSpan={7}>Nessuna valutazione di prova trovata.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader><CardTitle>Riepilogo</CardTitle></CardHeader>

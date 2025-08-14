@@ -1856,3 +1856,36 @@ export const usePlayerMatchStats = (playerId: string) => {
     enabled: !!playerId
   })
 }
+
+export const usePlayerById = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('players').select('*').eq('id', playerId).maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!playerId
+  })
+}
+
+export const useFormerTrialistData = (player: any) => {
+  return useQuery({
+    queryKey: ['former-trialist', player?.email || player?.first_name || '', player?.last_name || ''],
+    queryFn: async () => {
+      if (!player) return null
+      // Try match by email first
+      if (player.email) {
+        const { data: tByEmail } = await supabase.from('trialists').select('*, trial_evaluations:trial_evaluations(*)').eq('email', player.email).order('created_at', { ascending: false })
+        if (tByEmail && tByEmail.length > 0) return tByEmail[0]
+      }
+      // Fallback: by name (best effort)
+      const { data: tByName } = await supabase.from('trialists').select('*, trial_evaluations:trial_evaluations(*)')
+        .ilike('first_name', player.first_name || '')
+        .ilike('last_name', player.last_name || '')
+        .order('created_at', { ascending: false })
+      return (tByName && tByName.length > 0) ? tByName[0] : null
+    },
+    enabled: !!player
+  })
+}
