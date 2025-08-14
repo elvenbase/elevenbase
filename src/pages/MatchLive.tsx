@@ -279,35 +279,38 @@ const MatchLive = () => {
     return m
   }, [onFieldEntries, roleByPosId])
 
-  // Order on-field list from GK -> DEF -> MID -> ATT
-  const orderedOnFieldPlayers = useMemo(() => {
-    const orderIndex = (code: string) => {
-      const c = (code || '').toUpperCase()
-      if (c === 'P') return 0
-      if (['TD','DCD','DC','DCS','TS'].includes(c)) return 1
-      if (['MED','REG','MC','MD','MS','QD','QS'].includes(c)) return 2
-      if (['PU','AD','AS','ATT'].includes(c)) return 3
-      return 4
-    }
-    return (onFieldPlayers as any[]).map((p: any) => {
-      const rawRole = roleByCurrentOnFieldPlayerId[p.id] || ''
-      const code = rawRole ? normalizeRoleCodeFrom({ roleShort: rawRole }) : 'ALTRI'
-      return { ...p, _roleCode: code, _order: orderIndex(code) }
-    }).sort((a, b) => a._order - b._order)
-  }, [onFieldPlayers, roleByCurrentOnFieldPlayerId])
-
-  // Substituted players (events-based), exclude those currently on field
-  const substitutionEvents = useMemo(() => (events || []).filter((e: any) => e.event_type === 'substitution'), [events])
-  const substitutedList = useMemo(() => {
-    const lastOutMinuteById = new Map<string, number | undefined>()
-    substitutionEvents.forEach((e: any) => {
-      const outId = e.metadata?.out_id as string | undefined
-      if (outId) lastOutMinuteById.set(outId, e.minute)
+  // Sector helpers
+  const sectorFromCode = (code: string): 'P'|'DIF'|'CEN'|'ATT'|'ALTRI' => {
+    const c = (code || '').toUpperCase()
+    if (c === 'P') return 'P'
+    if (['TD','DCD','DC','DCS','TS'].includes(c)) return 'DIF'
+    if (['MED','REG','MC','MD','MS','QD','QS'].includes(c)) return 'CEN'
+    if (['PU','AD','AS','ATT'].includes(c)) return 'ATT'
+    return 'ALTRI'
+  }
+  const roleCodeForPlayerId = (pid: string) => {
+    const raw = roleByCurrentOnFieldPlayerId[pid]
+    if (raw) return normalizeRoleCodeFrom({ roleShort: raw })
+    const pl: any = playersById[pid]
+    if (pl) return normalizeRoleCodeFrom({ roleShort: pl?.roleShort, role: pl?.role, name: pl?.position || pl?.position_name || '' })
+    return 'ALTRI' as const
+  }
+  const groupedOnField = useMemo(() => {
+    const groups: Record<'P'|'DIF'|'CEN'|'ATT', any[]> = { P: [], DIF: [], CEN: [], ATT: [] }
+    orderedOnFieldPlayers.forEach((p: any) => {
+      const code = (p._roleCode || 'ALTRI') as string
+      const sector = sectorFromCode(code)
+      if (sector in groups) groups[sector as 'P'|'DIF'|'CEN'|'ATT'].push(p)
     })
-    return Array.from(lastOutMinuteById.entries())
-      .map(([id, minute]) => ({ id, minute }))
-      .filter(it => !onFieldIds.has(it.id))
-  }, [substitutionEvents, onFieldIds])
+    return groups
+  }, [orderedOnFieldPlayers])
+
+  // Red card state map
+  const hasRedById = useMemo(() => {
+    const s = new Set<string>()
+    ;(events || []).forEach((e: any) => { const id = e.player_id || e.trialist_id; if (e.event_type === 'red_card' && id) s.add(id) })
+    return s
+  }, [events])
 
   // Substitution dialog
   const [subOpen, setSubOpen] = useState(false)
@@ -315,6 +318,17 @@ const MatchLive = () => {
   const [subInId, setSubInId] = useState<string>('')
   const benchIds = useMemo(() => new Set(convocati.map((c: any) => c.id)), [convocati])
   const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id)), [benchIds, onFieldIds])
+  const [benchRoleFilter, setBenchRoleFilter] = useState<'ALL'|'P'|'DIF'|'CEN'|'ATT'>('ALL')
+  const filteredBench = useMemo(() => {
+    return convocati
+      .filter((p: any) => !onFieldIds.has(p.id))
+      .filter((p: any) => {
+        if (benchRoleFilter === 'ALL') return true
+        const code = roleCodeForPlayerId(p.id)
+        const sector = sectorFromCode(code)
+        return sector === benchRoleFilter
+      })
+  }, [convocati, onFieldIds, benchRoleFilter, roleByCurrentOnFieldPlayerId, playersById])
   const doSubstitution = async () => {
     if (!id || !subOutId || !subInId) return
     setOptimisticSubs(prev => [...prev, { out_id: subOutId, in_id: subInId }])
@@ -381,183 +395,209 @@ const MatchLive = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Torna al dettaglio</Link>
-          </Button>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">{match?.opponent_name}</Badge>
-            <Badge variant="default" className="text-base">{score.us} - {score.opp}</Badge>
-            <div className="flex items-center gap-1 px-2 py-1 rounded border">
-              <Clock3 className="h-4 w-4" />
-              <span className="tabular-nums">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
-              <Button variant="ghost" size="sm" onClick={toggleTimer} className="h-6 px-2">
-                {running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              </Button>
-            </div>
-            <Select value={period} onValueChange={setPeriod as any}>
-              <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="not_started">Pre partita</SelectItem>
-                <SelectItem value="first_half">1° Tempo</SelectItem>
-                <SelectItem value="half_time">Intervallo</SelectItem>
-                <SelectItem value="second_half">2° Tempo</SelectItem>
-                <SelectItem value="extra_time">Supplementari</SelectItem>
-                <SelectItem value="ended">Fine</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {orderedOnFieldPlayers.length === 0 ? (
-                <div className="text-muted-foreground text-sm">Nessun titolare impostato. Imposta l'11 dalla sezione Formazione.</div>
-              ) : (
-                <div className="space-y-1">
-                  {orderedOnFieldPlayers.map((p: any) => {
-                    const code = p._roleCode as string
-                    const firstInitial = (p.first_name || '').trim().charAt(0)
-                    const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
-                    return (
-                      <div key={p.id} className={`px-2 py-1 rounded border flex items-center gap-2 ${flashId===p.id ? 'border-primary' : ''}`}>
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                        {code && code !== 'ALTRI' && (
-                          <Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
-                        )}
-                        <div className="truncate text-sm leading-tight">{displayName}</div>
-                        {renderEventBadges(p.id)}
-                        <div className="ml-auto flex items-center gap-1">
-                          <Button aria-label="Gol" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'goal', team: 'us', player_id: p.id }) }}>
-                            <span className="material-symbols-outlined text-[18px]">sports_soccer</span>
-                          </Button>
-                          <Button aria-label="Assist" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'assist', player_id: p.id }) }}>
-                            <span className="material-symbols-outlined text-[18px]">switch_access_shortcut_add</span>
-                          </Button>
-                          <Button aria-label="Ammonizione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'yellow_card', player_id: p.id }) }}>
-                            <span className="material-symbols-outlined text-[18px] text-yellow-500">crop_9_16</span>
-                          </Button>
-                          <Button aria-label="Espulsione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'red_card', player_id: p.id }) }}>
-                            <span className="material-symbols-outlined text-[18px] text-red-600">crop_9_16</span>
-                          </Button>
-                          <Button aria-label="Fallo" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'foul', player_id: p.id }) }}>
-                            <span className="material-symbols-outlined text-[18px]">shield_person</span>
-                          </Button>
-                          <Button aria-label="Sostituzione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); setSubOutId(p.id); setSubOpen(true) }}>
-                            <span className="material-symbols-outlined text-[18px]">transfer_within_a_station</span>
-                          </Button>
-                          <Button aria-label="Nota" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent hover:text-inherit active:text-inherit focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'note', player_id: p.id, comment: `Nota su ${getDisplayName(p.id)}` }) }}>
-                            <span className="material-symbols-outlined text-[18px]">note_add</span>
-                          </Button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-2rem)]">
+          {/* Colonna sinistra: In campo per blocchi ruolo */}
+          <div className="flex flex-col overflow-y-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {(['P','DIF','CEN','ATT'] as const).map((sec) => {
+                  const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
+                  const playersSec = groupedOnField[sec]
+                  return (
+                    <div key={sec}>
+                      <div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
+                      {playersSec.length === 0 ? (
+                        <div className="text-xs text-muted-foreground">—</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {playersSec.map((p: any) => {
+                            const code = p._roleCode as string
+                            const firstInitial = (p.first_name || '').trim().charAt(0)
+                            const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
+                            const jersey = (playersById[p.id] as any)?.jersey_number
+                            const red = hasRedById.has(p.id)
+                            const borderCls = red ? 'border-red-600' : ''
+                            const s = eventStatsById[p.id] || { goals: 0, assists: 0, yellows: 0, reds: 0 }
+                            return (
+                              <div key={p.id} className={`px-2 py-1 rounded border flex items-center gap-2 ${borderCls}`}>
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                {code && code !== 'ALTRI' && (
+                                  <Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
+                                )}
+                                {typeof jersey === 'number' && (
+                                  <span className="text-xs text-muted-foreground">#{jersey}</span>
+                                )}
+                                <div className="truncate text-sm leading-tight">{displayName}</div>
+                                <div className="ml-auto flex items-center gap-1">
+                                  <Button aria-label="Gol" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'goal', team: 'us', player_id: p.id }) }}>
+                                    <span className="material-symbols-outlined text-[18px]">sports_soccer</span>
+                                    {s.goals > 1 && (<span className="ml-0.5 text-[10px]">{s.goals}</span>)}
+                                  </Button>
+                                  <Button aria-label="Assist" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'assist', player_id: p.id }) }}>
+                                    <span className="material-symbols-outlined text-[18px]">switch_access_shortcut_add</span>
+                                    {s.assists > 1 && (<span className="ml-0.5 text-[10px]">{s.assists}</span>)}
+                                  </Button>
+                                  <Button aria-label="Ammonizione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'yellow_card', player_id: p.id }) }}>
+                                    <span className="material-symbols-outlined text-[18px] text-yellow-500">crop_9_16</span>
+                                    {s.yellows > 1 && (<span className="ml-0.5 text-[10px]">{s.yellows}</span>)}
+                                  </Button>
+                                  <Button aria-label="Espulsione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); postEvent({ event_type: 'red_card', player_id: p.id }) }}>
+                                    <span className="material-symbols-outlined text-[18px] text-red-600">crop_9_16</span>
+                                  </Button>
+                                  <Button aria-label="Sostituzione" variant="ghost" size="icon" className="bg-transparent hover:bg-transparent active:bg-transparent focus:bg-transparent focus:outline-none focus-visible:outline-none focus-visible:ring-0 active:scale-110 transition-transform duration-100" onClick={() => { flashRow(p.id); setSubOutId(p.id); setSubOpen(true) }}>
+                                    <span className="material-symbols-outlined text-[18px]">transfer_within_a_station</span>
+                                  </Button>
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
+                      )}
+                    </div>
+                  )
+                })}
+
+                <Dialog open={subOpen} onOpenChange={setSubOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Nuova sostituzione</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm">Esce</Label>
+                        <Select value={subOutId} onValueChange={setSubOutId}>
+                          <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+                          <SelectContent>
+                            {Array.from(onFieldIds).map((id) => (
+                              <SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    )
-                  })}
-                </div>
-              )}
+                      <div>
+                        <Label className="text-sm">Entra</Label>
+                        <Select value={subInId} onValueChange={setSubInId}>
+                          <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+                          <SelectContent>
+                            {availableInIds.map((id) => (
+                              <SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
+                        <Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
+          </div>
 
-              <Dialog open={subOpen} onOpenChange={setSubOpen}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Nuova sostituzione</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-sm">Esce</Label>
-                      <Select value={subOutId} onValueChange={setSubOutId}>
-                        <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-                        <SelectContent>
-                          {Array.from(onFieldIds).map((id) => (
-                            <SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+          {/* Colonna centrale: Scoreboard sticky + Panchina filtrabile */}
+          <div className="flex flex-col overflow-hidden">
+            <div className="sticky top-0 z-10">
+              <Card>
+                <CardContent className="py-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Dettaglio</Link>
+                    </Button>
+                    <Badge variant="outline">{match?.opponent_name}</Badge>
+                    <div className="text-2xl font-bold">{score.us} - {score.opp}</div>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded border">
+                      <Clock3 className="h-4 w-4" />
+                      <span className="tabular-nums">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
+                      <Button variant="ghost" size="sm" onClick={toggleTimer} className="h-6 px-2">
+                        {running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      </Button>
                     </div>
-                    <div>
-                      <Label className="text-sm">Entra</Label>
-                      <Select value={subInId} onValueChange={setSubInId}>
-                        <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-                        <SelectContent>
-                          {availableInIds.map((id) => (
-                            <SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
-                      <Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
-                    </div>
+                    <Select value={period} onValueChange={setPeriod as any}>
+                      <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not_started">Pre partita</SelectItem>
+                        <SelectItem value="first_half">1° Tempo</SelectItem>
+                        <SelectItem value="half_time">Intervallo</SelectItem>
+                        <SelectItem value="second_half">2° Tempo</SelectItem>
+                        <SelectItem value="extra_time">Supplementari</SelectItem>
+                        <SelectItem value="ended">Fine</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                </DialogContent>
-              </Dialog>
+                </CardContent>
+              </Card>
+            </div>
 
-              <div className="mt-6">
-                <div className="font-semibold mb-2">Eventi recenti</div>
+            <Card className="mt-3 flex-1 overflow-y-auto">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Panchina</span>
+                  <div className="flex items-center gap-2">
+                    <Select value={benchRoleFilter} onValueChange={(v:any)=>setBenchRoleFilter(v)}>
+                      <SelectTrigger className="h-8 w-[160px]"><SelectValue placeholder="Ruolo" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Tutti</SelectItem>
+                        <SelectItem value="P">Portiere</SelectItem>
+                        <SelectItem value="DIF">Difesa</SelectItem>
+                        <SelectItem value="CEN">Centrocampo</SelectItem>
+                        <SelectItem value="ATT">Attacco</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-1">
-                  {lastEvents.map((e: any) => (
-                    <div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
-                       <div>
-                         <span className="mr-2">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
-                         <span className="mr-2">{e.event_type}</span>
-                       {(e.player_id || e.trialist_id) && <span className="mr-2">{getDisplayName(e.player_id || e.trialist_id)}</span>}
-                       </div>
-                       <Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>
-                         <Trash2 className="h-4 w-4" />
-                       </Button>
+                  {filteredBench.map((p: any) => (
+                    <div key={p.id} className="flex items-center gap-2 p-2 rounded border">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <div className="truncate">{p.first_name} {p.last_name}</div>
+                      <Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto" onClick={()=>{ setSubInId(p.id); setSubOpen(true) }}>
+                        <span className="material-symbols-outlined text-[18px]">transfer_within_a_station</span>
+                      </Button>
                     </div>
                   ))}
-                  {lastEvents.length > 0 && (
-                    <div>
-                      <Button size="sm" variant="outline" onClick={async()=>{ const last = lastEvents[0]; await supabase.from('match_events').delete().eq('id', last.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>Annulla ultimo evento</Button>
-                    </div>
+                  {filteredBench.length === 0 && (
+                    <div className="text-sm text-muted-foreground">Nessun giocatore in panchina per il filtro selezionato.</div>
                   )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />Convocati (Panchina) ({convocati.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-80 overflow-y-auto space-y-1">
-                {convocati.filter((p: any) => !onFieldIds.has(p.id)).map((p: any) => (
-                  <div key={p.id} className={`flex items-center gap-2 p-2 rounded border cursor-pointer ${selectedPlayerId===p.id ? 'border-primary bg-primary/5' : ''}`} onClick={()=>setSelectedPlayerId(p.id)}>
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <div className="truncate">{p.first_name} {p.last_name}</div>
-                    {renderEventBadges(p.id)}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Repeat className="h-5 w-5" />Sostituti ({substitutedList.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-80 overflow-y-auto space-y-1">
-                {substitutedList.length === 0 && (
-                  <div className="text-sm text-muted-foreground">Nessun sostituito al momento.</div>
-                )}
-                {substitutedList.map((it) => (
-                  <div key={it.id} className="flex items-center gap-2 p-2 rounded border">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                    <div className="truncate">{getDisplayName(it.id)}</div>
-                    {typeof it.minute === 'number' && (<span className="ml-auto text-xs text-muted-foreground">{it.minute}'</span>)}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Colonna destra: Log eventi */}
+          <div className="flex flex-col overflow-hidden">
+            <Card className="flex-1 overflow-y-auto">
+              <CardHeader>
+                <CardTitle>Eventi</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  {[...events].slice().reverse().map((e: any) => (
+                    <div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
+                        <span className="material-symbols-outlined text-[16px]">
+                          {e.event_type === 'goal' ? 'sports_soccer' : e.event_type === 'assist' ? 'switch_access_shortcut_add' : e.event_type === 'yellow_card' ? 'crop_9_16' : e.event_type === 'red_card' ? 'crop_9_16' : e.event_type === 'foul' ? 'shield_person' : 'note_add'}
+                        </span>
+                        <span>{e.event_type}</span>
+                        {(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
