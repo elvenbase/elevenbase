@@ -2,7 +2,7 @@ import React from 'react'
 
 type ErrorBoundaryProps = { children: React.ReactNode }
 
-type ErrorBoundaryState = { hasError: boolean; message?: string; stack?: string }
+type ErrorBoundaryState = { hasError: boolean; message?: string; stack?: string; componentStack?: string }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
@@ -21,6 +21,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     console.error('ErrorBoundary caught:', error)
     // eslint-disable-next-line no-console
     console.error('Error info:', errorInfo)
+    this.setState({ componentStack: errorInfo?.componentStack })
   }
 
   render() {
@@ -37,7 +38,22 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                 {this.state.stack}
               </pre>
             )}
-            <p className="text-xs text-red-700">I dettagli completi sono stati stampati in console.</p>
+            {this.state.componentStack && (
+              <details className="text-xs">
+                <summary className="cursor-pointer">Dettagli componente</summary>
+                <pre className="overflow-auto bg-white p-3 border rounded max-h-40 whitespace-pre-wrap">{this.state.componentStack}</pre>
+              </details>
+            )}
+            <button
+              className="text-xs underline"
+              onClick={() => {
+                const text = `Message: ${this.state.message || ''}\n\nStack:\n${this.state.stack || ''}\n\nComponent:\n${this.state.componentStack || ''}`
+                navigator.clipboard?.writeText(text).catch(() => {})
+              }}
+            >
+              Copia dettagli
+            </button>
+            <p className="text-[11px] text-red-700">Se usi Safari su iPhone e non vedi la console, questi dettagli sono visibili qui sopra.</p>
           </div>
         </div>
       )
