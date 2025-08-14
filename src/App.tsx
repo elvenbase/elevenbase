@@ -201,8 +201,22 @@ function App() {
                           </main>
                         </ProtectedRoute>
                       } />
-                      <Route path="/match/:id" element={<MatchDetail />} />
-                      <Route path="/match/:id/live" element={<MatchLive />} />
+                      <Route path="/match/:id" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <MatchDetail />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/match/:id/live" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <MatchLive />
+                          </main>
+                        </ProtectedRoute>
+                      } />
                       <Route path="/formations" element={
                         <ProtectedRoute>
                           <Navigation />
