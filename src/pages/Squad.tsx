@@ -55,13 +55,15 @@ interface MobilePlayerCardProps {
   onImageClick: (player: Player) => void;
   onDelete: (playerId: string) => void;
   formatWhatsAppLink: (phone: string, name: string) => string;
+  getRoleLabel: (code?: string) => string;
 }
 
 const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({ 
   player, 
   onImageClick, 
   onDelete, 
-  formatWhatsAppLink
+  formatWhatsAppLink,
+  getRoleLabel
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -133,7 +135,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
             <div className="grid grid-cols-1 gap-3">
               <div>
                 <span className="text-xs text-muted-foreground uppercase tracking-wide">Ruolo</span>
-                <div className="text-sm font-medium mt-1">{(player as any).role_code || 'Non specificato'}</div>
+                <div className="text-sm font-medium mt-1">{getRoleLabel((player as any).role_code)}</div>
               </div>
             </div>
           </div>
@@ -752,6 +754,7 @@ const Squad = () => {
                     onImageClick={openImageModal}
                     onDelete={handleDeletePlayer}
                     formatWhatsAppLink={formatWhatsAppLink}
+                    getRoleLabel={(code?: string) => rolesByCode[code || '']?.label || (code || 'Non specificato')}
                   />
                 ))}
               </div>
