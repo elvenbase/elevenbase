@@ -730,7 +730,7 @@ const MatchLive = () => {
 												{e.event_type === 'foul' && <FoulIcon className="h-4 w-4" />}
 												{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
 												{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
-												{e.event_type === 'substitution' && <SubIcon className="h-4 w-4" />}
+												{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
 												<span>{labelForEventType(e.event_type)}</span>
 												{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
 											</div>
@@ -771,7 +771,7 @@ const MatchLive = () => {
 											<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
 											<div className="truncate">{p.first_name} {p.last_name}</div>
 											<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ setSubInId(p.id); setSubOpen(true) }}>
-												<SubIcon className="text-[16px]" />
+												<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
 											</Button>
 										</div>
 									))}
