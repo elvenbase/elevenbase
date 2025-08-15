@@ -66,7 +66,6 @@ const MatchDetail = () => {
   const setMatchTrialistInvites = useSetMatchTrialistInvites()
   const { data: allTrialists = [] } = useTrialists()
   const [editOpen, setEditOpen] = useState(false)
-  const [allowTrialists, setAllowTrialists] = useState(false)
   const [selectedTrialists, setSelectedTrialists] = useState<string[]>([])
 
   const score = useMemo(() => computeScore(events), [events])
@@ -94,19 +93,13 @@ const MatchDetail = () => {
   
   // Initialize edit state when dialog opens
   const openEdit = () => {
-    setAllowTrialists(!!(match as any).allow_trialists)
     setSelectedTrialists((trialistInvites || []).map((t: any) => t.trialist_id))
     setEditOpen(true)
   }
   
   const handleSaveEdit = async () => {
     if (!id) return
-    await updateMatch.mutateAsync({ id, updates: { allow_trialists: allowTrialists } })
-    if (allowTrialists) {
-      await setMatchTrialistInvites.mutateAsync({ matchId: id, trialistIds: selectedTrialists })
-    } else {
-      await setMatchTrialistInvites.mutateAsync({ matchId: id, trialistIds: [] })
-    }
+    await setMatchTrialistInvites.mutateAsync({ matchId: id, trialistIds: selectedTrialists })
     setEditOpen(false)
   }
 
@@ -145,26 +138,20 @@ const MatchDetail = () => {
                       <DialogTitle>Modifica Partita</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <input id="allow_trialists" type="checkbox" checked={allowTrialists} onChange={(e: any) => setAllowTrialists(e.target.checked)} />
-                        <label htmlFor="allow_trialists" className="text-sm">Abilita provinanti per questa partita</label>
-                      </div>
-                      {allowTrialists && (
-                        <div className="space-y-2">
-                          <Label className="text-sm">Seleziona provinanti</Label>
-                          <div className="max-h-40 overflow-y-auto border rounded p-2 space-y-1">
-                            {(allTrialists || []).map((t: any) => {
-                              const checked = selectedTrialists.includes(t.id)
-                              return (
-                                <label key={t.id} className="flex items-center gap-2 text-sm">
-                                  <input type="checkbox" checked={checked} onChange={(e) => setSelectedTrialists((prev: string[]) => e.target.checked ? [...prev, t.id] : prev.filter((id: string) => id !== t.id))} />
-                                  <span className="truncate">{t.first_name} {t.last_name}</span>
-                                </label>
-                              )
-                            })}
-                          </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Seleziona provinanti</Label>
+                        <div className="max-h-40 overflow-y-auto border rounded p-2 space-y-1">
+                          {(allTrialists || []).map((t: any) => {
+                            const checked = selectedTrialists.includes(t.id)
+                            return (
+                              <label key={t.id} className="flex items-center gap-2 text-sm">
+                                <input type="checkbox" checked={checked} onChange={(e) => setSelectedTrialists((prev: string[]) => e.target.checked ? [...prev, t.id] : prev.filter((id: string) => id !== t.id))} />
+                                <span className="truncate">{t.first_name} {t.last_name}</span>
+                              </label>
+                            )
+                          })}
                         </div>
-                      )}
+                      </div>
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" onClick={() => setEditOpen(false)}>Annulla</Button>
                         <Button onClick={handleSaveEdit} disabled={updateMatch.isPending}>Salva</Button>
