@@ -163,6 +163,10 @@ const MatchLive = () => {
 		const tr = trialistsPresent.filter((t: any) => titolariIds.has(t.id))
 		return [...roster, ...tr]
 	}, [players, titolariIds, trialistsPresent])
+	const hasValidLineup = useMemo(() => {
+		const ids = Array.from(titolariIds)
+		return ids.filter(Boolean).length >= 11
+	}, [titolariIds])
 	const convocati = useMemo(() => {
 		// Convocati = lista panchina (match_bench)
 		return (bench || []).map((b: any) => {
@@ -533,7 +537,53 @@ const MatchLive = () => {
 
 	return (
 		<div className="min-h-screen bg-background">
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+			<div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-4">
+				{!hasValidLineup && (
+					<Card className="mb-3">
+						<CardContent>
+							<div className="text-sm text-amber-600">
+								Per avviare la live è necessaria una formazione completa di 11 titolari. Torna alla gestione partita e imposta la formazione.
+							</div>
+						</CardContent>
+					</Card>
+				)}
+				{/* Header: Back, Admin link, Timer, Scoreboard */}
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<Button variant="ghost" size="sm" asChild>
+							<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Gestione</Link>
+						</Button>
+						<Button variant="ghost" size="sm" onClick={()=>{ localStorage.removeItem('matchLiveLayout'); setLayout([33,34,33]) }}>Reimposta</Button>
+					</div>
+					<div className="flex items-center gap-2">
+						{((match as any)?.opponents?.logo_url || (match as any)?.opponents?.jersey_image_url) && (
+							<img src={(match as any).opponents.logo_url || (match as any).opponents.jersey_image_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
+						)}
+						<span className="text-sm font-medium truncate max-w-[240px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
+					</div>
+					<div className="flex items-center justify-end gap-2">
+						<Select value={period} onValueChange={setPeriod as any}>
+							<SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
+							<SelectContent>
+								<SelectItem value="not_started">Pre partita</SelectItem>
+								<SelectItem value="first_half">1° Tempo</SelectItem>
+								<SelectItem value="half_time">Intervallo</SelectItem>
+								<SelectItem value="second_half">2° Tempo</SelectItem>
+								<SelectItem value="extra_time">Supplementari</SelectItem>
+								<SelectItem value="ended">Fine</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="col-span-2 md:col-span-3 text-2xl font-bold text-center">{score.us} - {score.opp}</div>
+					<div className="col-span-2 md:col-span-3 flex items-center justify-center gap-2">
+						<Clock3 className="h-4 w-4" />
+						<span className="tabular-nums">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
+						<Button variant={running? 'outline':'default'} size="sm" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
+							{running ? (<><Pause className="h-4 w-4 mr-1"/>Pausa</>) : (<><Play className="h-4 w-4 mr-1"/>Start</>)}
+						</Button>
+						<Button variant="outline" size="sm" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup}>Reset</Button>
+					</div>
+				</div>
 				<ResizablePanelGroup direction="horizontal" onLayout={(sizes:any)=>{ try{ localStorage.setItem('matchLiveLayout', JSON.stringify(sizes)); setLayout(sizes) }catch{} }}>
 					<ResizablePanel defaultSize={layout[0] || 33} minSize={15} className="min-w-[200px]">
 						{/* Colonna sinistra: In campo per blocchi ruolo */}
@@ -682,12 +732,12 @@ const MatchLive = () => {
 											<div className="col-span-2 md:col-span-3 flex items-center justify-center gap-2">
 												<Clock3 className="h-4 w-4" />
 												<span className="tabular-nums">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
-												<Button variant="ghost" size="sm" onClick={toggleTimer} className="h-6 px-2" disabled={isEnded}>
-													{running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+												<Button variant={running? 'outline':'default'} size="sm" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
+													{running ? (<><Pause className="h-4 w-4 mr-1"/>Pausa</>) : (<><Play className="h-4 w-4 mr-1"/>Start</>)}
 												</Button>
-												<Button variant="ghost" size="sm" onClick={resetTimer} className="h-6 px-2" disabled={isEnded}>
-													<RotateCcw className="h-4 w-4" />
-												</Button>
+												<Button variant="outline" size="sm" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup}>Reset</Button>
+											</div>
+											<div className="col-span-2 md:col-span-3 flex items-center justify-center gap-2">
 												<Button variant="outline" size="sm" onClick={async()=>{
 													if (!id) return
 													// Compute per-player stats
@@ -753,36 +803,36 @@ const MatchLive = () => {
 															console.error('Supabase error code/details:', e.code, e.details)
 														}
 													}
-												}} disabled={isEnded}>Termina partita</Button>
+												}} disabled={isEnded || !hasValidLineup}>Termina partita</Button>
 											</div>
 										</div>
 										{/* Event toolbar */}
 										<div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
-											<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded}>
+											<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<GoalIcon className="inline-block h-4 w-4 mr-1" />
 												Gol
 											</Button>
-											<Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8" disabled={isEnded}>
+											<Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<AssistIcon className="inline-block h-4 w-4 mr-1" />
 												Assist
 											</Button>
-											<Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8" disabled={isEnded}>
+											<Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<YellowCardIcon className="inline-block h-3 w-3 mr-2" />
 												Giallo
 											</Button>
-											<Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8" disabled={isEnded}>
+											<Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<RedCardIcon className="inline-block h-3 w-3 mr-2" />
 												Rosso
 											</Button>
-											<Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8" disabled={isEnded}>
+											<Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<FoulIcon className="inline-block h-4 w-4 mr-1" />
 												Fallo
 											</Button>
-											<Button variant={eventMode==='save'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('save')} className="h-8" disabled={isEnded}>
+											<Button variant={eventMode==='save'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('save')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<ParataIcon className="inline-block h-4 w-4 mr-1" />
 												Parata
 											</Button>
-											<Button variant={eventMode==='note'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('note')} className="h-8" disabled={isEnded}>
+											<Button variant={eventMode==='note'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('note')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<span className="material-symbols-outlined text-[18px] mr-1">note_add</span>
 												Nota
 											</Button>
@@ -858,7 +908,7 @@ const MatchLive = () => {
 											<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border text-xs">
 												<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
 												<div className="truncate">{p.first_name} {p.last_name}</div>
-												<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded}>
+												<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup}>
 													<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
 												</Button>
 											</div>
