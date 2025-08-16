@@ -14,7 +14,6 @@ import { useToast } from '@/hooks/use-toast'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { useQuery } from '@tanstack/react-query'
 
 const PlayerDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -102,25 +101,7 @@ const PlayerDetail = () => {
   const maxGA = Math.max(1, ...lastN.map((s:any) => (s.goals || 0)))
   const maxAst = Math.max(1, ...lastN.map((s:any) => (s.assists || 0)))
   const presenceCount = stats.filter((r:any) => (r.minutes || 0) > 0).length
-  const { data: teamMatchesCount = 0 } = useQuery({
-    queryKey: ['matches-count-official-ended'],
-    queryFn: async () => {
-      const { data: comps, error: compErr } = await supabase
-        .from('competitions')
-        .select('id,type')
-        .in('type', ['championship','tournament'])
-      if (compErr) throw compErr
-      const compIds = (comps || []).map((c:any)=>c.id)
-      if (compIds.length === 0) return 0
-      const { count, error: mErr } = await supabase
-        .from('matches')
-        .select('id', { count: 'exact', head: true })
-        .in('competition_id', compIds)
-        .eq('live_state', 'ended')
-      if (mErr) throw mErr
-      return count || 0
-    }
-  })
+  const endedMatchesForPlayer = stats.length
 
   const Radial = ({ pct, label }: { pct: number; label: string }) => {
     const p = Math.max(0, Math.min(100, Math.round(pct)))
@@ -168,7 +149,7 @@ const PlayerDetail = () => {
                     { key: 'ast', label: 'Assist', value: (stats.length>0 ? totals.assists : undefined), icon: '🎯', color: 'text-cyan-700', tint: 'bg-cyan-50 border-cyan-200', iconColor: 'text-cyan-500' },
                     { key: 'gialli', label: 'Gialli', value: (stats.length>0 ? totals.yellows : undefined), icon: '', color: 'text-yellow-700', tint: 'bg-yellow-50 border-yellow-200', iconColor: 'text-yellow-500', card: 'yellow' },
                     { key: 'rossi', label: 'Rossi', value: (stats.length>0 ? totals.reds : undefined), icon: '', color: 'text-rose-700', tint: 'bg-rose-50 border-rose-200', iconColor: 'text-rose-500', card: 'red' },
-                    { key: 'pres', label: 'Presenze', value: (stats.length>0 ? presenceCount : undefined), total: teamMatchesCount, icon: '👟', color: 'text-neutral-700', tint: 'bg-neutral-50 border-neutral-200', iconColor: 'text-neutral-500', composite: true },
+                    { key: 'pres', label: 'Presenze', value: (stats.length>0 ? presenceCount : undefined), total: endedMatchesForPlayer, icon: '👟', color: 'text-neutral-700', tint: 'bg-neutral-50 border-neutral-200', iconColor: 'text-neutral-500', composite: true },
                   ].map((t) => {
                     const isZero = t.composite ? (t.value === 0) : (t.value === 0)
                     const isNA = t.composite ? (t.total === undefined || t.total === null) : (t.value === undefined)
