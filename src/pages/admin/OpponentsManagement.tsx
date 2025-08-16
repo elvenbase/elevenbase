@@ -21,9 +21,13 @@ const JerseyMini = ({ shape, primary, secondary, accent, imageUrl }: { shape?: J
   const s = secondary || '#ffffff'
   const style: React.CSSProperties = {}
   if (shape === 'stripes') {
-    style.backgroundImage = `repeating-linear-gradient(90deg, ${p} 0 6px, ${s} 6px 12px)`
+    style.backgroundImage = `linear-gradient(90deg, ${p} 0, ${p} 50%, ${s} 50%, ${s} 100%)`
+    style.backgroundSize = '12px 100%'
+    style.backgroundRepeat = 'repeat'
   } else if (shape === 'hoops') {
-    style.backgroundImage = `repeating-linear-gradient(0deg, ${p} 0 6px, ${s} 6px 12px)`
+    style.backgroundImage = `linear-gradient(0deg, ${p} 0, ${p} 50%, ${s} 50%, ${s} 100%)`
+    style.backgroundSize = '100% 12px'
+    style.backgroundRepeat = 'repeat'
   } else {
     style.backgroundColor = p
   }
