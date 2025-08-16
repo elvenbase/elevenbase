@@ -50,6 +50,9 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
   const availablePlayers = useMemo(() => allPlayers.filter(p => !playersInLineup.includes(p.id)), [allPlayers, playersInLineup])
   const presentPlayers = useMemo(() => availablePlayers.filter(player => attendance.find(a => a.player_id === player.id)?.status === 'present'), [availablePlayers, attendance])
 
+  // Roster-only utilities for counts that should not include trialists
+  const rosterPlayers = useMemo(() => allPlayers.filter(p => !p.isTrialist), [allPlayers])
+
   useEffect(() => { loadBench() }, [matchId])
 
   const loadBench = async () => {
@@ -136,11 +139,13 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
   const convocatiCount = bench.length
   const eleggibiliCount = presentPlayers.length
   const disponibiliNonSelezionati = Math.max(0, eleggibiliCount - convocatiCount)
-  const indisponibiliCount = allPlayers.filter(player => {
+  const indisponibiliCount = rosterPlayers.filter(player => {
     const a = attendance.find(x => x.player_id === player.id)
-    return player.status !== 'active' || a?.status === 'absent' || a?.status === 'excused'
+    const rosterStatus = (player.status || 'active')
+    const notActive = rosterStatus !== 'active' && rosterStatus !== undefined
+    return a?.status === 'absent' || a?.status === 'excused' || notActive
   }).length
-  const senzaRispostaCount = allPlayers.filter(player => {
+  const senzaRispostaCount = rosterPlayers.filter(player => {
     const a = attendance.find(x => x.player_id === player.id)
     return !a || a.status === 'pending'
   }).length
