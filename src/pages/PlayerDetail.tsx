@@ -141,12 +141,37 @@ const PlayerDetail = () => {
                 <Badge variant="secondary">#{player?.jersey_number ?? '-'}</Badge>
                 <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
               </div>
-              <div className="mt-2 flex flex-wrap items-center gap-3 justify-end text-xs sm:text-sm">
-                <span className="inline-flex items-center gap-1">⚽ <span className="font-semibold tabular-nums">{totals.goals}</span></span>
-                <span className="inline-flex items-center gap-1">🎯 <span className="font-semibold tabular-nums">{totals.assists}</span></span>
-                <span className="inline-flex items-center gap-1">🟨 <span className="font-semibold tabular-nums">{totals.yellows}</span></span>
-                <span className="inline-flex items-center gap-1">🟥 <span className="font-semibold tabular-nums">{totals.reds}</span></span>
-                <span className="inline-flex items-center gap-1">👟 <span className="font-semibold tabular-nums">{presenceCount}/{totals.matches}</span></span>
+              <div className="mt-3 ml-auto w-full sm:w-auto">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 justify-end">
+                  {[
+                    { key: 'gol', label: 'Gol', value: (stats.length>0 ? totals.goals : undefined), icon: '⚽', color: 'text-sky-700', tint: 'bg-sky-50 border-sky-200', iconColor: 'text-sky-500' },
+                    { key: 'ast', label: 'Assist', value: (stats.length>0 ? totals.assists : undefined), icon: '🎯', color: 'text-cyan-700', tint: 'bg-cyan-50 border-cyan-200', iconColor: 'text-cyan-500' },
+                    { key: 'gialli', label: 'Gialli', value: (stats.length>0 ? totals.yellows : undefined), icon: '', color: 'text-yellow-700', tint: 'bg-yellow-50 border-yellow-200', iconColor: 'text-yellow-500', card: 'yellow' },
+                    { key: 'rossi', label: 'Rossi', value: (stats.length>0 ? totals.reds : undefined), icon: '', color: 'text-rose-700', tint: 'bg-rose-50 border-rose-200', iconColor: 'text-rose-500', card: 'red' },
+                    { key: 'pres', label: 'Presenze', value: (stats.length>0 ? presenceCount : undefined), icon: '👟', color: 'text-neutral-700', tint: 'bg-neutral-50 border-neutral-200', iconColor: 'text-neutral-500' },
+                  ].map((t) => {
+                    const isZero = t.value === 0
+                    const isNA = t.value === undefined
+                    const activeCls = isZero || isNA ? 'bg-transparent border-border/40 text-muted-foreground' : `${t.tint} ${t.color}`
+                    return (
+                      <div key={t.key} className={`rounded-lg border px-2 py-2 ${activeCls}`}>
+                        <div className="flex items-center gap-2">
+                          {/* icon */}
+                          {t.card ? (
+                            <span aria-hidden className={`inline-block w-4 h-5 rounded-sm ${t.card==='yellow'?'bg-yellow-400':'bg-rose-500'}`} />
+                          ) : (
+                            <span aria-hidden className={`${t.iconColor} text-base leading-none`}>{t.icon || '•'}</span>
+                          )}
+                          <div className="flex flex-col items-end -mt-0.5">
+                            <span className="tabular-nums font-semibold text-sm sm:text-base">{isNA ? '—' : t.value}</span>
+                            <span className="hidden sm:block text-[10px] text-muted-foreground">{t.label}</span>
+                            <span className="sr-only">{t.label}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </div>
