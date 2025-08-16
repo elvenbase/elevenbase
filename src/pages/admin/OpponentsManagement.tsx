@@ -34,6 +34,78 @@ const JerseyMini = ({ shape, primary, secondary, accent, imageUrl }: { shape?: J
   return <div className="h-6 w-6 rounded border" style={style} />
 }
 
+const OpponentRow = ({ o, jerseys, onUpdateLogo, onUpdateJerseyImage, updateOpponent, deleteOpponent }: {
+  o: any;
+  jerseys: any[];
+  onUpdateLogo: (id: string, file: File) => Promise<void> | void;
+  onUpdateJerseyImage: (id: string, file: File) => Promise<void> | void;
+  updateOpponent: any;
+  deleteOpponent: any;
+}) => {
+  const [shape, setShape] = React.useState<JerseyShape>(o.jersey_shape || 'classic')
+  const [primary, setPrimary] = React.useState<string>(o.jersey_primary_color || '#008080')
+  const [secondary, setSecondary] = React.useState<string>(o.jersey_secondary_color || '#ffffff')
+  const [accent, setAccent] = React.useState<string>(o.jersey_accent_color || '#000000')
+
+  return (
+    <div className="flex items-center justify-between p-3 rounded-lg border">
+      <div className="flex items-center gap-3 min-w-0">
+        {o.logo_url ? (
+          <img src={o.logo_url} alt={o.name} className="h-8 w-8 rounded object-cover" />
+        ) : (
+          <div className="h-8 w-8 rounded bg-muted flex items-center justify-center text-xs font-semibold">{o.name?.charAt(0)}</div>
+        )}
+        <Input defaultValue={o.name} onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== o.name) updateOpponent.mutate({ id: o.id, data: { name: v } }) }} className="w-48" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Input type="file" accept="image/*" onChange={(e) => e.target.files && onUpdateLogo(o.id, e.target.files[0])} className="w-40" />
+        <JerseyMini shape={o.jersey_image_url ? null : shape} primary={primary} secondary={secondary} accent={accent} imageUrl={o.jersey_image_url} />
+        <select
+          value={shape}
+          onChange={(e) => { const v = e.target.value as JerseyShape; setShape(v); updateOpponent.mutate({ id: o.id, data: { jersey_shape: v, jersey_image_url: null } }) }}
+          className="h-9 rounded border px-2 text-sm"
+        >
+          <option value="classic">Classic</option>
+          <option value="stripes">Strisce</option>
+          <option value="hoops">Orizzontali</option>
+        </select>
+        <input type="color" value={primary} onChange={(e) => setPrimary(e.target.value)} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_primary_color: e.target.value, jersey_image_url: null } })} title="Colore primario" />
+        <input type="color" value={secondary} onChange={(e) => setSecondary(e.target.value)} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_secondary_color: e.target.value, jersey_image_url: null } })} title="Colore secondario" />
+        <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_accent_color: e.target.value, jersey_image_url: null } })} title="Colore accento" />
+        <Input type="file" accept="image/*" onChange={(e) => e.target.files && onUpdateJerseyImage(o.id, e.target.files[0])} className="w-40" />
+        <div className="flex items-center gap-2">
+          <Shirt className="h-4 w-4 text-muted-foreground" />
+          <select
+            defaultValue={o.jersey_template_id || ''}
+            onChange={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_template_id: e.target.value || null } })}
+            className="h-9 rounded border px-2 text-sm"
+          >
+            <option value="">Nessuna maglia</option>
+            {jerseys.map((j: any) => (
+              <option key={j.id} value={j.id}>{j.name || j.id}</option>
+            ))}
+          </select>
+        </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Elimina avversario</AlertDialogTitle>
+              <AlertDialogDescription>Questa azione è irreversibile.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annulla</AlertDialogCancel>
+              <AlertDialogAction onClick={() => deleteOpponent.mutate(o.id)}>Elimina</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </div>
+  )
+}
+
 const OpponentsManagement = () => {
   const { data: opponents = [] } = useOpponents()
   const createOpponent = useCreateOpponent()
@@ -187,61 +259,7 @@ const OpponentsManagement = () => {
             {opponents.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">Nessun avversario</div>
             ) : opponents.map((o: any) => (
-              <div key={o.id} className="flex items-center justify-between p-3 rounded-lg border">
-                <div className="flex items-center gap-3 min-w-0">
-                  {o.logo_url ? (
-                    <img src={o.logo_url} alt={o.name} className="h-8 w-8 rounded object-cover" />
-                  ) : (
-                    <div className="h-8 w-8 rounded bg-muted flex items-center justify-center text-xs font-semibold">{o.name?.charAt(0)}</div>
-                  )}
-                  <Input defaultValue={o.name} onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== o.name) handleUpdateName(o.id, v) }} className="w-48" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input type="file" accept="image/*" onChange={(e) => e.target.files && handleUpdateLogo(o.id, e.target.files[0])} className="w-40" />
-                  <JerseyMini shape={o.jersey_shape} primary={o.jersey_primary_color} secondary={o.jersey_secondary_color} accent={o.jersey_accent_color} imageUrl={o.jersey_image_url} />
-                  <select
-                    defaultValue={o.jersey_shape || 'classic'}
-                    onChange={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_shape: e.target.value, jersey_image_url: null } })}
-                    className="h-9 rounded border px-2 text-sm"
-                  >
-                    <option value="classic">Classic</option>
-                    <option value="stripes">Strisce</option>
-                    <option value="hoops">Orizzontali</option>
-                  </select>
-                  <input type="color" defaultValue={o.jersey_primary_color || '#008080'} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_primary_color: e.target.value, jersey_image_url: null } })} title="Colore primario" />
-                  <input type="color" defaultValue={o.jersey_secondary_color || '#ffffff'} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_secondary_color: e.target.value, jersey_image_url: null } })} title="Colore secondario" />
-                  <input type="color" defaultValue={o.jersey_accent_color || '#000000'} onBlur={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_accent_color: e.target.value, jersey_image_url: null } })} title="Colore accento" />
-                  <Input type="file" accept="image/*" onChange={(e) => e.target.files && handleUpdateJerseyImage(o.id, e.target.files[0])} className="w-40" />
-                  <div className="flex items-center gap-2">
-                    <Shirt className="h-4 w-4 text-muted-foreground" />
-                    <select
-                      defaultValue={o.jersey_template_id || ''}
-                      onChange={(e) => updateOpponent.mutate({ id: o.id, data: { jersey_template_id: e.target.value || null } })}
-                      className="h-9 rounded border px-2 text-sm"
-                    >
-                      <option value="">Nessuna maglia</option>
-                      {jerseys.map((j: any) => (
-                        <option key={j.id} value={j.id}>{j.name || j.id}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Elimina avversario</AlertDialogTitle>
-                        <AlertDialogDescription>Questa azione è irreversibile.</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Annulla</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteOpponent.mutate(o.id)}>Elimina</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
+              <OpponentRow key={o.id} o={o} jerseys={jerseys} onUpdateLogo={handleUpdateLogo} onUpdateJerseyImage={handleUpdateJerseyImage} updateOpponent={updateOpponent} deleteOpponent={deleteOpponent} />
             ))}
           </div>
         </CardContent>
