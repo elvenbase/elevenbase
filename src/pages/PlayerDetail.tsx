@@ -126,7 +126,7 @@ const PlayerDetail = () => {
                 <img
                   src={player.avatar_url}
                   alt=""
-                  className="absolute top-1/2 -translate-y-1/2 left-[-20%] h-[80%] w-auto object-cover opacity-20"
+                  className="absolute top-1/2 -translate-y-1/2 left-0 h-[98%] w-auto object-cover opacity-20"
                 />
               </div>
             )}
