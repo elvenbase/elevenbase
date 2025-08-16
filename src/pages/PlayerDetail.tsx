@@ -43,6 +43,7 @@ const PlayerDetail = () => {
 
   const roleMap = Object.fromEntries(roles.map((r:any)=>[r.code, r]))
   const roleLabel = player?.role_code ? `${roleMap[player.role_code]?.label || player.role_code} (${roleMap[player.role_code]?.abbreviation || player.role_code})` : '-'
+  const shortName = player ? `${(player.first_name || '').trim().charAt(0).toUpperCase()}. ${(player.last_name || '').trim()}`.trim() : 'Giocatore'
 
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
     if (!code) return 'NA'
@@ -123,7 +124,7 @@ const PlayerDetail = () => {
             <div className="flex items-center gap-4 min-w-0">
               <PlayerAvatar firstName={player?.first_name} lastName={player?.last_name} avatarUrl={player?.avatar_url} size={80} />
               <div className="min-w-0">
-                <div className="text-2xl sm:text-3xl font-extrabold leading-tight truncate">{player ? `${player.first_name} ${player.last_name}` : 'Giocatore'}</div>
+                <div className="text-xl sm:text-2xl font-extrabold leading-tight">{shortName}</div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">#{player?.jersey_number ?? '-'}</Badge>
                   <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
