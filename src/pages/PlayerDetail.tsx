@@ -100,6 +100,7 @@ const PlayerDetail = () => {
   const maxMin = Math.max(90, ...lastN.map((s:any) => s.minutes || 0))
   const maxGA = Math.max(1, ...lastN.map((s:any) => (s.goals || 0)))
   const maxAst = Math.max(1, ...lastN.map((s:any) => (s.assists || 0)))
+  const presenceCount = stats.filter((r:any) => (r.minutes || 0) > 0).length
 
   const Radial = ({ pct, label }: { pct: number; label: string }) => {
     const p = Math.max(0, Math.min(100, Math.round(pct)))
@@ -139,6 +140,13 @@ const PlayerDetail = () => {
               <div className="mt-2 flex flex-wrap items-center gap-2 justify-end">
                 <Badge variant="secondary">#{player?.jersey_number ?? '-'}</Badge>
                 <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-3 justify-end text-xs sm:text-sm">
+                <span className="inline-flex items-center gap-1">⚽ <span className="font-semibold tabular-nums">{totals.goals}</span></span>
+                <span className="inline-flex items-center gap-1">🎯 <span className="font-semibold tabular-nums">{totals.assists}</span></span>
+                <span className="inline-flex items-center gap-1">🟨 <span className="font-semibold tabular-nums">{totals.yellows}</span></span>
+                <span className="inline-flex items-center gap-1">🟥 <span className="font-semibold tabular-nums">{totals.reds}</span></span>
+                <span className="inline-flex items-center gap-1">👟 <span className="font-semibold tabular-nums">{presenceCount}/{totals.matches}</span></span>
               </div>
             </div>
           </div>
