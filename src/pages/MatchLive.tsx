@@ -536,8 +536,8 @@ const MatchLive = () => {
 	})
 
 	return (
-		<div className="h-screen bg-background">
-			<div className="max-w-7xl mx-auto h-full px-2 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col">
+		<div className="h-screen bg-background/95">
+			<div className="max-w-7xl mx-auto h-full px-2 sm:px-6 lg:px-8 py-2 sm:py-3 flex flex-col overflow-hidden">
 				{!hasValidLineup && (
 					<Card className="mb-3">
 						<CardContent>
@@ -592,7 +592,7 @@ const MatchLive = () => {
 						</Button>
 					</div>
 				</div>
-				<div className="flex-1 overflow-hidden">
+				<div className="flex-1 overflow-hidden min-h-0">
 					<ResizablePanelGroup direction="horizontal" className="h-full" onLayout={(sizes:any)=>{ try{ localStorage.setItem('matchLiveLayout', JSON.stringify(sizes)); setLayout(sizes) }catch{} }}>
 						<ResizablePanel defaultSize={layout[0] || 33} minSize={15} className="min-w-[200px]">
 							{/* Colonna sinistra: In campo per blocchi ruolo */}
@@ -708,7 +708,7 @@ const MatchLive = () => {
 						<ResizablePanel defaultSize={layout[1] || 34} minSize={15}>
 							<ResizablePanelGroup direction="vertical" className="h-full">
 								<ResizablePanel defaultSize={25} minSize={10}>
-									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3">
+									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-full overflow-hidden">
 										<div className="flex items-center justify-center gap-2 flex-wrap">
 											<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
