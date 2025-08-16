@@ -548,49 +548,49 @@ const MatchLive = () => {
 					</Card>
 				)}
 				{/* Header: single-row scoreboard */}
-				<div className="flex items-center flex-wrap gap-3 py-2 border-b">
+				<div className="grid grid-cols-2 md:grid-cols-5 items-center gap-3 py-2 border-b">
 					{/* 1) back icon only */}
-					<Button variant="ghost" size="sm" asChild aria-label="Torna alla gestione">
-						<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4" /></Link>
-					</Button>
-					{/* 2) logo + team name */}
 					<div className="flex items-center gap-2 min-w-0">
+						<Button variant="ghost" size="sm" asChild aria-label="Torna alla gestione" className="shrink-0">
+							<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4" /></Link>
+						</Button>
+						{/* 2) logo + team name */}
 						{(match as any)?.opponents?.logo_url && (
 							<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
 						)}
-						<span className="text-sm font-medium truncate max-w-[200px] sm:max-w-[260px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
+						<span className="text-sm font-medium truncate">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
 					</div>
 					{/* 3) score */}
-					<div className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+					<div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-center md:col-span-1">
 						{score.us} - {score.opp}
 					</div>
-					{/* 4) timer + start/reset */}
-					<div className="flex items-center gap-2 px-2 py-1 rounded border bg-muted/30">
-						<Clock3 className="h-4 w-4" />
-						<span className="tabular-nums font-medium">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
-						<Button variant={running? 'outline':'default'} size="sm" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
-							{running ? (<><Pause className="h-4 w-4"/></>) : (<><Play className="h-4 w-4"/></>)}
-						</Button>
-						<Button variant="outline" size="sm" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup} aria-label="Reset timer">
+					{/* 4-6) timer + phase + reset */}
+					<div className="flex items-center justify-end gap-2 md:col-span-2">
+						<div className="flex items-center gap-2 px-2 py-1 rounded border bg-muted/30">
+							<Clock3 className="h-4 w-4" />
+							<span className="tabular-nums font-medium">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
+							<Button variant={running? 'outline':'default'} size="sm" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
+								{running ? (<><Pause className="h-4 w-4"/></>) : (<><Play className="h-4 w-4"/></>)}
+							</Button>
+							<Button variant="outline" size="sm" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup} aria-label="Reset timer">
+								<RotateCcw className="h-4 w-4" />
+							</Button>
+						</div>
+						<Select value={period} onValueChange={setPeriod as any}>
+							<SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
+							<SelectContent>
+								<SelectItem value="not_started">Pre partita</SelectItem>
+								<SelectItem value="first_half">1° Tempo</SelectItem>
+								<SelectItem value="half_time">Intervallo</SelectItem>
+								<SelectItem value="second_half">2° Tempo</SelectItem>
+								<SelectItem value="extra_time">Supplementari</SelectItem>
+								<SelectItem value="ended">Fine</SelectItem>
+							</SelectContent>
+						</Select>
+						<Button variant="ghost" size="sm" onClick={()=>{ localStorage.removeItem('matchLiveLayout'); setLayout([33,34,33]) }} aria-label="Reimposta layout">
 							<RotateCcw className="h-4 w-4" />
 						</Button>
 					</div>
-					{/* 5) match phase */}
-					<Select value={period} onValueChange={setPeriod as any}>
-						<SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
-						<SelectContent>
-							<SelectItem value="not_started">Pre partita</SelectItem>
-							<SelectItem value="first_half">1° Tempo</SelectItem>
-							<SelectItem value="half_time">Intervallo</SelectItem>
-							<SelectItem value="second_half">2° Tempo</SelectItem>
-							<SelectItem value="extra_time">Supplementari</SelectItem>
-							<SelectItem value="ended">Fine</SelectItem>
-						</SelectContent>
-					</Select>
-					{/* 6) reimposta layout icon-only */}
-					<Button variant="ghost" size="sm" onClick={()=>{ localStorage.removeItem('matchLiveLayout'); setLayout([33,34,33]) }} aria-label="Reimposta layout">
-						<RotateCcw className="h-4 w-4" />
-					</Button>
 				</div>
 				<ResizablePanelGroup direction="horizontal" onLayout={(sizes:any)=>{ try{ localStorage.setItem('matchLiveLayout', JSON.stringify(sizes)); setLayout(sizes) }catch{} }}>
 					<ResizablePanel defaultSize={layout[0] || 33} minSize={15} className="min-w-[200px]">

@@ -212,8 +212,7 @@ function App() {
                       } />
                       <Route path="/match/:id/live" element={
                         <ProtectedRoute>
-                          <Navigation />
-                          <main className="ml-0 transition-all duration-200">
+                          <main className="transition-all duration-200">
                             <MatchLive />
                           </main>
                         </ProtectedRoute>
