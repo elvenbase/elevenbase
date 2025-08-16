@@ -936,7 +936,6 @@ const MatchLive = () => {
 					</div>
 				</div>
 
-				</div>
 			</div>
 		</div>
 	)
