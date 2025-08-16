@@ -112,7 +112,8 @@ const MatchLive = () => {
 			starters.forEach(id=>participantIds.add(id))
 			benchIdsSet.forEach(id=>participantIds.add(id))
 			substitutionEvents.forEach((e:any)=>{ const outId = e.metadata?.out_id; const inId = e.metadata?.in_id; if(outId) participantIds.add(outId); if(inId) participantIds.add(inId) })
-			(events || []).forEach((e:any)=>{ const pid = e.player_id || e.trialist_id; if(pid) participantIds.add(pid) })
+			;(events || []).forEach((e:any)=>{ const pid = e.player_id || e.trialist_id; if(pid) participantIds.add(pid) })
+			;Array.from(onFieldIds || []).forEach((pid:string)=>participantIds.add(pid))
 			const firstInMinute: Record<string, number|undefined> = {}
 			const firstOutMinute: Record<string, number|undefined> = {}
 			substitutionEvents.forEach((e:any)=>{
@@ -140,7 +141,7 @@ const MatchLive = () => {
 			const rows: any[] = []
 			participantIds.forEach(pid=>{
 				const started = starters.has(pid)
-				const inMin = started ? 0 : (firstInMinute[pid] ?? undefined)
+				const inMin = started ? 0 : (firstInMinute[pid] ?? (onFieldIds.has(pid) ? 0 : undefined))
 				const outMin = firstOutMinute[pid] ?? undefined
 				const startAt = inMin ?? undefined
 				const playedMinutes = startAt === undefined ? 0 : Math.max(0, (outMin ?? finalMinute) - startAt)
