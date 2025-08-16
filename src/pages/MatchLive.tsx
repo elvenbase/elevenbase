@@ -596,8 +596,8 @@ const MatchLive = () => {
 					<ResizablePanelGroup direction="horizontal" className="h-full" onLayout={(sizes:any)=>{ try{ localStorage.setItem('matchLiveLayout', JSON.stringify(sizes)); setLayout(sizes) }catch{} }}>
 						<ResizablePanel defaultSize={layout[0] || 33} minSize={15} className="min-w-[200px]">
 							{/* Colonna sinistra: In campo (vertical resizable) */}
-							<ResizablePanelGroup direction="vertical" className="h-full">
-								<ResizablePanel defaultSize={90} minSize={20}>
+							<ResizablePanelGroup direction="vertical" className="h-full min-h-0">
+								<ResizablePanel defaultSize={85} minSize={20}>
 									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
 										<div className="px-3 py-2 text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" />In campo</div>
 										<div className="p-3 space-y-3 overflow-auto">
@@ -702,15 +702,15 @@ const MatchLive = () => {
 									</div>
 								</ResizablePanel>
 								<ResizableHandle withHandle />
-								<ResizablePanel defaultSize={10} minSize={5}>
+								<ResizablePanel defaultSize={15} minSize={5}>
 									<div className="h-full" />
 								</ResizablePanel>
 							</ResizablePanelGroup>
 						</ResizablePanel>
 						<ResizableHandle withHandle />
 						<ResizablePanel defaultSize={layout[1] || 34} minSize={15}>
-							<ResizablePanelGroup direction="vertical" className="h-full">
-								<ResizablePanel defaultSize={25} minSize={10}>
+							<ResizablePanelGroup direction="vertical" className="h-full min-h-0">
+								<ResizablePanel defaultSize={20} minSize={10}>
 									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-full overflow-hidden">
 										<div className="flex items-center justify-center gap-2 flex-wrap">
 											<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
@@ -738,7 +738,7 @@ const MatchLive = () => {
 									</div>
 								</ResizablePanel>
 								<ResizableHandle withHandle />
-								<ResizablePanel defaultSize={75} minSize={20}>
+								<ResizablePanel defaultSize={80} minSize={20}>
 									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
 										<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Eventi</div>
 										<div className="p-3 space-y-1 overflow-auto">
@@ -769,8 +769,8 @@ const MatchLive = () => {
 						</ResizablePanel>
 						<ResizableHandle withHandle />
 						<ResizablePanel defaultSize={layout[2] || 33} minSize={15}>
-							<ResizablePanelGroup direction="vertical" className="h-full">
-								<ResizablePanel defaultSize={60} minSize={20}>
+							<ResizablePanelGroup direction="vertical" className="h-full min-h-0">
+								<ResizablePanel defaultSize={55} minSize={20}>
 									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
 										<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between">
 											<span>Panchina</span>
@@ -804,7 +804,7 @@ const MatchLive = () => {
 									</div>
 								</ResizablePanel>
 								<ResizableHandle withHandle />
-								<ResizablePanel defaultSize={40} minSize={20}>
+								<ResizablePanel defaultSize={45} minSize={20}>
 									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
 										<div className="px-3 py-2 text-sm font-semibold">Sostituiti</div>
 										<div className="p-3 space-y-1.5 overflow-auto">
