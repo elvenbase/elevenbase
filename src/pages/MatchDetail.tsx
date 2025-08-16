@@ -67,6 +67,11 @@ const MatchDetail = () => {
   const { data: allTrialists = [] } = useTrialists()
   const [editOpen, setEditOpen] = useState(false)
   const [selectedTrialists, setSelectedTrialists] = useState<string[]>([])
+  const [editOpponentName, setEditOpponentName] = useState('')
+  const [editMatchDate, setEditMatchDate] = useState('')
+  const [editMatchTime, setEditMatchTime] = useState('')
+  const [editHomeAway, setEditHomeAway] = useState<'home'|'away'>('home')
+  const [editLocation, setEditLocation] = useState('')
 
   const score = useMemo(() => computeScore(events), [events])
   const attendanceStats = useMemo(() => {
@@ -94,11 +99,17 @@ const MatchDetail = () => {
   // Initialize edit state when dialog opens
   const openEdit = () => {
     setSelectedTrialists((trialistInvites || []).map((t: any) => t.trialist_id))
+    setEditOpponentName((match as any)?.opponent_name || '')
+    setEditMatchDate((match as any)?.match_date || '')
+    setEditMatchTime((match as any)?.match_time || '')
+    setEditHomeAway(((match as any)?.home_away as 'home'|'away') || 'home')
+    setEditLocation((match as any)?.location || '')
     setEditOpen(true)
   }
   
   const handleSaveEdit = async () => {
     if (!id) return
+    await updateMatch.mutateAsync({ id, updates: { opponent_name: editOpponentName, match_date: editMatchDate, match_time: editMatchTime, home_away: editHomeAway, location: editLocation } })
     await setMatchTrialistInvites.mutateAsync({ matchId: id, trialistIds: selectedTrialists })
     setEditOpen(false)
   }
@@ -138,6 +149,31 @@ const MatchDetail = () => {
                       <DialogTitle>Modifica Partita</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-sm">Avversario</Label>
+                          <Input value={editOpponentName} onChange={(e)=>setEditOpponentName(e.target.value)} placeholder="Nome avversario" />
+                        </div>
+                        <div>
+                          <Label className="text-sm">Casa/Trasferta</Label>
+                          <select value={editHomeAway} onChange={(e)=>setEditHomeAway((e.target.value as 'home'|'away'))} className="h-9 w-full rounded border px-2 text-sm">
+                            <option value="home">Casa</option>
+                            <option value="away">Trasferta</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label className="text-sm">Data</Label>
+                          <Input type="date" value={editMatchDate || ''} onChange={(e)=>setEditMatchDate(e.target.value)} />
+                        </div>
+                        <div>
+                          <Label className="text-sm">Ora</Label>
+                          <Input type="time" value={editMatchTime || ''} onChange={(e)=>setEditMatchTime(e.target.value)} />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <Label className="text-sm">Luogo</Label>
+                          <Input value={editLocation} onChange={(e)=>setEditLocation(e.target.value)} placeholder="Campo/Stadio" />
+                        </div>
+                      </div>
                       <div className="space-y-2">
                         <Label className="text-sm">Seleziona provinanti</Label>
                         <div className="max-h-40 overflow-y-auto border rounded p-2 space-y-1">
