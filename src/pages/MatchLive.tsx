@@ -664,7 +664,7 @@ const MatchLive = () => {
 	if (!id) return null
 
 	return (
-		<div className="min-h-screen bg-neutral-50">
+		<div className="min-h-screen bg-gradient-to-b from-sky-50 via-sky-50/60 to-white">
 			<div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-3 flex flex-col">
 				{!hasValidLineup && (
 					<Card className="mb-3">
@@ -676,7 +676,7 @@ const MatchLive = () => {
 					</Card>
 				)}
 				{/* Header: single-row scoreboard */}
-				<div className="grid grid-cols-3 items-center gap-3 py-2 border-b">
+				<div className="grid grid-cols-3 items-center gap-3 py-2 border bg-white rounded-md shadow-sm px-2">
 					{/* left: back + score + logo + team (with home/away) */}
 					<div className="justify-self-start min-w-0">
 						<div className="flex items-center gap-3 min-w-0">
@@ -733,7 +733,7 @@ const MatchLive = () => {
 					{/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
 						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
-							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-emerald-100 border-b border-emerald-200">
+							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-emerald-50 border-b border-emerald-100">
 								<div className="flex items-center gap-2 text-emerald-800"><Target className="h-4 w-4" />In campo</div>
 															<Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>setInCampoCollapsed(prev=>{ const next = !prev; if (!next) setBenchCollapsed(true); return next })} aria-label={"Toggle in campo"}>
 								<span className="material-symbols-outlined text-[16px]">{inCampoCollapsed ? 'expand_more' : 'expand_less'}</span>
