@@ -549,22 +549,21 @@ const MatchLive = () => {
 				)}
 				{/* Header: single-row scoreboard */}
 				<div className="grid grid-cols-3 items-center gap-3 py-2 border-b">
-					{/* left: back */}
-					<div className="justify-self-start">
-						<Button variant="ghost" size="sm" asChild aria-label="Torna alla gestione">
-							<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4" /></Link>
-						</Button>
-					</div>
-					{/* center: logo + team name + score */}
-					<div className="justify-self-center min-w-0">
-						<div className="flex items-center gap-3">
+					{/* left: back + logo + team + score */}
+					<div className="justify-self-start min-w-0">
+						<div className="flex items-center gap-3 min-w-0">
+							<Button variant="ghost" size="sm" asChild aria-label="Torna alla gestione" className="shrink-0">
+								<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4" /></Link>
+							</Button>
 							{(match as any)?.opponents?.logo_url && (
 								<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
 							)}
-							<span className="text-sm font-medium truncate max-w-[160px] sm:max-w-[260px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
+							<span className="text-sm font-medium truncate max-w-[140px] sm:max-w-[220px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
 							<span className="text-2xl sm:text-3xl font-extrabold tracking-tight">{score.us} - {score.opp}</span>
 						</div>
 					</div>
+					{/* center: empty to balance layout */}
+					<div className="justify-self-center" />
 					{/* right: timer + phase + reset */}
 					<div className="justify-self-end flex items-center gap-2">
 						<div className="flex items-center gap-2 px-2 py-1 rounded border bg-muted/30">
