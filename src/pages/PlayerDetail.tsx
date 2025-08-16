@@ -124,7 +124,7 @@ const PlayerDetail = () => {
             <img
               src={player.avatar_url}
               alt=""
-              className="absolute left-0 top-1/2 -translate-y-1/2 h-[98%] w-auto object-cover opacity-20 pointer-events-none"
+              className="absolute left-[-5%] top-1/2 -translate-y-1/2 h-[98%] w-auto object-cover opacity-20 pointer-events-none"
             />
           )}
           <div className="relative z-10 p-4 sm:p-6 flex items-center justify-between gap-3">
