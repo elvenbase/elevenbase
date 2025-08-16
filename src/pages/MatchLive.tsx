@@ -660,31 +660,33 @@ const MatchLive = () => {
 					<div className="justify-self-center" />
 					{/* right: timer + phase + reset */}
 					<div className="justify-self-end flex items-center gap-2">
-						<div className="flex items-center gap-2 px-2 py-1 rounded border bg-muted/30">
+						<div className="flex items-center gap-2 px-2 rounded-md border bg-muted/30 h-9">
 							<Clock3 className="h-4 w-4" />
 							<span className="tabular-nums font-medium">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
-							<Button variant={running? 'outline':'default'} size="sm" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
+							<Button variant={running? 'outline':'default'} size="sm" className="h-7 px-2 rounded-md" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
 								{running ? (<><Pause className="h-4 w-4"/></>) : (<><Play className="h-4 w-4"/></>)}
 							</Button>
-							<Button variant="outline" size="sm" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup} aria-label="Reset timer">
+							<Button variant="outline" size="sm" className="h-7 px-2 rounded-md" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup} aria-label="Reset timer">
 								<RotateCcw className="h-4 w-4" />
 							</Button>
+							<div className="h-full flex items-center">
+								<Select value={period} onValueChange={setPeriod as any}>
+									<SelectTrigger className="h-8 sm:h-9 w-[140px] border-none bg-transparent focus:ring-0 focus:outline-none"><SelectValue /></SelectTrigger>
+									<SelectContent>
+										<SelectItem value="not_started">Pre partita</SelectItem>
+										<SelectItem value="first_half">1° Tempo</SelectItem>
+										<SelectItem value="half_time">Intervallo</SelectItem>
+										<SelectItem value="second_half">2° Tempo</SelectItem>
+										<SelectItem value="extra_time">Supplementari</SelectItem>
+										<SelectItem value="ended">Fine</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
 						</div>
-						<Select value={period} onValueChange={setPeriod as any}>
-							<SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
-							<SelectContent>
-								<SelectItem value="not_started">Pre partita</SelectItem>
-								<SelectItem value="first_half">1° Tempo</SelectItem>
-								<SelectItem value="half_time">Intervallo</SelectItem>
-								<SelectItem value="second_half">2° Tempo</SelectItem>
-								<SelectItem value="extra_time">Supplementari</SelectItem>
-								<SelectItem value="ended">Fine</SelectItem>
-							</SelectContent>
-						</Select>
-						<Button variant="destructive" size="sm" onClick={()=>{ setEventMode(null); setNoteOpen(false); handleFinalize() }} disabled={isEnded}>
+						<Button variant="destructive" className="h-9 rounded-md px-3" onClick={()=>{ setEventMode(null); setNoteOpen(false); handleFinalize() }} disabled={isEnded}>
 							Termina partita
 						</Button>
-						<Button variant="ghost" size="sm" aria-label="Reimposta layout">
+						<Button variant="ghost" size="icon" className="h-9 w-9 rounded-md" aria-label="Reimposta layout">
 							<RotateCcw className="h-4 w-4" />
 						</Button>
 					</div>
