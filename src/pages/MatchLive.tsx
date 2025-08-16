@@ -704,7 +704,7 @@ const MatchLive = () => {
 						</Button>
 					</div>
 				</div>
-									<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 items-start">
+									<div className="grid grid-cols-1 md:grid-cols-[25%_75%] gap-3 mt-3 items-start">
 					{/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
 						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
@@ -907,29 +907,27 @@ const MatchLive = () => {
 						</div>
 					</div>
 					{/* Colonna destra: Eventi avversario */}
-					<div className="flex flex-col gap-3">
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-[160px]">
-							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi avversario</div>
-							<div className="flex items-center justify-center gap-2 flex-wrap">
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
-								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'pen_scored', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<span className="material-symbols-outlined text-[18px] mr-1">sports_soccer</span>Rigore
-								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'save', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<ParataIcon className="inline-block h-4 w-4 mr-1" />Parata
-								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'yellow_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
-								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'red_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<RedCardIcon className="inline-block h-3 w-3 mr-2" />Rosso
-								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'foul', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<FoulIcon className="inline-block h-4 w-4 mr-1" />Fallo
-								</Button>
-							</div>
+					<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-[160px]">
+						<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi avversario</div>
+						<div className="flex items-center justify-center gap-2 flex-wrap">
+							<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+								<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
+							</Button>
+							<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'pen_scored', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+								<span className="material-symbols-outlined text-[18px] mr-1">sports_soccer</span>Rigore
+							</Button>
+							<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'save', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+								<ParataIcon className="inline-block h-4 w-4 mr-1" />Parata
+							</Button>
+							<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'yellow_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+								<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
+							</Button>
+							<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'red_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+								<RedCardIcon className="inline-block h-3 w-3 mr-2" />Rosso
+							</Button>
+							<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'foul', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+								<FoulIcon className="inline-block h-4 w-4 mr-1" />Fallo
+							</Button>
 						</div>
 					</div>
 				</div>
