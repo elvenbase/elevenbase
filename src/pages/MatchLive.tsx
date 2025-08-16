@@ -955,7 +955,7 @@ const MatchLive = () => {
 								<span className="material-symbols-outlined text-[16px] text-neutral-400">expand_more</span>
 							</div>
 						)}
-						<div ref={cronacaRef as any} className="p-3 space-y-1 max-h-[50vh] overflow-y-auto">
+						<div ref={cronacaRef as any} className="p-3 space-y-1 max-h-[45vh] overflow-y-auto">
 								{[...events].slice().reverse().map((e: any) => (
 									<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
 										<div className="flex items-center gap-2">
