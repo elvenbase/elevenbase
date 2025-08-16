@@ -740,7 +740,7 @@ const MatchLive = () => {
 								</Button>
 							</div>
 							{!inCampoCollapsed && (
-								<div className="p-3 space-y-3 max-h-[200px] overflow-y-auto">
+								<div className="p-3 space-y-3">
 									{(['P','DIF','CEN','ATT'] as const).map((sec) => {
 										const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
 										const playersSec = groupedOnField[sec]
