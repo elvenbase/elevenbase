@@ -793,8 +793,8 @@ const MatchLive = () => {
 											{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
 											{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
 											{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
-											<span>{labelForEventType(e.event_type)}{e.team==='opponent' ? ` - ${opponentName}` : ''}</span>
-											{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
+																					<span>{labelForEventType(e.event_type)}{e.team==='opponent' ? (' - ' + opponentName) : ''}</span>
+										{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
 										</div>
 										<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
 											<Trash2 className="h-4 w-4" />
