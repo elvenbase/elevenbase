@@ -935,6 +935,9 @@ const MatchLive = () => {
 											{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
 											{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
 											<span>{labelForEventType(e.event_type)}{e.team==='opponent' ? (' - ' + opponentName) : ''}</span>
+											{e.event_type === 'pen_scored' && (
+												<span className="ml-1 text-[10px] uppercase tracking-wide text-neutral-600 border border-neutral-300 rounded px-1">(rig.)</span>
+											)}
 											{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
 										</div>
 										<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
