@@ -536,8 +536,8 @@ const MatchLive = () => {
 	})
 
 	return (
-		<div className="min-h-screen bg-background">
-			<div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-4">
+		<div className="h-screen bg-background">
+			<div className="max-w-7xl mx-auto h-full px-2 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col">
 				{!hasValidLineup && (
 					<Card className="mb-3">
 						<CardContent>
@@ -592,249 +592,235 @@ const MatchLive = () => {
 						</Button>
 					</div>
 				</div>
-				<ResizablePanelGroup direction="horizontal" onLayout={(sizes:any)=>{ try{ localStorage.setItem('matchLiveLayout', JSON.stringify(sizes)); setLayout(sizes) }catch{} }}>
-					<ResizablePanel defaultSize={layout[0] || 33} minSize={15} className="min-w-[200px]">
-						{/* Colonna sinistra: In campo per blocchi ruolo */}
-						<div className="flex flex-col overflow-y-auto h-full">
-							<Card>
-								<CardHeader>
-									<CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
-								</CardHeader>
-								<CardContent className="space-y-3">
-									{(['P','DIF','CEN','ATT'] as const).map((sec) => {
-										const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
-										const playersSec = groupedOnField[sec]
-										return (
-											<div key={sec}>
-												<div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
-												{playersSec.length === 0 ? (
-													<div className="text-xs text-muted-foreground">—</div>
-												) : (
-													<div className="space-y-1">
-														{playersSec.map((p: any) => {
-															const code = p._roleCode as string
-															const firstInitial = (p.first_name || '').trim().charAt(0)
-															const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
-															const jersey = (playersById[p.id] as any)?.jersey_number
-															const red = hasRedById.has(p.id)
-															const yellow = hasYellowById.has(p.id)
-																const entered = enteredOnFieldIds.has(p.id)
-																const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
-															return (
-																<div
-																	key={p.id}
-																	className={`px-2 py-1 rounded border flex items-center gap-2 ${borderCls} ${eventMode ? 'cursor-pointer ring-1 ring-primary/40' : ''}`}
-																	onClick={() => { if (eventMode) handleAssignEvent(p.id) }}
-																>
-																	<div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-																	{code && code !== 'ALTRI' && (
-																		<Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
-																	)}
-																	{typeof jersey === 'number' && (
-																		<span className="text-xs text-muted-foreground">#{jersey}</span>
-																	)}
-																	<div className="text-xs sm:text-sm leading-tight">{displayName}</div>
-																	{/* No per-player action icons here in new interaction model */}
-																	{renderEventBadges(p.id)}
-																</div>
-															)
-														})}
-													</div>
-												)}
-											</div>
-										)
-									})}
-
-									{/* Nota dialog */}
-									<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
-										<DialogContent>
-											<DialogHeader>
-												<DialogTitle>Nota</DialogTitle>
-											</DialogHeader>
-											<div className="space-y-3">
-												<div>
-													<Label className="text-sm">Testo</Label>
-													<Textarea value={noteText} onChange={(e:any)=>setNoteText(e.target.value)} placeholder="Scrivi una nota..." rows={4} />
-												</div>
-												<div className="flex justify-end gap-2">
-													<Button variant="outline" onClick={()=>{ setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Annulla</Button>
-													<Button onClick={async()=>{ if (selectedPlayerId) { await postEvent({ event_type: 'note', player_id: selectedPlayerId, comment: noteText || null }); } setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Salva</Button>
-												</div>
-											</div>
-										</DialogContent>
-									</Dialog>
-
-									<Dialog open={subOpen} onOpenChange={setSubOpen}>
-										<DialogContent>
-											<DialogHeader>
-												<DialogTitle>Nuova sostituzione</DialogTitle>
-											</DialogHeader>
-											<div className="space-y-3">
-												<div>
-													<Label className="text-sm">Esce</Label>
-													<Select value={subOutId} onValueChange={setSubOutId}>
-														<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-														<SelectContent>
-															{Array.from(onFieldIds).map((id) => (
-																<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-												</div>
-												<div>
-													<Label className="text-sm">Entra</Label>
-													<Select value={subInId} onValueChange={setSubInId}>
-														<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-														<SelectContent>
-															{availableInIds.map((id) => (
-																<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-												</div>
-												<div className="flex justify-end gap-2">
-													<Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
-													<Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
-												</div>
-											</div>
-										</DialogContent>
-									</Dialog>
-								</CardContent>
-							</Card>
-						</div>
-					</ResizablePanel>
-					<ResizableHandle withHandle />
-					<ResizablePanel defaultSize={layout[1] || 34} minSize={15}>
-						{/* Colonna centrale: Solo log eventi (toolbar azioni in alto) */}
-						<div className="flex flex-col overflow-hidden h-full">
-							<div className="sticky top-0 z-10">
+				<div className="flex-1 overflow-hidden">
+					<ResizablePanelGroup direction="horizontal" className="h-full" onLayout={(sizes:any)=>{ try{ localStorage.setItem('matchLiveLayout', JSON.stringify(sizes)); setLayout(sizes) }catch{} }}>
+						<ResizablePanel defaultSize={layout[0] || 33} minSize={15} className="min-w-[200px]">
+							{/* Colonna sinistra: In campo per blocchi ruolo */}
+							<div className="flex flex-col overflow-y-auto h-full">
 								<Card>
-									<CardContent className="py-3">
-										<div className="flex items-center justify-center gap-2 flex-wrap">
-											<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<GoalIcon className="inline-block h-4 w-4 mr-1" />
-												Gol
-											</Button>
-											<Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<AssistIcon className="inline-block h-4 w-4 mr-1" />
-												Assist
-											</Button>
-											<Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<YellowCardIcon className="inline-block h-3 w-3 mr-2" />
-												Giallo
-											</Button>
-											<Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<RedCardIcon className="inline-block h-3 w-3 mr-2" />
-												Rosso
-											</Button>
-											<Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<FoulIcon className="inline-block h-4 w-4 mr-1" />
-												Fallo
-											</Button>
-											<Button variant={eventMode==='save'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('save')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<ParataIcon className="inline-block h-4 w-4 mr-1" />
-												Parata
-											</Button>
-											<Button variant={eventMode==='note'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('note')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<span className="material-symbols-outlined text-[18px] mr-1">note_add</span>
-												Nota
-											</Button>
-										</div>
+									<CardHeader>
+										<CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
+									</CardHeader>
+									<CardContent className="space-y-3">
+										{(['P','DIF','CEN','ATT'] as const).map((sec) => {
+											const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
+											const playersSec = groupedOnField[sec]
+											return (
+												<div key={sec}>
+													<div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
+													{playersSec.length === 0 ? (
+														<div className="text-xs text-muted-foreground">—</div>
+													) : (
+														<div className="space-y-1">
+															{playersSec.map((p: any) => {
+																const code = p._roleCode as string
+																const firstInitial = (p.first_name || '').trim().charAt(0)
+																const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
+																const jersey = (playersById[p.id] as any)?.jersey_number
+																const red = hasRedById.has(p.id)
+																const yellow = hasYellowById.has(p.id)
+																	const entered = enteredOnFieldIds.has(p.id)
+																	const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
+																return (
+																	<div
+																		key={p.id}
+																		className={`px-2 py-1 rounded border flex items-center gap-2 ${borderCls} ${eventMode ? 'cursor-pointer ring-1 ring-primary/40' : ''}`}
+																		onClick={() => { if (eventMode) handleAssignEvent(p.id) }}
+																	>
+																		<div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+																		{code && code !== 'ALTRI' && (
+																			<Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
+																		)}
+																		{typeof jersey === 'number' && (
+																			<span className="text-xs text-muted-foreground">#{jersey}</span>
+																		)}
+																		<div className="text-xs sm:text-sm leading-tight">{displayName}</div>
+																		{/* No per-player action icons here in new interaction model */}
+																		{renderEventBadges(p.id)}
+																	</div>
+																)
+															})}
+														</div>
+													)}
+												</div>
+											)
+										})}
+
+										{/* Nota dialog */}
+										<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
+											<DialogContent>
+												<DialogHeader>
+													<DialogTitle>Nota</DialogTitle>
+												</DialogHeader>
+												<div className="space-y-3">
+													<div>
+														<Label className="text-sm">Testo</Label>
+														<Textarea value={noteText} onChange={(e:any)=>setNoteText(e.target.value)} placeholder="Scrivi una nota..." rows={4} />
+													</div>
+													<div className="flex justify-end gap-2">
+														<Button variant="outline" onClick={()=>{ setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Annulla</Button>
+														<Button onClick={async()=>{ if (selectedPlayerId) { await postEvent({ event_type: 'note', player_id: selectedPlayerId, comment: noteText || null }); } setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Salva</Button>
+													</div>
+												</div>
+											</DialogContent>
+										</Dialog>
+
+										<Dialog open={subOpen} onOpenChange={setSubOpen}>
+											<DialogContent>
+												<DialogHeader>
+													<DialogTitle>Nuova sostituzione</DialogTitle>
+												</DialogHeader>
+												<div className="space-y-3">
+													<div>
+														<Label className="text-sm">Esce</Label>
+														<Select value={subOutId} onValueChange={setSubOutId}>
+															<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+															<SelectContent>
+																{Array.from(onFieldIds).map((id) => (
+																	<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+													</div>
+													<div>
+														<Label className="text-sm">Entra</Label>
+														<Select value={subInId} onValueChange={setSubInId}>
+															<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+															<SelectContent>
+																{availableInIds.map((id) => (
+																	<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+													</div>
+													<div className="flex justify-end gap-2">
+														<Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
+														<Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
+													</div>
+												</div>
+											</DialogContent>
+										</Dialog>
 									</CardContent>
 								</Card>
 							</div>
-							{/* Event log under scoreboard */}
-							<Card className="mt-3 flex-1 overflow-y-auto">
-								<CardHeader>
-									<CardTitle>Eventi</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<div className="space-y-1">
-										{[...events].slice().reverse().map((e: any) => (
-											<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
-												<div className="flex items-center gap-2">
-													<span className="text-xs">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
-													{e.event_type === 'goal' && <GoalIcon className="h-4 w-4" />}
-													{e.event_type === 'assist' && <AssistIcon className="h-4 w-4" />}
-													{e.event_type === 'yellow_card' && <YellowCardIcon className="h-3 w-3" />}
-													{e.event_type === 'red_card' && <RedCardIcon className="h-3 w-3" />}
-													{e.event_type === 'foul' && <FoulIcon className="h-4 w-4" />}
-													{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
-													{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
-													{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
-													<span>{labelForEventType(e.event_type)}</span>
-													{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
-												</div>
-												<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
-													<Trash2 className="h-4 w-4" />
-												</Button>
-											</div>
-										))}
-									</div>
-								</CardContent>
-							</Card>
-						</div>
-					</ResizablePanel>
-					<ResizableHandle withHandle />
-					<ResizablePanel defaultSize={layout[2] || 33} minSize={15}>
-						{/* Colonna destra: Panchina + Sostituti */}
-						<div className="flex flex-col overflow-hidden h-full">
-							<Card className="flex-1 overflow-y-auto">
-								<CardHeader>
-									<CardTitle className="flex items-center justify-between">
-										<span>Panchina</span>
-										<div className="flex items-center gap-2">
-											<Select value={benchRoleFilter} onValueChange={(v:any)=>setBenchRoleFilter(v)}>
-												<SelectTrigger className="h-7 w-[150px]"><SelectValue placeholder="Ruolo" /></SelectTrigger>
-												<SelectContent>
-													<SelectItem value="ALL">Tutti</SelectItem>
-													<SelectItem value="P">Portiere</SelectItem>
-													<SelectItem value="DIF">Difesa</SelectItem>
-													<SelectItem value="CEN">Centrocampo</SelectItem>
-													<SelectItem value="ATT">Attacco</SelectItem>
-												</SelectContent>
-											</Select>
+						</ResizablePanel>
+						<ResizableHandle withHandle />
+						<ResizablePanel defaultSize={layout[1] || 34} minSize={15}>
+							<ResizablePanelGroup direction="vertical" className="h-full">
+								<ResizablePanel defaultSize={25} minSize={10}>
+									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3">
+										<div className="flex items-center justify-center gap-2 flex-wrap">
+											<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
+												<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
+											</Button>
+											<Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8" disabled={isEnded || !hasValidLineup}>
+												<AssistIcon className="inline-block h-4 w-4 mr-1" />Assist
+											</Button>
+											<Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
+												<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
+											</Button>
+											<Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
+												<RedCardIcon className="inline-block h-3 w-3 mr-2" />Rosso
+											</Button>
+											<Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8" disabled={isEnded || !hasValidLineup}>
+												<FoulIcon className="inline-block h-4 w-4 mr-1" />Fallo
+											</Button>
+											<Button variant={eventMode==='save'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('save')} className="h-8" disabled={isEnded || !hasValidLineup}>
+												<ParataIcon className="inline-block h-4 w-4 mr-1" />Parata
+											</Button>
+											<Button variant={eventMode==='note'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('note')} className="h-8" disabled={isEnded || !hasValidLineup}>
+												<span className="material-symbols-outlined text-[18px] mr-1">note_add</span>Nota
+											</Button>
 										</div>
-									</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<div className="space-y-1.5">
-										{filteredBench.map((p: any) => (
-											<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border text-xs">
-												<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-												<div className="truncate">{p.first_name} {p.last_name}</div>
-												<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup}>
-													<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
-												</Button>
-											</div>
-										))}
-										{filteredBench.length === 0 && (
-											<div className="text-sm text-muted-foreground">Nessun giocatore in panchina per il filtro selezionato.</div>
-										)}
 									</div>
-								</CardContent>
-							</Card>
-							<Card className="mt-3 flex-1 overflow-y-auto">
-								<CardHeader>
-									<CardTitle>Sostituiti</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<div className="space-y-1.5">
-										{substitutedList.map((p: any) => (
-											<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border text-xs">
-												<div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
-												<div className="truncate">{p.first_name} {p.last_name}</div>
-											</div>
-										))}
-										{substitutedList.length === 0 && (
-											<div className="text-sm text-muted-foreground">Nessun sostituito.</div>
-										)}
+								</ResizablePanel>
+								<ResizableHandle withHandle />
+								<ResizablePanel defaultSize={75} minSize={20}>
+									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
+										<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Eventi</div>
+										<div className="p-3 space-y-1 overflow-auto">
+											{[...events].slice().reverse().map((e: any) => (
+												<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
+													<div className="flex items-center gap-2">
+														<span className="text-xs">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
+														{e.event_type === 'goal' && <GoalIcon className="h-4 w-4" />}
+														{e.event_type === 'assist' && <AssistIcon className="h-4 w-4" />}
+														{e.event_type === 'yellow_card' && <YellowCardIcon className="h-3 w-3" />}
+														{e.event_type === 'red_card' && <RedCardIcon className="h-3 w-3" />}
+														{e.event_type === 'foul' && <FoulIcon className="h-4 w-4" />}
+														{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
+														{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
+														{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
+														<span>{labelForEventType(e.event_type)}</span>
+														{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
+													</div>
+													<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											))}
+										</div>
 									</div>
-								</CardContent>
-							</Card>
-						</div>
-					</ResizablePanel>
-				</ResizablePanelGroup>
+								</ResizablePanel>
+							</ResizablePanelGroup>
+						</ResizablePanel>
+						<ResizableHandle withHandle />
+						<ResizablePanel defaultSize={layout[2] || 33} minSize={15}>
+							<ResizablePanelGroup direction="vertical" className="h-full">
+								<ResizablePanel defaultSize={60} minSize={20}>
+									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
+										<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between">
+											<span>Panchina</span>
+											<div className="flex items-center gap-2">
+												<Select value={benchRoleFilter} onValueChange={(v:any)=>setBenchRoleFilter(v)}>
+													<SelectTrigger className="h-7 w-[150px]"><SelectValue placeholder="Ruolo" /></SelectTrigger>
+													<SelectContent>
+														<SelectItem value="ALL">Tutti</SelectItem>
+														<SelectItem value="P">Portiere</SelectItem>
+														<SelectItem value="DIF">Difesa</SelectItem>
+														<SelectItem value="CEN">Centrocampo</SelectItem>
+														<SelectItem value="ATT">Attacco</SelectItem>
+													</SelectContent>
+												</Select>
+											</div>
+										</div>
+										<div className="p-3 space-y-1.5 overflow-auto">
+											{filteredBench.map((p: any) => (
+												<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
+													<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+													<div className="truncate">{p.first_name} {p.last_name}</div>
+													<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup}>
+														<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
+													</Button>
+												</div>
+											))}
+											{filteredBench.length === 0 && (
+												<div className="text-sm text-muted-foreground">Nessun giocatore in panchina per il filtro selezionato.</div>
+											)}
+										</div>
+									</div>
+								</ResizablePanel>
+								<ResizableHandle withHandle />
+								<ResizablePanel defaultSize={40} minSize={20}>
+									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
+										<div className="px-3 py-2 text-sm font-semibold">Sostituiti</div>
+										<div className="p-3 space-y-1.5 overflow-auto">
+											{substitutedList.map((p: any) => (
+												<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
+													<div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
+													<div className="truncate">{p.first_name} {p.last_name}</div>
+												</div>
+											))}
+											{substitutedList.length === 0 && (
+												<div className="text-sm text-muted-foreground">Nessun sostituito.</div>
+											)}
+										</div>
+									</div>
+								</ResizablePanel>
+							</ResizablePanelGroup>
+						</ResizablePanel>
+					</ResizablePanelGroup>
+				</div>
 			</div>
 		</div>
 	)
