@@ -367,7 +367,7 @@ const MatchLive = () => {
 		setFlashId(pid)
 		setTimeout(() => setFlashId(null), 180)
 	}
-	const [eventMode, setEventMode] = useState<null | 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'foul' | 'save' | 'note' | 'pen_scored'>(null)
+	const [eventMode, setEventMode] = useState<null | 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'foul' | 'save' | 'note' | 'pen_scored' | 'pen_missed'>(null)
 	const toggleEventMode = (mode: NonNullable<typeof eventMode>) => {
 		if ((match as any)?.live_state === 'ended') return
 		setEventMode(prev => prev === mode ? null : mode)
