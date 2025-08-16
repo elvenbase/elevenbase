@@ -853,56 +853,62 @@ const MatchLive = () => {
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
 						{/* Eventi */}
 						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
-							<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-100 border-b flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">event</span>Eventi</div>
-							<div className="flex items-center justify-center gap-2 flex-wrap">
-								<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
+							<div className="px-3 py-2 text-sm font-medium text-neutral-800 bg-neutral-100 border-b flex items-center justify-between">
+								<div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">event</span><span>Eventi</span></div>
+								<span className="text-[10px] uppercase tracking-wide text-neutral-500 bg-white/70 border border-neutral-200 rounded-full px-2 py-0.5">Squadra</span>
+							</div>
+							<div className="p-3 grid grid-cols-2 md:grid-cols-3 gap-2">
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('goal')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='goal' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+									<GoalIcon className="inline-block h-4 w-4" />Gol
 								</Button>
-								<Button variant={eventMode==='pen_scored'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('pen_scored')} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<span className="material-symbols-outlined text-[18px] mr-1">sports_soccer</span>Rigore
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('pen_scored')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='pen_scored' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Rigore
 								</Button>
-								<Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<AssistIcon className="inline-block h-4 w-4 mr-1" />Assist
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('assist')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='assist' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+									<AssistIcon className="inline-block h-4 w-4" />Assist
 								</Button>
-								<Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('yellow_card')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='yellow_card' ? 'ring-2 ring-yellow-300 border-yellow-300 shadow-sm' : ''} bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100`} disabled={isEnded || !hasValidLineup}>
+									<YellowCardIcon className="inline-block h-3 w-3" />Ammonizione
 								</Button>
-								<Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<RedCardIcon className="inline-block h-3 w-3 mr-2" />Rosso
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('red_card')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='red_card' ? 'ring-2 ring-red-300 border-red-300 shadow-sm' : ''} bg-red-50 border-red-200 text-red-700 hover:bg-red-100`} disabled={isEnded || !hasValidLineup}>
+									<RedCardIcon className="inline-block h-3 w-3" />Espulsione
 								</Button>
-								<Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<FoulIcon className="inline-block h-4 w-4 mr-1" />Fallo
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('foul')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='foul' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+									<FoulIcon className="inline-block h-4 w-4" />Fallo
 								</Button>
-								<Button variant={eventMode==='save'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('save')} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<ParataIcon className="inline-block h-4 w-4 mr-1" />Parata
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('save')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='save' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+									<ParataIcon className="inline-block h-4 w-4" />Parata
 								</Button>
-								<Button variant={eventMode==='note'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('note')} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<span className="material-symbols-outlined text-[18px] mr-1">note_add</span>Nota
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('note')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='note' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">note_add</span>Nota
 								</Button>
 							</div>
 						</div>
 
 						{/* Eventi avversario */}
 						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
-							<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-100 border-b flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">group</span>Eventi avversario</div>
-							<div className="flex items-center justify-center gap-2 flex-wrap">
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
+							<div className="px-3 py-2 text-sm font-medium text-neutral-800 bg-neutral-100 border-b flex items-center justify-between">
+								<div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">group</span><span>Eventi avversario</span></div>
+								<span className="text-[10px] uppercase tracking-wide text-neutral-500 bg-white/70 border border-neutral-200 rounded-full px-2 py-0.5">Avv.</span>
+							</div>
+							<div className="p-3 grid grid-cols-2 md:grid-cols-3 gap-2">
+								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
+									<GoalIcon className="inline-block h-4 w-4" />Gol
 								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'pen_scored', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<span className="material-symbols-outlined text-[18px] mr-1">sports_soccer</span>Rigore
+								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'pen_scored', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Rigore
 								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'save', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<ParataIcon className="inline-block h-4 w-4 mr-1" />Parata
+								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'save', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
+									<ParataIcon className="inline-block h-4 w-4" />Parata
 								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'yellow_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
+								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'yellow_card', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100" disabled={isEnded || !hasValidLineup}>
+									<YellowCardIcon className="inline-block h-3 w-3" />Ammonizione
 								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'red_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<RedCardIcon className="inline-block h-3 w-3 mr-2" />Rosso
+								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'red_card', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-red-50 border-red-200 text-red-700 hover:bg-red-100" disabled={isEnded || !hasValidLineup}>
+									<RedCardIcon className="inline-block h-3 w-3" />Espulsione
 								</Button>
-								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'foul', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
-									<FoulIcon className="inline-block h-4 w-4 mr-1" />Fallo
+								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'foul', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
+									<FoulIcon className="inline-block h-4 w-4" />Fallo
 								</Button>
 							</div>
 						</div>
