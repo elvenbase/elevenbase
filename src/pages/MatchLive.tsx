@@ -556,8 +556,8 @@ const MatchLive = () => {
 						<Button variant="ghost" size="sm" onClick={()=>{ localStorage.removeItem('matchLiveLayout'); setLayout([33,34,33]) }}>Reimposta</Button>
 					</div>
 					<div className="flex items-center gap-2">
-						{((match as any)?.opponents?.logo_url || (match as any)?.opponents?.jersey_image_url) && (
-							<img src={(match as any).opponents.logo_url || (match as any).opponents.jersey_image_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
+						{(match as any)?.opponents?.logo_url && (
+							<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
 						)}
 						<span className="text-sm font-medium truncate max-w-[240px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
 					</div>
@@ -710,8 +710,8 @@ const MatchLive = () => {
 												<Button variant="ghost" size="sm" onClick={()=>{ localStorage.removeItem('matchLiveLayout'); setLayout([33,34,33]) }}>Reimposta</Button>
 											</div>
 											<div className="flex items-center justify-center gap-2">
-												{((match as any)?.opponents?.logo_url || (match as any)?.opponents?.jersey_image_url) && (
-													<img src={(match as any).opponents.logo_url || (match as any).opponents.jersey_image_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
+												{(match as any)?.opponents?.logo_url && (
+													<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
 												)}
 												<span className="text-sm font-medium truncate max-w-[240px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
 											</div>
