@@ -639,7 +639,7 @@ const MatchLive = () => {
 	if (!id) return null
 
 	return (
-		<div className="min-h-screen bg-background">
+		<div className="min-h-screen bg-neutral-50">
 			<div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-3 flex flex-col">
 				{!hasValidLineup && (
 					<Card className="mb-3">
@@ -707,9 +707,9 @@ const MatchLive = () => {
 									<div className="grid grid-cols-1 md:grid-cols-[25%_75%] gap-3 mt-3 items-start">
 					{/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
-							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between">
-								<div className="flex items-center gap-2"><Target className="h-4 w-4" />In campo</div>
+						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
+							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-neutral-100 border-b">
+								<div className="flex items-center gap-2 text-neutral-700"><Target className="h-4 w-4" />In campo</div>
 								<Button variant="ghost" size="icon" onClick={()=>setInCampoCollapsed(prev=>{ const next = !prev; if (!next) setBenchCollapsed(true); return next })} aria-label={"Toggle in campo"}>
 									<span className="material-symbols-outlined text-[18px]">{inCampoCollapsed ? 'expand_more' : 'expand_less'}</span>
 								</Button>
@@ -816,13 +816,13 @@ const MatchLive = () => {
 						</div>
 						)}
 					</div>
-					<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
-							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
+					<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
+							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between bg-neutral-100 border-b">
 								<div className="flex items-center gap-2">
 									<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(prev=>{ const next = !prev; if (!next) setInCampoCollapsed(true); return next })} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
 										<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'chevron_right' : 'chevron_left'}</span>
 									</Button>
-									<span>Panchina</span>
+									<span className="text-neutral-700">Panchina</span>
 								</div>
 								<Button variant="ghost" size="icon" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(''); setSubOpen(true) }} aria-label="Nuova sostituzione" disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
@@ -852,8 +852,8 @@ const MatchLive = () => {
 					{/* Colonna centrale: toolbar + eventi */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
 						{/* Eventi */}
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-[160px]">
-							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi</div>
+						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
+							<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-100 border-b flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">event</span>Eventi</div>
 							<div className="flex items-center justify-center gap-2 flex-wrap">
 								<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
 									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
@@ -883,8 +883,8 @@ const MatchLive = () => {
 						</div>
 
 						{/* Eventi avversario */}
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-[160px]">
-							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi avversario</div>
+						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
+							<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-100 border-b flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">group</span>Eventi avversario</div>
 							<div className="flex items-center justify-center gap-2 flex-wrap">
 								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
 									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
@@ -907,10 +907,10 @@ const MatchLive = () => {
 							</div>
 						</div>
 
-						{/* Cronaca */}
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm md:col-span-2">
-							<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Cronaca</div>
-							<div className="p-3 space-y-1 max-h-[50vh] overflow-y-auto">
+											{/* Cronaca */}
+					<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden md:col-span-2">
+						<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-100 border-b flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">list_alt</span>Cronaca</div>
+						<div className="p-3 space-y-1 max-h-[50vh] overflow-y-auto">
 								{[...events].slice().reverse().map((e: any) => (
 									<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
 										<div className="flex items-center gap-2">
