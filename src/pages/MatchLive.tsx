@@ -704,7 +704,7 @@ const MatchLive = () => {
 						</Button>
 					</div>
 				</div>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+									<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 items-start">
 					{/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
 						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
@@ -851,7 +851,7 @@ const MatchLive = () => {
 					</div>
 					{/* Colonna centrale: toolbar + eventi */}
 					<div className="flex flex-col gap-3">
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 min-h-[140px]">
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-[160px]">
 							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi</div>
 							<div className="flex items-center justify-center gap-2 flex-wrap">
 								<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
@@ -908,7 +908,7 @@ const MatchLive = () => {
 					</div>
 					{/* Colonna destra: Eventi avversario */}
 					<div className="flex flex-col gap-3">
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 min-h-[140px]">
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-[160px]">
 							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi avversario</div>
 							<div className="flex items-center justify-center gap-2 flex-wrap">
 								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
