@@ -274,11 +274,13 @@ const MatchLive = () => {
 	const [flashId, setFlashId] = useState<string | null>(null)
 	const [noteOpen, setNoteOpen] = useState(false)
 	const [noteText, setNoteText] = useState('')
+	// Collapsible panels state
+	const [inCampoCollapsed, setInCampoCollapsed] = useState(false)
 	const flashRow = (pid: string) => {
 		setFlashId(pid)
 		setTimeout(() => setFlashId(null), 180)
 	}
-	const [eventMode, setEventMode] = useState<null | 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'foul' | 'save' | 'note'>(null)
+	const [eventMode, setEventMode] = useState<null | 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'foul' | 'save' | 'note' | 'pen_scored'>(null)
 	const toggleEventMode = (mode: NonNullable<typeof eventMode>) => {
 		if ((match as any)?.live_state === 'ended') return
 		setEventMode(prev => prev === mode ? null : mode)
@@ -532,6 +534,13 @@ const MatchLive = () => {
 
 	const isEnded = period === 'ended'
 
+	// Opponent name and home/away label for UI
+	const opponentName = (
+		(match as any)?.opponents?.name || (match as any)?.opponent_name || 'Avversario'
+	)
+	const homeAwayRaw = (match as any)?.home_away || (match as any)?.homeAway
+	const homeAwayLabel = homeAwayRaw === 'home' ? '(in casa)' : homeAwayRaw === 'away' ? '(in trasferta)' : ''
+
 	if (!id) return null
 
 	return (
@@ -548,17 +557,20 @@ const MatchLive = () => {
 				)}
 				{/* Header: single-row scoreboard */}
 				<div className="grid grid-cols-3 items-center gap-3 py-2 border-b">
-					{/* left: back + logo + team + score */}
+					{/* left: back + score + logo + team (with home/away) */}
 					<div className="justify-self-start min-w-0">
 						<div className="flex items-center gap-3 min-w-0">
 							<Button variant="ghost" size="sm" asChild aria-label="Torna alla gestione" className="shrink-0">
 								<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4" /></Link>
 							</Button>
+							<span className="text-2xl sm:text-3xl font-extrabold tracking-tight">{score.us} - {score.opp}</span>
 							{(match as any)?.opponents?.logo_url && (
 								<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
 							)}
-							<span className="text-sm font-medium truncate max-w-[140px] sm:max-w-[220px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
-							<span className="text-2xl sm:text-3xl font-extrabold tracking-tight">{score.us} - {score.opp}</span>
+							<span className="text-sm font-medium truncate max-w-[140px] sm:max-w-[220px]">
+								{opponentName}
+								{homeAwayLabel && <span className="ml-1 text-xs sm:text-sm text-muted-foreground">{homeAwayLabel}</span>}
+							</span>
 						</div>
 					</div>
 					{/* center: empty to balance layout */}
@@ -595,28 +607,34 @@ const MatchLive = () => {
 					{/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
 						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
-							<div className="px-3 py-2 text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" />In campo</div>
-							<div className="p-3 space-y-3">
-								{(['P','DIF','CEN','ATT'] as const).map((sec) => {
-									const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
-									const playersSec = groupedOnField[sec]
-									return (
-										<div key={sec}>
-											<div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
-											{playersSec.length === 0 ? (
-												<div className="text-xs text-muted-foreground">—</div>
-											) : (
-												<div className="space-y-1">
-													{playersSec.map((p: any) => {
-														const code = p._roleCode as string
-														const firstInitial = (p.first_name || '').trim().charAt(0)
-														const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
-														const jersey = (playersById[p.id] as any)?.jersey_number
-														const red = hasRedById.has(p.id)
-														const yellow = hasYellowById.has(p.id)
-															const entered = enteredOnFieldIds.has(p.id)
-															const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
-														return (
+							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between">
+								<div className="flex items-center gap-2"><Target className="h-4 w-4" />In campo</div>
+								<Button variant="ghost" size="icon" onClick={()=>setInCampoCollapsed(prev=>{ const next = !prev; if (!next) setBenchCollapsed(true); return next })} aria-label={"Toggle in campo"}>
+									<span className="material-symbols-outlined text-[18px]">{inCampoCollapsed ? 'expand_more' : 'expand_less'}</span>
+								</Button>
+							</div>
+							{!inCampoCollapsed && (
+								<div className="p-3 space-y-3">
+									{(['P','DIF','CEN','ATT'] as const).map((sec) => {
+										const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
+										const playersSec = groupedOnField[sec]
+										return (
+											<div key={sec}>
+												<div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
+												{playersSec.length === 0 ? (
+													<div className="text-xs text-muted-foreground">—</div>
+												) : (
+													<div className="space-y-1">
+														{playersSec.map((p: any) => {
+															const code = p._roleCode as string
+															const firstInitial = (p.first_name || '').trim().charAt(0)
+															const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
+															const jersey = (playersById[p.id] as any)?.jersey_number
+															const red = hasRedById.has(p.id)
+															const yellow = hasYellowById.has(p.id)
+																const entered = enteredOnFieldIds.has(p.id)
+																const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
+															return (
 															<div
 																key={p.id}
 																className={`px-2 py-1 rounded-lg border border-border/40 flex items-center gap-2 ${borderCls} ${eventMode ? 'cursor-pointer ring-1 ring-primary/40' : ''}`}
@@ -737,6 +755,9 @@ const MatchLive = () => {
 								<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
 									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
 								</Button>
+								<Button variant={eventMode==='pen_scored'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('pen_scored')} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px] mr-1">sports_soccer</span>Rigore
+								</Button>
 								<Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8" disabled={isEnded || !hasValidLineup}>
 									<AssistIcon className="inline-block h-4 w-4 mr-1" />Assist
 								</Button>
@@ -772,7 +793,7 @@ const MatchLive = () => {
 											{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
 											{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
 											{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
-											<span>{labelForEventType(e.event_type)}</span>
+											<span>{labelForEventType(e.event_type)}{e.team==='opponent' ? ` - ${opponentName}` : ''}</span>
 											{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
 										</div>
 										<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
@@ -790,6 +811,12 @@ const MatchLive = () => {
 							<div className="flex items-center justify-center gap-2 flex-wrap">
 								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
 									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
+								</Button>
+								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'pen_scored', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px] mr-1">sports_soccer</span>Rigore
+								</Button>
+								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'save', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<ParataIcon className="inline-block h-4 w-4 mr-1" />Parata
 								</Button>
 								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'yellow_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
 									<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
