@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
+import { useQuery } from '@tanstack/react-query'
 
 const PlayerDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -101,6 +102,14 @@ const PlayerDetail = () => {
   const maxGA = Math.max(1, ...lastN.map((s:any) => (s.goals || 0)))
   const maxAst = Math.max(1, ...lastN.map((s:any) => (s.assists || 0)))
   const presenceCount = stats.filter((r:any) => (r.minutes || 0) > 0).length
+  const { data: teamMatchesCount = 0 } = useQuery({
+    queryKey: ['matches-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase.from('matches').select('*', { count: 'exact', head: true })
+      if (error) throw error
+      return count || 0
+    }
+  })
 
   const Radial = ({ pct, label }: { pct: number; label: string }) => {
     const p = Math.max(0, Math.min(100, Math.round(pct)))
@@ -148,10 +157,10 @@ const PlayerDetail = () => {
                     { key: 'ast', label: 'Assist', value: (stats.length>0 ? totals.assists : undefined), icon: '🎯', color: 'text-cyan-700', tint: 'bg-cyan-50 border-cyan-200', iconColor: 'text-cyan-500' },
                     { key: 'gialli', label: 'Gialli', value: (stats.length>0 ? totals.yellows : undefined), icon: '', color: 'text-yellow-700', tint: 'bg-yellow-50 border-yellow-200', iconColor: 'text-yellow-500', card: 'yellow' },
                     { key: 'rossi', label: 'Rossi', value: (stats.length>0 ? totals.reds : undefined), icon: '', color: 'text-rose-700', tint: 'bg-rose-50 border-rose-200', iconColor: 'text-rose-500', card: 'red' },
-                    { key: 'pres', label: 'Presenze', value: (stats.length>0 ? presenceCount : undefined), icon: '👟', color: 'text-neutral-700', tint: 'bg-neutral-50 border-neutral-200', iconColor: 'text-neutral-500' },
+                    { key: 'pres', label: 'Presenze', value: (stats.length>0 ? presenceCount : undefined), total: teamMatchesCount, icon: '👟', color: 'text-neutral-700', tint: 'bg-neutral-50 border-neutral-200', iconColor: 'text-neutral-500', composite: true },
                   ].map((t) => {
-                    const isZero = t.value === 0
-                    const isNA = t.value === undefined
+                    const isZero = t.composite ? (t.value === 0) : (t.value === 0)
+                    const isNA = t.composite ? (t.total === undefined || t.total === null) : (t.value === undefined)
                     const activeCls = isZero || isNA ? 'bg-transparent border-border/40 text-muted-foreground' : `${t.tint} ${t.color}`
                     return (
                       <div key={t.key} className={`rounded-lg border px-2 py-2 ${activeCls}`}>
@@ -163,7 +172,7 @@ const PlayerDetail = () => {
                             <span aria-hidden className={`${t.iconColor} text-base leading-none`}>{t.icon || '•'}</span>
                           )}
                           <div className="flex flex-col items-end -mt-0.5">
-                            <span className="tabular-nums font-semibold text-sm sm:text-base">{isNA ? '—' : t.value}</span>
+                            <span className="tabular-nums font-semibold text-sm sm:text-base">{isNA ? '—' : (t.composite ? `${t.value}/${t.total}` : t.value)}</span>
                             <span className="hidden sm:block text-[10px] text-muted-foreground">{t.label}</span>
                             <span className="sr-only">{t.label}</span>
                           </div>
