@@ -595,114 +595,117 @@ const MatchLive = () => {
 				<div className="flex-1 overflow-hidden min-h-0">
 					<ResizablePanelGroup direction="horizontal" className="h-full" onLayout={(sizes:any)=>{ try{ localStorage.setItem('matchLiveLayout', JSON.stringify(sizes)); setLayout(sizes) }catch{} }}>
 						<ResizablePanel defaultSize={layout[0] || 33} minSize={15} className="min-w-[200px]">
-							{/* Colonna sinistra: In campo per blocchi ruolo */}
-							<div className="flex flex-col overflow-y-auto h-full">
-								<Card>
-									<CardHeader>
-										<CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />In campo</CardTitle>
-									</CardHeader>
-									<CardContent className="space-y-3">
-										{(['P','DIF','CEN','ATT'] as const).map((sec) => {
-											const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
-											const playersSec = groupedOnField[sec]
-											return (
-												<div key={sec}>
-													<div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
-													{playersSec.length === 0 ? (
-														<div className="text-xs text-muted-foreground">—</div>
-													) : (
-														<div className="space-y-1">
-															{playersSec.map((p: any) => {
-																const code = p._roleCode as string
-																const firstInitial = (p.first_name || '').trim().charAt(0)
-																const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
-																const jersey = (playersById[p.id] as any)?.jersey_number
-																const red = hasRedById.has(p.id)
-																const yellow = hasYellowById.has(p.id)
-																	const entered = enteredOnFieldIds.has(p.id)
-																	const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
-																return (
-																	<div
-																		key={p.id}
-																		className={`px-2 py-1 rounded border flex items-center gap-2 ${borderCls} ${eventMode ? 'cursor-pointer ring-1 ring-primary/40' : ''}`}
-																		onClick={() => { if (eventMode) handleAssignEvent(p.id) }}
-																	>
-																		<div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-																		{code && code !== 'ALTRI' && (
-																			<Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
-																		)}
-																		{typeof jersey === 'number' && (
-																			<span className="text-xs text-muted-foreground">#{jersey}</span>
-																		)}
-																		<div className="text-xs sm:text-sm leading-tight">{displayName}</div>
-																		{/* No per-player action icons here in new interaction model */}
-																		{renderEventBadges(p.id)}
-																	</div>
-																)
-															})}
+							{/* Colonna sinistra: In campo (vertical resizable) */}
+							<ResizablePanelGroup direction="vertical" className="h-full">
+								<ResizablePanel defaultSize={90} minSize={20}>
+									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
+										<div className="px-3 py-2 text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" />In campo</div>
+										<div className="p-3 space-y-3 overflow-auto">
+											{(['P','DIF','CEN','ATT'] as const).map((sec) => {
+												const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
+												const playersSec = groupedOnField[sec]
+												return (
+													<div key={sec}>
+														<div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
+														{playersSec.length === 0 ? (
+															<div className="text-xs text-muted-foreground">—</div>
+														) : (
+															<div className="space-y-1">
+																{playersSec.map((p: any) => {
+																	const code = p._roleCode as string
+																	const firstInitial = (p.first_name || '').trim().charAt(0)
+																	const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
+																	const jersey = (playersById[p.id] as any)?.jersey_number
+																	const red = hasRedById.has(p.id)
+																	const yellow = hasYellowById.has(p.id)
+																		const entered = enteredOnFieldIds.has(p.id)
+																		const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
+																	return (
+																		<div
+																			key={p.id}
+																			className={`px-2 py-1 rounded-lg border border-border/40 flex items-center gap-2 ${borderCls} ${eventMode ? 'cursor-pointer ring-1 ring-primary/40' : ''}`}
+																			onClick={() => { if (eventMode) handleAssignEvent(p.id) }}
+																		>
+																			<div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+																			{code && code !== 'ALTRI' && (
+																				<Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
+																			)}
+																			{typeof jersey === 'number' && (
+																				<span className="text-xs text-muted-foreground">#{jersey}</span>
+																			)}
+																			<div className="text-xs sm:text-sm leading-tight">{displayName}</div>
+																			{/* No per-player action icons here in new interaction model */}
+																			{renderEventBadges(p.id)}
+																		</div>
+																	)
+																})}
+															</div>
+														)}
+													</div>
+												)
+											})}
+											{/* Nota dialog */}
+											<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
+												<DialogContent>
+													<DialogHeader>
+														<DialogTitle>Nota</DialogTitle>
+													</DialogHeader>
+													<div className="space-y-3">
+														<div>
+															<Label className="text-sm">Testo</Label>
+															<Textarea value={noteText} onChange={(e:any)=>setNoteText(e.target.value)} placeholder="Scrivi una nota..." rows={4} />
 														</div>
-													)}
-												</div>
-											)
-										})}
+														<div className="flex justify-end gap-2">
+															<Button variant="outline" onClick={()=>{ setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Annulla</Button>
+															<Button onClick={async()=>{ if (selectedPlayerId) { await postEvent({ event_type: 'note', player_id: selectedPlayerId, comment: noteText || null }); } setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Salva</Button>
+														</div>
+													</div>
+												</DialogContent>
+											</Dialog>
 
-										{/* Nota dialog */}
-										<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
-											<DialogContent>
-												<DialogHeader>
-													<DialogTitle>Nota</DialogTitle>
-												</DialogHeader>
-												<div className="space-y-3">
-													<div>
-														<Label className="text-sm">Testo</Label>
-														<Textarea value={noteText} onChange={(e:any)=>setNoteText(e.target.value)} placeholder="Scrivi una nota..." rows={4} />
+											<Dialog open={subOpen} onOpenChange={setSubOpen}>
+												<DialogContent>
+													<DialogHeader>
+														<DialogTitle>Nuova sostituzione</DialogTitle>
+													</DialogHeader>
+													<div className="space-y-3">
+														<div>
+															<Label className="text-sm">Esce</Label>
+															<Select value={subOutId} onValueChange={setSubOutId}>
+																<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+																<SelectContent>
+																	{Array.from(onFieldIds).map((id) => (
+																		<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+														</div>
+														<div>
+															<Label className="text-sm">Entra</Label>
+															<Select value={subInId} onValueChange={setSubInId}>
+																<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+																<SelectContent>
+																	{availableInIds.map((id) => (
+																		<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+														</div>
+														<div className="flex justify-end gap-2">
+															<Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
+															<Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
+														</div>
 													</div>
-													<div className="flex justify-end gap-2">
-														<Button variant="outline" onClick={()=>{ setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Annulla</Button>
-														<Button onClick={async()=>{ if (selectedPlayerId) { await postEvent({ event_type: 'note', player_id: selectedPlayerId, comment: noteText || null }); } setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Salva</Button>
-													</div>
-												</div>
-											</DialogContent>
-										</Dialog>
-
-										<Dialog open={subOpen} onOpenChange={setSubOpen}>
-											<DialogContent>
-												<DialogHeader>
-													<DialogTitle>Nuova sostituzione</DialogTitle>
-												</DialogHeader>
-												<div className="space-y-3">
-													<div>
-														<Label className="text-sm">Esce</Label>
-														<Select value={subOutId} onValueChange={setSubOutId}>
-															<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-															<SelectContent>
-																{Array.from(onFieldIds).map((id) => (
-																	<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-																))}
-															</SelectContent>
-														</Select>
-													</div>
-													<div>
-														<Label className="text-sm">Entra</Label>
-														<Select value={subInId} onValueChange={setSubInId}>
-															<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-															<SelectContent>
-																{availableInIds.map((id) => (
-																	<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-																))}
-															</SelectContent>
-														</Select>
-													</div>
-													<div className="flex justify-end gap-2">
-														<Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
-														<Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
-													</div>
-												</div>
-											</DialogContent>
-										</Dialog>
-									</CardContent>
-								</Card>
-							</div>
+												</DialogContent>
+											</Dialog>
+										</div>
+									</div>
+								</ResizablePanel>
+								<ResizableHandle withHandle />
+								<ResizablePanel defaultSize={10} minSize={5}>
+									<div className="h-full" />
+								</ResizablePanel>
+							</ResizablePanelGroup>
 						</ResizablePanel>
 						<ResizableHandle withHandle />
 						<ResizablePanel defaultSize={layout[1] || 34} minSize={15}>
