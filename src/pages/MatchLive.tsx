@@ -16,7 +16,6 @@ import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
 import { Textarea } from '@/components/ui/textarea'
 import { useFinalizeMatch, useUpsertMatchPlayerStats } from '@/hooks/useSupabaseData'
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 
 // Parata icon (SVG provided by user)
 const PARATA_SVG = `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="16" height="16" viewBox="0 0 256 256" xml:space="preserve"><g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;" transform="translate(1.4110902877301328 1.4110902877301044) scale(2.82 2.82)"><path d="M 58.979 50.299 l 5.826 -5.826 c 1.283 -1.283 1.283 -3.381 0 -4.664 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l 5.978 -5.978 c 1.283 -1.283 1.283 -3.381 0 -4.664 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l 2.714 -2.714 c 1.283 -1.283 1.283 -3.381 0 -4.664 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l -1.95 1.95 c 1.283 -1.283 1.283 -3.381 0 -4.664 s -3.381 -1.283 -4.664 0 l -9.785 9.785 l -6.238 6.238 l 1.088 -6.17 c 0.315 -1.786 -0.889 -3.506 -2.675 -3.821 l -0.444 -0.078 c -1.786 -0.315 -3.506 0.889 -3.821 2.675 l -2.679 15.192 c -0.462 2.197 -1.183 4.136 -2.216 5.761 l 14.078 14.078 C 45.323 61.404 54.842 54.436 58.979 50.299 L 58.979 50.299 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(87,89,93); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 28.362 50.899 l -2.241 -2.241 c 1.033 -1.625 1.754 -3.564 2.216 -5.761 l 2.679 -15.192 c 0.315 -1.786 2.034 -2.99 3.821 -2.675 l 0.444 0.078 C 33.451 37.047 33.013 45.818 28.362 50.899 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 36.867 35.098 l 6.238 -6.238 l 9.785 -9.785 c 1.283 -1.283 3.381 -1.283 4.664 0 L 39.2 37.43 L 36.867 35.098 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 43.841 42.071 l 20.305 -20.305 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l -9.785 9.785 l -8.188 8.188 L 43.841 42.071 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 48.558 46.745 l 17.564 -17.564 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l -9.785 9.785 l -5.447 5.447 L 48.558 46.745 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 53.225 51.361 L 64.79 39.796 c -1.283 -1.283 -3.381 -1.283 -4.664 0 l -9.233 9.233 L 53.225 51.361 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 32.625 68.706 L 19.986 56.067 c -1.253 -1.253 -1.253 -3.303 0 -4.556 l 2.216 -2.216 c 1.253 -1.253 3.303 -1.253 4.556 0 l 12.639 12.639 c 1.253 1.253 1.253 3.303 0 4.556 l -2.216 2.216 C 35.928 69.959 33.878 69.959 32.625 68.706 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 24.971 57.944 c -1.005 -1.005 -1.005 -2.649 0 -3.654 l 3.391 -3.391 l -2.055 -2.055 c -1.005 -1.005 -2.649 -1.005 -3.654 0 l -3.118 3.118 c -1.005 1.005 -1.005 2.649 0 3.654 l 13.541 13.541 c 0.911 0.911 2.344 0.987 3.353 0.245 L 24.971 57.944 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><rect x="44.55" y="39.62" rx="0" ry="0" width="1" height="16.5" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -20.6576 45.8728) "/><rect x="41.77" y="42.23" rx="0" ry="0" width="1" height="15.72" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7106 -0.7036 0.7036 0.7106 -23.0108 44.2408) "/><rect x="39.06" y="44.76" rx="0" ry="0" width="1" height="14.85" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7034 -0.7108 0.7108 0.7034 -25.3634 43.5968) "/><rect x="36.44" y="47.19" rx="0" ry="0" width="1" height="13.94" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -27.4777 41.9858) "/><rect x="-2.91" y="67.05" rx="0" ry="0" width="24.67" height="2" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -45.3568 26.5992) "/><rect x="2.44" y="72.39" rx="0" ry="0" width="24.67" height="2" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -47.57 31.9418) "/><rect x="7.78" y="77.74" rx="0" ry="0" width="24.67" height="2" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(0.7071 -0.7071 0.7071 0.7071 -49.7831 37.2844) "/><path d="M 82.813 7.756 c -3.871 -3.676 -9.067 -5.965 -14.8 -6.077 l 1.297 5.363 l 6.605 2.707 L 82.813 7.756 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><polygon points="80.41,31.74 82.55,24.6 76.19,18.91 68.8,21.11 66.36,28.34 70.5,33.08 " style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform="  matrix(1 0 0 1 0 0) "/><polygon points="67.38,20.64 63.01,14.77 53.69,16.7 52.12,22.28 58.3,29.43 64.94,27.89 " style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform="  matrix(1 0 0 1 0 0) "/><path d="M 84.001 8.966 l -6.975 2.016 v 6.683 l 6.793 6.066 l 5.876 -0.443 C 89.567 17.783 87.442 12.773 84.001 8.966 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.482 1.7 c -6.804 0.331 -12.803 3.727 -16.638 8.843 l 3.573 4.691 l 9.344 -1.942 l 5.067 -6.021 L 66.482 1.7 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.664 45.236 V 45.17 l -0.852 -5.039 l -7.584 -2.258 l -4.711 3.017 c 3.637 2.997 8.237 4.865 13.275 5.04 l -0.117 -0.694 H 66.664 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 57.474 36.584 v -5.828 l -6.498 -7.518 l -5.544 0.571 c 0 6.326 2.657 12.027 6.911 16.062 L 57.474 36.584 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 70.86 34.539 L 67.26 39.74 l 1.047 6.19 c 6.062 -0.198 11.506 -2.828 15.386 -6.953 l -3.188 -5.746 L 70.86 34.539 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(241,241,241); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.769 2.468 c -0.027 0.027 -0.055 0.054 -0.082 0.081 L 66.482 1.7 c -6.804 0.331 -12.803 3.727 -16.638 8.843 l 3.573 4.691 l 5.042 -1.048 c 1.681 -3.945 4.455 -7.849 8.309 -11.714 V 2.468 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 53.691 16.702 l -1.568 5.581 l 4.835 5.594 c -0.81 -4.051 -0.52 -8.062 0.862 -12.033 L 53.691 16.702 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.664 45.236 V 45.17 l -0.04 -0.234 c 0.013 0.014 0.026 0.028 0.04 0.042 v -0.016 c -1.864 -2.016 -3.491 -4.023 -4.841 -6.019 c 0 0 0 0 0 0 l -3.596 -1.07 l -4.711 3.017 c 3.637 2.997 8.237 4.865 13.275 5.04 l -0.117 -0.694 H 66.664 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 57.474 36.584 v -5.828 l -6.498 -7.518 l -5.544 0.571 c 0 6.326 2.657 12.027 6.911 16.062 L 57.474 36.584 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(219,219,219); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 57.474 30.756 v 5.828 l -5.132 3.287 c 0.375 0.356 0.758 0.702 1.157 1.031 l 4.729 -3.029 l 7.584 2.258 l 0.981 5.799 c 0.26 0.009 0.519 0.02 0.78 0.02 c 0.246 0 0.489 -0.011 0.734 -0.019 L 67.26 39.74 l 3.601 -5.201 l 9.644 -1.308 l 3.188 5.747 c 0.033 -0.036 0.068 -0.07 0.101 -0.106 c 0.112 -0.119 0.22 -0.241 0.329 -0.362 c 1.57 -1.766 2.864 -3.784 3.808 -5.988 c 0.043 -0.103 0.086 -0.205 0.127 -0.309 c 0.055 -0.133 0.106 -0.268 0.159 -0.403 c 0.945 -2.512 1.441 -5.271 1.49 -8.275 c -0.001 -0.083 -0.004 -0.165 -0.006 -0.248 l -5.882 0.443 l -6.793 -6.066 v -6.683 l 6.975 -2.016 c -0.379 -0.42 -0.778 -0.821 -1.188 -1.21 l -6.898 1.994 l -6.605 -2.707 l -1.297 -5.364 c -0.147 -0.003 -0.292 -0.011 -0.44 -0.011 c -0.366 0 -0.73 0.01 -1.092 0.028 l 1.348 5.576 l -5.067 6.021 l -9.344 1.942 l -3.573 -4.691 c -0.001 0.002 -0.003 0.003 -0.004 0.005 c -1.433 1.966 -2.495 4.002 -3.219 6.101 c -0.049 0.142 -0.099 0.284 -0.145 0.428 c -0.04 0.124 -0.076 0.248 -0.114 0.372 c -0.067 0.225 -0.132 0.451 -0.193 0.678 c -0.023 0.085 -0.045 0.17 -0.067 0.254 c -0.075 0.298 -0.145 0.597 -0.208 0.9 c -0.006 0.028 -0.013 0.056 -0.018 0.084 c -0.071 0.347 -0.133 0.698 -0.188 1.051 c -0.006 0.037 -0.01 0.074 -0.015 0.111 c -0.043 0.289 -0.079 0.581 -0.111 0.874 c -0.013 0.117 -0.023 0.234 -0.034 0.351 c -0.02 0.221 -0.037 0.443 -0.051 0.665 c -0.008 0.129 -0.017 0.258 -0.023 0.387 c -0.015 0.333 -0.025 0.667 -0.025 1.003 l 5.544 -0.571 L 57.474 30.756 z M 68.801 21.107 l 7.384 -2.192 l 6.363 5.683 l -2.136 7.14 l -9.907 1.343 l -4.144 -4.736 L 68.801 21.107 z M 53.691 16.702 l 9.314 -1.936 l 4.377 5.873 l -2.445 7.253 l -6.642 1.533 l -6.173 -7.142 L 53.691 16.702 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(87,89,93); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.687 2.549 c 0.292 -0.294 0.581 -0.588 0.886 -0.882 c -0.366 0 -0.73 0.01 -1.092 0.028 L 66.687 2.549 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 57.474 30.756 v 5.828 l -5.132 3.287 c 0.375 0.356 0.758 0.702 1.157 1.031 c 0 0 0 0 0 0 l 4.729 -3.029 l 3.596 1.07 c -2.516 -3.722 -4.135 -7.41 -4.865 -11.067 l -4.835 -5.594 l 1.568 -5.581 l 4.128 -0.858 c 0.193 -0.553 0.404 -1.106 0.639 -1.658 l -5.042 1.048 l -3.573 -4.691 c -0.001 0.002 -0.003 0.003 -0.004 0.005 c -1.433 1.966 -2.494 4.001 -3.219 6.101 c -0.023 0.069 -0.047 0.137 -0.07 0.206 c -0.025 0.074 -0.051 0.147 -0.075 0.222 c -0.04 0.124 -0.076 0.248 -0.114 0.372 c -0.066 0.22 -0.129 0.441 -0.188 0.664 c -0.001 0.005 -0.003 0.01 -0.004 0.015 c -0.023 0.085 -0.045 0.169 -0.067 0.254 c -0.075 0.298 -0.145 0.598 -0.208 0.9 c -0.006 0.028 -0.013 0.055 -0.018 0.083 c -0.071 0.347 -0.133 0.698 -0.188 1.051 c -0.006 0.036 -0.01 0.073 -0.015 0.109 c -0.041 0.274 -0.074 0.549 -0.105 0.826 c -0.002 0.016 -0.004 0.033 -0.006 0.049 c -0.013 0.117 -0.023 0.234 -0.034 0.351 c -0.018 0.196 -0.032 0.392 -0.045 0.589 c -0.002 0.025 -0.004 0.051 -0.006 0.076 c -0.008 0.129 -0.017 0.258 -0.023 0.387 c -0.015 0.333 -0.025 0.667 -0.025 1.003 l 5.544 -0.571 L 57.474 30.756 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/><path d="M 66.792 45.93 c 0.26 0.009 0.519 0.02 0.78 0.02 c -0.326 -0.338 -0.637 -0.676 -0.949 -1.014 L 66.792 45.93 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(63,64,66); fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round"/></g></svg>`
@@ -523,13 +522,9 @@ const MatchLive = () => {
 
 	if (!id) return null
 
-	const [layout, setLayout] = useState<number[]>(() => {
-		try { return JSON.parse(localStorage.getItem('matchLiveLayout') || '[33,34,33]') } catch { return [33,34,33] }
-	})
-
 	return (
-		<div className="h-screen bg-background/95">
-			<div className="max-w-7xl mx-auto h-full px-2 sm:px-6 lg:px-8 py-2 sm:py-3 flex flex-col overflow-hidden">
+		<div className="min-h-screen bg-background">
+			<div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-3 flex flex-col">
 				{!hasValidLineup && (
 					<Card className="mb-3">
 						<CardContent>
@@ -579,240 +574,216 @@ const MatchLive = () => {
 								<SelectItem value="ended">Fine</SelectItem>
 							</SelectContent>
 						</Select>
-						<Button variant="ghost" size="sm" onClick={()=>{ localStorage.removeItem('matchLiveLayout'); setLayout([33,34,33]) }} aria-label="Reimposta layout">
+						<Button variant="ghost" size="sm" aria-label="Reimposta layout">
 							<RotateCcw className="h-4 w-4" />
 						</Button>
 					</div>
 				</div>
-				<div className="flex-1 overflow-hidden min-h-0">
-					<ResizablePanelGroup direction="horizontal" className="h-full" onLayout={(sizes:any)=>{ try{ localStorage.setItem('matchLiveLayout', JSON.stringify(sizes)); setLayout(sizes) }catch{} }}>
-						<ResizablePanel defaultSize={layout[0] || 33} minSize={15} className="min-w-[200px]">
-							{/* Colonna sinistra: In campo (vertical resizable) */}
-							<ResizablePanelGroup direction="vertical" className="h-full min-h-0">
-								<ResizablePanel defaultSize={85} minSize={20}>
-									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
-										<div className="px-3 py-2 text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" />In campo</div>
-										<div className="p-3 space-y-3 overflow-auto">
-											{(['P','DIF','CEN','ATT'] as const).map((sec) => {
-												const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
-												const playersSec = groupedOnField[sec]
-												return (
-													<div key={sec}>
-														<div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
-														{playersSec.length === 0 ? (
-															<div className="text-xs text-muted-foreground">—</div>
-														) : (
-															<div className="space-y-1">
-																{playersSec.map((p: any) => {
-																	const code = p._roleCode as string
-																	const firstInitial = (p.first_name || '').trim().charAt(0)
-																	const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
-																	const jersey = (playersById[p.id] as any)?.jersey_number
-																	const red = hasRedById.has(p.id)
-																	const yellow = hasYellowById.has(p.id)
-																		const entered = enteredOnFieldIds.has(p.id)
-																		const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
-																	return (
-																		<div
-																			key={p.id}
-																			className={`px-2 py-1 rounded-lg border border-border/40 flex items-center gap-2 ${borderCls} ${eventMode ? 'cursor-pointer ring-1 ring-primary/40' : ''}`}
-																			onClick={() => { if (eventMode) handleAssignEvent(p.id) }}
-																		>
-																			<div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-																			{code && code !== 'ALTRI' && (
-																				<Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
-																			)}
-																			{typeof jersey === 'number' && (
-																				<span className="text-xs text-muted-foreground">#{jersey}</span>
-																			)}
-																			<div className="text-xs sm:text-sm leading-tight">{displayName}</div>
-																			{/* No per-player action icons here in new interaction model */}
-																			{renderEventBadges(p.id)}
-																		</div>
-																	)
-																})}
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+					{/* Colonna sinistra: In campo + Sostituiti */}
+					<div className="flex flex-col gap-3">
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
+							<div className="px-3 py-2 text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" />In campo</div>
+							<div className="p-3 space-y-3">
+								{(['P','DIF','CEN','ATT'] as const).map((sec) => {
+									const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
+									const playersSec = groupedOnField[sec]
+									return (
+										<div key={sec}>
+											<div className="text-xs uppercase text-muted-foreground mb-1">{label}</div>
+											{playersSec.length === 0 ? (
+												<div className="text-xs text-muted-foreground">—</div>
+											) : (
+												<div className="space-y-1">
+													{playersSec.map((p: any) => {
+														const code = p._roleCode as string
+														const firstInitial = (p.first_name || '').trim().charAt(0)
+														const displayName = `${firstInitial ? firstInitial.toUpperCase() + '.' : ''} ${p.last_name || ''}`.trim()
+														const jersey = (playersById[p.id] as any)?.jersey_number
+														const red = hasRedById.has(p.id)
+														const yellow = hasYellowById.has(p.id)
+															const entered = enteredOnFieldIds.has(p.id)
+															const borderCls = red ? 'border-red-600' : yellow ? 'border-yellow-500' : entered ? 'border-neutral-700' : ''
+														return (
+															<div
+																key={p.id}
+																className={`px-2 py-1 rounded-lg border border-border/40 flex items-center gap-2 ${borderCls} ${eventMode ? 'cursor-pointer ring-1 ring-primary/40' : ''}`}
+																onClick={() => { if (eventMode) handleAssignEvent(p.id) }}
+															>
+																<div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+																{code && code !== 'ALTRI' && (
+																	<Badge variant="secondary" className="shrink-0 h-5 px-1 py-0 text-[11px] leading-none">{code}</Badge>
+																)}
+																{typeof jersey === 'number' && (
+																	<span className="text-xs text-muted-foreground">#{jersey}</span>
+																)}
+																<div className="text-xs sm:text-sm leading-tight">{displayName}</div>
+																{/* No per-player action icons here in new interaction model */}
+																{renderEventBadges(p.id)}
 															</div>
-														)}
-													</div>
-												)
-											})}
-											{/* Nota dialog */}
-											<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
-												<DialogContent>
-													<DialogHeader>
-														<DialogTitle>Nota</DialogTitle>
-													</DialogHeader>
-													<div className="space-y-3">
-														<div>
-															<Label className="text-sm">Testo</Label>
-															<Textarea value={noteText} onChange={(e:any)=>setNoteText(e.target.value)} placeholder="Scrivi una nota..." rows={4} />
-														</div>
-														<div className="flex justify-end gap-2">
-															<Button variant="outline" onClick={()=>{ setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Annulla</Button>
-															<Button onClick={async()=>{ if (selectedPlayerId) { await postEvent({ event_type: 'note', player_id: selectedPlayerId, comment: noteText || null }); } setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Salva</Button>
-														</div>
-													</div>
-												</DialogContent>
-											</Dialog>
-
-											<Dialog open={subOpen} onOpenChange={setSubOpen}>
-												<DialogContent>
-													<DialogHeader>
-														<DialogTitle>Nuova sostituzione</DialogTitle>
-													</DialogHeader>
-													<div className="space-y-3">
-														<div>
-															<Label className="text-sm">Esce</Label>
-															<Select value={subOutId} onValueChange={setSubOutId}>
-																<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-																<SelectContent>
-																	{Array.from(onFieldIds).map((id) => (
-																		<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-																	))}
-																</SelectContent>
-															</Select>
-														</div>
-														<div>
-															<Label className="text-sm">Entra</Label>
-															<Select value={subInId} onValueChange={setSubInId}>
-																<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-																<SelectContent>
-																	{availableInIds.map((id) => (
-																		<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-																	))}
-																</SelectContent>
-															</Select>
-														</div>
-														<div className="flex justify-end gap-2">
-															<Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
-															<Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
-														</div>
-													</div>
-												</DialogContent>
-											</Dialog>
-										</div>
-									</div>
-								</ResizablePanel>
-								<ResizableHandle withHandle />
-								<ResizablePanel defaultSize={15} minSize={5}>
-									<div className="h-full" />
-								</ResizablePanel>
-							</ResizablePanelGroup>
-						</ResizablePanel>
-						<ResizableHandle withHandle />
-						<ResizablePanel defaultSize={layout[1] || 34} minSize={15}>
-							<ResizablePanelGroup direction="vertical" className="h-full min-h-0">
-								<ResizablePanel defaultSize={20} minSize={10}>
-									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 h-full overflow-hidden">
-										<div className="flex items-center justify-center gap-2 flex-wrap">
-											<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
-											</Button>
-											<Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<AssistIcon className="inline-block h-4 w-4 mr-1" />Assist
-											</Button>
-											<Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
-											</Button>
-											<Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<RedCardIcon className="inline-block h-3 w-3 mr-2" />Rosso
-											</Button>
-											<Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<FoulIcon className="inline-block h-4 w-4 mr-1" />Fallo
-											</Button>
-											<Button variant={eventMode==='save'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('save')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<ParataIcon className="inline-block h-4 w-4 mr-1" />Parata
-											</Button>
-											<Button variant={eventMode==='note'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('note')} className="h-8" disabled={isEnded || !hasValidLineup}>
-												<span className="material-symbols-outlined text-[18px] mr-1">note_add</span>Nota
-											</Button>
-										</div>
-									</div>
-								</ResizablePanel>
-								<ResizableHandle withHandle />
-								<ResizablePanel defaultSize={80} minSize={20}>
-									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
-										<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Eventi</div>
-										<div className="p-3 space-y-1 overflow-auto">
-											{[...events].slice().reverse().map((e: any) => (
-												<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
-													<div className="flex items-center gap-2">
-														<span className="text-xs">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
-														{e.event_type === 'goal' && <GoalIcon className="h-4 w-4" />}
-														{e.event_type === 'assist' && <AssistIcon className="h-4 w-4" />}
-														{e.event_type === 'yellow_card' && <YellowCardIcon className="h-3 w-3" />}
-														{e.event_type === 'red_card' && <RedCardIcon className="h-3 w-3" />}
-														{e.event_type === 'foul' && <FoulIcon className="h-4 w-4" />}
-														{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
-														{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
-														{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
-														<span>{labelForEventType(e.event_type)}</span>
-														{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
-													</div>
-													<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
-														<Trash2 className="h-4 w-4" />
-													</Button>
+														)
+													})}
 												</div>
-											))}
-										</div>
-									</div>
-								</ResizablePanel>
-							</ResizablePanelGroup>
-						</ResizablePanel>
-						<ResizableHandle withHandle />
-						<ResizablePanel defaultSize={layout[2] || 33} minSize={15}>
-							<ResizablePanelGroup direction="vertical" className="h-full min-h-0">
-								<ResizablePanel defaultSize={45} minSize={20}>
-									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
-										<div className="px-3 py-2 text-sm font-semibold">Sostituiti</div>
-										<div className="p-3 space-y-1.5 overflow-auto">
-											{substitutedList.map((p: any) => (
-												<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
-													<div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
-													<div className="truncate">{p.first_name} {p.last_name}</div>
-												</div>
-											))}
-											{substitutedList.length === 0 && (
-												<div className="text-sm text-muted-foreground">Nessun sostituito.</div>
 											)}
 										</div>
-									</div>
-								</ResizablePanel>
-								<ResizableHandle withHandle />
-								<ResizablePanel defaultSize={benchCollapsed ? 12 : 55} minSize={10}>
-									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
-										<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
-											<div className="flex items-center gap-2">
-												<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(v=>!v)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
-													<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'chevron_right' : 'chevron_left'}</span>
-												</Button>
-												<span>Panchina</span>
+									)
+								})}
+								{/* Nota dialog */}
+								<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
+									<DialogContent>
+										<DialogHeader>
+											<DialogTitle>Nota</DialogTitle>
+										</DialogHeader>
+										<div className="space-y-3">
+											<div>
+												<Label className="text-sm">Testo</Label>
+												<Textarea value={noteText} onChange={(e:any)=>setNoteText(e.target.value)} placeholder="Scrivi una nota..." rows={4} />
 											</div>
-											<Button variant="ghost" size="icon" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(''); setSubOpen(true) }} aria-label="Nuova sostituzione" disabled={isEnded || !hasValidLineup}>
+											<div className="flex justify-end gap-2">
+												<Button variant="outline" onClick={()=>{ setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Annulla</Button>
+												<Button onClick={async()=>{ if (selectedPlayerId) { await postEvent({ event_type: 'note', player_id: selectedPlayerId, comment: noteText || null }); } setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Salva</Button>
+											</div>
+										</div>
+									</DialogContent>
+								</Dialog>
+
+								<Dialog open={subOpen} onOpenChange={setSubOpen}>
+									<DialogContent>
+										<DialogHeader>
+											<DialogTitle>Nuova sostituzione</DialogTitle>
+										</DialogHeader>
+										<div className="space-y-3">
+											<div>
+												<Label className="text-sm">Esce</Label>
+												<Select value={subOutId} onValueChange={setSubOutId}>
+													<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+													<SelectContent>
+														{Array.from(onFieldIds).map((id) => (
+															<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+											<div>
+												<Label className="text-sm">Entra</Label>
+												<Select value={subInId} onValueChange={setSubInId}>
+													<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+													<SelectContent>
+														{availableInIds.map((id) => (
+															<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+											<div className="flex justify-end gap-2">
+												<Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
+												<Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
+											</div>
+										</div>
+									</DialogContent>
+								</Dialog>
+							</div>
+						</div>
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
+							<div className="px-3 py-2 text-sm font-semibold">Sostituiti</div>
+							<div className="p-3 space-y-1.5">
+								{substitutedList.map((p: any) => (
+									<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
+										<div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
+										<div className="truncate">{p.first_name} {p.last_name}</div>
+									</div>
+								))}
+								{substitutedList.length === 0 && (
+									<div className="text-sm text-muted-foreground">Nessun sostituito.</div>
+								)}
+							</div>
+						</div>
+					</div>
+					{/* Colonna centrale: toolbar + eventi */}
+					<div className="flex flex-col gap-3">
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3">
+							<div className="flex items-center justify-center gap-2 flex-wrap">
+								<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
+								</Button>
+								<Button variant={eventMode==='assist'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('assist')} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<AssistIcon className="inline-block h-4 w-4 mr-1" />Assist
+								</Button>
+								<Button variant={eventMode==='yellow_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('yellow_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
+								</Button>
+								<Button variant={eventMode==='red_card'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('red_card')} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<RedCardIcon className="inline-block h-3 w-3 mr-2" />Rosso
+								</Button>
+								<Button variant={eventMode==='foul'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('foul')} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<FoulIcon className="inline-block h-4 w-4 mr-1" />Fallo
+								</Button>
+								<Button variant={eventMode==='save'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('save')} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<ParataIcon className="inline-block h-4 w-4 mr-1" />Parata
+								</Button>
+								<Button variant={eventMode==='note'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('note')} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px] mr-1">note_add</span>Nota
+								</Button>
+							</div>
+						</div>
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
+							<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Eventi</div>
+							<div className="p-3 space-y-1">
+								{[...events].slice().reverse().map((e: any) => (
+									<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
+										<div className="flex items-center gap-2">
+											<span className="text-xs">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
+											{e.event_type === 'goal' && <GoalIcon className="h-4 w-4" />}
+											{e.event_type === 'assist' && <AssistIcon className="h-4 w-4" />}
+											{e.event_type === 'yellow_card' && <YellowCardIcon className="h-3 w-3" />}
+											{e.event_type === 'red_card' && <RedCardIcon className="h-3 w-3" />}
+											{e.event_type === 'foul' && <FoulIcon className="h-4 w-4" />}
+											{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
+											{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
+											{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
+											<span>{labelForEventType(e.event_type)}</span>
+											{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
+										</div>
+										<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
+											<Trash2 className="h-4 w-4" />
+										</Button>
+									</div>
+								))}
+							</div>
+						</div>
+					</div>
+					{/* Colonna destra: panchina (drawer) */}
+					<div className="flex flex-col gap-3">
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
+							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
+								<div className="flex items-center gap-2">
+									<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(v=>!v)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
+										<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'chevron_right' : 'chevron_left'}</span>
+									</Button>
+									<span>Panchina</span>
+								</div>
+								<Button variant="ghost" size="icon" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(''); setSubOpen(true) }} aria-label="Nuova sostituzione" disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
+								</Button>
+							</div>
+							{!benchCollapsed && (
+								<div className="p-3 space-y-1.5">
+									{filteredBench.map((p: any) => (
+										<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
+											<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+											<div className="truncate">{p.first_name} {p.last_name}</div>
+											<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup}>
 												<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
 											</Button>
 										</div>
-										{!benchCollapsed && (
-											<div className="p-3 space-y-1.5 overflow-auto">
-												{filteredBench.map((p: any) => (
-													<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
-														<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-														<div className="truncate">{p.first_name} {p.last_name}</div>
-														<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup}>
-															<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
-														</Button>
-													</div>
-												))}
-												{filteredBench.length === 0 && (
-													<div className="text-sm text-muted-foreground">Nessun giocatore in panchina.</div>
-												)}
-											</div>
-										)}
-									</div>
-								</ResizablePanel>
-							</ResizablePanelGroup>
-						</ResizablePanel>
-					</ResizablePanelGroup>
+									))}
+									{filteredBench.length === 0 && (
+										<div className="text-sm text-muted-foreground">Nessun giocatore in panchina.</div>
+									)}
+								</div>
+							)}
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
