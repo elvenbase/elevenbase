@@ -119,6 +119,9 @@ const PlayerDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+        <div className="flex justify-end">
+          <Button asChild variant="ghost" size="sm"><Link to="/squad">Torna a Squad</Link></Button>
+        </div>
         <div className={`relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-r ${sectorTheme.from} ${sectorTheme.to} min-h-[140px] sm:min-h-[180px]`}>
           {player?.avatar_url && (
             <img
@@ -127,15 +130,14 @@ const PlayerDetail = () => {
               className="absolute left-[-5%] top-1/2 -translate-y-1/2 h-[98%] w-auto object-cover opacity-20 pointer-events-none"
             />
           )}
-          <div className="relative z-10 p-4 sm:p-6 flex items-center justify-between gap-3">
-            <div className="min-w-0">
+          <div className="relative z-10 p-4 sm:p-6 flex items-center justify-end gap-3">
+            <div className="ml-auto min-w-0 text-right">
               <div className="text-xl sm:text-2xl font-extrabold leading-tight">{shortName}</div>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="mt-2 flex flex-wrap items-center gap-2 justify-end">
                 <Badge variant="secondary">#{player?.jersey_number ?? '-'}</Badge>
                 <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
               </div>
             </div>
-            <Button asChild variant="ghost" size="sm" className="shrink-0"><Link to="/squad">Torna a Squad</Link></Button>
           </div>
         </div>
 
