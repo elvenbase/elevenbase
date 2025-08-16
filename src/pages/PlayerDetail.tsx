@@ -11,6 +11,9 @@ import { Upload } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
 import { useToast } from '@/hooks/use-toast'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
 
 const PlayerDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -41,6 +44,24 @@ const PlayerDetail = () => {
   const roleMap = Object.fromEntries(roles.map((r:any)=>[r.code, r]))
   const roleLabel = player?.role_code ? `${roleMap[player.role_code]?.label || player.role_code} (${roleMap[player.role_code]?.abbreviation || player.role_code})` : '-'
 
+  const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
+    if (!code) return 'NA'
+    const c = code.toUpperCase()
+    if (c === 'P') return 'P'
+    if (['TD','DC','DCD','DCS','TS'].includes(c)) return 'DIF'
+    if (['MC','MED','REG','MD','MS','ED','ES','QD','QS'].includes(c)) return 'CEN'
+    if (['PU','ATT','AD','AS'].includes(c)) return 'ATT'
+    return 'NA'
+  }
+  const sector = sectorFromRoleCode(player?.role_code)
+  const sectorTheme = {
+    P: { from: 'from-sky-500/20', to: 'to-sky-500/5', text: 'text-sky-700', chip: 'bg-sky-100 text-sky-800' },
+    DIF: { from: 'from-emerald-500/20', to: 'to-emerald-500/5', text: 'text-emerald-700', chip: 'bg-emerald-100 text-emerald-800' },
+    CEN: { from: 'from-amber-500/25', to: 'to-amber-500/5', text: 'text-amber-700', chip: 'bg-amber-100 text-amber-800' },
+    ATT: { from: 'from-rose-500/25', to: 'to-rose-500/5', text: 'text-rose-700', chip: 'bg-rose-100 text-rose-800' },
+    NA: { from: 'from-neutral-500/20', to: 'to-neutral-500/5', text: 'text-foreground', chip: 'bg-muted text-foreground' }
+  }[sector]
+
   const parsePhone = (phone?: string) => {
     if (!phone) return { prefix: '+39 (Italia)', number: '' }
     const known = [
@@ -67,6 +88,31 @@ const PlayerDetail = () => {
     } catch (e) {
       toast({ title: 'Errore salvataggio avatar', variant: 'destructive' })
     }
+  }
+
+  const per90 = (value: number, minutes: number) => minutes > 0 ? (value / minutes) * 90 : 0
+  const gPer90 = per90(totals.goals, totals.minutes)
+  const aPer90 = per90(totals.assists, totals.minutes)
+  const sPer90 = per90(totals.saves, totals.minutes)
+
+  const lastN = stats.slice(-10)
+  const maxMin = Math.max(90, ...lastN.map((s:any) => s.minutes || 0))
+  const maxGA = Math.max(1, ...lastN.map((s:any) => (s.goals || 0)))
+  const maxAst = Math.max(1, ...lastN.map((s:any) => (s.assists || 0)))
+
+  const Radial = ({ pct, label }: { pct: number; label: string }) => {
+    const p = Math.max(0, Math.min(100, Math.round(pct)))
+    const color = sector === 'P' ? '#38bdf8' : sector === 'DIF' ? '#34d399' : sector === 'CEN' ? '#f59e0b' : sector === 'ATT' ? '#f43f5e' : '#6b7280'
+    const bg = '#e5e7eb'
+    const angle = (p / 100) * 360
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <div className="relative w-20 h-20 rounded-full" style={{ background: `conic-gradient(${color} ${angle}deg, ${bg} 0deg)` }}>
+          <div className="absolute inset-1 rounded-full bg-background flex items-center justify-center text-sm font-semibold">{p}%</div>
+        </div>
+        <div className="text-xs text-muted-foreground">{label}</div>
+      </div>
+    )
   }
 
   return (
