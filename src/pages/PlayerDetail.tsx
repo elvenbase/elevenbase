@@ -127,7 +127,7 @@ const PlayerDetail = () => {
             <img
               src={player.avatar_url}
               alt=""
-              className="absolute left-[-5%] top-1/2 -translate-y-1/2 h-[98%] w-auto object-cover opacity-20 pointer-events-none"
+              className="absolute left-[-5%] top-1/2 -translate-y-1/2 h-[98%] w-auto object-cover pointer-events-none"
             />
           )}
           <div className="relative z-10 p-4 sm:p-6 flex items-center justify-end gap-3">
@@ -154,14 +154,7 @@ const PlayerDetail = () => {
             <Card>
               <CardHeader><CardTitle>Anagrafica</CardTitle></CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-6">
-                  <div className="flex flex-col items-center gap-2">
-                    <PlayerAvatar firstName={player?.first_name} lastName={player?.last_name} avatarUrl={player?.avatar_url} size={96} />
-                    <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-                      <Upload className="w-4 h-4" /> Carica
-                    </label>
-                  </div>
+                <div className="grid grid-cols-1 gap-6">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div><div className="text-muted-foreground">Nome</div><div className="font-medium">{player?.first_name}</div></div>
                     <div><div className="text-muted-foreground">Cognome</div><div className="font-medium">{player?.last_name}</div></div>
