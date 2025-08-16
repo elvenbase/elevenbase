@@ -548,24 +548,25 @@ const MatchLive = () => {
 					</Card>
 				)}
 				{/* Header: single-row scoreboard */}
-				<div className="grid grid-cols-2 md:grid-cols-5 items-center gap-3 py-2 border-b">
-					{/* 1) back icon only */}
-					<div className="flex items-center gap-2 min-w-0">
-						<Button variant="ghost" size="sm" asChild aria-label="Torna alla gestione" className="shrink-0">
+				<div className="grid grid-cols-3 items-center gap-3 py-2 border-b">
+					{/* left: back */}
+					<div className="justify-self-start">
+						<Button variant="ghost" size="sm" asChild aria-label="Torna alla gestione">
 							<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4" /></Link>
 						</Button>
-						{/* 2) logo + team name */}
-						{(match as any)?.opponents?.logo_url && (
-							<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
-						)}
-						<span className="text-sm font-medium truncate">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
 					</div>
-					{/* 3) score */}
-					<div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-center md:col-span-1">
-						{score.us} - {score.opp}
+					{/* center: logo + team name + score */}
+					<div className="justify-self-center min-w-0">
+						<div className="flex items-center gap-3">
+							{(match as any)?.opponents?.logo_url && (
+								<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
+							)}
+							<span className="text-sm font-medium truncate max-w-[160px] sm:max-w-[260px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
+							<span className="text-2xl sm:text-3xl font-extrabold tracking-tight">{score.us} - {score.opp}</span>
+						</div>
 					</div>
-					{/* 4-6) timer + phase + reset */}
-					<div className="flex items-center justify-end gap-2 md:col-span-2">
+					{/* right: timer + phase + reset */}
+					<div className="justify-self-end flex items-center gap-2">
 						<div className="flex items-center gap-2 px-2 py-1 rounded border bg-muted/30">
 							<Clock3 className="h-4 w-4" />
 							<span className="tabular-nums font-medium">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
