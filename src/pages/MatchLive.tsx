@@ -135,6 +135,7 @@ const MatchLive = () => {
 					case 'red_card': countsById[pid].reds++; break
 					case 'foul': countsById[pid].fouls++; break
 					case 'save': countsById[pid].saves++; break
+					case 'pen_scored': countsById[pid].goals++; break
 					default: break
 				}
 			})
@@ -357,6 +358,9 @@ const MatchLive = () => {
 	const [flashId, setFlashId] = useState<string | null>(null)
 	const [noteOpen, setNoteOpen] = useState(false)
 	const [noteText, setNoteText] = useState('')
+	// Penalty choice modals
+	const [penaltyOpenUs, setPenaltyOpenUs] = useState(false)
+	const [penaltyOpenOpp, setPenaltyOpenOpp] = useState(false)
 	// Collapsible panels state
 	const [inCampoCollapsed, setInCampoCollapsed] = useState(false)
 	const flashRow = (pid: string) => {
@@ -397,6 +401,7 @@ const MatchLive = () => {
 				case 'red_card': s.reds++; break
 				case 'foul': s.fouls++; break
 				case 'save': s.saves++; break
+				case 'pen_scored': s.goals++; break
 			}
 		})
 		return stats
@@ -861,7 +866,7 @@ const MatchLive = () => {
 								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('goal')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='goal' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<GoalIcon className="inline-block h-4 w-4" />Gol
 								</Button>
-								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('pen_scored')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='pen_scored' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+								<Button variant="ghost" size="sm" onClick={()=>setPenaltyOpenUs(true)} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='pen_scored' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Rigore
 								</Button>
 								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('assist')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='assist' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
@@ -895,7 +900,7 @@ const MatchLive = () => {
 								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
 									<GoalIcon className="inline-block h-4 w-4" />Gol
 								</Button>
-								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'pen_scored', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
+								<Button variant="ghost" size="sm" onClick={()=>setPenaltyOpenOpp(true)} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Rigore
 								</Button>
 								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'save', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
