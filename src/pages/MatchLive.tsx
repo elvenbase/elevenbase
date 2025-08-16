@@ -617,6 +617,18 @@ const MatchLive = () => {
 
 	const isEnded = period === 'ended'
 
+	// Visual hint on timer group by phase
+	const periodBorderClass = useMemo(() => {
+		switch (period) {
+			case 'half_time': return 'border-yellow-400'
+			case 'first_half': return 'border-emerald-400'
+			case 'second_half': return 'border-emerald-400'
+			case 'extra_time': return 'border-orange-400'
+			case 'ended': return 'border-neutral-400'
+			default: return 'border-neutral-300'
+		}
+	}, [period])
+
 	// Opponent name and home/away label for UI
 	const opponentName = (
 		(match as any)?.opponents?.name || (match as any)?.opponent_name || 'Avversario'
@@ -660,7 +672,7 @@ const MatchLive = () => {
 					<div className="justify-self-center" />
 					{/* right: timer + phase + reset */}
 					<div className="justify-self-end flex items-center gap-2">
-						<div className="flex items-center gap-2 px-2 rounded-md border bg-muted/30 h-9">
+						<div className={`flex items-center gap-2 px-2 rounded-md border bg-muted/30 h-9 ${periodBorderClass}`}>
 							<Clock3 className="h-4 w-4" />
 							<span className="tabular-nums font-medium">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
 							<Button variant={running? 'outline':'default'} size="sm" className="h-7 px-2 rounded-md" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
@@ -669,6 +681,7 @@ const MatchLive = () => {
 							<Button variant="outline" size="sm" className="h-7 px-2 rounded-md" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup} aria-label="Reset timer">
 								<RotateCcw className="h-4 w-4" />
 							</Button>
+							<div className="h-6 w-px bg-border/70 mx-1" />
 							<div className="h-full flex items-center">
 								<Select value={period} onValueChange={setPeriod as any}>
 									<SelectTrigger className="h-8 sm:h-9 w-[140px] border-none bg-transparent focus:ring-0 focus:outline-none"><SelectValue /></SelectTrigger>
