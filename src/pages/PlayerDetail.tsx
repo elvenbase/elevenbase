@@ -134,7 +134,7 @@ const PlayerDetail = () => {
                   <Upload className="w-4 h-4" /> Carica
                 </label>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div><div className="text-muted-foreground">Nome</div><div className="font-medium">{player?.first_name}</div></div>
                 <div><div className="text-muted-foreground">Cognome</div><div className="font-medium">{player?.last_name}</div></div>
                 <div><div className="text-muted-foreground">Numero Maglia</div><div className="font-medium">{player?.jersey_number ?? '-'}</div></div>
