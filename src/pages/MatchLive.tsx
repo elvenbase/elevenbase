@@ -172,6 +172,7 @@ const MatchLive = () => {
 			setRunning(false)
 			queryClient.invalidateQueries({ queryKey: ['match', id] })
 			queryClient.invalidateQueries({ queryKey: ['match-events', id] })
+			setTimeout(()=> setMvpOpen(true), 0)
 			toast({ title: 'Partita terminata' })
 		} catch (e: any) {
 			console.error('Errore finalizzazione', e)
@@ -361,6 +362,9 @@ const MatchLive = () => {
 	// Penalty choice modals
 	const [penaltyOpenUs, setPenaltyOpenUs] = useState(false)
 	const [penaltyOpenOpp, setPenaltyOpenOpp] = useState(false)
+	// MVP selection
+	const [mvpOpen, setMvpOpen] = useState(false)
+	const [mvpId, setMvpId] = useState<string>('')
 	// Collapsible panels state
 	const [inCampoCollapsed, setInCampoCollapsed] = useState(false)
 	const flashRow = (pid: string) => {
@@ -805,6 +809,30 @@ const MatchLive = () => {
 						<div className="flex items-center justify-center gap-3">
 							<Button onClick={async()=>{ await postEvent({ event_type: 'pen_scored', team: 'opponent' }); setPenaltyOpenOpp(false) }} className="h-9 px-4 rounded-full">Segnato</Button>
 							<Button variant="outline" onClick={async()=>{ await postEvent({ event_type: 'pen_missed', team: 'opponent' }); setPenaltyOpenOpp(false) }} className="h-9 px-4 rounded-full">Sbagliato</Button>
+						</div>
+					</DialogContent>
+				</Dialog>
+
+				{/* MVP after finalize */}
+				<Dialog open={mvpOpen} onOpenChange={setMvpOpen}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Seleziona MVP</DialogTitle>
+						</DialogHeader>
+						<div className="space-y-3">
+							<Label className="text-sm">Giocatore</Label>
+							<Select value={mvpId} onValueChange={setMvpId}>
+								<SelectTrigger><SelectValue placeholder="Scegli MVP" /></SelectTrigger>
+								<SelectContent>
+									{Array.from(new Set([...Array.from(onFieldIds), ...substitutedList.map(p=>p.id)])).map((pid)=> (
+										<SelectItem key={pid} value={pid}>{getDisplayName(pid)}</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<div className="flex justify-end gap-2">
+								<Button variant="outline" onClick={()=>{ setMvpOpen(false); setMvpId('') }}>Salta</Button>
+								<Button onClick={async()=>{ if (!id) return; const updates:any = { mvp_player_id: null, mvp_trialist_id: null }; if (mvpId) { if (isTrialistId(mvpId)) updates.mvp_trialist_id = mvpId; else updates.mvp_player_id = mvpId; } await updateMatch.mutateAsync({ id, updates }); setMvpOpen(false); setMvpId(''); queryClient.invalidateQueries({ queryKey: ['match', id] }); }}>Salva MVP</Button>
+							</div>
 						</div>
 					</DialogContent>
 				</Dialog>
