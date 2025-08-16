@@ -547,8 +547,8 @@ const MatchLive = () => {
 						</CardContent>
 					</Card>
 				)}
-				{/* Header: Back, Admin link, Timer, Scoreboard */}
-				<div className="flex items-center justify-between">
+				{/* Header: Controls + Prominent horizontal scoreboard */}
+				<div className="flex items-center justify-between py-2 border-b">
 					<div className="flex items-center gap-2">
 						<Button variant="ghost" size="sm" asChild>
 							<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Gestione</Link>
@@ -574,10 +574,12 @@ const MatchLive = () => {
 							</SelectContent>
 						</Select>
 					</div>
-					<div className="col-span-2 md:col-span-3 text-2xl font-bold text-center">{score.us} - {score.opp}</div>
-					<div className="col-span-2 md:col-span-3 flex items-center justify-center gap-2">
+				</div>
+				<div className="flex items-center justify-center gap-6 py-3">
+					<div className="text-3xl sm:text-4xl font-extrabold tracking-tight">{score.us} - {score.opp}</div>
+					<div className="flex items-center gap-2 px-3 py-1.5 rounded border bg-muted/30">
 						<Clock3 className="h-4 w-4" />
-						<span className="tabular-nums">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
+						<span className="tabular-nums font-medium">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
 						<Button variant={running? 'outline':'default'} size="sm" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
 							{running ? (<><Pause className="h-4 w-4 mr-1"/>Pausa</>) : (<><Play className="h-4 w-4 mr-1"/>Start</>)}
 						</Button>
@@ -697,117 +699,12 @@ const MatchLive = () => {
 					</ResizablePanel>
 					<ResizableHandle withHandle />
 					<ResizablePanel defaultSize={layout[1] || 34} minSize={15}>
-						{/* Colonna centrale: Scoreboard sticky + Log eventi */}
+						{/* Colonna centrale: Solo log eventi (toolbar azioni in alto) */}
 						<div className="flex flex-col overflow-hidden h-full">
 							<div className="sticky top-0 z-10">
 								<Card>
 									<CardContent className="py-3">
-										<div className="grid grid-cols-3 gap-2 items-center">
-											<div className="flex items-center justify-start gap-2">
-												<Button variant="ghost" size="sm" asChild>
-													<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4 mr-2" />Gestione</Link>
-												</Button>
-												<Button variant="ghost" size="sm" onClick={()=>{ localStorage.removeItem('matchLiveLayout'); setLayout([33,34,33]) }}>Reimposta</Button>
-											</div>
-											<div className="flex items-center justify-center gap-2">
-												{(match as any)?.opponents?.logo_url && (
-													<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
-												)}
-												<span className="text-sm font-medium truncate max-w-[240px]">{(match as any)?.opponents?.name || (match as any)?.opponent_name}</span>
-											</div>
-											<div className="flex items-center justify-end gap-2">
-												<Select value={period} onValueChange={setPeriod as any}>
-													<SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
-													<SelectContent>
-														<SelectItem value="not_started">Pre partita</SelectItem>
-														<SelectItem value="first_half">1° Tempo</SelectItem>
-														<SelectItem value="half_time">Intervallo</SelectItem>
-														<SelectItem value="second_half">2° Tempo</SelectItem>
-														<SelectItem value="extra_time">Supplementari</SelectItem>
-														<SelectItem value="ended">Fine</SelectItem>
-													</SelectContent>
-												</Select>
-											</div>
-											<div className="col-span-2 md:col-span-3 text-2xl font-bold text-center">{score.us} - {score.opp}</div>
-											<div className="col-span-2 md:col-span-3 flex items-center justify-center gap-2">
-												<Clock3 className="h-4 w-4" />
-												<span className="tabular-nums">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
-												<Button variant={running? 'outline':'default'} size="sm" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
-													{running ? (<><Pause className="h-4 w-4 mr-1"/>Pausa</>) : (<><Play className="h-4 w-4 mr-1"/>Start</>)}
-												</Button>
-												<Button variant="outline" size="sm" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup}>Reset</Button>
-											</div>
-											<div className="col-span-2 md:col-span-3 flex items-center justify-center gap-2">
-												<Button variant="outline" size="sm" onClick={async()=>{
-													if (!id) return
-													// Compute per-player stats
-													const endMinute = Math.max(90, ...((events||[]).map((e:any)=>e.minute||0)))
-													const starters = new Set(Object.values(lineup?.players_data?.positions || {}) as string[])
-													const subIn: Record<string, number> = {}
-													const subOut: Record<string, number> = {}
-													;(events||[]).filter((e:any)=>e.event_type==='substitution').forEach((e:any)=>{
-														const m = e.minute || 0
-														const outId = e.metadata?.out_id as string|undefined
-														const inId = e.metadata?.in_id as string|undefined
-														if (outId) subOut[outId] = Math.min(subOut[outId]||999, m)
-														if (inId) subIn[inId] = Math.min(subIn[inId]||999, m)
-													})
-													const counters: Record<string, any> = {}
-													;(events||[]).forEach((e:any)=>{
-														const pid = e.player_id || e.trialist_id; if (!pid) return
-														const c = counters[pid] ||= { goals:0, assists:0, yellow_cards:0, red_cards:0, fouls_committed:0, saves:0 }
-														if (e.event_type==='goal') c.goals++
-														if (e.event_type==='assist') c.assists++
-														if (e.event_type==='yellow_card') c.yellow_cards++
-														if (e.event_type==='red_card') c.red_cards++
-														if (e.event_type==='foul') c.fouls_committed++
-														if (e.event_type==='save') c.saves++
-													})
-													const allIds = new Set<string>()
-													convocati.forEach((p:any)=>allIds.add(p.id))
-													starters.forEach((id:string)=>allIds.add(id))
-													Object.keys(subIn).forEach(id=>allIds.add(id))
-													Object.keys(subOut).forEach(id=>allIds.add(id))
-													const rows = Array.from(allIds).map((pid)=>{
-														const started = starters.has(pid)
-														const inMin = started ? 1 : (subIn[pid] || null)
-														const outMin = subOut[pid] || null
-														const minutes = inMin ? ((outMin||endMinute) - inMin + 1) : 0
-														const base = counters[pid] || {}
-														const isTrial = !!trialistsById[pid]
-														return {
-															match_id: id,
-															player_id: isTrial ? null : pid,
-															trialist_id: isTrial ? pid : null,
-															started,
-															minutes: Math.max(0, minutes),
-															goals: base.goals||0,
-															assists: base.assists||0,
-															yellow_cards: base.yellow_cards||0,
-															red_cards: base.red_cards||0,
-															fouls_committed: base.fouls_committed||0,
-															saves: base.saves||0,
-															sub_in_minute: started ? null : (subIn[pid] || null),
-															sub_out_minute: subOut[pid] || null,
-															was_in_squad: convocati.some((p:any)=>p.id===pid)
-														}
-													})
-													try {
-														await upsertStats.mutateAsync({ rows })
-														await finalizeMatch.mutateAsync({ matchId: id, ourScore: score.us, opponentScore: score.opp })
-														queryClient.invalidateQueries({ queryKey: ['match', id] })
-														queryClient.invalidateQueries({ queryKey: ['match-events', id] })
-													} catch (e:any) {
-														console.error('Errore finalizzazione:', e?.message || e)
-														if (e?.code || e?.details) {
-															console.error('Supabase error code/details:', e.code, e.details)
-														}
-													}
-												}} disabled={isEnded || !hasValidLineup}>Termina partita</Button>
-											</div>
-										</div>
-										{/* Event toolbar */}
-										<div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
+										<div className="flex items-center justify-center gap-2 flex-wrap">
 											<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
 												<GoalIcon className="inline-block h-4 w-4 mr-1" />
 												Gol
@@ -837,14 +734,6 @@ const MatchLive = () => {
 												Nota
 											</Button>
 										</div>
-										{isEnded && (
-											<div className="mt-2 text-center text-xs text-muted-foreground">Partita terminata. Gli eventi sono in sola lettura.</div>
-										)}
-										{eventMode && (
-											<div className="mt-1 text-center text-xs text-muted-foreground">
-												Seleziona un giocatore in campo per {eventMode === 'goal' ? 'registrare un gol' : eventMode === 'assist' ? 'registrare un assist' : eventMode === 'yellow_card' ? 'ammonire' : eventMode === 'red_card' ? 'espellere' : eventMode === 'foul' ? 'registrare un fallo' : eventMode === 'save' ? 'registrare una parata' : 'aggiungere una nota'}
-											</div>
-										)}
 									</CardContent>
 								</Card>
 							</div>
