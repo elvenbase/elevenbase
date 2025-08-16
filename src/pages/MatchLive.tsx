@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -640,6 +640,7 @@ const MatchLive = () => {
 	)
 	const homeAwayRaw = (match as any)?.home_away || (match as any)?.homeAway
 	const homeAwayLabel = homeAwayRaw === 'home' ? '(in casa)' : homeAwayRaw === 'away' ? '(in trasferta)' : ''
+	const isHome = homeAwayRaw === 'home'
 
 	if (!id) return null
 
@@ -663,7 +664,7 @@ const MatchLive = () => {
 							<Button variant="ghost" size="sm" asChild aria-label="Torna alla gestione" className="shrink-0">
 								<Link to={`/match/${id}`}><ArrowLeft className="h-4 w-4" /></Link>
 							</Button>
-							<span className="text-2xl sm:text-3xl font-extrabold tracking-tight">{score.us} - {score.opp}</span>
+							<span className="text-2xl sm:text-3xl font-extrabold tracking-tight">{isHome ? `${score.us} - ${score.opp}` : `${score.opp} - ${score.us}`}</span>
 							{(match as any)?.opponents?.logo_url && (
 								<img src={(match as any).opponents.logo_url} alt="logo" className="h-6 w-6 rounded-sm object-cover" />
 							)}
@@ -713,14 +714,14 @@ const MatchLive = () => {
 					{/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
 						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
-							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-neutral-100 border-b">
-								<div className="flex items-center gap-2 text-neutral-700"><Target className="h-4 w-4" />In campo</div>
+							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-emerald-100 border-b border-emerald-200">
+								<div className="flex items-center gap-2 text-emerald-800"><Target className="h-4 w-4" />In campo</div>
 								<Button variant="ghost" size="icon" onClick={()=>setInCampoCollapsed(prev=>{ const next = !prev; if (!next) setBenchCollapsed(true); return next })} aria-label={"Toggle in campo"}>
 									<span className="material-symbols-outlined text-[18px]">{inCampoCollapsed ? 'expand_more' : 'expand_less'}</span>
 								</Button>
 							</div>
 							{!inCampoCollapsed && (
-								<div className="p-3 space-y-3">
+								<div className="p-3 space-y-3 max-h-[200px] overflow-y-auto">
 									{(['P','DIF','CEN','ATT'] as const).map((sec) => {
 										const label = sec==='P' ? 'Portiere' : sec==='DIF' ? 'Difensori' : sec==='CEN' ? 'Centrocampisti' : 'Attaccanti'
 										const playersSec = groupedOnField[sec]
@@ -822,19 +823,17 @@ const MatchLive = () => {
 						)}
 					</div>
 					<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
-							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between bg-neutral-100 border-b">
-								<div className="flex items-center gap-2">
-									<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(prev=>{ const next = !prev; if (!next) setInCampoCollapsed(true); return next })} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
-										<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'chevron_right' : 'chevron_left'}</span>
-									</Button>
-									<span className="text-neutral-700">Panchina</span>
+							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between bg-amber-50 border-b border-amber-200">
+								<div className="flex items-center gap-2 text-amber-800">
+									<span className="material-symbols-outlined text-[18px]">event_seat</span>
+									<span>Panchina</span>
 								</div>
-								<Button variant="ghost" size="icon" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(''); setSubOpen(true) }} aria-label="Nuova sostituzione" disabled={isEnded || !hasValidLineup}>
-									<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
+								<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(prev=>!prev)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
+									<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'expand_more' : 'expand_less'}</span>
 								</Button>
 							</div>
 							{!benchCollapsed && (
-								<div className="p-3 space-y-1.5">
+								<div className="p-3 space-y-1.5 max-h-[200px] overflow-y-auto">
 									{benchVisibleSorted.map((p: any) => {
 										const wasSubbedOut = subOutIds.has(p.id)
 										return (
@@ -887,6 +886,9 @@ const MatchLive = () => {
 								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('note')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='note' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">note_add</span>Nota
 								</Button>
+								<Button variant="ghost" size="sm" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(''); setSubOpen(true) }} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">compare_arrows</span>Sostituzione
+								</Button>
 							</div>
 						</div>
 
@@ -919,9 +921,19 @@ const MatchLive = () => {
 						</div>
 
 											{/* Cronaca */}
-					<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden md:col-span-2">
-						<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-100 border-b flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">list_alt</span>Cronaca</div>
-						<div className="p-3 space-y-1 max-h-[50vh] overflow-y-auto">
+					<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden md:col-span-2 relative">
+						<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-200 border-b border-neutral-300 flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">list_alt</span>Cronaca</div>
+						{cronacaCanUp && (
+							<div className="absolute top-1 right-2 text-neutral-400 pointer-events-none">
+								<span className="material-symbols-outlined text-[16px]">expand_less</span>
+							</div>
+						)}
+						{cronacaCanDown && (
+							<div className="absolute bottom-1 right-2 text-neutral-400 pointer-events-none">
+								<span className="material-symbols-outlined text-[16px]">expand_more</span>
+							</div>
+						)}
+						<div ref={cronacaRef as any} className="p-3 space-y-1 max-h-[50vh] overflow-y-auto">
 								{[...events].slice().reverse().map((e: any) => (
 									<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
 										<div className="flex items-center gap-2">
