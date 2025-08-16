@@ -936,7 +936,7 @@ const MatchLive = () => {
 				{/* Cronaca: span due colonne */}
 				<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm md:col-span-2">
 					<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Cronaca</div>
-					<div className="p-3 space-y-1">
+					<div className="p-3 space-y-1 max-h-[50vh] overflow-y-auto">
 						{[...events].slice().reverse().map((e: any) => (
 							<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
 								<div className="flex items-center gap-2">
