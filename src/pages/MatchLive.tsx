@@ -819,7 +819,7 @@ const MatchLive = () => {
 					<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
 							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
 								<div className="flex items-center gap-2">
-									<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(v=>!v)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
+									<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(prev=>{ const next = !prev; if (!next) setInCampoCollapsed(true); return next })} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
 										<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'chevron_right' : 'chevron_left'}</span>
 									</Button>
 									<span>Panchina</span>
@@ -851,7 +851,7 @@ const MatchLive = () => {
 					</div>
 					{/* Colonna centrale: toolbar + eventi */}
 					<div className="flex flex-col gap-3">
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3">
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 min-h-[140px]">
 							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi</div>
 							<div className="flex items-center justify-center gap-2 flex-wrap">
 								<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
@@ -880,8 +880,8 @@ const MatchLive = () => {
 								</Button>
 							</div>
 						</div>
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
-							<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Eventi</div>
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm hidden">
+							<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Cronaca</div>
 							<div className="p-3 space-y-1">
 								{[...events].slice().reverse().map((e: any) => (
 									<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
@@ -895,8 +895,8 @@ const MatchLive = () => {
 											{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
 											{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
 											{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
-																					<span>{labelForEventType(e.event_type)}{e.team==='opponent' ? (' - ' + opponentName) : ''}</span>
-										{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
+											<span>{labelForEventType(e.event_type)}{e.team==='opponent' ? (' - ' + opponentName) : ''}</span>
+											{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
 										</div>
 										<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
 											<Trash2 className="h-4 w-4" />
@@ -908,7 +908,7 @@ const MatchLive = () => {
 					</div>
 					{/* Colonna destra: Eventi avversario */}
 					<div className="flex flex-col gap-3">
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3">
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3 min-h-[140px]">
 							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi avversario</div>
 							<div className="flex items-center justify-center gap-2 flex-wrap">
 								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
@@ -931,6 +931,32 @@ const MatchLive = () => {
 								</Button>
 							</div>
 						</div>
+					</div>
+				</div>
+				{/* Cronaca: span due colonne */}
+				<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm md:col-span-2">
+					<div className="px-3 py-2 text-sm font-semibold text-foreground/90">Cronaca</div>
+					<div className="p-3 space-y-1">
+						{[...events].slice().reverse().map((e: any) => (
+							<div key={e.id} className="text-sm text-muted-foreground flex items-center justify-between">
+								<div className="flex items-center gap-2">
+									<span className="text-xs">[{e.minute ? `${e.minute}'` : new Date(e.created_at).toLocaleTimeString()}]</span>
+									{e.event_type === 'goal' && <GoalIcon className="h-4 w-4" />}
+									{e.event_type === 'assist' && <AssistIcon className="h-4 w-4" />}
+									{e.event_type === 'yellow_card' && <YellowCardIcon className="h-3 w-3" />}
+									{e.event_type === 'red_card' && <RedCardIcon className="h-3 w-3" />}
+									{e.event_type === 'foul' && <FoulIcon className="h-4 w-4" />}
+									{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
+									{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
+									{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
+									<span>{labelForEventType(e.event_type)}{e.team==='opponent' ? (' - ' + opponentName) : ''}</span>
+									{(e.player_id || e.trialist_id) && <span className="font-medium">{getDisplayName(e.player_id || e.trialist_id)}</span>}
+								</div>
+								<Button variant="ghost" size="icon" onClick={async()=>{ await supabase.from('match_events').delete().eq('id', e.id); queryClient.invalidateQueries({ queryKey: ['match-events', id] })}} disabled={isEnded}>
+									<Trash2 className="h-4 w-4" />
+								</Button>
+							</div>
+						))}
 					</div>
 				</div>
 			</div>
