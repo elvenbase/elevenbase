@@ -946,7 +946,7 @@ const MatchLive = () => {
 					<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden md:col-span-2 relative">
 						<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-200 border-b border-neutral-300 flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">list_alt</span>Cronaca</div>
 						{cronacaCanUp && (
-							<div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-white/90 to-transparent flex items-center justify-center pointer-events-none">
+							<div className="absolute top-8 left-0 right-0 h-6 bg-gradient-to-b from-white/90 to-transparent flex items-center justify-center pointer-events-none">
 								<span className="material-symbols-outlined text-[16px] text-neutral-400">expand_less</span>
 							</div>
 						)}
