@@ -438,7 +438,7 @@ const MatchLive = () => {
 	const benchIds = useMemo(() => new Set(convocati.map((c: any) => c.id)), [convocati])
 	const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id) && !subOutIds.has(id)), [benchIds, onFieldIds, subOutIds])
 	const filteredBench = useMemo(() => convocati.filter((p:any)=>!onFieldIds.has(p.id)), [convocati, onFieldIds])
-	const [benchCollapsed, setBenchCollapsed] = useState(false)
+	const [benchCollapsed, setBenchCollapsed] = useState(true)
 
 	// List of substituted-out players (not on field)
 	const substitutedList = useMemo(() => {
@@ -762,6 +762,23 @@ const MatchLive = () => {
 						<ResizableHandle withHandle />
 						<ResizablePanel defaultSize={layout[2] || 33} minSize={15}>
 							<ResizablePanelGroup direction="vertical" className="h-full min-h-0">
+								<ResizablePanel defaultSize={45} minSize={20}>
+									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
+										<div className="px-3 py-2 text-sm font-semibold">Sostituiti</div>
+										<div className="p-3 space-y-1.5 overflow-auto">
+											{substitutedList.map((p: any) => (
+												<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
+													<div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
+													<div className="truncate">{p.first_name} {p.last_name}</div>
+												</div>
+											))}
+											{substitutedList.length === 0 && (
+												<div className="text-sm text-muted-foreground">Nessun sostituito.</div>
+											)}
+										</div>
+									</div>
+								</ResizablePanel>
+								<ResizableHandle withHandle />
 								<ResizablePanel defaultSize={benchCollapsed ? 12 : 55} minSize={10}>
 									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
 										<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
@@ -791,23 +808,6 @@ const MatchLive = () => {
 												)}
 											</div>
 										)}
-									</div>
-								</ResizablePanel>
-								<ResizableHandle withHandle />
-								<ResizablePanel defaultSize={45} minSize={20}>
-									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
-										<div className="px-3 py-2 text-sm font-semibold">Sostituiti</div>
-										<div className="p-3 space-y-1.5 overflow-auto">
-											{substitutedList.map((p: any) => (
-												<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
-													<div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
-													<div className="truncate">{p.first_name} {p.last_name}</div>
-												</div>
-											))}
-											{substitutedList.length === 0 && (
-												<div className="text-sm text-muted-foreground">Nessun sostituito.</div>
-											)}
-										</div>
 									</div>
 								</ResizablePanel>
 							</ResizablePanelGroup>
