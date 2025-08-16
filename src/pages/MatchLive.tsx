@@ -125,7 +125,7 @@ const MatchLive = () => {
 			})
 			const countsById: Record<string, { goals:number; assists:number; yellows:number; reds:number; fouls:number; saves:number }> = {}
 			participantIds.forEach(pid=>{ countsById[pid] = { goals:0, assists:0, yellows:0, reds:0, fouls:0, saves:0 } })
-			(events || []).forEach((e:any)=>{
+			;(events || []).forEach((e:any)=>{
 				const pid = e.player_id || e.trialist_id
 				if (!pid || !countsById[pid]) return
 				switch(e.event_type){
