@@ -119,8 +119,8 @@ const PlayerDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-        <div className="flex justify-end">
-          <Link to="/squad" className="inline-flex items-center gap-1 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline">
+        <div className="flex justify-start">
+          <Link to="/squad" className="inline-flex items-center gap-1 text-xs sm:text-sm text-neutral-400 hover:text-neutral-600 transition-colors underline-offset-4 hover:underline">
             <ArrowLeft className="h-4 w-4" />
             Torna alla formazione
           </Link>
