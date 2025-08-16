@@ -875,8 +875,8 @@ const MatchLive = () => {
 					{/* Colonna centrale: toolbar + eventi */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
 						{/* Eventi */}
-						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
-							<div className="px-3 py-2 text-sm font-medium text-neutral-800 bg-primary/10 border-b border-primary/20 flex items-center justify-between">
+						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden min-h-[180px]">
+							<div className="px-3 py-2 text-sm font-medium text-neutral-800 bg-primary/10 border-b border-primary/20 flex items-center justify-between"}
 								<div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">event</span><span>Eventi</span></div>
 								<span className="text-[10px] uppercase tracking-wide text-neutral-500 bg-white/70 border border-neutral-200 rounded-full px-2 py-0.5">Squadra</span>
 							</div>
@@ -913,7 +913,7 @@ const MatchLive = () => {
 						</div>
 
 						{/* Eventi avversario */}
-						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
+						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden min-h-[180px]">
 							<div className="px-3 py-2 text-sm font-medium text-neutral-800 bg-destructive/10 border-b border-destructive/20 flex items-center justify-between">
 								<div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">group</span><span>Eventi avversario</span></div>
 								<span className="text-[10px] uppercase tracking-wide text-neutral-500 bg-white/70 border border-neutral-200 rounded-full px-2 py-0.5">Avv.</span>
