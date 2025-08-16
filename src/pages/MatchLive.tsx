@@ -437,17 +437,9 @@ const MatchLive = () => {
 	const [subInId, setSubInId] = useState<string>('')
 	const benchIds = useMemo(() => new Set(convocati.map((c: any) => c.id)), [convocati])
 	const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id) && !subOutIds.has(id)), [benchIds, onFieldIds, subOutIds])
-	const [benchRoleFilter, setBenchRoleFilter] = useState<'ALL'|'P'|'DIF'|'CEN'|'ATT'>('ALL')
-	const filteredBench = useMemo(() => {
-		return convocati
-			.filter((p: any) => !onFieldIds.has(p.id))
-			.filter((p: any) => {
-				if (benchRoleFilter === 'ALL') return true
-				const code = roleCodeForPlayerId(p.id)
-				const sector = sectorFromCode(code)
-				return sector === benchRoleFilter
-			})
-	}, [convocati, onFieldIds, benchRoleFilter, roleByCurrentOnFieldPlayerId, playersById])
+	const filteredBench = useMemo(() => convocati.filter((p:any)=>!onFieldIds.has(p.id)), [convocati, onFieldIds])
+	const [benchCollapsed, setBenchCollapsed] = useState(false)
+
 	// List of substituted-out players (not on field)
 	const substitutedList = useMemo(() => {
 		const outIds = new Set<string>()
@@ -770,37 +762,35 @@ const MatchLive = () => {
 						<ResizableHandle withHandle />
 						<ResizablePanel defaultSize={layout[2] || 33} minSize={15}>
 							<ResizablePanelGroup direction="vertical" className="h-full min-h-0">
-								<ResizablePanel defaultSize={55} minSize={20}>
+								<ResizablePanel defaultSize={benchCollapsed ? 12 : 55} minSize={10}>
 									<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm h-full flex flex-col overflow-hidden">
-										<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between">
-											<span>Panchina</span>
+										<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
 											<div className="flex items-center gap-2">
-												<Select value={benchRoleFilter} onValueChange={(v:any)=>setBenchRoleFilter(v)}>
-													<SelectTrigger className="h-7 w-[150px]"><SelectValue placeholder="Ruolo" /></SelectTrigger>
-													<SelectContent>
-														<SelectItem value="ALL">Tutti</SelectItem>
-														<SelectItem value="P">Portiere</SelectItem>
-														<SelectItem value="DIF">Difesa</SelectItem>
-														<SelectItem value="CEN">Centrocampo</SelectItem>
-														<SelectItem value="ATT">Attacco</SelectItem>
-													</SelectContent>
-												</Select>
+												<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(v=>!v)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
+													<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'chevron_right' : 'chevron_left'}</span>
+												</Button>
+												<span>Panchina</span>
 											</div>
+											<Button variant="ghost" size="icon" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(''); setSubOpen(true) }} aria-label="Nuova sostituzione" disabled={isEnded || !hasValidLineup}>
+												<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
+											</Button>
 										</div>
-										<div className="p-3 space-y-1.5 overflow-auto">
-											{filteredBench.map((p: any) => (
-												<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
-													<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-													<div className="truncate">{p.first_name} {p.last_name}</div>
-													<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup}>
-														<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
-													</Button>
-												</div>
-											))}
-											{filteredBench.length === 0 && (
-												<div className="text-sm text-muted-foreground">Nessun giocatore in panchina per il filtro selezionato.</div>
-											)}
-										</div>
+										{!benchCollapsed && (
+											<div className="p-3 space-y-1.5 overflow-auto">
+												{filteredBench.map((p: any) => (
+													<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
+														<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+														<div className="truncate">{p.first_name} {p.last_name}</div>
+														<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup}>
+															<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
+														</Button>
+													</div>
+												))}
+												{filteredBench.length === 0 && (
+													<div className="text-sm text-muted-foreground">Nessun giocatore in panchina.</div>
+												)}
+											</div>
+										)}
 									</div>
 								</ResizablePanel>
 								<ResizableHandle withHandle />
