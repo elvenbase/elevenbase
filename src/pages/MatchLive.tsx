@@ -711,10 +711,11 @@ const MatchLive = () => {
 											</div>
 										</div>
 									</DialogContent>
-								</Dialog>
-							</div>
+															</Dialog>
 						</div>
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
+						)}
+					</div>
+					<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
 							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
 								<div className="flex items-center gap-2">
 									<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(v=>!v)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
