@@ -598,6 +598,9 @@ const MatchLive = () => {
 								<SelectItem value="ended">Fine</SelectItem>
 							</SelectContent>
 						</Select>
+						<Button variant="destructive" size="sm" onClick={()=>{ /* finalize button in header */ setEventMode(null); setNoteOpen(false); /* reuse existing finalize flow */ finalizeMatch.mutate?.({ id: id as string }) }} disabled={isEnded}>
+							Termina partita
+						</Button>
 						<Button variant="ghost" size="sm" aria-label="Reimposta layout">
 							<RotateCcw className="h-4 w-4" />
 						</Button>
