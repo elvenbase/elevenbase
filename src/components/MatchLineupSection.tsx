@@ -23,7 +23,7 @@ const MatchLineupSection = ({ matchId }: MatchLineupSectionProps) => {
 
   // Provinanti presenti
   const presentTrialists = useMemo(() => (trialistInvites as any[]).filter((t: any) => t.status === 'present'), [trialistInvites])
-  const trialistsAsPlayers = useMemo(() => presentTrialists.map((t: any) => ({
+  const trialistsAsPlayersPresent = useMemo(() => presentTrialists.map((t: any) => ({
     id: t.trialist_id as string,
     first_name: (t.trialists?.first_name as string) || 'Trialist',
     last_name: (t.trialists?.last_name as string) || '',
@@ -33,14 +33,22 @@ const MatchLineupSection = ({ matchId }: MatchLineupSectionProps) => {
   })), [presentTrialists])
 
   // Lista finale per la formazione (tesserati + provinanti presenti)
-  const presentPlayersForLineup = useMemo(() => ([...presentRosterPlayers, ...trialistsAsPlayers]), [presentRosterPlayers, trialistsAsPlayers])
+  const presentPlayersForLineup = useMemo(() => ([...presentRosterPlayers, ...trialistsAsPlayersPresent]), [presentRosterPlayers, trialistsAsPlayersPresent])
 
-  // Dati per la panchina: attendance + provinanti presenti, e lista completa giocatori + provinanti
+  // Dati per la panchina: attendance include TUTTI i trialist con status reale; allPlayers include TUTTI i trialist invitati
   const attendanceForBench = useMemo(() => ([
     ...attendance,
-    ...presentTrialists.map((t: any) => ({ player_id: t.trialist_id as string, status: 'present' as const }))
-  ]), [attendance, presentTrialists])
-  const allPlayersForBench = useMemo(() => ([...allPlayers, ...trialistsAsPlayers]), [allPlayers, trialistsAsPlayers])
+    ...(trialistInvites as any[]).map((t: any) => ({ player_id: t.trialist_id as string, status: (t.status === 'uncertain' ? 'pending' : t.status) as any }))
+  ]), [attendance, trialistInvites])
+  const trialistsAsPlayersAll = useMemo(() => (trialistInvites as any[]).map((t: any) => ({
+    id: t.trialist_id as string,
+    first_name: (t.trialists?.first_name as string) || 'Trialist',
+    last_name: (t.trialists?.last_name as string) || '',
+    position: undefined,
+    avatar_url: undefined,
+    isTrialist: true as const
+  })), [trialistInvites])
+  const allPlayersForBench = useMemo(() => ([...allPlayers, ...trialistsAsPlayersAll]), [allPlayers, trialistsAsPlayersAll])
 
   useEffect(() => { loadLineup() }, [matchId])
 

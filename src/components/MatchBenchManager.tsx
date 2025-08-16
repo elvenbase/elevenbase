@@ -139,13 +139,16 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
   const convocatiCount = bench.length
   const eleggibiliCount = presentPlayers.length
   const disponibiliNonSelezionati = Math.max(0, eleggibiliCount - convocatiCount)
-  const indisponibiliCount = rosterPlayers.filter(player => {
+  const indisponibiliCount = allPlayers.filter(player => {
     const a = attendance.find(x => x.player_id === player.id)
+    if (player.isTrialist) {
+      return a?.status === 'absent' || a?.status === 'excused'
+    }
     const rosterStatus = (player.status || 'active')
     const notActive = rosterStatus !== 'active' && rosterStatus !== undefined
     return a?.status === 'absent' || a?.status === 'excused' || notActive
   }).length
-  const senzaRispostaCount = rosterPlayers.filter(player => {
+  const senzaRispostaCount = allPlayers.filter(player => {
     const a = attendance.find(x => x.player_id === player.id)
     return !a || a.status === 'pending'
   }).length
