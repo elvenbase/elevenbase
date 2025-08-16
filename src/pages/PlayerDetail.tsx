@@ -103,10 +103,21 @@ const PlayerDetail = () => {
   const maxAst = Math.max(1, ...lastN.map((s:any) => (s.assists || 0)))
   const presenceCount = stats.filter((r:any) => (r.minutes || 0) > 0).length
   const { data: teamMatchesCount = 0 } = useQuery({
-    queryKey: ['matches-count'],
+    queryKey: ['matches-count-official-ended'],
     queryFn: async () => {
-      const { count, error } = await supabase.from('matches').select('*', { count: 'exact', head: true })
-      if (error) throw error
+      const { data: comps, error: compErr } = await supabase
+        .from('competitions')
+        .select('id,type')
+        .in('type', ['championship','tournament'])
+      if (compErr) throw compErr
+      const compIds = (comps || []).map((c:any)=>c.id)
+      if (compIds.length === 0) return 0
+      const { count, error: mErr } = await supabase
+        .from('matches')
+        .select('id', { count: 'exact', head: true })
+        .in('competition_id', compIds)
+        .eq('live_state', 'ended')
+      if (mErr) throw mErr
       return count || 0
     }
   })
