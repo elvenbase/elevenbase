@@ -664,7 +664,7 @@ const MatchLive = () => {
 	if (!id) return null
 
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-sky-50 via-sky-50/60 to-white">
+		<div className="min-h-screen bg-gradient-to-b from-sky-200 via-sky-100 to-neutral-100">
 			<div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-3 flex flex-col">
 				{!hasValidLineup && (
 					<Card className="mb-3">
@@ -887,6 +887,9 @@ const MatchLive = () => {
 								<Button variant="ghost" size="sm" onClick={()=>setPenaltyOpenUs(true)} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='pen_scored' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Rigore
 								</Button>
+								<Button variant="ghost" size="sm" onClick={()=>setPenaltyOpenOpp(true)} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300`} disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">timer</span>Avversario
+								</Button>
 								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('assist')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='assist' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<AssistIcon className="inline-block h-4 w-4" />Assist
 								</Button>
@@ -943,13 +946,13 @@ const MatchLive = () => {
 					<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden md:col-span-2 relative">
 						<div className="px-3 py-2 text-sm font-semibold text-foreground/90 bg-neutral-200 border-b border-neutral-300 flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">list_alt</span>Cronaca</div>
 						{cronacaCanUp && (
-							<div className="absolute top-1 right-2 text-neutral-400 pointer-events-none">
-								<span className="material-symbols-outlined text-[16px]">expand_less</span>
+							<div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-white/90 to-transparent flex items-center justify-center pointer-events-none">
+								<span className="material-symbols-outlined text-[16px] text-neutral-400">expand_less</span>
 							</div>
 						)}
 						{cronacaCanDown && (
-							<div className="absolute bottom-1 right-2 text-neutral-400 pointer-events-none">
-								<span className="material-symbols-outlined text-[16px]">expand_more</span>
+							<div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white/90 to-transparent flex items-center justify-center pointer-events-none">
+								<span className="material-symbols-outlined text-[16px] text-neutral-400">expand_more</span>
 							</div>
 						)}
 						<div ref={cronacaRef as any} className="p-3 space-y-1 max-h-[50vh] overflow-y-auto">
@@ -965,7 +968,7 @@ const MatchLive = () => {
 											{e.event_type === 'save' && <ParataIcon className="h-4 w-4" />}
 											{e.event_type === 'note' && <StickyNote className="h-4 w-4" />}
 											{e.event_type === 'substitution' && <span className="material-symbols-outlined text-[16px]">compare_arrows</span>}
-											<span>{labelForEventType(e.event_type)}{e.team==='opponent' ? (' - ' + opponentName) : ''}</span>
+											<span>{labelForEventType(e.event_type)}{e.event_type==='pen_scored' ? ' (segnato)' : e.event_type==='pen_missed' ? ' (sbagliato)' : ''}{e.team==='opponent' ? (' - ' + opponentName) : ''}</span>
 											{e.event_type === 'pen_scored' && (
 												<span className="ml-1 text-[10px] uppercase tracking-wide text-neutral-600 border border-neutral-300 rounded px-1">(rig.)</span>
 											)}
