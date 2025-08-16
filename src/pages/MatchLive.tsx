@@ -735,8 +735,8 @@ const MatchLive = () => {
 						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
 							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-emerald-100 border-b border-emerald-200">
 								<div className="flex items-center gap-2 text-emerald-800"><Target className="h-4 w-4" />In campo</div>
-								<Button variant="ghost" size="icon" className="h-8 w-8" onClick={()=>setInCampoCollapsed(prev=>{ const next = !prev; if (!next) setBenchCollapsed(true); return next })} aria-label={"Toggle in campo"}>
-									<span className="material-symbols-outlined text-[18px]">{inCampoCollapsed ? 'expand_more' : 'expand_less'}</span>
+															<Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>setInCampoCollapsed(prev=>{ const next = !prev; if (!next) setBenchCollapsed(true); return next })} aria-label={"Toggle in campo"}>
+								<span className="material-symbols-outlined text-[16px]">{inCampoCollapsed ? 'expand_more' : 'expand_less'}</span>
 								</Button>
 							</div>
 							{!inCampoCollapsed && (
@@ -847,8 +847,8 @@ const MatchLive = () => {
 									<span className="material-symbols-outlined text-[18px]">event_seat</span>
 									<span>Panchina</span>
 								</div>
-								<Button variant="ghost" size="icon" className="h-8 w-8" onClick={()=>setBenchCollapsed(prev=>!prev)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
-									<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'expand_more' : 'expand_less'}</span>
+								<Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>setBenchCollapsed(prev=>!prev)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
+									<span className="material-symbols-outlined text-[16px]">{benchCollapsed ? 'expand_more' : 'expand_less'}</span>
 								</Button>
 							</div>
 							{!benchCollapsed && (
