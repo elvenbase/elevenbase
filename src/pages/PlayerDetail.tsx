@@ -7,7 +7,7 @@ import { usePlayerById, useFormerTrialistData } from '@/hooks/useSupabaseData'
 import { usePlayerAttendanceSummary } from '@/hooks/useSupabaseData'
 import { useRoles } from '@/hooks/useRoles'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
-import { Upload } from 'lucide-react'
+import { Upload, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
 import { useToast } from '@/hooks/use-toast'
@@ -120,7 +120,10 @@ const PlayerDetail = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
         <div className="flex justify-end">
-          <Button asChild variant="ghost" size="sm"><Link to="/squad">Torna a Squad</Link></Button>
+          <Link to="/squad" className="inline-flex items-center gap-1 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline">
+            <ArrowLeft className="h-4 w-4" />
+            Torna alla formazione
+          </Link>
         </div>
         <div className={`relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-r ${sectorTheme.from} ${sectorTheme.to} min-h-[140px] sm:min-h-[180px]`}>
           {player?.avatar_url && (
