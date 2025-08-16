@@ -159,7 +159,7 @@ const PlayerDetail = () => {
                         <div className="flex items-center gap-2">
                           {/* icon */}
                           {t.card ? (
-                            <span aria-hidden className={`inline-block w-4 h-5 rounded-sm ${t.card==='yellow'?'bg-yellow-400':'bg-rose-500'}`} />
+                            <span aria-hidden className={`inline-block w-4 h-5 rounded-sm ${t.card==='yellow'?'bg-yellow-400':'bg-red-500'}`} />
                           ) : (
                             <span aria-hidden className={`${t.iconColor} text-base leading-none`}>{t.icon || '•'}</span>
                           )}
@@ -265,7 +265,7 @@ const PlayerDetail = () => {
                     <div className="text-xs text-muted-foreground mb-1">Gol</div>
                     <div className="flex items-end gap-1 h-24">
                       {lastN.map((s:any, i:number)=> (
-                        <div key={i} className="bg-rose-500/80 rounded-t" style={{ height: `${Math.max(6, ((s.goals || 0)/maxGA)*100)}%`, width: '8px' }} />
+                        <div key={i} className="bg-red-500/80 rounded-t" style={{ height: `${Math.max(6, ((s.goals || 0)/maxGA)*100)}%`, width: '8px' }} />
                       ))}
                     </div>
                   </div>
