@@ -130,6 +130,7 @@ const MatchLive = () => {
 				if (!pid || !countsById[pid]) return
 				switch(e.event_type){
 					case 'goal': countsById[pid].goals++; break
+					case 'pen_scored': countsById[pid].goals++; break
 					case 'assist': countsById[pid].assists++; break
 					case 'yellow_card': countsById[pid].yellows++; break
 					case 'red_card': countsById[pid].reds++; break
@@ -363,7 +364,7 @@ const MatchLive = () => {
 		setFlashId(pid)
 		setTimeout(() => setFlashId(null), 180)
 	}
-	const [eventMode, setEventMode] = useState<null | 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'foul' | 'save' | 'note' | 'pen_scored'>(null)
+	const [eventMode, setEventMode] = useState<null | 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'foul' | 'save' | 'note' | 'pen_scored' | 'pen_missed'>(null)
 	const toggleEventMode = (mode: NonNullable<typeof eventMode>) => {
 		if ((match as any)?.live_state === 'ended') return
 		setEventMode(prev => prev === mode ? null : mode)
@@ -392,6 +393,7 @@ const MatchLive = () => {
 			const s = stats[pid] || (stats[pid] = { goals: 0, assists: 0, yellows: 0, reds: 0, fouls: 0, saves: 0 })
 			switch (e.event_type) {
 				case 'goal': s.goals++; break
+				case 'pen_scored': s.goals++; break
 				case 'assist': s.assists++; break
 				case 'yellow_card': s.yellows++; break
 				case 'red_card': s.reds++; break
@@ -882,6 +884,9 @@ const MatchLive = () => {
 								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('note')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='note' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">note_add</span>Nota
 								</Button>
+								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('pen_missed')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='pen_missed' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Sbagliato
+								</Button>
 							</div>
 						</div>
 
@@ -909,6 +914,9 @@ const MatchLive = () => {
 								</Button>
 								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'foul', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
 									<FoulIcon className="inline-block h-4 w-4" />Fallo
+								</Button>
+								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'pen_missed', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Sbagliato
 								</Button>
 							</div>
 						</div>
