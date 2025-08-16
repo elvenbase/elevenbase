@@ -887,9 +887,7 @@ const MatchLive = () => {
 								<Button variant="ghost" size="sm" onClick={()=>setPenaltyOpenUs(true)} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='pen_scored' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Rigore
 								</Button>
-								<Button variant="ghost" size="sm" onClick={()=>setPenaltyOpenOpp(true)} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300`} disabled={isEnded || !hasValidLineup}>
-									<span className="material-symbols-outlined text-[18px]">timer</span>Avversario
-								</Button>
+								
 								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('assist')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='assist' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<AssistIcon className="inline-block h-4 w-4" />Assist
 								</Button>
