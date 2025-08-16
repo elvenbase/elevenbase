@@ -100,7 +100,76 @@ const MatchLive = () => {
 	const handleFinalize = async () => {
 		if (!id) return
 		try {
+			// Compute per-player stats
+			const starters = new Set<string>(Object.values(lineup?.players_data?.positions || {}).filter(Boolean) as string[])
+			const benchIdsSet = new Set<string>((convocati || []).map((c:any)=>c.id))
+			const substitutionEvents = (events || []).filter((e:any)=> e.event_type === 'substitution')
+			const eventMinute = (e:any) => typeof e.minute === 'number' ? e.minute : null
+			const maxEventMinute = (events || []).reduce((m:number, e:any)=> Math.max(m, eventMinute(e) ?? 0), 0)
+			const currentMinute = Math.max(0, Math.floor(seconds/60)) + 1
+			const finalMinute = Math.max(90, maxEventMinute, currentMinute)
+			const participantIds = new Set<string>()
+			starters.forEach(id=>participantIds.add(id))
+			benchIdsSet.forEach(id=>participantIds.add(id))
+			substitutionEvents.forEach((e:any)=>{ const outId = e.metadata?.out_id; const inId = e.metadata?.in_id; if(outId) participantIds.add(outId); if(inId) participantIds.add(inId) })
+			(events || []).forEach((e:any)=>{ const pid = e.player_id || e.trialist_id; if(pid) participantIds.add(pid) })
+			const firstInMinute: Record<string, number|undefined> = {}
+			const firstOutMinute: Record<string, number|undefined> = {}
+			substitutionEvents.forEach((e:any)=>{
+				const m = eventMinute(e) ?? finalMinute
+				const outId = e.metadata?.out_id as string|undefined
+				const inId = e.metadata?.in_id as string|undefined
+				if (outId && firstOutMinute[outId] === undefined) firstOutMinute[outId] = m
+				if (inId && firstInMinute[inId] === undefined) firstInMinute[inId] = m
+			})
+			const countsById: Record<string, { goals:number; assists:number; yellows:number; reds:number; fouls:number; saves:number }> = {}
+			participantIds.forEach(pid=>{ countsById[pid] = { goals:0, assists:0, yellows:0, reds:0, fouls:0, saves:0 } })
+			(events || []).forEach((e:any)=>{
+				const pid = e.player_id || e.trialist_id
+				if (!pid || !countsById[pid]) return
+				switch(e.event_type){
+					case 'goal': countsById[pid].goals++; break
+					case 'assist': countsById[pid].assists++; break
+					case 'yellow_card': countsById[pid].yellows++; break
+					case 'red_card': countsById[pid].reds++; break
+					case 'foul': countsById[pid].fouls++; break
+					case 'save': countsById[pid].saves++; break
+					default: break
+				}
+			})
+			const rows: any[] = []
+			participantIds.forEach(pid=>{
+				const started = starters.has(pid)
+				const inMin = started ? 0 : (firstInMinute[pid] ?? undefined)
+				const outMin = firstOutMinute[pid] ?? undefined
+				const startAt = inMin ?? undefined
+				const playedMinutes = startAt === undefined ? 0 : Math.max(0, (outMin ?? finalMinute) - startAt)
+				const c = countsById[pid] || { goals:0, assists:0, yellows:0, reds:0, fouls:0, saves:0 }
+				const base = {
+					match_id: id,
+					started,
+					minutes: playedMinutes,
+					goals: c.goals,
+					assists: c.assists,
+					yellow_cards: c.yellows,
+					red_cards: c.reds,
+					fouls_committed: c.fouls,
+					saves: c.saves,
+					sub_in_minute: inMin ?? null,
+					sub_out_minute: outMin ?? null,
+					was_in_squad: starters.has(pid) || benchIdsSet.has(pid)
+				}
+				if (isTrialistId(pid)) rows.push({ ...base, trialist_id: pid })
+				else rows.push({ ...base, player_id: pid })
+			})
+			await upsertStats.mutateAsync({ rows })
+
+			// Mark match ended with final score
 			await finalizeMatch.mutateAsync({ matchId: id as string, ourScore: score.us, opponentScore: score.opp })
+			// Stop timer locally and refresh queries
+			setRunning(false)
+			queryClient.invalidateQueries({ queryKey: ['match', id] })
+			queryClient.invalidateQueries({ queryKey: ['match-events', id] })
 			toast({ title: 'Partita terminata' })
 		} catch (e: any) {
 			console.error('Errore finalizzazione', e)
