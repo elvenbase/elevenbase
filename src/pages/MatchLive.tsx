@@ -437,6 +437,18 @@ const MatchLive = () => {
 	const benchIds = useMemo(() => new Set(convocati.map((c: any) => c.id)), [convocati])
 	const availableInIds = useMemo(() => Array.from(benchIds).filter((id: string) => !onFieldIds.has(id) && !subOutIds.has(id)), [benchIds, onFieldIds, subOutIds])
 	const filteredBench = useMemo(() => convocati.filter((p:any)=>!onFieldIds.has(p.id)), [convocati, onFieldIds])
+	const benchVisibleSorted = useMemo(() => {
+		const items = filteredBench.slice()
+		items.sort((a: any, b: any) => {
+			const aOut = subOutIds.has(a.id)
+			const bOut = subOutIds.has(b.id)
+			if (aOut !== bOut) return aOut ? -1 : 1
+			const an = `${a.last_name || ''} ${a.first_name || ''}`.trim().toLowerCase()
+			const bn = `${b.last_name || ''} ${b.first_name || ''}`.trim().toLowerCase()
+			return an.localeCompare(bn)
+		})
+		return items
+	}, [filteredBench, subOutIds])
 	const [benchCollapsed, setBenchCollapsed] = useState(true)
 
 	// List of substituted-out players (not on field)
@@ -685,23 +697,42 @@ const MatchLive = () => {
 							</div>
 						</div>
 						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
-							<div className="px-3 py-2 text-sm font-semibold">Sostituiti</div>
-							<div className="p-3 space-y-1.5">
-								{substitutedList.map((p: any) => (
-									<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
-										<div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
-										<div className="truncate">{p.first_name} {p.last_name}</div>
-									</div>
-								))}
-								{substitutedList.length === 0 && (
-									<div className="text-sm text-muted-foreground">Nessun sostituito.</div>
-								)}
+							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
+								<div className="flex items-center gap-2">
+									<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(v=>!v)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
+										<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'chevron_right' : 'chevron_left'}</span>
+									</Button>
+									<span>Panchina</span>
+								</div>
+								<Button variant="ghost" size="icon" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(''); setSubOpen(true) }} aria-label="Nuova sostituzione" disabled={isEnded || !hasValidLineup}>
+									<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
+								</Button>
 							</div>
+							{!benchCollapsed && (
+								<div className="p-3 space-y-1.5">
+									{benchVisibleSorted.map((p: any) => {
+										const wasSubbedOut = subOutIds.has(p.id)
+										return (
+											<div key={p.id} className={`flex items-center gap-2 p-1.5 rounded border text-xs ${wasSubbedOut ? 'bg-muted/40 border-border/20 text-foreground/70' : 'border-border/30'}`}>
+												<div className={`w-1.5 h-1.5 rounded-full ${wasSubbedOut ? 'bg-neutral-400' : 'bg-emerald-500'}`} />
+												<div className="truncate">{p.first_name} {p.last_name}</div>
+												<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup || wasSubbedOut) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup || wasSubbedOut}>
+													<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
+												</Button>
+											</div>
+										)
+									})}
+									{benchVisibleSorted.length === 0 && (
+										<div className="text-sm text-muted-foreground">Nessun giocatore in panchina.</div>
+									)}
+								</div>
+							)}
 						</div>
 					</div>
 					{/* Colonna centrale: toolbar + eventi */}
 					<div className="flex flex-col gap-3">
 						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3">
+							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi</div>
 							<div className="flex items-center justify-center gap-2 flex-wrap">
 								<Button variant={eventMode==='goal'?'default':'outline'} size="sm" onClick={()=>toggleEventMode('goal')} className="h-8" disabled={isEnded || !hasValidLineup}>
 									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
@@ -752,36 +783,24 @@ const MatchLive = () => {
 							</div>
 						</div>
 					</div>
-					{/* Colonna destra: panchina (drawer) */}
+					{/* Colonna destra: Eventi avversario */}
 					<div className="flex flex-col gap-3">
-						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm">
-							<div className="px-2 py-1.5 text-sm font-semibold flex items-center justify-between">
-								<div className="flex items-center gap-2">
-									<Button variant="ghost" size="icon" onClick={()=>setBenchCollapsed(v=>!v)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
-										<span className="material-symbols-outlined text-[18px]">{benchCollapsed ? 'chevron_right' : 'chevron_left'}</span>
-									</Button>
-									<span>Panchina</span>
-								</div>
-								<Button variant="ghost" size="icon" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(''); setSubOpen(true) }} aria-label="Nuova sostituzione" disabled={isEnded || !hasValidLineup}>
-									<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
+						<div className="rounded-xl border border-border/30 bg-background/60 shadow-sm p-3">
+							<div className="px-3 py-2 -mx-3 -mt-3 mb-1 text-sm font-semibold text-foreground/90">Eventi avversario</div>
+							<div className="flex items-center justify-center gap-2 flex-wrap">
+								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<GoalIcon className="inline-block h-4 w-4 mr-1" />Gol
+								</Button>
+								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'yellow_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<YellowCardIcon className="inline-block h-3 w-3 mr-2" />Giallo
+								</Button>
+								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'red_card', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<RedCardIcon className="inline-block h-3 w-3 mr-2" />Rosso
+								</Button>
+								<Button variant="outline" size="sm" onClick={()=>postEvent({ event_type: 'foul', team: 'opponent' })} className="h-8" disabled={isEnded || !hasValidLineup}>
+									<FoulIcon className="inline-block h-4 w-4 mr-1" />Fallo
 								</Button>
 							</div>
-							{!benchCollapsed && (
-								<div className="p-3 space-y-1.5">
-									{filteredBench.map((p: any) => (
-										<div key={p.id} className="flex items-center gap-2 p-1.5 rounded border border-border/30 text-xs">
-											<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-											<div className="truncate">{p.first_name} {p.last_name}</div>
-											<Button aria-label="Sostituisci" variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={()=>{ if (isEnded || !hasValidLineup) return; setSubInId(p.id); setSubOpen(true) }} disabled={isEnded || !hasValidLineup}>
-												<span className="material-symbols-outlined text-[18px]">compare_arrows</span>
-											</Button>
-										</div>
-									))}
-									{filteredBench.length === 0 && (
-										<div className="text-sm text-muted-foreground">Nessun giocatore in panchina.</div>
-									)}
-								</div>
-							)}
 						</div>
 					</div>
 				</div>
