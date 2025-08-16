@@ -642,6 +642,25 @@ const MatchLive = () => {
 	const homeAwayLabel = homeAwayRaw === 'home' ? '(in casa)' : homeAwayRaw === 'away' ? '(in trasferta)' : ''
 	const isHome = homeAwayRaw === 'home'
 
+	// Cronaca scroll indicators logic
+	const cronacaRef = useRef<HTMLDivElement|null>(null)
+	const [cronacaCanUp, setCronacaCanUp] = useState(false)
+	const [cronacaCanDown, setCronacaCanDown] = useState(false)
+	useEffect(() => {
+		const el = cronacaRef.current
+		function update() {
+			const node = cronacaRef.current
+			if (!node) return
+			setCronacaCanUp(node.scrollTop > 0)
+			setCronacaCanDown(node.scrollTop + node.clientHeight < node.scrollHeight)
+		}
+		update()
+		if (!el) return
+		el.addEventListener('scroll', update)
+		window.addEventListener('resize', update)
+		return () => { try { el.removeEventListener('scroll', update) } catch {}; window.removeEventListener('resize', update) }
+	}, [events])
+
 	if (!id) return null
 
 	return (
