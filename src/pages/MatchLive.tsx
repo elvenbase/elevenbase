@@ -724,13 +724,93 @@ const MatchLive = () => {
 						<Button variant="destructive" className="h-9 rounded-md px-3" onClick={()=>{ setEventMode(null); setNoteOpen(false); handleFinalize() }} disabled={isEnded}>
 							Termina partita
 						</Button>
-						<Button variant="ghost" size="icon" className="h-9 w-9 rounded-md" aria-label="Reimposta layout">
+												<Button variant="ghost" size="icon" className="h-9 w-9 rounded-md" aria-label="Reimposta layout">
 							<RotateCcw className="h-4 w-4" />
 						</Button>
 					</div>
 				</div>
-									<div className="grid grid-cols-1 md:grid-cols-[25%_75%] gap-3 mt-3 items-start">
-					{/* Colonna sinistra: In campo + Sostituiti */}
+
+				{/* Global Dialogs (Nota, Sostituzione, Rigore nostri, Rigore avversario) */}
+				<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Nota</DialogTitle>
+						</DialogHeader>
+						<div className="space-y-3">
+							<div>
+								<Label className="text-sm">Testo</Label>
+								<Textarea value={noteText} onChange={(e:any)=>setNoteText(e.target.value)} placeholder="Scrivi una nota..." rows={4} />
+							</div>
+							<div className="flex justify-end gap-2">
+								<Button variant="outline" onClick={()=>{ setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Annulla</Button>
+								<Button onClick={async()=>{ if (selectedPlayerId) { await postEvent({ event_type: 'note', player_id: selectedPlayerId, comment: noteText || null }); } setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Salva</Button>
+							</div>
+						</div>
+					</DialogContent>
+				</Dialog>
+
+				<Dialog open={subOpen} onOpenChange={setSubOpen}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Nuova sostituzione</DialogTitle>
+						</DialogHeader>
+						<div className="space-y-3">
+							<div>
+								<Label className="text-sm">Esce</Label>
+								<Select value={subOutId} onValueChange={setSubOutId}>
+									<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+									<SelectContent>
+										{Array.from(onFieldIds).map((id) => (
+											<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div>
+								<Label className="text-sm">Entra</Label>
+								<Select value={subInId} onValueChange={setSubInId}>
+									<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+									<SelectContent>
+										{availableInIds.map((id) => (
+											<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div className="flex justify-end gap-2">
+								<Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
+								<Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
+							</div>
+						</div>
+					</DialogContent>
+				</Dialog>
+
+				<Dialog open={penaltyOpenUs} onOpenChange={setPenaltyOpenUs}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Rigore</DialogTitle>
+						</DialogHeader>
+						<div className="flex items-center justify-center gap-3">
+							<Button onClick={()=>{ setPenaltyOpenUs(false); setEventMode('pen_scored') }} className="h-9 px-4 rounded-full">Segnato</Button>
+							<Button variant="outline" onClick={()=>{ setPenaltyOpenUs(false); setEventMode('pen_missed') }} className="h-9 px-4 rounded-full">Sbagliato</Button>
+						</div>
+					</DialogContent>
+				</Dialog>
+
+				<Dialog open={penaltyOpenOpp} onOpenChange={setPenaltyOpenOpp}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Rigore avversario</DialogTitle>
+						</DialogHeader>
+						<div className="flex items-center justify-center gap-3">
+							<Button onClick={async()=>{ await postEvent({ event_type: 'pen_scored', team: 'opponent' }); setPenaltyOpenOpp(false) }} className="h-9 px-4 rounded-full">Segnato</Button>
+							<Button variant="outline" onClick={async()=>{ await postEvent({ event_type: 'pen_missed', team: 'opponent' }); setPenaltyOpenOpp(false) }} className="h-9 px-4 rounded-full">Sbagliato</Button>
+						</div>
+					</DialogContent>
+				</Dialog>
+
+												<div className="grid grid-cols-1 md:grid-cols-[25%_75%] gap-3 mt-3 items-start">
+{/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
 						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
 							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-emerald-50 border-b border-emerald-100">
@@ -785,60 +865,8 @@ const MatchLive = () => {
 									)
 								})}
 								{/* Nota dialog */}
-								<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
-									<DialogContent>
-										<DialogHeader>
-											<DialogTitle>Nota</DialogTitle>
-										</DialogHeader>
-										<div className="space-y-3">
-											<div>
-												<Label className="text-sm">Testo</Label>
-												<Textarea value={noteText} onChange={(e:any)=>setNoteText(e.target.value)} placeholder="Scrivi una nota..." rows={4} />
-											</div>
-											<div className="flex justify-end gap-2">
-												<Button variant="outline" onClick={()=>{ setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Annulla</Button>
-												<Button onClick={async()=>{ if (selectedPlayerId) { await postEvent({ event_type: 'note', player_id: selectedPlayerId, comment: noteText || null }); } setNoteOpen(false); setNoteText(''); setSelectedPlayerId(null); setEventMode(null) }}>Salva</Button>
-											</div>
-										</div>
-									</DialogContent>
-								</Dialog>
-
-								<Dialog open={subOpen} onOpenChange={setSubOpen}>
-									<DialogContent>
-										<DialogHeader>
-											<DialogTitle>Nuova sostituzione</DialogTitle>
-										</DialogHeader>
-										<div className="space-y-3">
-											<div>
-												<Label className="text-sm">Esce</Label>
-												<Select value={subOutId} onValueChange={setSubOutId}>
-													<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-													<SelectContent>
-														{Array.from(onFieldIds).map((id) => (
-															<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
-											<div>
-												<Label className="text-sm">Entra</Label>
-												<Select value={subInId} onValueChange={setSubInId}>
-													<SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-													<SelectContent>
-														{availableInIds.map((id) => (
-															<SelectItem key={id} value={id}>{getDisplayName(id)}</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
-											<div className="flex justify-end gap-2">
-												<Button variant="outline" onClick={() => setSubOpen(false)}>Annulla</Button>
-												<Button onClick={doSubstitution} disabled={!subOutId || !subInId}><Repeat className="h-4 w-4 mr-1" /> Conferma</Button>
-											</div>
-										</div>
-									</DialogContent>
-															</Dialog>
-						</div>
+								
+								</div>
 						)}
 					</div>
 					<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
