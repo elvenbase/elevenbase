@@ -75,6 +75,9 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
     }
   }
 
+  // Exclude on-field players from visible bench list
+  const benchVisible = useMemo(() => bench.filter(b => !playersInLineup.includes((b.player_id || b.trialist_id) as string)), [bench, playersInLineup])
+
   const togglePlayerSelection = (playerId: string) => {
     if (isReadOnly) return
     setSelectedPlayers(prev => prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId])
@@ -116,13 +119,32 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
     }
   }
 
-  const removeFromBench = async (benchId: string) => {
+  const ensureRemovedFromLineup = async (entityId: string) => {
+    try {
+      const { data: ml } = await supabase.from('match_lineups').select('players_data').eq('match_id', matchId).maybeSingle()
+      const pdata = ml?.players_data ? (typeof ml.players_data === 'string' ? JSON.parse(ml.players_data) : ml.players_data) : { positions: {} }
+      const positions = { ...(pdata?.positions || {}) }
+      let changed = false
+      for (const [pos, pid] of Object.entries(positions)) {
+        if (pid === entityId) { positions[pos] = ''; changed = true }
+      }
+      if (changed) {
+        await supabase.from('match_lineups').update({ players_data: { ...pdata, positions } as any }).eq('match_id', matchId)
+      }
+    } catch (e) {
+      console.error('Errore aggiornando formazione dopo rimozione convocati:', e)
+    }
+  }
+
+  const removeFromBench = async (benchId: string, entityId: string) => {
     if (isReadOnly) return
     setLoading(true)
     try {
       const { error } = await supabase.from('match_bench').delete().eq('id', benchId)
       if (error) throw error
       setBench(prev => prev.filter(b => b.id !== benchId))
+      setSelectedPlayers(prev => prev.filter(id => id !== entityId))
+      await ensureRemovedFromLineup(entityId)
       toast.success('Giocatore rimosso dalla panchina')
     } catch (e) {
       console.error('Errore rimozione panchina match:', e)
@@ -136,9 +158,9 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
 
   const presentiCount = attendance.filter(a => a.status === 'present').length
   const titolariCount = playersInLineup.length
-  const convocatiCount = bench.length
+  const convocatiCount = benchVisible.length
   const eleggibiliCount = presentPlayers.length
-  const disponibiliNonSelezionati = Math.max(0, eleggibiliCount - convocatiCount)
+  const disponibiliNonSelezionati = Math.max(0, eleggibiliCount - benchVisible.length)
   const indisponibiliCount = allPlayers.filter(player => {
     const a = attendance.find(x => x.player_id === player.id)
     if (player.isTrialist) {
@@ -166,7 +188,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
         <Card><CardContent className="p-4"><div className="flex items-center gap-2"><UserX className="h-5 w-5 text-red-600" /><div><p className="text-2xl font-bold text-red-600">{indisponibiliCount}</p><p className="text-sm text-muted-foreground">Indisponibili</p></div></div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center gap-2"><Clock className="h-5 w-5 text-amber-600" /><div><p className="text-2xl font-bold text-amber-600">{senzaRispostaCount}</p><p className="text-sm text-muted-foreground">Senza risposta</p></div></div></CardContent></Card>
       </div>
-      <div className="text-sm text-muted-foreground">{titolariCount} titolari + {convocatiCount} panchina = {totaleConvocati} convocati totali</div>
+      <div className="text-sm text-muted-foreground">{titolariCount} titolari + {benchVisible.length} panchina = {bench.length + titolariCount} convocati totali</div>
 
       {!isReadOnly && (
         <Card>
@@ -223,7 +245,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
         </Card>
       )}
 
-      {bench.length > 0 && (
+      {benchVisible.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />Lista Panchina</CardTitle>
@@ -231,7 +253,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {bench.map((rec) => {
+              {benchVisible.map((rec) => {
                 const player = getPlayerById(rec.player_id || rec.trialist_id || '')
                 if (!player) return null
                 return (
@@ -259,7 +281,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Annulla</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => removeFromBench(rec.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Rimuovi</AlertDialogAction>
+                            <AlertDialogAction onClick={() => removeFromBench(rec.id, (rec.player_id || rec.trialist_id) as string)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Rimuovi</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -272,7 +294,7 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
         </Card>
       )}
 
-      {bench.length === 0 && !loading && (
+      {(benchVisible.length === 0) && !loading && (
         <Card>
           <CardContent className="p-8 text-center">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
