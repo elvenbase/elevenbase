@@ -227,12 +227,19 @@ const PlayerDetail = () => {
     setRange(d,d)
     setTimeMode('giorno')
   }
+  const [rangeOpen, setRangeOpen] = useState(false)
+  const [pendingStart, setPendingStart] = useState<string>('')
+  const [pendingEnd, setPendingEnd] = useState<string>('')
+  const isRangeInvalid = pendingStart && pendingEnd && new Date(pendingStart) > new Date(pendingEnd)
   const periodAbstract = useMemo(() => {
     let label = 'Tutto il periodo'
     let from = startDate, to = endDate
     if (timeMode==='ultimi') {
       if (ultimiChoice==='7d' || ultimiChoice==='30d' || ultimiChoice==='90d') {
-        label = `Ultimi ${ultimiChoice.replace('d',' giorni')}`
+        const days = ultimiChoice.replace('d','')
+        label = `Ultimi ${days} giorni`
+      } else if (ultimiChoice==='month') {
+        label = 'Ultimi 30 giorni'
       } else if (ultimiChoice==='season') {
         label = `Stagione · ${fmt(seasonStart())} → ${fmt(new Date())}`
         from = seasonStart(); to = new Date()
@@ -257,55 +264,82 @@ const PlayerDetail = () => {
       }
       eventsIn = ev.filter(inRange)
     }
+    if (!eventsIn.length) return `${label ? label + ' · ' : ''}Nessun evento nel periodo selezionato.`
     const tm = eventsIn.reduce((acc:any, e:any)=>{ if (e.type==='match') acc.m++; else if (e.type==='training') acc.t++; return acc }, { m:0, t:0 })
-    const tail = (tm.m || tm.t) ? ` · ${tm.m} partite · ${tm.t} allenamenti` : ''
-    return `${label}${tail}`
+    const partite = tm.m === 1 ? '1 partita' : `${tm.m} partite`
+    const allen = tm.t === 1 ? '1 allenamento' : `${tm.t} allenamenti`
+    return `${label} · ${partite}, ${allen}`
   }, [timeMode, ultimiChoice, periodSel, customStart, customEnd, attendance, startDate, endDate])
   const DateBar = () => (
-    <div className="w-full rounded-xl border border-border/40 bg-white/70 backdrop-blur px-3 py-2 shadow-sm">
+    <div className="w-full rounded-xl border border-border/40 bg-white/70 backdrop-blur px-3 py-2 shadow-sm sticky top-2 z-10 sm:static">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="text-xs font-medium text-muted-foreground">Periodo</div>
         <div className="ml-auto flex items-center gap-2 text-xs">
-          <button onClick={()=>{ setTimeMode('ultimi'); setUltimiChoice('90d'); setPeriodSel('90d'); setCustomStart(''); setCustomEnd('') }} className="text-primary hover:underline">Azzera</button>
+          <button onClick={()=>{ setTimeMode('ultimi'); setUltimiChoice('30d'); setPeriodSel('30d'); setCustomStart(''); setCustomEnd('') }} className="text-primary hover:underline">Azzera</button>
           <CalendarDays className="h-4 w-4 text-neutral-500" />
         </div>
       </div>
-      <div className="mt-2 flex items-center gap-2 overflow-x-auto">
+      <div className="mt-2 flex items-center gap-3 overflow-x-auto">
         <div className="inline-flex rounded-full border bg-white p-1 text-xs">
-          {(['ultimi','intervallo','giorno'] as const).map(m => (
-            <button key={m} onClick={()=>{ setTimeMode(m as any); if (m==='ultimi') { if (ultimiChoice==='7d') setPeriodSel('7d'); else if (ultimiChoice==='30d') setPeriodSel('30d'); else if (ultimiChoice==='90d') setPeriodSel('90d'); else if (ultimiChoice==='season') setRange(seasonStart(), new Date()); else if (ultimiChoice==='last10') { /* noop */ } } else if (m==='giorno') { setRange(new Date(), new Date()) } }} className={`px-3 py-1 rounded-full ${timeMode===m ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>{m==='ultimi'?'Ultimi':m==='intervallo'?'Intervallo':'Giorno'}</button>
+          {(['ultimi','giorno','intervallo'] as const).map(m => (
+            <button key={m} onClick={()=>{ setTimeMode(m as any); if (m==='ultimi') { if (ultimiChoice==='7d') setPeriodSel('7d'); else if (ultimiChoice==='30d') setPeriodSel('30d'); else if (ultimiChoice==='90d') setPeriodSel('90d'); else if (ultimiChoice==='season') setRange(seasonStart(), new Date()); else if (ultimiChoice==='month') { setPeriodSel('30d') } } else if (m==='giorno') { setRange(new Date(), new Date()) } }} className={`px-3 py-1 rounded-full ${timeMode===m ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>{m==='ultimi'?'Ultimi':m==='intervallo'?'Intervallo':'Giorno'}</button>
           ))}
         </div>
         <div className="flex-1 min-w-[220px]">
           {timeMode==='ultimi' && (
             <div className="flex items-center gap-2 overflow-x-auto">
               {([
-                {k:'7d', l:'7g'}, {k:'30d', l:'30g'}, {k:'90d', l:'90g'}, {k:'season', l:'Stagione'}, {k:'last10', l:'Ultime 10'}
+                {k:'7d', l:'7g'}, {k:'30d', l:'30g'}, {k:'90d', l:'90g'}, {k:'month', l:'Mese'}, {k:'season', l:'Stagione'}, {k:'last10', l:'Ultime 10'}
               ] as any[]).map(c => (
-                <button key={c.k} onClick={()=>{ setUltimiChoice(c.k); if (c.k==='7d'||c.k==='30d'||c.k==='90d'){ setPeriodSel(c.k as any) } else if (c.k==='season'){ setRange(seasonStart(), new Date()) } }} className={`px-3 py-1 rounded-full border ${ultimiChoice===c.k ? 'bg-primary/10 text-primary border-primary/30' : 'text-neutral-600 bg-white'}`}>{c.l}</button>
+                <button key={c.k} onClick={()=>{ setUltimiChoice(c.k); if (c.k==='7d'||c.k==='30d'||c.k==='90d'){ setPeriodSel(c.k as any) } else if (c.k==='season'){ setRange(seasonStart(), new Date()) } else if (c.k==='month'){ setPeriodSel('30d') } }} className={`px-3 py-1 rounded-full border ${ultimiChoice===c.k ? 'bg-primary/10 text-primary border-primary/30' : 'text-neutral-600 bg-white'} active:scale-[.98] transition`}>{c.l}</button>
               ))}
             </div>
           )}
           {timeMode==='intervallo' && (
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 bg-white text-xs">
-                <span>Dal</span>
-                <input type="date" value={customStart} onChange={(e)=>{ setCustomStart(e.target.value); setPeriodSel('custom') }} className="bg-transparent outline-none" />
-                <span>→</span>
-                <input type="date" value={customEnd} onChange={(e)=>{ setCustomEnd(e.target.value); setPeriodSel('custom') }} className="bg-transparent outline-none" />
-              </div>
-              <div className="inline-flex items-center gap-1">
-                <button className="px-3 py-1 rounded-full border text-xs bg-white" onClick={shortcuts.thisMonth}>Questo mese</button>
-                <button className="px-3 py-1 rounded-full border text-xs bg-white" onClick={shortcuts.lastMonth}>Ultimo mese</button>
-                <button className="px-3 py-1 rounded-full border text-xs bg-white" onClick={shortcuts.thisQuarter}>Questo trimestre</button>
-              </div>
+              <button className="inline-flex items-center gap-1 rounded-full border px-3 py-1 bg-white text-xs" onClick={()=>{ setRangeOpen(!rangeOpen); setPendingStart(customStart); setPendingEnd(customEnd) }}>
+                <CalendarDays className="h-4 w-4 text-neutral-600" />
+                <span>{customStart && customEnd ? `${fmt(new Date(customStart))} → ${fmt(new Date(customEnd))}` : 'Seleziona intervallo'}</span>
+              </button>
+              {rangeOpen && (
+                <div className="w-full md:w-auto inline-flex items-center gap-2 flex-wrap border rounded-xl px-3 py-2 bg-white">
+                  <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 bg-white text-xs">
+                    <span>Dal</span>
+                    <input type="date" value={pendingStart} onChange={(e)=>setPendingStart(e.target.value)} className="bg-transparent outline-none" />
+                    <span>→</span>
+                    <input type="date" value={pendingEnd} onChange={(e)=>setPendingEnd(e.target.value)} className="bg-transparent outline-none" />
+                  </div>
+                  <div className="inline-flex items-center gap-1 text-xs">
+                    <button className="px-3 py-1 rounded-full border bg-white" onClick={()=>{ const n=new Date(); const s=new Date(n); s.setDate(n.getDate()- (n.getDay()+6)%7 ); const e=new Date(s); e.setDate(s.getDate()+6); setPendingStart(s.toISOString().slice(0,10)); setPendingEnd(e.toISOString().slice(0,10)); }}>Questa settimana</button>
+                    <button className="px-3 py-1 rounded-full border bg-white" onClick={()=>{ const n=new Date(); setPendingStart(new Date(n.getFullYear(), n.getMonth(), 1).toISOString().slice(0,10)); setPendingEnd(new Date(n.getFullYear(), n.getMonth()+1, 0).toISOString().slice(0,10)); }}>Questo mese</button>
+                    <button className="px-3 py-1 rounded-full border bg-white" onClick={()=>{ const n=new Date(); const s=new Date(n.getFullYear(), n.getMonth(), n.getDate()-29); setPendingStart(s.toISOString().slice(0,10)); setPendingEnd(n.toISOString().slice(0,10)); }}>Ultimi 30g</button>
+                  </div>
+                  {isRangeInvalid && (<div className="text-[11px] text-rose-600">Intervallo non valido</div>)}
+                  {!isRangeInvalid && pendingStart && pendingEnd && ((new Date(pendingEnd).getTime() - new Date(pendingStart).getTime())/ (1000*60*60*24) > 180) && (
+                    <div className="text-[11px] text-neutral-600">Periodo esteso: alcuni grafici mostrano solo gli ultimi 90 giorni</div>
+                  )}
+                  <div className="ml-auto inline-flex items-center gap-2 text-xs">
+                    <button className="px-3 py-1 rounded-full border bg-white" onClick={()=>{ setRangeOpen(false); }}>Annulla</button>
+                    <button className="px-3 py-1 rounded-full border bg-primary/10 text-primary disabled:opacity-60" disabled={isRangeInvalid || !pendingStart || !pendingEnd} onClick={()=>{ if (pendingStart && pendingEnd && !isRangeInvalid) { setCustomStart(pendingStart); setCustomEnd(pendingEnd); setPeriodSel('custom'); setRangeOpen(false); } }}>Applica</button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {timeMode==='giorno' && (
-            <div className="inline-flex items-center gap-2 rounded-full border px-2 py-1 bg-white text-xs">
-              <button onClick={()=>shiftDay(-1)} className="h-6 w-6 inline-flex items-center justify-center rounded-full hover:bg-muted"><ChevronLeft className="h-4 w-4" /></button>
-              <span className="text-muted-foreground">{customStart ? fmt(new Date(customStart)) : 'Scegli giorno'}</span>
-              <button onClick={()=>shiftDay(1)} className="h-6 w-6 inline-flex items-center justify-center rounded-full hover:bg-muted"><ChevronRight className="h-4 w-4" /></button>
+            <div className="flex items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 bg-white text-xs">
+                <button onClick={()=>shiftDay(-1)} className="h-6 w-6 inline-flex items-center justify-center rounded-full hover:bg-muted"><ChevronLeft className="h-4 w-4" /></button>
+                <button onClick={()=>{ /* open native picker */ }} className="inline-flex items-center gap-1">
+                  <CalendarDays className="h-4 w-4 text-neutral-600" />
+                  <span className="text-muted-foreground">{customStart ? `Oggi · ${new Date(customStart).toLocaleDateString('it-IT', { day:'2-digit', month:'short', year:'numeric' })}` : 'Scegli giorno'}</span>
+                </button>
+                <button onClick={()=>shiftDay(1)} className="h-6 w-6 inline-flex items-center justify-center rounded-full hover:bg-muted"><ChevronRight className="h-4 w-4" /></button>
+              </div>
+              <div className="inline-flex items-center gap-1">
+                <button className="px-3 py-1 rounded-full border bg-white text-xs" onClick={()=>{ const n=new Date(); setRange(n,n); setTimeMode('giorno') }}>Oggi</button>
+                <button className="px-3 py-1 rounded-full border bg-white text-xs" onClick={()=>{ const n=new Date(); n.setDate(n.getDate()-1); setRange(n,n); setTimeMode('giorno') }}>Ieri</button>
+              </div>
             </div>
           )}
         </div>
