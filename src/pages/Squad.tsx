@@ -648,46 +648,6 @@ const Squad = () => {
                 })}
               </div>
 
-              {/* Quick Drawer */}
-              <Sheet open={!!openPlayerId} onOpenChange={(o)=> !o && setOpenPlayerId(null)}>
-                <SheetContent side="right" className="w-full sm:max-w-md">
-                  {(() => {
-                    const p = filteredAndSortedPlayers.find(pp=>pp.id===openPlayerId)
-                    if (!p) return null
-                    const role = rolesByCode[(p as any).role_code || '']
-                    return (
-                      <div className="space-y-4">
-                        <SheetHeader>
-                          <SheetTitle className="flex items-center gap-3">
-                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="md" />
-                            <span>{p.first_name} {p.last_name}</span>
-                          </SheetTitle>
-                        </SheetHeader>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {p.jersey_number && (<Badge variant="outline">#{p.jersey_number}</Badge>)}
-                          <Badge variant="secondary">{role?.label || (p as any).role_code || '-'}</Badge>
-                          {p.is_captain && (<Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">Capitano</Badge>)}
-                          <Badge variant={p.status==='active' ? 'default' : 'outline'}>{p.status}</Badge>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <div className="text-xs text-muted-foreground">Presenze</div>
-                            <div className="font-medium">{p.presences || 0}/{p.totalEvents || 0}</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground">Ritardi</div>
-                            <div className="font-medium">{p.tardiness || 0}</div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <EditPlayerForm player={p as any} />
-                          <PlayerStatsModal player={p as any} />
-                        </div>
-                      </div>
-                    )
-                  })()}
-                </SheetContent>
-              </Sheet>
             </>
           )}
         </div>
