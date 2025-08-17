@@ -678,7 +678,7 @@ const MatchLive = () => {
 		if (!el) return
 		el.addEventListener('scroll', update)
 		window.addEventListener('resize', update)
-		return () => { try { el.removeEventListener('scroll', update) } catch {}; window.removeEventListener('resize', update) }
+		return () => { if (el) { el.removeEventListener('scroll', update) } window.removeEventListener('resize', update) }
 	}, [events])
 
 	if (!id) return null
@@ -930,7 +930,7 @@ const MatchLive = () => {
 									<span className="material-symbols-outlined text-[18px]">event_seat</span>
 									<span>Panchina</span>
 								</div>
-															<Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>setBenchCollapsed(prev=>{ const next=!prev; if (!benchCollapsed && next===true) {} if (next) setInCampoCollapsed(true); return next })} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
+															<Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>setBenchCollapsed(prev=>{ const next=!prev; if (next) setInCampoCollapsed(true); return next })} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
 								<span className="material-symbols-outlined text-[16px]">{benchCollapsed ? 'expand_more' : 'expand_less'}</span>
 							</Button>
 </div>
