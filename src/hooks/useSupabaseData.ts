@@ -48,6 +48,7 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         return players.map(player => ({
           ...player,
           presences: 0,
+          matchPresences: 0,
           tardiness: 0,
           totalEvents: 0,
           attendanceRate: 0
@@ -125,6 +126,7 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         return {
           ...player,
           presences: totalPresences,
+          matchPresences,
           tardiness: totalTardiness,
           totalEvents,
           attendanceRate

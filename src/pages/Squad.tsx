@@ -704,7 +704,7 @@ const Squad = () => {
                       <TableHead className="font-semibold">Nome/Cognome</TableHead>
                       <TableHead className="font-semibold">Numero</TableHead>
                       <TableHead className="font-semibold">Ruolo</TableHead>
-                      <TableHead className="font-semibold">Telefono</TableHead>
+                      <TableHead className="font-semibold">Presenze Partite</TableHead>
                       <TableHead className="font-semibold">Presenze Allenamenti</TableHead>
                       <TableHead className="font-semibold">Ritardi Allenamenti</TableHead>
                       <TableHead className="font-semibold">Stato</TableHead>
@@ -716,14 +716,7 @@ const Squad = () => {
                       <TableRow key={player.id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
-                            <PlayerAvatar
-                              firstName={player.first_name}
-                              lastName={player.last_name}
-                              avatarUrl={player.avatar_url}
-                              size="md"
-                              className="cursor-pointer hover:scale-105 transition-transform duration-200 hover:shadow-lg"
-                              onClick={() => openImageModal(player)}
-                            />
+                            
                             <div>
                               <div className="flex items-center gap-2">
                                 <a href={`/player/${player.id}`} className="hover:underline">{player.first_name} {player.last_name}</a>
@@ -745,27 +738,11 @@ const Squad = () => {
                           <span>{rolesByCode[(player as any).role_code || '']?.abbreviation || (player as any).role_code || '-'}</span>
                         </TableCell>
                         <TableCell>
-                          {player.phone ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">{player.phone}</span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                asChild
-                                className="h-6 px-2"
-                              >
-                                <a
-                                  href={formatWhatsAppLink(player.phone, player.first_name)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <MessageCircle className="h-3 w-3" />
-                                </a>
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="tabular-nums">
+                              {player.matchPresences || 0}
+                            </Badge>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
