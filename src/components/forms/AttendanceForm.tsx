@@ -86,23 +86,24 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       const existingRecord = existingAttendance.find(a => a.player_id === playerId);
       
       if (existingRecord) {
-        // Aggiorna il record esistente
+        // Aggiorna il record esistente: conferma coach + replica su auto-registrazione
         const { error } = await supabase
           .from('training_attendance')
           .update({ 
-            coach_confirmation_status: confirmationStatus
+            coach_confirmation_status: confirmationStatus,
+            status: confirmationStatus
           })
           .eq('id', existingRecord.id);
 
         if (error) throw error;
       } else {
-        // Crea un nuovo record
+        // Crea un nuovo record con conferma coach e status replicato
         const { error } = await supabase
           .from('training_attendance')
           .insert({
             session_id: sessionId,
             player_id: playerId,
-            status: 'pending', // Default auto-registrazione
+            status: confirmationStatus,
             coach_confirmation_status: confirmationStatus,
             self_registered: false
           });
@@ -182,25 +183,29 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         const existingRecord = existingAttendance.find(a => a.player_id === playerId);
         
         if (existingRecord) {
+          // Aggiorna conferma coach in bulk e replica su status
           await supabase
             .from('training_attendance')
             .update({ 
-              status
+              coach_confirmation_status: status,
+              status: status
             })
             .eq('id', existingRecord.id);
         } else {
+          // Crea nuovo record con conferma coach e status replicato
           await supabase
             .from('training_attendance')
             .insert({
               session_id: sessionId,
               player_id: playerId,
-              status,
+              status: status,
+              coach_confirmation_status: status,
               self_registered: false
             });
         }
       }
 
-      toast.success(`${selectedPlayers.length} giocatori aggiornati`);
+      toast.success(`${selectedPlayers.length} conferme coach aggiornate`);
       setSelectedPlayers([]);
       refetch();
     } catch (error: any) {
