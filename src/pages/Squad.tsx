@@ -697,20 +697,19 @@ const Squad = () => {
                           <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
                           <div className="min-w-0">
                             <div className="text-sm font-medium truncate">{p.first_name} {p.last_name}</div>
-                            <div className="mt-1 flex flex-wrap items-center gap-1">
-                              {p.jersey_number && (<Badge variant="outline" className="text-[10px] uppercase">#{p.jersey_number}</Badge>)}
-                              <Badge variant="secondary" className="text-[10px] uppercase">{role?.abbreviation || (p as any).role_code || '-'}</Badge>
-                              {p.is_captain && (<Badge className="text-[10px] bg-yellow-100 text-yellow-800 border-yellow-300 uppercase">Capitano</Badge>)}
-                              <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-[10px] uppercase">{p.status}</Badge>
-                            </div>
+                            {p.is_captain && (
+                              <div className="mt-1 flex flex-wrap items-center gap-1">
+                                <Badge className="text-[10px] bg-yellow-100 text-yellow-800 border-yellow-300 uppercase">Capitano</Badge>
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1 w-[100px]">
-                          <div className="text-[11px] text-neutral-600 tabular-nums">{matchPres}/{matchTot}</div>
-                          <div className="w-full h-1.5 rounded-full bg-neutral-200 overflow-hidden">
-                            <div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} />
+                        <div className="flex flex-col items-end gap-1 w-[120px]">
+                          <div className="flex items-center gap-1">
+                            {p.jersey_number && (<Badge variant="outline" className="text-[10px] uppercase">#{p.jersey_number}</Badge>)}
+                            <Badge variant="secondary" className="text-[10px] uppercase">{role?.abbreviation || (p as any).role_code || '-'}</Badge>
                           </div>
-                          <div className="text-[11px] text-neutral-500">Ritardi <span className="tabular-nums {p.tardiness ? '' : 'text-neutral-400'}">{p.tardiness || 0}</span></div>
+                          <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-[10px] uppercase">{p.status}</Badge>
                         </div>
                       </div>
                     </a>
