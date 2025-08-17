@@ -539,7 +539,7 @@ const Squad = () => {
   };
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="mx-auto w-full px-2 sm:px-4 lg:px-6 py-6">
       {/* Header compatto */}
       <div className="flex items-center justify-between mb-2">
         <div className="text-base sm:text-lg font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
@@ -668,9 +668,9 @@ const Squad = () => {
       {/* Vista Card */}
       {viewMode === 'card' && (
         <div className="">
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_,i)=> (
+                      {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              {Array.from({ length: 8 }).map((_,i)=> (
                 <div key={i} className="rounded-2xl border p-4">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-12 w-12 rounded-full" />
@@ -684,7 +684,7 @@ const Squad = () => {
             </div>
           ) : (
             <>
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {filteredAndSortedPlayers.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || '']
                   const matchPres = p.matchPresences || 0
