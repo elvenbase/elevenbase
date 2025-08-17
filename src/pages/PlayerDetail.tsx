@@ -179,9 +179,9 @@ const PlayerDetail = () => {
   }
 
   const per90 = (value: number, minutes: number) => minutes > 0 ? (value / minutes) * 90 : 0
-  const gPer90 = per90(totals.goals, totals.minutes)
-  const aPer90 = per90(totals.assists, totals.minutes)
-  const sPer90 = per90(totals.saves, totals.minutes)
+  const gPer90 = 0
+  const aPer90 = 0
+  const sPer90 = 0
 
   const presenceCount = stats.filter((r:any) => (r.minutes || 0) > 0).length
   const endedMatchesForPlayer = stats.length
@@ -197,23 +197,6 @@ const PlayerDetail = () => {
           <div className="absolute inset-1 rounded-full bg-background flex items-center justify-center text-sm font-semibold">{p}%</div>
         </div>
         <div className="text-xs text-muted-foreground">{label}</div>
-      </div>
-    )
-  }
-
-  // Mini ring metric for G/90 and A/90
-  const RingMetric = ({ value, label, color }: { value: number; label: string; color: string }) => {
-    // Normalize ring fill purely decoratively (cap at 2.0 per 90)
-    const maxScale = 2
-    const ratio = Math.max(0, Math.min(1, value / maxScale))
-    const deg = Math.round(ratio * 360)
-    const ringColor = color
-    return (
-      <div className="flex items-center gap-3 rounded-full border border-border/40 bg-white/70 backdrop-blur px-3 py-2 shadow-sm animate-slide-in">
-        <div className="relative w-8 h-8 rounded-full" style={{ background: `conic-gradient(${ringColor} ${deg}deg, rgba(0,0,0,0.08) 0deg)` }}>
-          <div className="absolute inset-[3px] rounded-full bg-white flex items-center justify-center text-[12px] font-semibold tabular-nums" style={{ color: ringColor }}>{value.toFixed(2)}</div>
-        </div>
-        <div className="text-[11px] text-muted-foreground">{label}</div>
       </div>
     )
   }
@@ -468,14 +451,7 @@ const PlayerDetail = () => {
               </CardContent>
             </Card>
 
-            {/* 2) Indice ritmo gara */}
-            <div className="mt-4 flex items-center justify-end gap-3 animate-slide-in">
-              <RingMetric value={gPer90} label="G/90" color="#0ea5e9" />
-              <RingMetric value={aPer90} label="A/90" color="#06b6d4" />
-              {sector==='P' && (
-                <div className="text-[11px] text-muted-foreground ml-2">Parate/90: <span className="tabular-nums font-semibold">{sPer90.toFixed(2)}</span></div>
-              )}
-            </div>
+            {/* 2) Indice ritmo gara rimosso */}
 
             {/* Selettore periodo (come in Presenze) */}
             <div className="mt-4 flex flex-wrap items-center gap-2 animate-slide-in">
