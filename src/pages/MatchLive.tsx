@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2, RotateCcw, Loader2 } from 'lucide-react'
+import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2, RotateCcw, Loader2, Trophy } from 'lucide-react'
 import { useMatch, useMatchEvents, useMatchAttendance, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 import { supabase } from '@/integrations/supabase/client'
@@ -735,6 +735,17 @@ const MatchLive = () => {
 </div>
 				</div>
 
+				{/* Ended banner */}
+				{isEnded && (
+					<div className="mt-2 p-2 rounded-md border border-emerald-300 bg-emerald-50 text-emerald-900 flex items-center gap-2">
+						<Trophy className="h-4 w-4" />
+						<div className="text-sm">
+							<strong>Partita terminata.</strong>
+							<span className="ml-2">MVP: {(() => { const mid = (match as any)?.mvp_player_id || (match as any)?.mvp_trialist_id; return mid ? getDisplayName(mid) : '—'; })()}</span>
+						</div>
+					</div>
+				)}
+
 				{/* Global Dialogs (Nota, Sostituzione, Rigore nostri, Rigore avversario) */}
 				<Dialog open={noteOpen} onOpenChange={setNoteOpen}>
 					<DialogContent>
@@ -838,7 +849,10 @@ const MatchLive = () => {
 					</DialogContent>
 				</Dialog>
 
-												<div className="grid grid-cols-1 md:grid-cols-[25%_75%] gap-3 mt-3 items-start">
+												<div className={`grid grid-cols-1 md:grid-cols-[25%_75%] gap-3 mt-3 items-start ${isEnded ? 'relative pointer-events-none' : ''}`}>
+													{isEnded && (
+														<div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-lg z-10" />
+													)}
 {/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
 						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
