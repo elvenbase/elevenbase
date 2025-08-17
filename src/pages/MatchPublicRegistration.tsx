@@ -4,21 +4,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Calendar, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { Loader2, Calendar, Clock, CheckCircle, XCircle, MapPin, Users, Target, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
-import { Users, Target, Download } from 'lucide-react'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
 
-interface Player { id: string; first_name: string; last_name: string; jersey_number?: number }
+interface Player { id: string; first_name: string; last_name: string; jersey_number?: number; avatar_url?: string }
 interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
-interface MatchInfo { id: string; opponent_name: string; match_date: string; match_time: string }
+interface MatchInfo { id: string; opponent_name: string; match_date: string; match_time: string; location?: string }
 interface AttendanceRecord { player_id: string; status: string; self_registered: boolean }
 
 type SelectEntity = `player:${string}` | `trialist:${string}`
@@ -37,6 +36,7 @@ const MatchPublicRegistration = () => {
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [lineup, setLineup] = useState<any | null>(null)
+  const [score, setScore] = useState<{ us: number; opp: number }>({ us: 0, opp: 0 })
   const [bench, setBench] = useState<any[]>([])
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
@@ -80,8 +80,25 @@ const MatchPublicRegistration = () => {
       setTrialistsInvited(data.trialistsInvited || [])
       setExistingAttendance(data.existingAttendance)
       setDeadline(new Date(data.deadline))
-      setLineup(data.lineup || null)
+      setLineup(data.lineup || [])
       setBench(data.bench || [])
+
+      // Calcolo punteggio opzionale
+      try {
+        const { data: events } = await supabase
+          .from('match_events')
+          .select('event_type, team')
+          .eq('match_id', data.match.id)
+        if (Array.isArray(events)) {
+          let us = 0, opp = 0
+          for (const e of events as any[]) {
+            if (e.event_type === 'goal') { e.team === 'us' ? us++ : opp++ }
+            if (e.event_type === 'own_goal') { e.team === 'us' ? opp++ : us++ }
+            if (e.event_type === 'pen_scored') { e.team === 'us' ? us++ : opp++ }
+          }
+          setScore({ us, opp })
+        }
+      } catch { /* ignore */ }
     } catch (err: any) {
       console.error('Errore nel caricamento:', err)
       setError('Errore nel caricamento dei dati')
@@ -199,25 +216,44 @@ const MatchPublicRegistration = () => {
   if (!match) return <Navigate to="/not-found" replace />
 
   const isExpired = deadline && new Date() > deadline
+  const assignedCount = lineup ? (((getFormationFromLineup(lineup.formation)?.positions) || []).filter(position => lineup.players_data?.positions?.[position.id]).length) : 0
+  const hasFullEleven = assignedCount >= 11
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Partita: {match.opponent_name}</CardTitle>
-            <CardDescription>{formatMatchDateTime(match.match_date, match.match_time)}</CardDescription>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="text-center py-4 sm:py-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Registrazione Partita</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Conferma la tua presenza per questa partita</p>
+        </div>
+
+        {/* Match Info */}
+        <Card className="border-primary/20 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl lg:text-2xl">
+              <Calendar className="h-5 w-5 text-primary" />
+              <span className="break-words">{match.opponent_name}</span>
+            </CardTitle>
+            <CardDescription className="text-sm sm:text-base flex items-center gap-2 flex-wrap">
+              <span>{formatMatchDateTime(match.match_date, match.match_time)}</span>
+              {match.location && (<span className="inline-flex items-center gap-1 text-muted-foreground"><MapPin className="h-4 w-4" />{match.location}</span>)}
+              <span className="ml-auto font-semibold">Risultato: {score.us} - {score.opp}</span>
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             {deadline && (
-              <Badge variant={isExpired ? 'destructive' : 'secondary'}>
-                {isExpired ? 'Tempo scaduto' : `Tempo rimasto: ${timeLeft}`}
-              </Badge>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 sm:p-4 bg-muted/50 rounded-lg">
+                <span className="font-medium text-sm sm:text-base">{isExpired ? 'Registrazioni chiuse' : 'Tempo per registrarsi (chiude 4h prima):'}</span>
+                <Badge variant={isExpired ? 'destructive' : 'default'} className="text-xs sm:text-sm px-2 sm:px-3 py-1 self-start sm:self-center">
+                  {isExpired ? 'Tempo scaduto' : timeLeft}
+                </Badge>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        {!isExpired && (
+        {!isExpired ? (
           <Card>
             <CardHeader>
               <CardTitle>Conferma la tua presenza</CardTitle>
@@ -269,7 +305,6 @@ const MatchPublicRegistration = () => {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium">Presenza</label>
                 <Select value={selectedStatus} onValueChange={(v: 'pending' | 'present' | 'absent') => setSelectedStatus(v)}>
@@ -283,12 +318,21 @@ const MatchPublicRegistration = () => {
                   </SelectContent>
                 </Select>
               </div>
-
               <Button onClick={handleSubmit} disabled={submitting || !selectedEntity} className="w-full h-12 text-lg">
                 {submitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />} Conferma Registrazione
               </Button>
             </CardContent>
           </Card>
+        ) : (
+          <div className="p-3 sm:p-4 bg-muted/50 rounded-lg flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">Registrazioni chiuse</span>
+            </div>
+            {deadline && (
+              <span className="text-xs sm:text-sm text-muted-foreground">(chiusura: {deadline.toLocaleString()})</span>
+            )}
+          </div>
         )}
 
         <Card>
@@ -358,7 +402,35 @@ const MatchPublicRegistration = () => {
 
 
 
-        {lineup && (
+        {bench.length > 0 && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati ({bench.length})</CardTitle></CardHeader>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {bench.map((b) => {
+                  const firstName = b.players?.first_name || b.trialists?.first_name || ''
+                  const lastName = b.players?.last_name || b.trialists?.last_name || ''
+                  const avatarUrl = b.players?.avatar_url || b.trialists?.avatar_url || undefined
+                  const jerseyNumber = b.players?.jersey_number
+                  const isTrialist = !!b.trialist_id && !b.players
+                  return (
+                    <div key={b.id} className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
+                      <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="md" className="mb-2" />
+                      <div className="text-center">
+                        <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{firstName}</p>
+                        <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{lastName}</p>
+                        {jerseyNumber && (<p className="text-xs text-muted-foreground mt-1">#{jerseyNumber}</p>)}
+                        {isTrialist && (<p className="text-[10px] text-muted-foreground mt-1">provinante</p>)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {lineup && hasFullEleven && (
           <Card className="shadow-lg">
             <CardHeader className="p-4">
               <div className="flex items-center justify-between">
@@ -378,12 +450,15 @@ const MatchPublicRegistration = () => {
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-b-2 border-white" />
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-t-2 border-white" />
                     {getFormationFromLineup(lineup.formation)?.positions.map(position => {
-                      const playerId = lineup.players_data?.positions?.[position.id]
-                      const player = playerId ? players.find(p => p.id === playerId) : null
+                      const pid = lineup.players_data?.positions?.[position.id]
+                      const person: any = pid ? (players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)) : null
+                      const firstName = person?.first_name || ''
+                      const lastName = person?.last_name || ''
+                      const avatarUrl = person?.avatar_url
                       return (
-                        <div key={position.id} className="absolute transform -translate-x-1/2 -translate-y-1/2" style={{ left: `${position.x}%`, top: `${position.y}%` }} title={player ? `${player.first_name} ${player.last_name}` : position.name}>
-                          {player ? (
-                            <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="md" className="border-2 border-white shadow-lg" />
+                        <div key={position.id} className="absolute transform -translate-x-1/2 -translate-y-1/2" style={{ left: `${position.x}%`, top: `${position.y}%` }} title={person ? `${firstName} ${lastName}` : position.name}>
+                          {person ? (
+                            <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="md" className="border-2 border-white shadow-lg" />
                           ) : (
                             <div className="w-10 h-10 rounded-full border-2 border-dashed border-white bg-white/20 flex items-center justify-center"><Users className="w-5 h-5 text-white/70" /></div>
                           )}
@@ -394,51 +469,67 @@ const MatchPublicRegistration = () => {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5" />Titolari</h3>
-                  <div className="space-y-1">
-                    {getFormationFromLineup(lineup.formation)?.positions.filter(pos => lineup.players_data?.positions?.[pos.id]).map(pos => {
-                      const pid = lineup.players_data?.positions?.[pos.id]
-                      const player = players.find(p => p.id === pid)
-                      if (!player) return null
+                  {(() => {
+                    const classify = (p: any): 'Portiere' | 'Difesa' | 'Centrocampo' | 'Attacco' | 'Altri' => {
+                      const code = (p.role_code || '').toString().toUpperCase()
+                      if (code === 'P') return 'Portiere'
+                      if (['TD','DC','DCD','DCS','TS'].includes(code)) return 'Difesa'
+                      if (['MED','REG','MC','MD','MS','QD','QS'].includes(code)) return 'Centrocampo'
+                      if (['ATT','PU','AD','AS'].includes(code)) return 'Attacco'
+                      const r = (p.roleShort || (p as any).role || p.name || '').toString().toLowerCase()
+                      if (r === 'p' || r === 'gk' || r.includes('port') || r.includes('goal')) return 'Portiere'
+                      if (r.includes('td') || r.includes('terzino dest') || r.includes('ts') || r.includes('terzino sin') || r.includes('dif') || r.includes('cb') || r.includes('rb') || r.includes('lb') || r.includes('dc') || r.includes('dcd') || r.includes('dcs')) return 'Difesa'
+                      if (r.includes('ed') || r.includes('es') || r.includes('esterno dx') || r.includes('esterno sx') || r.includes('med') || r.includes('reg') || r.includes('mez') || r.includes('centro') || r.includes('cm') || r.includes('mc') || r.includes('md') || r.includes('ms') || r.includes('cdm') || r.includes('rwb') || r.includes('lwb') || r.includes('qd') || r.includes('qs')) return 'Centrocampo'
+                      if (r.includes('att') || r.includes('pun') || r.includes('st') || r.includes('fw') || r.includes('forward') || r.includes('ala') || r.includes('wing')) return 'Attacco'
+                      return 'Altri'
+                    }
+                    const positions = getFormationFromLineup(lineup.formation)?.positions || []
+                    const assigned = positions.filter(pos => lineup.players_data?.positions?.[pos.id])
+                    const grouped: Record<string, any[]> = { Portiere: [], Difesa: [], Centrocampo: [], Attacco: [], Altri: [] }
+                    assigned.forEach(p => grouped[classify(p)].push(p))
+                    const order = [
+                      { name: 'Portiere', color: 'bg-yellow-500' },
+                      { name: 'Difesa', color: 'bg-blue-500' },
+                      { name: 'Centrocampo', color: 'bg-green-500' },
+                      { name: 'Attacco', color: 'bg-red-500' },
+                      { name: 'Altri', color: 'bg-gray-500' }
+                    ] as const
+                    return order.map(sec => {
+                      const sectorPlayers = grouped[sec.name]
+                      if (!sectorPlayers || sectorPlayers.length === 0) return null
                       return (
-                        <div key={pos.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
-                          <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" className="border-2 border-white" />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate">{player.first_name} {player.last_name}</div>
-                            <div className="text-xs text-muted-foreground truncate">{pos.roleShort || pos.name}</div>
+                        <div key={sec.name} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${sec.color}`} />
+                            <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">{sec.name}</h4>
+                          </div>
+                          <div className="space-y-1 pl-5">
+                            {sectorPlayers.map(position => {
+                              const pid = lineup.players_data?.positions?.[position.id]
+                              const person: any = players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)
+                              if (!person) return null
+                              return (
+                                <div key={position.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
+                                  <PlayerAvatar firstName={person.first_name} lastName={person.last_name} avatarUrl={person.avatar_url} size="sm" className="border-2 border-white" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-sm truncate">{person.first_name} {person.last_name}</div>
+                                    <div className="text-xs text-muted-foreground truncate">{position.roleShort || (position as any).role || position.name}</div>
+                                  </div>
+                                </div>
+                              )
+                            })}
                           </div>
                         </div>
                       )
-                    })}
-                  </div>
+                    })
+                  })()}
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        <Card className="shadow-lg">
-          <CardHeader className="p-4"><CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Users className="h-4 w-4" />Convocati {bench.length > 0 && `(${bench.length})`}</CardTitle></CardHeader>
-          <CardContent className="p-4">
-            {bench.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nessun convocato</p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {bench.map((b) => (
-                  <div key={b.id} className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
-                    <PlayerAvatar firstName={b.players?.first_name} lastName={b.players?.last_name} avatarUrl={b.players?.avatar_url} size="md" className="mb-2" />
-                    <div className="text-center">
-                      <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{b.players?.first_name}</p>
-                      <p className="text-xs font-medium leading-tight truncate max-w-[120px]">{b.players?.last_name}</p>
-                      {b.players?.jersey_number && (<p className="text-xs text-muted-foreground mt-1">#{b.players.jersey_number}</p>)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {lineup && getFormationFromLineup(lineup.formation) && (
+        {lineup && hasFullEleven && getFormationFromLineup(lineup.formation) && (
           <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
             <FormationExporter
               id="formation-export"

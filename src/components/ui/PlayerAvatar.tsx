@@ -37,9 +37,11 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
 }) => {
   const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor();
   
-  const fullName = firstName + lastName;
+  const safeFirst = firstName || '';
+  const safeLast = lastName || '';
+  const fullName = safeFirst + safeLast;
   const hasAvatar = !!avatarUrl;
-  const initials = firstName.charAt(0) + lastName.charAt(0);
+  const initials = (safeFirst.charAt(0) || '?') + (safeLast.charAt(0) || '');
   
   // Combina le classi di dimensione con quelle personalizzate
   const avatarClasses = `${sizeClasses[size]} ${className}`.trim();
@@ -56,7 +58,7 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     >
       <AvatarImage 
         src={avatarUrl || undefined} 
-        alt={`${firstName} ${lastName}`} 
+        alt={`${safeFirst} ${safeLast}`} 
       />
       <AvatarFallback 
         className="font-bold"

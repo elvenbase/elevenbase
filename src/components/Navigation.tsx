@@ -100,35 +100,20 @@ const Navigation = () => {
               <span className="text-sm font-medium">Dashboard</span>
             </NavLink>
             
-            {/* Squad Dropdown - second position */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="text-sm font-medium">Rosa</span>
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                {squadItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <DropdownMenuItem key={item.path} asChild>
-                      <NavLink
-                        to={item.path}
-                        className="flex items-center space-x-2 w-full"
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span>{item.name}</span>
-                      </NavLink>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Squad - direct link (no dropdown) */}
+            <NavLink
+              to="/squad"
+              className={({ isActive }) =>
+                `flex items-center space-x-2 px-4 py-2 rounded-xl transition-smooth ${
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-glow"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`
+              }
+            >
+              <Users className="h-4 w-4" />
+              <span className="text-sm font-medium">Rosa</span>
+            </NavLink>
 
             {/* Rest of navigation items */}
             {navigationItems.slice(1).map((item) => {

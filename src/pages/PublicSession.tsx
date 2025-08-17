@@ -23,7 +23,7 @@ interface Player {
   avatar_url?: string
 }
 
-interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
+interface Trialist { id: string; first_name: string; last_name: string; avatar_url?: string; status?: string; self_registered?: boolean }
 
 type SelectEntity = `player:${string}` | `trialist:${string}`
 
@@ -170,6 +170,26 @@ const PublicSession = () => {
           }
         } catch (e) {
           console.warn('Fallback trialist status fetch failed:', e)
+        }
+
+        // Fallback: carica convocati direttamente dal DB se la funzione edge non li ha forniti
+        if (!Array.isArray(data.convocati)) {
+          try {
+            const { data: convRows, error: convErr } = await supabase
+              .from('training_convocati')
+              .select('id, player_id')
+              .eq('session_id', data.session.id)
+
+            if (!convErr && Array.isArray(convRows)) {
+              const convWithPlayers = convRows.map((row: any) => ({
+                ...row,
+                players: (players || []).find(p => p.id === row.player_id) || null
+              }))
+              setConvocati(convWithPlayers)
+            }
+          } catch (e) {
+            console.warn('Fallback convocati fetch failed:', e)
+          }
         }
       }
     } catch (err: any) {
@@ -429,6 +449,8 @@ const PublicSession = () => {
   }
 
   const isExpired = deadline && new Date() > deadline
+  const assignedCount = lineup ? (((getFormationFromLineup(lineup.formation)?.positions) || []).filter(position => lineup.players_data?.positions?.[position.id]).length) : 0
+  const hasFullEleven = assignedCount >= 11
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
@@ -478,248 +500,19 @@ const PublicSession = () => {
           </CardContent>
         </Card>
 
-        {/* Formazione */}
-        {lineup && (
+        {/* Registrazione (fino alla scadenza) */}
+        {!isExpired ? (
           <Card className="shadow-lg">
             <CardHeader className="p-4 sm:p-6">
-              <div className="space-y-3">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <Target className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                  <span className="break-words">Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}</span>
-                </CardTitle>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <CardDescription className="text-sm sm:text-base">
-                    La formazione ufficiale per questa sessione di allenamento
-                  </CardDescription>
-                  <Button 
-                    onClick={downloadFormation} 
-                    variant="outline" 
-                    size="sm"
-                    className="flex items-center gap-2 self-start sm:self-center"
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="hidden sm:inline">Scarica PNG</span>
-                    <span className="sm:hidden">Scarica</span>
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
-                {/* Campo da calcio - più compatto */}
-                <div className="lg:col-span-2">
-                  <div 
-                    className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 border-white rounded-lg shadow-lg overflow-hidden mx-auto" 
-                    style={{ 
-                      aspectRatio: '2/3', 
-                      maxWidth: '350px',
-                      width: '100%',
-                      height: 'auto',
-                      minHeight: '400px',
-                      maxHeight: '500px'
-                    }}
-                  >
-                    {/* Sfondo erba con pattern */}
-                    <div 
-                      className="absolute inset-0 opacity-20" 
-                      style={{
-                        backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(0,100,0,0.1) 5px, rgba(0,100,0,0.1) 10px)'
-                      }}
-                    />
-                    
-                    {/* Linee del campo - semplificate */}
-                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-white transform -translate-y-1/2" />
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border-2 border-white rounded-full" />
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-b-2 border-white" />
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-t-2 border-white" />
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-b-2 border-white" />
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-t-2 border-white" />
-
-                    {/* Posizioni giocatori - semplificate */}
-                    {getFormationFromLineup(lineup.formation)?.positions.map(position => {
-                      const playerId = lineup.players_data?.positions?.[position.id]
-                      const player = playerId ? players.find(p => p.id === playerId) : null
-                      
-                      return (
-                        <div
-                          key={position.id}
-                          className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-                          style={{ 
-                            left: `${position.x}%`, 
-                            top: `${position.y}%` 
-                          }}
-                          title={player ? `${player.first_name} ${player.last_name} - ${position.roleShort || position.name}` : position.roleShort || position.name}
-                        >
-                          {player ? (
-                            <div className="relative">
-                              <PlayerAvatar
-                                firstName={player.first_name}
-                                lastName={player.last_name}
-                                avatarUrl={player.avatar_url}
-                                size="lg"
-                                className="border-3 border-white shadow-lg hover:scale-110 transition-transform"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
-                              <Users className="w-5 h-5 text-white/70" />
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Lista giocatori organizzata per ruoli */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Titolari ({getFormationFromLineup(lineup.formation)?.positions
-                      .filter(position => lineup.players_data?.positions?.[position.id]).length || 0})
-                  </h3>
-                  
-                  {/* Organizzazione per settori */}
-                  {[
-                    { name: 'Portiere', roles: ['P', 'Portiere'], color: 'bg-yellow-500' },
-                    { name: 'Difesa', roles: ['TD', 'DC', 'DCD', 'DCS', 'TS', 'Difensore centrale', 'Difensore centrale sinistro', 'Difensore centrale destro', 'Terzino destro', 'Terzino sinistro'], color: 'bg-blue-500' },
-                    { name: 'Centrocampo', roles: ['ED', 'MC', 'ES', 'MED', 'MD', 'MS', 'REG', 'QD', 'QS', 'Centrocampista', 'Mediano', 'Mezzala', 'Quinto', 'Regista'], color: 'bg-green-500' },
-                    { name: 'Attacco', roles: ['ATT', 'PU', 'AD', 'AS', 'Attaccante', 'Punta', 'Ala'], color: 'bg-red-500' }
-                  ].map(sector => {
-                    const sectorPlayers = getFormationFromLineup(lineup.formation)?.positions
-                      .filter(position => {
-                        const hasPlayer = lineup.players_data?.positions?.[position.id]
-                        // Prova prima con roleShort, poi con role come fallback, infine con name
-                        const roleToCheck = position.roleShort || (position as any).role || position.name || ''
-                        const matchesRole = sector.roles.some(role => 
-                          roleToCheck.toLowerCase() === role.toLowerCase()
-                        )
-                        return hasPlayer && matchesRole
-                      }) || []
-
-                    if (sectorPlayers.length === 0) return null
-
-                    return (
-                      <div key={sector.name} className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${sector.color}`} />
-                          <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                            {sector.name}
-                          </h4>
-                        </div>
-                        <div className="space-y-1 pl-5">
-                          {sectorPlayers.map(position => {
-                            const playerId = lineup.players_data?.positions?.[position.id]
-                            const player = players.find(p => p.id === playerId)
-                            
-                            if (!player) return null
-                            
-                            return (
-                              <div 
-                                key={position.id}
-                                className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
-                              >
-                                <PlayerAvatar
-                                  firstName={player.first_name}
-                                  lastName={player.last_name}
-                                  avatarUrl={player.avatar_url}
-                                  size="sm"
-                                  className="border-2 border-white"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-sm truncate">
-                                    {player.first_name} {player.last_name}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <span className="font-medium">{position.roleShort || position.name}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Convocati: mostra qui solo dopo la scadenza */}
-        {isExpired && (
-          <Card className="shadow-lg">
-            <CardHeader className="p-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="h-4 w-4" />
-                Convocati {convocati.length > 0 && `(${convocati.length})`}
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                Conferma la tua presenza
               </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente all'allenamento
+              </CardDescription>
             </CardHeader>
-            <CardContent className="p-4">
-              {convocati.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {convocati.map((convocato) => {
-                    const player = convocato.players
-                    if (!player) return null
-
-                    return (
-                      <div
-                        key={convocato.id}
-                        className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
-                      >
-                        <PlayerAvatar
-                          firstName={player.first_name}
-                          lastName={player.last_name}
-                          avatarUrl={player.avatar_url}
-                          size="md"
-                          className="mb-2"
-                        />
-                        <div className="text-center">
-                          <p className="text-xs font-medium leading-tight">
-                            {player.first_name}
-                          </p>
-                          <p className="text-xs font-medium leading-tight">
-                            {player.last_name}
-                          </p>
-                          {player.jersey_number && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              #{player.jersey_number}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground text-sm">
-                    Nessun giocatore convocato per questa sessione
-                  </p>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    I convocati verranno mostrati qui quando l'allenatore li selezionerà
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-          {!isExpired ? (
-            <Card className="shadow-lg">
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                  Conferma la tua presenza
-                </CardTitle>
-                <CardDescription className="text-sm sm:text-base">
-                  Seleziona il tuo nome (giocatore o provinante) e indica se sarai presente all'allenamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Giocatore o Provinante</label>
                   <Select value={selectedEntity} onValueChange={(v: SelectEntity) => setSelectedEntity(v)}>
@@ -784,30 +577,241 @@ const PublicSession = () => {
                   )}
                 </Button>
               </CardContent>
-            </Card>
-          ) : (
-            <Card className="shadow-lg">
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                  Registrazione Completata
-                </CardTitle>
-                <CardDescription className="text-sm sm:text-base">
-                  La tua presenza per la sessione è stata registrata.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 text-center">
-                <p className="text-lg font-semibold text-green-600">
-                  {selectedEntity.includes('player') ? getPlayerInitials(players.find(p => p.id === selectedEntity.split(':')[1]) || { first_name: '?', last_name: '?' }) : trialistsInvited.find(t => t.id === selectedEntity.split(':')[1])?.first_name}
-                  {selectedStatus === 'present' ? ' Presente' : ' Assente'}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {selectedEntity.includes('player') ? `Hai registrato la tua presenza come giocatore.` : `Hai registrato la tua presenza come provinante.`}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          </Card>
+        ) : (
+          <div className="p-3 sm:p-4 bg-muted/50 rounded-lg flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">Registrazioni chiuse</span>
+            </div>
+            {deadline && (
+              <span className="text-xs sm:text-sm text-muted-foreground">(chiusura: {deadline.toLocaleString()})</span>
+            )}
+          </div>
+        )}
 
+        {/* Convocati: sopra la Formazione */}
+        {convocati.length > 0 && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="h-4 w-4" />
+                Convocati ({convocati.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {convocati.map((convocato) => {
+                  const person = convocato.players || convocato.trialists
+                  if (!person) return null
+                  const isTrialist = !!convocato.trialist_id && !convocato.players
+                  const firstName = person.first_name || ''
+                  const lastName = person.last_name || ''
+                  const avatarUrl = person.avatar_url
+                  const jerseyNumber = convocato.players?.jersey_number
+                  return (
+                    <div
+                      key={convocato.id}
+                      className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                    >
+                      <PlayerAvatar
+                        firstName={firstName}
+                        lastName={lastName}
+                        avatarUrl={avatarUrl}
+                        size="md"
+                        className="mb-2"
+                      />
+                      <div className="text-center">
+                        <p className="text-xs font-medium leading-tight">
+                          {firstName}
+                        </p>
+                        <p className="text-xs font-medium leading-tight">
+                          {lastName}
+                        </p>
+                        {jerseyNumber && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            #{jerseyNumber}
+                          </p>
+                        )}
+                        {isTrialist && (
+                          <p className="text-[10px] text-muted-foreground mt-1">provinante</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Formazione (sotto) */}
+        {lineup && hasFullEleven && (
+          <Card className="shadow-lg">
+            <CardHeader className="p-4 sm:p-6">
+              <div className="space-y-3">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Target className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="break-words">Formazione - {getFormationFromLineup(lineup.formation)?.name || lineup.formation}</span>
+                </CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <CardDescription className="text-sm sm:text-base">
+                    La formazione ufficiale per questa sessione di allenamento
+                  </CardDescription>
+                  <Button 
+                    onClick={downloadFormation} 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-2 self-start sm:self-center"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">Scarica PNG</span>
+                    <span className="sm:hidden">Scarica</span>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
+                {/* Campo da calcio - più compatto */}
+                <div className="lg:col-span-2">
+                  <div 
+                    className="relative bg-gradient-to-b from-green-100 to-green-200 border-2 border-white rounded-lg shadow-lg overflow-hidden mx-auto" 
+                    style={{ 
+                      aspectRatio: '2/3', 
+                      maxWidth: '350px',
+                      width: '100%',
+                      height: 'auto',
+                      minHeight: '400px',
+                      maxHeight: '500px'
+                    }}
+                  >
+                    {/* Sfondo erba con pattern */}
+                    <div 
+                      className="absolute inset-0 opacity-20" 
+                      style={{
+                        backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(0,100,0,0.1) 5px, rgba(0,100,0,0.1) 10px)'
+                      }}
+                    />
+                    
+                    {/* Linee del campo - semplificate */}
+                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-white transform -translate-y-1/2" />
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border-2 border-white rounded-full" />
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-b-2 border-white" />
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2/5 h-1/6 border-l-2 border-r-2 border-t-2 border-white" />
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-b-2 border-white" />
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/4 h-1/12 border-l-2 border-r-2 border-t-2 border-white" />
+                    
+                    {/* Posizioni giocatori - con fallback trialist */}
+                    {getFormationFromLineup(lineup.formation)?.positions.map(position => {
+                      const pid = lineup.players_data?.positions?.[position.id]
+                      const person: any = pid ? (players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)) : null
+                      const firstName = person?.first_name || ''
+                      const lastName = person?.last_name || ''
+                      const avatarUrl = person?.avatar_url
+                      return (
+                        <div
+                          key={position.id}
+                          className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
+                          style={{ left: `${position.x}%`, top: `${position.y}%` }}
+                          title={person ? `${firstName} ${lastName} - ${position.roleShort || position.name}` : position.roleShort || position.name}
+                        >
+                          {person ? (
+                            <div className="relative">
+                              <PlayerAvatar
+                                firstName={firstName}
+                                lastName={lastName}
+                                avatarUrl={avatarUrl}
+                                size="lg"
+                                className="border-3 border-white shadow-lg hover:scale-110 transition-transform"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-12 h-12 rounded-full border-3 border-dashed border-white bg-white/20 flex items-center justify-center">
+                              <Users className="w-5 h-5 text-white/70" />
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                
+                {/* Lista giocatori organizzata per ruoli (classificazione euristica) */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Titolari ({getFormationFromLineup(lineup.formation)?.positions
+                      .filter(position => lineup.players_data?.positions?.[position.id]).length || 0})
+                  </h3>
+                  {(() => {
+                    const classifySector = (position: any): 'Portiere' | 'Difesa' | 'Centrocampo' | 'Attacco' | 'Altri' => {
+                      const code = (position.role_code || '').toString().toUpperCase()
+                      if (code === 'P') return 'Portiere'
+                      if (['TD','DC','DCD','DCS','TS'].includes(code)) return 'Difesa'
+                      if (['MED','REG','MC','MD','MS','QD','QS'].includes(code)) return 'Centrocampo'
+                      if (['ATT','PU','AD','AS'].includes(code)) return 'Attacco'
+                      const r = (position.roleShort || (position as any).role || position.name || '').toString().toLowerCase()
+                      if (r === 'p' || r === 'gk' || r.includes('port') || r.includes('goal')) return 'Portiere'
+                      if (r.includes('td') || r.includes('terzino dest') || r.includes('ts') || r.includes('terzino sin') || r.includes('dif') || r.includes('cb') || r.includes('rb') || r.includes('lb') || r.includes('dc') || r.includes('dcd') || r.includes('dcs')) return 'Difesa'
+                      if (r.includes('ed') || r.includes('es') || r.includes('esterno dx') || r.includes('esterno sx') || r.includes('med') || r.includes('reg') || r.includes('mez') || r.includes('centro') || r.includes('cm') || r.includes('mc') || r.includes('md') || r.includes('ms') || r.includes('cdm') || r.includes('rwb') || r.includes('lwb') || r.includes('qd') || r.includes('qs')) return 'Centrocampo'
+                      if (r.includes('att') || r.includes('pun') || r.includes('st') || r.includes('fw') || r.includes('forward') || r.includes('ala') || r.includes('wing')) return 'Attacco'
+                      return 'Altri'
+                    }
+                    const positions = getFormationFromLineup(lineup.formation)?.positions || []
+                    const assigned = positions.filter((p: any) => lineup.players_data?.positions?.[p.id])
+                    const grouped: Record<string, any[]> = { Portiere: [], Difesa: [], Centrocampo: [], Attacco: [], Altri: [] }
+                    assigned.forEach((p: any) => { grouped[classifySector(p)].push(p) })
+                    const order = [
+                      { name: 'Portiere', color: 'bg-yellow-500' },
+                      { name: 'Difesa', color: 'bg-blue-500' },
+                      { name: 'Centrocampo', color: 'bg-green-500' },
+                      { name: 'Attacco', color: 'bg-red-500' },
+                      { name: 'Altri', color: 'bg-gray-500' }
+                    ] as const
+                    return order.map(sec => {
+                      const list = grouped[sec.name]
+                      if (!list || list.length === 0) return null
+                      return (
+                        <div key={sec.name} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${sec.color}`} />
+                            <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">{sec.name}</h4>
+                          </div>
+                          <div className="space-y-1 pl-5">
+                            {list.map((position: any) => {
+                              const pid = lineup.players_data?.positions?.[position.id]
+                              const person: any = players.find(p => p.id === pid) || trialistsInvited.find(t => t.id === pid)
+                              if (!person) return null
+                              const firstName = person.first_name || ''
+                              const lastName = person.last_name || ''
+                              const avatarUrl = person.avatar_url
+                              return (
+                                <div key={position.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
+                                  <PlayerAvatar firstName={firstName} lastName={lastName} avatarUrl={avatarUrl} size="sm" className="border-2 border-white" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-sm truncate">{firstName} {lastName}</div>
+                                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <span className="font-medium">{position.roleShort || (position as any).role || position.name}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })
+                  })()}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+         
+        {/* Convocati già spostati sopra */}
+ 
+        <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {/* Riepilogo Registrazioni */}
           <Card className="shadow-lg">
             <CardHeader className="p-4 sm:p-6">
@@ -817,28 +821,35 @@ const PublicSession = () => {
               {(() => {
                 const playerPresent = existingAttendance.filter(a => a.status === 'present').length
                 const playerAbsent = existingAttendance.filter(a => a.status === 'absent').length
+                const playerResponded = existingAttendance.length
+                const playerNoResponse = Math.max(0, players.length - playerResponded)
                 const trialistPresent = trialistsInvited.filter(t => t.status === 'present').length
                 const trialistAbsent = trialistsInvited.filter(t => t.status === 'absent').length
+                const trialistResponded = trialistPresent + trialistAbsent
+                const trialistNoResponse = Math.max(0, trialistsInvited.length - trialistResponded)
                 const presentTotal = playerPresent + trialistPresent
                 const absentTotal = playerAbsent + trialistAbsent
                 const totalEntities = players.length + trialistsInvited.length
-                const responded = existingAttendance.length + trialistPresent + trialistAbsent
-                const noResponse = Math.max(0, totalEntities - responded)
+                const totalResponded = playerResponded + trialistResponded
+                const totalNoResponse = totalEntities - totalResponded
                 return (
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-green-600">{presentTotal}</div>
-                      <div className="text-sm text-muted-foreground">Presenti</div>
+                  <>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div><div className="text-2xl font-bold text-green-600">{presentTotal}</div><div className="text-sm text-muted-foreground">Presenti</div></div>
+                      <div><div className="text-2xl font-bold text-red-600">{absentTotal}</div><div className="text-sm text-muted-foreground">Assenti</div></div>
+                      <div><div className="text-2xl font-bold text-muted-foreground">{totalNoResponse}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-red-600">{absentTotal}</div>
-                      <div className="text-sm text-muted-foreground">Assenti</div>
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-blue-600">Giocatori</div>
+                        <div className="text-sm text-muted-foreground">Presenti: {playerPresent} | Assenti: {playerAbsent} | Non risposto: {playerNoResponse}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-orange-600">Provinanti</div>
+                        <div className="text-sm text-muted-foreground">Presenti: {trialistPresent} | Assenti: {trialistAbsent} | Non risposto: {trialistNoResponse}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-muted-foreground">{noResponse}</div>
-                      <div className="text-sm text-muted-foreground">Non risposto</div>
-                    </div>
-                  </div>
+                  </>
                 )
               })()}
             </CardContent>

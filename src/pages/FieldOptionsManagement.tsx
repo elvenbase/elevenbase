@@ -10,12 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Plus, Edit, Trash2, Save, X, UserCog } from 'lucide-react';
 import { useFieldOptions, FieldOption } from '@/hooks/useFieldOptions';
 import { toast } from 'sonner';
+import { useRoles } from '@/hooks/useRoles';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const FieldOptionsManagement = () => {
   const { options, loading, loadOptions, createOption, updateOption, deleteOption } = useFieldOptions();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingOption, setEditingOption] = useState<FieldOption | null>(null);
-  const [activeTab, setActiveTab] = useState('player_role');
+  const [activeTab, setActiveTab] = useState('roles');
+  const queryClient = useQueryClient();
 
   // Form states
   const [formData, setFormData] = useState({
@@ -26,10 +30,17 @@ const FieldOptionsManagement = () => {
     sort_order: 0
   });
 
+  // Roles management state (source of truth)
+  const { data: roles = [], isLoading: rolesLoading } = useRoles();
+  const [rolesCreateOpen, setRolesCreateOpen] = useState(false);
+  const [newRole, setNewRole] = useState({ code: '', label: '', abbreviation: '', sort_order: 0, is_active: true });
+  const [editingRoleCode, setEditingRoleCode] = useState<string | null>(null);
+  const [editingRole, setEditingRole] = useState<{ code: string; label: string; abbreviation: string; sort_order: number; is_active: boolean } | null>(null);
+
   const fieldConfigs = {
-    player_role: {
-      label: 'Ruoli Giocatori',
-      description: 'Gestisci i ruoli disponibili per i giocatori',
+    roles: {
+      label: 'Ruoli (fonte di verità)',
+      description: 'Gestisci i ruoli (label e sigla). Tutto il sistema legge da qui.',
       icon: '⚽'
     },
     position: {
@@ -47,6 +58,60 @@ const FieldOptionsManagement = () => {
   useEffect(() => {
     loadOptions();
   }, []);
+
+  const createRole = async () => {
+    if (!newRole.code.trim() || !newRole.label.trim()) {
+      toast.error('Codice e nome ruolo sono obbligatori');
+      return;
+    }
+    try {
+      const payload = {
+        code: newRole.code.trim().toUpperCase(),
+        label: newRole.label.trim(),
+        abbreviation: (newRole.abbreviation || '').trim().toUpperCase(),
+        sort_order: Number(newRole.sort_order) || 0,
+        is_active: !!newRole.is_active
+      };
+      const { error } = await supabase.from('roles').insert(payload);
+      if (error) throw error;
+      setRolesCreateOpen(false);
+      setNewRole({ code: '', label: '', abbreviation: '', sort_order: 0, is_active: true });
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      toast.success('Ruolo creato');
+    } catch (e: any) {
+      toast.error(e?.message || 'Errore creazione ruolo');
+    }
+  };
+
+  const saveRole = async () => {
+    if (!editingRole) return;
+    try {
+      const { code, label, abbreviation, sort_order, is_active } = editingRole;
+      const { error } = await supabase
+        .from('roles')
+        .update({ label, abbreviation, sort_order, is_active })
+        .eq('code', code);
+      if (error) throw error;
+      setEditingRole(null);
+      setEditingRoleCode(null);
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      toast.success('Ruolo aggiornato');
+    } catch (e: any) {
+      toast.error(e?.message || 'Errore aggiornamento ruolo');
+    }
+  };
+
+  const deleteRole = async (code: string) => {
+    try {
+      const { error } = await supabase.from('roles').delete().eq('code', code);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      toast.success('Ruolo eliminato');
+    } catch (e: any) {
+      // Potrebbe essere bloccato dal trigger se in uso
+      toast.error(e?.message || 'Impossibile eliminare: ruolo in uso');
+    }
+  };
 
   const handleCreateOption = async () => {
     if (!formData.option_value.trim() || !formData.option_label.trim()) {
@@ -115,7 +180,7 @@ const FieldOptionsManagement = () => {
     return fieldOptions.length > 0 ? Math.max(...fieldOptions.map(o => o.sort_order)) + 1 : 1;
   };
 
-  if (loading) {
+  if (loading || (activeTab === 'roles' && rolesLoading)) {
     return (
       <div className="container mx-auto py-6 sm:py-8 px-3 sm:px-0">
         <div className="flex items-center justify-center">
@@ -160,7 +225,44 @@ const FieldOptionsManagement = () => {
                     </CardTitle>
                     <CardDescription className="text-sm sm:text-base">{config.description}</CardDescription>
                   </div>
-                  <Dialog open={isCreateModalOpen && formData.field_name === tabName} onOpenChange={setIsCreateModalOpen}>
+                  {tabName === 'roles' ? (
+                    <Dialog open={rolesCreateOpen} onOpenChange={setRolesCreateOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" onClick={() => setRolesCreateOpen(true)}>
+                          <Plus className="h-4 w-4 mr-2" /> Aggiungi Ruolo
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Aggiungi Ruolo</DialogTitle>
+                          <DialogDescription>Codice (es. MC), nome esteso e sigla</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-3">
+                          <div>
+                            <Label>Codice</Label>
+                            <Input value={newRole.code} onChange={e=>setNewRole(prev=>({ ...prev, code: e.target.value.toUpperCase() }))} placeholder="es. MC" />
+                          </div>
+                          <div>
+                            <Label>Etichetta</Label>
+                            <Input value={newRole.label} onChange={e=>setNewRole(prev=>({ ...prev, label: e.target.value }))} placeholder="es. Centrocampista" />
+                          </div>
+                          <div>
+                            <Label>Sigla</Label>
+                            <Input value={newRole.abbreviation} onChange={e=>setNewRole(prev=>({ ...prev, abbreviation: e.target.value.toUpperCase() }))} placeholder="es. MC" maxLength={3} />
+                          </div>
+                          <div>
+                            <Label>Ordine</Label>
+                            <Input type="number" value={newRole.sort_order} onChange={e=>setNewRole(prev=>({ ...prev, sort_order: parseInt(e.target.value)||0 }))} />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={()=>setRolesCreateOpen(false)}>Annulla</Button>
+                          <Button onClick={createRole}><Save className="h-4 w-4 mr-2" /> Salva</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <Dialog open={isCreateModalOpen && formData.field_name === tabName} onOpenChange={setIsCreateModalOpen}>
                     <DialogTrigger asChild>
                       <Button 
                         onClick={() => {
@@ -230,87 +332,143 @@ const FieldOptionsManagement = () => {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 sm:space-y-4">
-                  {getOptionsForTab(tabName).map((option) => (
-                    <div key={option.id} className="flex items-center justify-between p-3 sm:p-4 border rounded-lg">
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        <Badge variant="outline" className="text-[10px] sm:text-xs">#{option.sort_order}</Badge>
-                        <div>
-                          <div className="font-medium text-sm sm:text-base">{option.option_label}</div>
-                          <div className="text-xs sm:text-sm text-muted-foreground">
-                            {option.option_value}
-                            {option.abbreviation && (
-                              <span className="ml-2 text-[10px] sm:text-xs bg-primary/10 text-primary px-1 rounded">
-                                {option.abbreviation}
-                              </span>
-                            )}
+                {tabName === 'roles' ? (
+                  <div className="space-y-3 sm:space-y-4">
+                    {roles.map((r) => (
+                      <div key={r.code} className="flex items-center justify-between p-3 sm:p-4 border rounded-lg">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <Badge variant="outline" className="text-[10px] sm:text-xs">#{r.sort_order}</Badge>
+                          <div>
+                            <div className="font-medium text-sm sm:text-base">{r.label} <span className="ml-2 text-[10px] sm:text-xs bg-primary/10 text-primary px-1 rounded">{r.abbreviation}</span></div>
+                            <div className="text-xs sm:text-sm text-muted-foreground">{r.code}</div>
                           </div>
                         </div>
+                        <div className="flex items-center gap-2">
+                          {editingRoleCode === r.code && editingRole ? (
+                            <>
+                              <Input value={editingRole.label} onChange={e=>setEditingRole(prev=>prev?{...prev,label:e.target.value}:prev)} className="w-28 sm:w-40" />
+                              <Input value={editingRole.abbreviation} onChange={e=>setEditingRole(prev=>prev?{...prev,abbreviation:e.target.value.toUpperCase()}:prev)} className="w-14" maxLength={3} />
+                              <Input type="number" value={editingRole.sort_order} onChange={e=>setEditingRole(prev=>prev?{...prev,sort_order:parseInt(e.target.value)||0}:prev)} className="w-16" />
+                              <Button size="sm" onClick={saveRole}><Save className="h-4 w-4" /></Button>
+                              <Button size="sm" variant="outline" onClick={()=>{setEditingRole(null); setEditingRoleCode(null)}}><X className="h-4 w-4" /></Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="sm" variant="outline" onClick={()=>{setEditingRoleCode(r.code); setEditingRole({ code: r.code, label: r.label, abbreviation: r.abbreviation, sort_order: r.sort_order, is_active: r.is_active })}}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="outline" className="text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Elimina ruolo</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Eliminare "{r.label}" ({r.code})? L'operazione può fallire se il ruolo è in uso.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                    <AlertDialogAction onClick={()=>deleteRole(r.code)}>Elimina</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {editingOption?.id === option.id ? (
-                          <>
-                            <Input
-                              value={editingOption.option_label}
-                              onChange={(e) => setEditingOption(prev => prev ? { ...prev, option_label: e.target.value } : null)}
-                              className="w-24 sm:w-32"
-                              placeholder="Etichetta"
-                            />
-                            <Input
-                              value={editingOption.abbreviation || ''}
-                              onChange={(e) => setEditingOption(prev => prev ? { ...prev, abbreviation: e.target.value.toUpperCase() } : null)}
-                              className="w-12 sm:w-16"
-                              placeholder="Sigla"
-                              maxLength={2}
-                            />
-                            <Button size="sm" onClick={() => handleUpdateOption(option)}>
-                              <Save className="h-4 w-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => setEditingOption(null)}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button size="sm" variant="outline" onClick={() => setEditingOption(option)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="sm" variant="outline" className="text-destructive">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Elimina opzione</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Sei sicuro di voler eliminare l'opzione "{option.option_label}"? 
-                                    Questa azione non può essere annullata.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Annulla</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDeleteOption(option)}>
-                                    Elimina
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </>
-                        )}
+                    ))}
+                    {roles.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">Nessun ruolo definito</div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3 sm:space-y-4">
+                    {getOptionsForTab(tabName).map((option) => (
+                      <div key={option.id} className="flex items-center justify-between p-3 sm:p-4 border rounded-lg">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <Badge variant="outline" className="text-[10px] sm:text-xs">#{option.sort_order}</Badge>
+                          <div>
+                            <div className="font-medium text-sm sm:text-base">{option.option_label}</div>
+                            <div className="text-xs sm:text-sm text-muted-foreground">
+                              {option.option_value}
+                              {option.abbreviation && (
+                                <span className="ml-2 text-[10px] sm:text-xs bg-primary/10 text-primary px-1 rounded">
+                                  {option.abbreviation}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {editingOption?.id === option.id ? (
+                            <>
+                              <Input
+                                value={editingOption.option_label}
+                                onChange={(e) => setEditingOption(prev => prev ? { ...prev, option_label: e.target.value } : null)}
+                                className="w-24 sm:w-32"
+                                placeholder="Etichetta"
+                              />
+                              <Input
+                                value={editingOption.abbreviation || ''}
+                                onChange={(e) => setEditingOption(prev => prev ? { ...prev, abbreviation: e.target.value.toUpperCase() } : null)}
+                                className="w-12 sm:w-16"
+                                placeholder="Sigla"
+                                maxLength={2}
+                              />
+                              <Button size="sm" onClick={() => handleUpdateOption(option)}>
+                                <Save className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditingOption(null)}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => setEditingOption(option)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="outline" className="text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Elimina opzione</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Sei sicuro di voler eliminare l'opzione "{option.option_label}"? 
+                                      Questa azione non può essere annullata.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteOption(option)}>
+                                      Elimina
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {getOptionsForTab(tabName).length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Nessuna opzione configurata per {config.label.toLowerCase()}
-                    </div>
-                  )}
-                </div>
+                    ))}
+                    {getOptionsForTab(tabName).length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Nessuna opzione configurata per {config.label.toLowerCase()}
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

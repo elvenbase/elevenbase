@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { withRoleCode } from '@/utils/roleNormalization'
 
 export interface CustomFormation {
   id: string
@@ -15,6 +16,7 @@ export interface CustomFormation {
     y: number
     role?: string
     roleShort?: string
+    role_code?: string
   }>
   created_by?: string
   created_at: string
@@ -34,7 +36,11 @@ export const useCustomFormations = () => {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setFormations((data || []) as CustomFormation[])
+      const normalized = (data || []).map((f: any) => ({
+        ...f,
+        positions: Array.isArray(f.positions) ? f.positions.map((p: any) => withRoleCode(p)) : []
+      }))
+      setFormations(normalized as CustomFormation[])
     } catch (error) {
       console.error('Errore nel caricare le formazioni:', error)
       toast.error('Errore nel caricare le formazioni')
@@ -45,15 +51,19 @@ export const useCustomFormations = () => {
 
   const createFormation = async (formation: Omit<CustomFormation, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
     try {
+      const payload = { ...formation, positions: formation.positions.map(p => withRoleCode(p)) }
       const { data, error } = await supabase
         .from('custom_formations')
-        .insert(formation)
+        .insert(payload)
         .select()
         .single()
 
       if (error) throw error
       
-      setFormations(prev => [data as CustomFormation, ...prev])
+      setFormations(prev => [({
+        ...data,
+        positions: Array.isArray((data as any).positions) ? (data as any).positions.map((p: any) => withRoleCode(p)) : []
+      }) as CustomFormation, ...prev])
       toast.success('Formazione creata con successo')
       return data
     } catch (error) {
@@ -65,16 +75,23 @@ export const useCustomFormations = () => {
 
   const updateFormation = async (id: string, formation: Partial<CustomFormation>) => {
     try {
+      const payload = { ...formation }
+      if (payload.positions) {
+        payload.positions = payload.positions.map((p: any) => withRoleCode(p)) as any
+      }
       const { data, error } = await supabase
         .from('custom_formations')
-        .update(formation)
+        .update(payload)
         .eq('id', id)
         .select()
         .single()
 
       if (error) throw error
       
-      setFormations(prev => prev.map(f => f.id === id ? data as CustomFormation : f))
+      setFormations(prev => prev.map(f => f.id === id ? ({
+        ...data,
+        positions: Array.isArray((data as any).positions) ? (data as any).positions.map((p: any) => withRoleCode(p)) : []
+      }) as CustomFormation : f))
       toast.success('Formazione aggiornata con successo')
       return data
     } catch (error) {

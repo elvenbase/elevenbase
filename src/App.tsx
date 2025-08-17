@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useState, useEffect, Suspense, lazy } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Import components
 import { AdminSetup } from "@/components/AdminSetup";
@@ -25,6 +26,7 @@ const SessionManagement = lazy(() => import("@/pages/SessionManagement"));
 // const Competitions = lazy(() => import("@/pages/Competitions"));
 const Matches = lazy(() => import("@/pages/Matches"));
 const MatchDetail = lazy(() => import("@/pages/MatchDetail"));
+const MatchLive = lazy(() => import("@/pages/MatchLive"));
 const Formations = lazy(() => import("@/pages/Formations"));
 const Trials = lazy(() => import("@/pages/Trials"));
 const TrialEvaluations = lazy(() => import("@/pages/TrialEvaluations"));
@@ -35,6 +37,7 @@ const MatchPublicRegistration = lazy(() => import("@/pages/MatchPublicRegistrati
 const PublicSession = lazy(() => import("@/pages/PublicSession"));
 const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
@@ -129,188 +132,205 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <BrowserRouter>
-              <div className="min-h-screen bg-background">
-                <Suspense fallback={
-                  <div className="min-h-screen flex items-center justify-center bg-background">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-                  </div>
-                }>
-                  <Routes>
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/confirm" element={<EmailConfirm />} />
-                    <Route path="/register/:token" element={<PublicRegistration />} />
-                    <Route path="/m/:token" element={<MatchPublicRegistration />} />
-                    <Route path="/session/:token" element={<PublicSession />} />
-                    <Route path="/" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <Dashboard />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <Dashboard />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/squad" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <Squad />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/training" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <Training />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/sessions" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <SessionManagement />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/training/session/:id" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <SessionManagement />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    {/* Matches */}
-                    <Route path="/matches" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <Matches />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/match/:id" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <MatchDetail />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/formations" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <Formations />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/trials" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <Trials />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/trial-evaluations" element={
-                      <ProtectedRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <TrialEvaluations />
-                        </main>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/users" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <UserManagement />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    <Route path="/field-options" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <FieldOptionsManagement />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <AdminDashboard />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    <Route path="/admin/users" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <UserManagement />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    <Route path="/admin/formations" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <FormationManagement />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    <Route path="/admin/jerseys" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <JerseyManagement />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    <Route path="/admin/avatar-backgrounds" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <AvatarBackgroundManagement />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    <Route path="/admin/png-settings" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <PngSettingsManagement />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    <Route path="/admin/opponents" element={
-                      <AdminRoute>
-                        <Navigation />
-                        <main className="ml-0 transition-all duration-200">
-                          <OpponentsManagement />
-                        </main>
-                      </AdminRoute>
-                    } />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </div>
+              <ErrorBoundary>
+                <div className="min-h-screen bg-background">
+                  <Suspense fallback={
+                    <div className="min-h-screen flex items-center justify-center bg-background">
+                      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+                    </div>
+                  }>
+                    <Routes>
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/confirm" element={<EmailConfirm />} />
+                      <Route path="/register/:token" element={<PublicRegistration />} />
+                      <Route path="/m/:token" element={<MatchPublicRegistration />} />
+                      <Route path="/session/:token" element={<PublicSession />} />
+                      <Route path="/" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <Dashboard />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <Dashboard />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/squad" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <Squad />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/training" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <Training />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/sessions" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <SessionManagement />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/training/session/:id" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <SessionManagement />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      {/* Matches */}
+                      <Route path="/matches" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <Matches />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/match/:id" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <MatchDetail />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/match/:id/live" element={
+                        <ProtectedRoute>
+                          <main className="transition-all duration-200">
+                            <MatchLive />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/formations" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <Formations />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/trials" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <Trials />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/trial-evaluations" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <TrialEvaluations />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/users" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <UserManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/field-options" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <FieldOptionsManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/player/:id" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <PlayerDetail />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      
+                      {/* Admin Routes */}
+                      <Route path="/admin" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <AdminDashboard />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/admin/users" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <UserManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/admin/formations" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <FormationManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/admin/jerseys" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <JerseyManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/admin/avatar-backgrounds" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <AvatarBackgroundManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/admin/png-settings" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <PngSettingsManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/admin/opponents" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <OpponentsManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </div>
+              </ErrorBoundary>
+              <Toaster />
+              <Sonner />
             </BrowserRouter>
-            <Toaster />
-            <Sonner />
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>

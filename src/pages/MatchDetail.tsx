@@ -1,11 +1,14 @@
 import { useParams, Link } from 'react-router-dom'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Target, Share, ArrowLeft } from 'lucide-react'
-import { useMatch, useMatchEvents, useMatchAttendance, useEnsureMatchPublicSettings, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
+import { useMatch, useMatchEvents, useMatchAttendance, useEnsureMatchPublicSettings, useMatchTrialistInvites, usePlayers, useUpdateMatch, useSetMatchTrialistInvites, useTrialists } from '@/hooks/useSupabaseData'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
@@ -34,23 +37,6 @@ const computeScore = (events: any[]) => {
   return { us, opp }
 }
 
-const MiniJersey = ({ o }: { o: any }) => {
-  if (!o) return null
-  if (o.jersey_image_url) return <img src={o.jersey_image_url} alt="jersey" className="h-5 w-5 rounded object-cover" />
-  const shape = o.jersey_shape as 'classic'|'stripes'|'hoops'|undefined
-  const p = o.jersey_primary_color || '#008080'
-  const s = o.jersey_secondary_color || '#ffffff'
-  const style: React.CSSProperties = {}
-  if (shape === 'stripes') {
-    style.backgroundImage = `repeating-linear-gradient(90deg, ${p} 0 6px, ${s} 6px 12px)`
-  } else if (shape === 'hoops') {
-    style.backgroundImage = `repeating-linear-gradient(0deg, ${p} 0 6px, ${s} 6px 12px)`
-  } else {
-    style.backgroundColor = p
-  }
-  return <div className="h-5 w-5 rounded border" style={style} />
-}
-
 const MatchDetail = () => {
   const { id } = useParams<{ id: string }>()
   const { data: match, isLoading } = useMatch(id || '')
@@ -59,6 +45,16 @@ const MatchDetail = () => {
   const { data: trialistInvites = [] } = useMatchTrialistInvites(id || '')
   const { data: allPlayers = [] } = usePlayers()
   const ensurePublic = useEnsureMatchPublicSettings()
+  const updateMatch = useUpdateMatch()
+  const setMatchTrialistInvites = useSetMatchTrialistInvites()
+  const { data: allTrialists = [] } = useTrialists()
+  const [editOpen, setEditOpen] = useState(false)
+  const [selectedTrialists, setSelectedTrialists] = useState<string[]>([])
+  const [editOpponentName, setEditOpponentName] = useState('')
+  const [editMatchDate, setEditMatchDate] = useState('')
+  const [editMatchTime, setEditMatchTime] = useState('')
+  const [editHomeAway, setEditHomeAway] = useState<'home'|'away'>('home')
+  const [editLocation, setEditLocation] = useState('')
 
   const score = useMemo(() => computeScore(events), [events])
   const attendanceStats = useMemo(() => {
@@ -82,33 +78,110 @@ const MatchDetail = () => {
   if (!id) return null
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Caricamento partita...</div>
   if (!match) return <div className="min-h-screen flex items-center justify-center">Partita non trovata</div>
+  
+  // Initialize edit state when dialog opens
+  const openEdit = () => {
+    setSelectedTrialists((trialistInvites || []).map((t: any) => t.trialist_id))
+    setEditOpponentName((match as any)?.opponent_name || '')
+    setEditMatchDate((match as any)?.match_date || '')
+    setEditMatchTime((match as any)?.match_time || '')
+    setEditHomeAway(((match as any)?.home_away as 'home'|'away') || 'home')
+    setEditLocation((match as any)?.location || '')
+    setEditOpen(true)
+  }
+  
+  const handleSaveEdit = async () => {
+    if (!id) return
+    await updateMatch.mutateAsync({ id, updates: { opponent_name: editOpponentName, match_date: editMatchDate, match_time: editMatchTime, home_away: editHomeAway, location: editLocation } })
+    await setMatchTrialistInvites.mutateAsync({ matchId: id, trialistIds: selectedTrialists })
+    setEditOpen(false)
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
         <Card>
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" className="text-foreground" asChild>
-                <Link to="/matches">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Torna alle Partite
-                </Link>
-              </Button>
-              <div className="h-8 w-px bg-border" />
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-primary">{match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}</h1>
-                  <MiniJersey o={match.opponents} />
-                  <Badge variant="outline">{new Date(match.match_date).toLocaleDateString()} {match.match_time}</Badge>
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="sm" className="text-foreground" asChild>
+                  <Link to="/matches">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Torna alle Partite
+                  </Link>
+                </Button>
+                <div className="h-8 w-px bg-border hidden sm:block" />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <h1 className="text-xl sm:text-2xl font-bold text-primary truncate">{match.home_away === 'home' ? 'vs' : '@'} {match.opponent_name}</h1>
+                    <Badge variant="outline" className="text-xs sm:text-sm whitespace-nowrap">{new Date(match.match_date).toLocaleDateString()} {match.match_time}</Badge>
+                  </div>
+                  {match.location && (
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{match.location}</p>
+                  )}
                 </div>
-                {match.location && (
-                  <p className="text-sm text-muted-foreground">{match.location}</p>
-                )}
               </div>
-            </div>
-            <div className="text-3xl font-bold">
-              {score.us} - {score.opp}
+              <div className="flex items-center gap-2">
+                <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={openEdit}>Modifica</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Modifica Partita</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-sm">Avversario</Label>
+                          <Input value={editOpponentName} onChange={(e)=>setEditOpponentName(e.target.value)} placeholder="Nome avversario" />
+                        </div>
+                        <div>
+                          <Label className="text-sm">Casa/Trasferta</Label>
+                          <select value={editHomeAway} onChange={(e)=>setEditHomeAway((e.target.value as 'home'|'away'))} className="h-9 w-full rounded border px-2 text-sm">
+                            <option value="home">Casa</option>
+                            <option value="away">Trasferta</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label className="text-sm">Data</Label>
+                          <Input type="date" value={editMatchDate || ''} onChange={(e)=>setEditMatchDate(e.target.value)} />
+                        </div>
+                        <div>
+                          <Label className="text-sm">Ora</Label>
+                          <Input type="time" value={editMatchTime || ''} onChange={(e)=>setEditMatchTime(e.target.value)} />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <Label className="text-sm">Luogo</Label>
+                          <Input value={editLocation} onChange={(e)=>setEditLocation(e.target.value)} placeholder="Campo/Stadio" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Seleziona provinanti</Label>
+                        <div className="max-h-40 overflow-y-auto border rounded p-2 space-y-1">
+                          {(allTrialists || []).map((t: any) => {
+                            const checked = selectedTrialists.includes(t.id)
+                            return (
+                              <label key={t.id} className="flex items-center gap-2 text-sm">
+                                <input type="checkbox" checked={checked} onChange={(e) => setSelectedTrialists((prev: string[]) => e.target.checked ? [...prev, t.id] : prev.filter((id: string) => id !== t.id))} />
+                                <span className="truncate">{t.first_name} {t.last_name}</span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setEditOpen(false)}>Annulla</Button>
+                        <Button onClick={handleSaveEdit} disabled={updateMatch.isPending}>Salva</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Button asChild size="sm"><Link to={`/match/${id}/live`}>Live</Link></Button>
+                <div className="text-2xl sm:text-3xl font-bold text-center sm:text-right">
+                  {score.us} - {score.opp}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

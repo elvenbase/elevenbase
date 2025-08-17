@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { CustomFormation } from '@/hooks/useCustomFormations'
-import { useFieldOptions } from '@/hooks/useFieldOptions'
+import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
+import { useRoles } from '@/hooks/useRoles'
 import { Trash2, Save, Plus } from 'lucide-react'
 
 interface FormationBuilderProps {
@@ -19,7 +20,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
   onSave,
   onCancel
 }) => {
-  const { options, loadOptions, getOptionsForField } = useFieldOptions();
+  const { data: roles = [] } = useRoles();
   const [name, setName] = useState(formation?.name || '')
   const [defenders, setDefenders] = useState(formation?.defenders || 4)
   const [midfielders, setMidfielders] = useState(formation?.midfielders || 4)
@@ -30,11 +31,11 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
 
   // Load field options on component mount
   useEffect(() => {
-    loadOptions();
-  }, [loadOptions]);
+    // roles are loaded via react-query
+  }, []);
 
-  // Get player roles from field_options
-  const playerRoles = getOptionsForField('player_role');
+  // Roles from roles table
+  const playerRoles = roles;
 
   const totalPlayers = defenders + midfielders + forwards
 
@@ -42,23 +43,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
     const newPositions = []
     let positionId = 1
 
-    // Get default roles for each position type
-    const getDefaultRole = (type: 'defender' | 'midfielder' | 'forward') => {
-      const roles = playerRoles.filter(role => {
-        const value = role.option_value.toLowerCase();
-        switch (type) {
-          case 'defender':
-            return value.includes('difensore') || value.includes('terzino') || value.includes('esterno');
-          case 'midfielder':
-            return value.includes('mediano') || value.includes('regista') || value.includes('mezzala') || value.includes('interno') || value.includes('trequartista');
-          case 'forward':
-            return value.includes('ala') || value.includes('punta') || value.includes('nove') || value.includes('centravanti');
-          default:
-            return false;
-        }
-      });
-      return roles.length > 0 ? roles[0] : null;
-    };
+    // No default specific roles except GK; sector placeholders are shown until user picks
 
     // Goalkeeper (always present)
     newPositions.push({
@@ -67,12 +52,12 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
       x: 50,
       y: 85,
       role: 'Portiere',
-      roleShort: 'P'
+      roleShort: 'P',
+      role_code: 'P'
     })
 
     // Defenders
     const defenderSpacing = defenders > 1 ? 80 / (defenders - 1) : 0
-    const defaultDefenderRole = getDefaultRole('defender');
     for (let i = 0; i < defenders; i++) {
       const x = defenders === 1 ? 50 : 10 + (i * defenderSpacing)
       newPositions.push({
@@ -80,15 +65,15 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Difensore ${positionId}`,
         x,
         y: 70,
-        role: defaultDefenderRole?.option_label || 'Difensore',
-        roleShort: defaultDefenderRole?.abbreviation || 'D'
+        role: undefined,
+        roleShort: undefined,
+        role_code: undefined
       })
       positionId++
     }
 
     // Midfielders
     const midfielderSpacing = midfielders > 1 ? 80 / (midfielders - 1) : 0
-    const defaultMidfielderRole = getDefaultRole('midfielder');
     for (let i = 0; i < midfielders; i++) {
       const x = midfielders === 1 ? 50 : 10 + (i * midfielderSpacing)
       newPositions.push({
@@ -96,15 +81,15 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Centrocampista ${positionId}`,
         x,
         y: 45,
-        role: defaultMidfielderRole?.option_label || 'Centrocampista',
-        roleShort: defaultMidfielderRole?.abbreviation || 'C'
+        role: undefined,
+        roleShort: undefined,
+        role_code: undefined
       })
       positionId++
     }
 
     // Forwards
     const forwardSpacing = forwards > 1 ? 80 / (forwards - 1) : 0
-    const defaultForwardRole = getDefaultRole('forward');
     for (let i = 0; i < forwards; i++) {
       const x = forwards === 1 ? 50 : 10 + (i * forwardSpacing)
       newPositions.push({
@@ -112,14 +97,15 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         name: `Attaccante ${positionId}`,
         x,
         y: 20,
-        role: defaultForwardRole?.option_label || 'Attaccante',
-        roleShort: defaultForwardRole?.abbreviation || 'A'
+        role: undefined,
+        roleShort: undefined,
+        role_code: undefined
       })
       positionId++
     }
 
     setPositions(newPositions)
-  }, [defenders, midfielders, forwards, playerRoles])
+  }, [defenders, midfielders, forwards])
 
   const handlePositionDrag = useCallback((positionId: string, event: React.MouseEvent | React.TouchEvent) => {
     event.preventDefault()
@@ -146,14 +132,22 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
     ))
   }, [])
 
-  const updatePositionRole = (positionId: string, role: string, roleShort?: string) => {
-    setPositions(prev => prev.map(pos => 
-      pos.id === positionId ? { ...pos, role, roleShort } : pos
-    ))
+  const updatePositionRole = (positionId: string, role: string, roleShort?: string, roleCode?: string) => {
+    setPositions(prev => prev.map(pos => {
+      if (pos.id !== positionId) return pos
+      const next = { ...pos, role, roleShort }
+      const role_code = roleCode || normalizeRoleCodeFrom(next)
+      return { ...next, role_code }
+    }))
   }
 
   const handleSave = () => {
     if (!name.trim()) {
+      return
+    }
+    // prevent save unless all positions have a role_code
+    const allRolesSelected = positions.every(p => p.role_code && typeof p.role_code === 'string' && p.role_code.length > 0)
+    if (!allRolesSelected) {
       return
     }
 
@@ -162,7 +156,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
       defenders,
       midfielders,
       forwards,
-      positions
+      positions: positions.map(p => ({ ...p, role_code: normalizeRoleCodeFrom(p) }))
     })
   }
 
@@ -331,25 +325,41 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                       
                       {/* Role display/edit - mobile */}
                       {editingRole === position.id ? (
-                        <input
-                          type="text"
-                          value={position.roleShort || ''}
-                          onChange={(e) => updatePositionRole(position.id, e.target.value)}
-                          onBlur={() => setEditingRole(null)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              setEditingRole(null)
-                            }
+                        <select
+                          value={position.role || ''}
+                          onChange={(e) => {
+                            const selectedRole = playerRoles.find(role => role.label === e.target.value)
+                            updatePositionRole(
+                              position.id,
+                              selectedRole?.label || e.target.value,
+                              selectedRole?.abbreviation || '',
+                              selectedRole?.code
+                            );
+                            setEditingRole(null)
                           }}
-                          className="text-xs bg-white border border-gray-300 rounded px-1 py-0.5 w-8 text-center"
+                          className="text-xs bg-white border border-gray-300 rounded px-1 py-0.5 min-w-[90px]"
                           autoFocus
-                        />
+                        >
+                          <option value="">Seleziona ruolo...</option>
+                          {playerRoles
+                            .filter(role => {
+                              if (position.id.startsWith('def-')) return ['TD','DCD','DC','DCS','TS'].includes(role.code.toUpperCase())
+                              if (position.id.startsWith('mid-')) return ['MED','REG','MC','MD','MS','QD','QS'].includes(role.code.toUpperCase())
+                              if (position.id.startsWith('fwd-')) return ['PU','AD','AS','ATT'].includes(role.code.toUpperCase())
+                              return true
+                            })
+                            .map((role) => (
+                            <option key={role.code} value={role.label}>
+                              {role.label} ({role.abbreviation})
+                            </option>
+                          ))}
+                        </select>
                       ) : (
                         <div
                           className="text-xs font-semibold text-gray-800 bg-white bg-opacity-90 px-1 py-0.5 rounded cursor-pointer hover:bg-opacity-100 transition-all"
                           onClick={() => setEditingRole(position.id)}
                         >
-                          {position.roleShort || position.role || 'Ruolo'}
+                          {position.role || position.name}
                         </div>
                       )}
                     </div>
@@ -460,20 +470,28 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
                              <select
                                value={position.role || ''}
                                onChange={(e) => {
-                                 const selectedRole = playerRoles.find(role => role.option_label === e.target.value);
+                                 const selectedRole = playerRoles.find(role => role.label === e.target.value);
                                  updatePositionRole(
-                                   position.id, 
-                                   selectedRole?.option_label || e.target.value,
-                                   selectedRole?.abbreviation || ''
+                                   position.id,
+                                   selectedRole?.label || e.target.value,
+                                   selectedRole?.abbreviation || '',
+                                   selectedRole?.code
                                  );
                                }}
                                className="w-full text-sm h-9 px-3 py-1 border border-gray-300 rounded-md bg-white"
                                autoFocus
                              >
                                <option value="">Seleziona ruolo...</option>
-                               {playerRoles.map((role) => (
-                                 <option key={role.id} value={role.option_label}>
-                                   {role.option_label} ({role.abbreviation})
+                               {playerRoles
+                                 .filter(role => {
+                                   if (position.id.startsWith('def-')) return ['TD','DCD','DC','DCS','TS'].includes(role.code.toUpperCase())
+                                   if (position.id.startsWith('mid-')) return ['MED','REG','MC','MD','MS','QD','QS'].includes(role.code.toUpperCase())
+                                   if (position.id.startsWith('fwd-')) return ['PU','AD','AS','ATT'].includes(role.code.toUpperCase())
+                                   return true
+                                 })
+                                 .map((role) => (
+                                 <option key={role.code} value={role.label}>
+                                   {role.label} ({role.abbreviation})
                                  </option>
                                ))}
                              </select>
@@ -577,7 +595,7 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
         <Button variant="outline" onClick={onCancel}>
           Annulla
         </Button>
-        <Button onClick={handleSave} disabled={!name.trim() || positions.length === 0}>
+        <Button onClick={handleSave} disabled={!name.trim() || positions.length === 0 || !positions.every(p => !!p.role_code)}>
           <Save className="w-4 h-4 mr-2" />
           Salva Formazione
         </Button>

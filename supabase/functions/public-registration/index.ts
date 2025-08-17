@@ -188,6 +188,7 @@ serve(async (req) => {
           id,
           session_id,
           player_id,
+          trialist_id,
           confirmed,
           notes,
           created_at,
@@ -197,6 +198,12 @@ serve(async (req) => {
             last_name,
             jersey_number,
             position,
+            avatar_url
+          ),
+          trialists:trialist_id (
+            id,
+            first_name,
+            last_name,
             avatar_url
           )
         `)
@@ -215,7 +222,7 @@ serve(async (req) => {
           trialist_id,
           status,
           self_registered,
-          trialists:trialist_id ( id, first_name, last_name )
+          trialists:trialist_id ( id, first_name, last_name, avatar_url )
         `)
         .eq('session_id', session.id)
       if (tiErr) console.warn('trialist invites fetch error', tiErr)
@@ -229,6 +236,7 @@ serve(async (req) => {
           id: t.trialist_id,
           first_name: t.trialists?.first_name,
           last_name: t.trialists?.last_name,
+          avatar_url: t.trialists?.avatar_url,
           status: t.status,
           self_registered: t.self_registered
         })),

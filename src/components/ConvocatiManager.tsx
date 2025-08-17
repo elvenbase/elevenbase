@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle } from 'lucide-react'
+import { Users, UserCheck, UserX, Plus, X, Info, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -19,6 +19,7 @@ interface Player {
   position?: string
   avatar_url?: string
   status: 'active' | 'inactive' | 'injured' | 'suspended'
+  isTrialist?: boolean
 }
 
 interface Attendance {
@@ -30,7 +31,8 @@ interface Attendance {
 interface Convocato {
   id: string
   session_id: string
-  player_id: string
+  player_id?: string
+  trialist_id?: string
   notes?: string
   created_at: string
   players?: Player
@@ -42,21 +44,24 @@ interface ConvocatiManagerProps {
   attendance?: Attendance[]
   playersInLineup?: string[]
   isReadOnly?: boolean
+  onConvocatiChange?: (ids: string[]) => void
 }
 
-export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInLineup = [], isReadOnly = false }: ConvocatiManagerProps) => {
+export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInLineup = [], isReadOnly = false, onConvocatiChange }: ConvocatiManagerProps) => {
   const [convocati, setConvocati] = useState<Convocato[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
 
-  // Filtra i giocatori escludendo quelli già nella formazione
-  const availablePlayers = allPlayers.filter(player => !playersInLineup.includes(player.id))
-
-  // Usa lo stesso criterio delle formazioni: solo giocatori presenti (e non nella formazione)
-  const presentPlayers = availablePlayers.filter(player => {
+  // Tutti i presenti (inclusi eventuali titolari) sono eleggibili ai convocati
+  const presentPlayers = allPlayers.filter(player => {
     const playerAttendance = attendance?.find(a => a.player_id === player.id);
     return playerAttendance?.status === 'present';
   })
+  
+  // Notifica al parent ogni volta che cambia la selezione dei convocati
+  useEffect(() => {
+    onConvocatiChange?.(selectedPlayers)
+  }, [selectedPlayers])
 
   // Carica i convocati esistenti
   useEffect(() => {
@@ -68,10 +73,14 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
 
     setLoading(true)
     try {
-      // Query diretta senza join per evitare problemi con i types
+      // Query diretta con join a players e trialists
       const { data, error } = await supabase
         .from('training_convocati')
-        .select('*')
+        .select(`
+          *,
+          players:player_id(id, first_name, last_name, jersey_number, avatar_url),
+          trialists:trialist_id(id, first_name, last_name, avatar_url)
+        `)
         .eq('session_id', sessionId)
 
       if (error) throw error
@@ -79,7 +88,9 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
       // Type assertion per gestire il tipo che arriva dal database
       const typedData = (data || []) as Convocato[]
       setConvocati(typedData)
-      setSelectedPlayers(typedData.map(c => c.player_id) || [])
+      const preSelected = typedData.map(c => (c.player_id || c.trialist_id) as string).filter(Boolean)
+      setSelectedPlayers(preSelected)
+      onConvocatiChange?.(preSelected)
     } catch (error) {
       console.error('Errore nel caricare i convocati:', error)
       toast.error('Errore nel caricare i convocati')
@@ -110,9 +121,18 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         .delete()
         .eq('session_id', sessionId)
 
-      // Poi inserisce i nuovi convocati (senza campo confirmed)
-      if (selectedPlayers.length > 0) {
-        const convocatiToInsert = selectedPlayers.map(playerId => ({
+      // Partiziona selezioni: tesserati vs provinanti
+      const rosterIds: string[] = []
+      const trialistIds: string[] = []
+      selectedPlayers.forEach(id => {
+        const p = allPlayers.find(pl => pl.id === id)
+        if (p?.isTrialist) trialistIds.push(id)
+        else rosterIds.push(id)
+      })
+
+      // Inserisce solo i tesserati nel DB (FK su players)
+      if (rosterIds.length > 0) {
+        const convocatiToInsert = rosterIds.map(playerId => ({
           session_id: sessionId,
           player_id: playerId
         }))
@@ -124,11 +144,20 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
         if (error) throw error
       }
 
+      // Inserisce anche i provinanti (colonna trialist_id)
+      if (trialistIds.length > 0) {
+        const trialRows = trialistIds.map(trialist_id => ({ session_id: sessionId, trialist_id }))
+        const { error: trialErr } = await supabase
+          .from('training_convocati')
+          .insert(trialRows)
+        if (trialErr) throw trialErr
+      }
+
       await loadConvocati()
-      toast.success('Panchina salvata con successo')
-    } catch (error) {
-      console.error('Errore nel salvare la panchina:', error)
-      toast.error('Errore nel salvare la panchina')
+      toast.success('Convocati salvati con successo')
+    } catch (error: any) {
+      console.error('Errore nel salvare i convocati:', error?.message || error, error)
+      toast.error(`Errore nel salvare i convocati${error?.message ? `: ${error.message}` : ''}`)
     } finally {
       setLoading(false)
     }
@@ -172,22 +201,29 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
   }
 
   // Calcolo nuove statistiche richieste
+  const titolariCount = playersInLineup.length
   const presentiCount = attendance?.filter(a => a.status === 'present').length || 0
+  const eleggibiliCount = presentPlayers.length // tutti i presenti
   const convocatiCount = convocati.length
-  const nonConvocatiCount = allPlayers.length - convocatiCount - playersInLineup.length
+  const disponibiliNonSelezionati = Math.max(0, eleggibiliCount - convocatiCount)
   const indisponibiliCount = allPlayers.filter(player => {
     const playerAttendance = attendance?.find(a => a.player_id === player.id)
     return player.status !== 'active' || 
            playerAttendance?.status === 'absent' || 
            playerAttendance?.status === 'excused'
   }).length
+  const senzaRispostaCount = allPlayers.filter(player => {
+    const a = attendance?.find(x => x.player_id === player.id)
+    return !a || a.status === 'pending'
+  }).length
+  const totaleConvocati = titolariCount + convocatiCount
   
   const allPresentSelected = presentPlayers.length > 0 && presentPlayers.every(player => selectedPlayers.includes(player.id))
 
   return (
     <div className="space-y-6">
       {/* Statistiche */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -195,6 +231,17 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
               <div>
                 <p className="text-2xl font-bold text-green-600">{presentiCount}</p>
                 <p className="text-sm text-muted-foreground">Presenti</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-2xl font-bold text-purple-600">{titolariCount}</p>
+                <p className="text-sm text-muted-foreground">Titolari</p>
               </div>
             </div>
           </CardContent>
@@ -215,8 +262,8 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-gray-600" />
               <div>
-                <p className="text-2xl font-bold text-gray-600">{nonConvocatiCount}</p>
-                <p className="text-sm text-muted-foreground">Non Convocati</p>
+                <p className="text-2xl font-bold text-gray-600">{disponibiliNonSelezionati}</p>
+                <p className="text-sm text-muted-foreground">Disponibili non selezionati</p>
               </div>
             </div>
           </CardContent>
@@ -232,6 +279,22 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-600" />
+              <div>
+                <p className="text-2xl font-bold text-amber-600">{senzaRispostaCount}</p>
+                <p className="text-sm text-muted-foreground">Senza risposta</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Riepilogo sintetico */}
+      <div className="text-sm text-muted-foreground">
+        {titolariCount} titolari + {convocatiCount} convocati = {totaleConvocati} convocati totali
       </div>
 
       {/* Selezione convocati */}
@@ -243,51 +306,29 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
               Seleziona Convocati
             </CardTitle>
             <CardDescription>
-              Seleziona i giocatori presenti da convocare per questa sessione
+              Seleziona i presenti da convocare
             </CardDescription>
           </CardHeader>
           <CardContent>
             {/* Messaggio informativo sul filtro */}
-            {allPlayers.length > presentPlayers.length && (
+            {presentPlayers.length === 0 && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center gap-2 text-blue-800">
                   <Info className="h-4 w-4" />
-                  <p className="text-sm">
-                    Vengono mostrati solo i <strong>{presentPlayers.length} giocatori presenti</strong>. 
-                    {allPlayers.length - presentPlayers.length > 0 && (
-                      <span className="ml-1">
-                        {allPlayers.length - presentPlayers.length} giocatori esclusi (assenti o non hanno confermato entro 4 ore dall'allenamento).
-                      </span>
-                    )}
-                  </p>
+                  <p className="text-sm">Nessun giocatore presente disponibile per la convocazione.</p>
                 </div>
-              </div>
-            )}
-
-            {presentPlayers.length === 0 && (
-              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-center gap-2 text-amber-800">
-                  <Info className="h-4 w-4" />
-                  <p className="text-sm">
-                    <strong>Nessun giocatore presente.</strong> I giocatori diventano "presenti" quando:
-                  </p>
-                </div>
-                <ul className="mt-2 text-sm text-amber-700 list-disc list-inside space-y-1">
-                  <li>Confermano la presenza entro 4 ore dall'inizio dell'allenamento</li>
-                  <li>Vengono segnati come presenti dall'allenatore nella sezione Presenze</li>
-                </ul>
               </div>
             )}
 
             {/* Pulsanti di controllo selezione */}
             {presentPlayers.length > 0 && (
-              <div className="mb-4 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
-                <div className="flex gap-2">
+              <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <div className="grid grid-cols-1 sm:auto-cols-max sm:grid-flow-col gap-2 w-full">
                   <Button
                     variant="outline"
                     onClick={selectAllPresentPlayers}
                     disabled={allPresentSelected}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <CheckCircle className="h-4 w-4" />
                     {allPresentSelected ? 'Tutti selezionati' : `Convoca tutti (${presentPlayers.length})`}
@@ -296,7 +337,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     <Button
                       variant="outline"
                       onClick={deselectAllPlayers}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 w-full sm:w-auto"
                     >
                       <XCircle className="h-4 w-4" />
                       Deseleziona tutti
@@ -333,14 +374,11 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     size="sm"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {player.first_name} {player.last_name}
+                    <p className="text-sm font-medium flex items-center gap-2">
+                      <span className="truncate">{player.first_name} {player.last_name}</span>
+                      {player.isTrialist && <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>}
                     </p>
-                    {player.jersey_number && (
-                      <p className="text-xs text-muted-foreground">
-                        #{player.jersey_number} • {player.position}
-                      </p>
-                    )}
+                    <p className="text-xs text-muted-foreground">{player.jersey_number ? `#${player.jersey_number}` : ''}</p>
                   </div>
                 </div>
               ))}
@@ -353,7 +391,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                 className="w-full"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {loading ? 'Salvando...' : 'Salva Panchina'}
+                {loading ? 'Salvando...' : 'Salva Convocati'}
               </Button>
             </div>
           </CardContent>
@@ -366,19 +404,19 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Lista Panchina
+              Lista Convocati
             </CardTitle>
             <CardDescription>
               {isReadOnly 
-                ? 'Giocatori in panchina per questa sessione'
-                : 'Giocatori selezionati per la panchina (oltre agli 11 titolari)'
+                ? 'Giocatori convocati per questa sessione'
+                : 'Giocatori selezionati come convocati'
               }
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {convocati.map((convocato) => {
-                const player = convocato.players || getPlayerById(convocato.player_id)
+                const player = convocato.players || getPlayerById((convocato.player_id || convocato.trialist_id) as string)
                 if (!player) return null
 
                 return (
@@ -398,6 +436,9 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                         <p className="font-medium">
                           {player.first_name} {player.last_name}
                         </p>
+                        {player.isTrialist && (
+                          <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>
+                        )}
                         {player.jersey_number && (
                           <Badge variant="outline" className="text-xs">
                             #{player.jersey_number}
@@ -416,18 +457,17 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                         <AlertDialogTrigger asChild>
                           <Button
                             variant="destructive"
-                            size="sm"
-                            className="flex items-center gap-1"
+                            size="icon"
+                            className="shrink-0"
                           >
-                            <X className="h-4 w-4" />
-                            Elimina
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Rimuovi dalla panchina</AlertDialogTitle>
+                            <AlertDialogTitle>Rimuovi convocato</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Sei sicuro di voler rimuovere <strong>{player.first_name} {player.last_name}</strong> dalla panchina?
+                              Sei sicuro di voler rimuovere <strong>{player.first_name} {player.last_name}</strong> dai convocati?
                               <br />
                               Questa azione non può essere annullata.
                             </AlertDialogDescription>
@@ -448,7 +488,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                     {isReadOnly && (
                       <Badge variant="default" className="flex items-center gap-1">
                         <UserCheck className="h-3 w-3" />
-                        In Panchina
+                        Convocato
                       </Badge>
                     )}
                   </div>

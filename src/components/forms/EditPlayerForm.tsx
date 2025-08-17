@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { useUpdatePlayer } from "@/hooks/useSupabaseData";
 import { useFieldOptions } from "@/hooks/useFieldOptions";
+import { useRoles } from "@/hooks/useRoles";
 import { supabase } from "@/integrations/supabase/client";
 import { Edit, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -33,9 +34,12 @@ interface EditPlayerFormProps {
     gaming_platform?: 'PC' | 'PS5' | 'Xbox';
     platform_id?: string;
   };
+  triggerAs?: 'button' | 'link';
+  triggerLabel?: string;
+  triggerClassName?: string;
 }
 
-const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
+const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica', triggerClassName = '' }: EditPlayerFormProps) => {
   const [open, setOpen] = useState(false);
   
   // Parse existing phone number to extract prefix and number
@@ -60,7 +64,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
     last_name: player.last_name,
     jersey_number: player.jersey_number || '',
     position: player.position || '',
-    player_role: player.player_role || '',
+    role_code: (player as any).role_code || '',
     status: player.status || 'active',
     phone: player.phone || '',
     birth_date: player.birth_date || '',
@@ -82,6 +86,7 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
   const { toast } = useToast();
 
   const { getOptionsForField, loadOptions } = useFieldOptions();
+  const { data: roles = [] } = useRoles();
 
   // Load field options when component mounts
   useEffect(() => {
@@ -171,8 +176,8 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
         first_name: formData.first_name,
         last_name: formData.last_name,
         jersey_number: formData.jersey_number ? parseInt(formData.jersey_number.toString()) : null,
-        position: formData.position || null,
-        player_role: formData.player_role || null,
+        position: null,
+        role_code: (formData as any).role_code || null,
         status: formData.status,
         phone: fullPhone || null,
         birth_date: formData.birth_date || null,
@@ -224,9 +229,13 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Edit className="h-4 w-4" />
-        </Button>
+        {triggerAs === 'link' ? (
+          <span className={`cursor-pointer ${triggerClassName}`}>{triggerLabel}</span>
+        ) : (
+          <Button variant="outline" size="sm">
+            <Edit className="h-4 w-4" />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -319,44 +328,21 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
                 onChange={(e) => setFormData(prev => ({ ...prev, jersey_number: e.target.value }))}
               />
             </div>
+            
             <div>
-              <Label htmlFor="position">Ruolo</Label>
+              <Label htmlFor="role_code">Ruolo</Label>
               <Select
-                value={formData.position}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleziona posizione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getOptionsForField('position').length > 0 ? (
-                    getOptionsForField('position').map((option) => (
-                      <SelectItem key={option.id} value={option.option_value}>
-                        {option.option_label}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="loading" disabled>
-                      Caricamento opzioni...
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="player_role">Ruolo</Label>
-              <Select
-                value={formData.player_role}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, player_role: value }))}
+                value={(formData as any).role_code}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, role_code: value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleziona ruolo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getOptionsForField('player_role').length > 0 ? (
-                    getOptionsForField('player_role').map((option) => (
-                      <SelectItem key={option.id} value={option.option_value}>
-                        {option.option_label}
+                  {roles.length > 0 ? (
+                    roles.map((r) => (
+                      <SelectItem key={r.code} value={r.code}>
+                        {r.label} ({r.abbreviation})
                       </SelectItem>
                     ))
                   ) : (

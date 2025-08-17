@@ -17,6 +17,7 @@ import { TrainingForm } from '@/components/forms/TrainingForm'
 import LineupManager from '@/components/LineupManager'
 import { ConvocatiManager } from '@/components/ConvocatiManager'
 import PublicLinkSharing from '@/components/PublicLinkSharing'
+import { Checkbox } from '@/components/ui/checkbox'
 
 import { toast } from 'sonner'
 
@@ -42,12 +43,13 @@ const SessionManagement = () => {
   const { id: sessionId } = useParams<{ id: string }>()
   const [refreshKey, setRefreshKey] = useState(0)
   const [playersInLineup, setPlayersInLineup] = useState<string[]>([])
+  const [convocatiSelectedIds, setConvocatiSelectedIds] = useState<string[]>([])
+  const [includeTrialistsInLineup] = useState(true)
   
   const { data: sessions, isLoading: loadingSessions } = useTrainingSessions()
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
   const { data: trialistInvites = [] } = useTrainingTrialistInvites(sessionId!)
   const { data: players, error: playersError, isLoading: loadingPlayers } = usePlayers()
-  
 
 
   const session = sessions?.find(s => s.id === sessionId) as TrainingSession | undefined
@@ -132,6 +134,79 @@ const SessionManagement = () => {
     const noResponse = Math.max(0, totalEntities - responded)
     return { present, absent, noResponse, totalPlayers: totalEntities }
   })()
+
+  // Liste per debug e selezione formazione
+  let presentPlayersList: any[] = []
+  try {
+    presentPlayersList = (players?.filter(player => {
+      const playerAttendance = attendance?.find(a => a.player_id === player.id);
+      return playerAttendance?.status === 'present';
+    }) || [])
+  } catch (e) {
+    console.error('SessionManagement presentPlayersList compute error:', e)
+    presentPlayersList = []
+  }
+
+  let presentTrialists: any[] = []
+  try {
+    presentTrialists = (trialistInvites as any[]).filter((t: any) => t.status === 'present')
+  } catch (e) {
+    console.error('SessionManagement presentTrialists compute error:', e)
+    presentTrialists = []
+  }
+
+  let trialistsAsPlayers: any[] = []
+  try {
+    trialistsAsPlayers = presentTrialists.map((t: any) => ({
+      id: t.trialist_id as string,
+      first_name: (t.trialists?.first_name as string) || 'Trialist',
+      last_name: (t.trialists?.last_name as string) || '',
+      position: undefined,
+      avatar_url: undefined,
+      isTrialist: true
+    }))
+  } catch (e) {
+    console.error('SessionManagement trialistsAsPlayers compute error:', e)
+    trialistsAsPlayers = []
+  }
+
+  const presentPlayersForLineup = includeTrialistsInLineup
+    ? [...presentPlayersList, ...trialistsAsPlayers]
+    : presentPlayersList
+
+  // Precompute bench lists to avoid inline IIFEs in render
+  let trialistAttendanceForBench: any[] = []
+  let attendanceForBench: any = attendance
+  let trialistsAsPlayersForBench: any[] = []
+  let allPlayersForBench: any = players
+  try {
+    trialistAttendanceForBench = includeTrialistsInLineup
+      ? (presentTrialists as any[]).map((t: any) => ({ id: `trialist-${t.trialist_id}`, player_id: t.trialist_id as string, status: 'present' }))
+      : []
+    attendanceForBench = includeTrialistsInLineup
+      ? ([...(attendance || []), ...trialistAttendanceForBench] as any)
+      : attendance
+    trialistsAsPlayersForBench = includeTrialistsInLineup
+      ? (presentTrialists as any[]).map((t: any) => ({
+          id: t.trialist_id as string,
+          first_name: (t.trialists?.first_name as string) || 'Trialist',
+          last_name: (t.trialists?.last_name as string) || '',
+          position: undefined,
+          avatar_url: undefined,
+          status: 'active' as const,
+          isTrialist: true,
+        }))
+      : []
+    allPlayersForBench = includeTrialistsInLineup
+      ? ([...(players || []), ...trialistsAsPlayersForBench] as any)
+      : players
+  } catch (e) {
+    console.error('SessionManagement bench compute error:', e)
+    trialistAttendanceForBench = []
+    attendanceForBench = attendance || []
+    trialistsAsPlayersForBench = []
+    allPlayersForBench = players || []
+  }
 
   if (loadingSessions) {
     return (
@@ -343,6 +418,31 @@ const SessionManagement = () => {
           </TabsContent>
 
           <TabsContent value="lineup" className="space-y-6">
+            {/* Panchina (Convocati) - sopra la Formazione */}
+            {sessionId && players && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Panchina
+                  </CardTitle>
+                  <CardDescription>
+                    Gestisci i giocatori in panchina per questa sessione di allenamento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ConvocatiManager 
+                    sessionId={sessionId}
+                    allPlayers={allPlayersForBench as any}
+                    attendance={attendanceForBench as any}
+                    playersInLineup={playersInLineup}
+                    onConvocatiChange={setConvocatiSelectedIds}
+                    key={`convocati-${refreshKey}`}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
             {/* Formazione */}
             <Card>
               <CardHeader>
@@ -355,55 +455,34 @@ const SessionManagement = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {sessionId && (
-                  <LineupManager 
-                    sessionId={sessionId} 
-                    key={`lineup-${refreshKey}`} 
-                    presentPlayers={players?.filter(player => {
-                      const playerAttendance = attendance?.find(a => a.player_id === player.id);
-                      return playerAttendance?.status === 'present';
-                    }) || []}
-                    onLineupChange={handleLineupChange}
-                  />
-                )}
                 
-                {/* Panchina - appare solo con formazione completa */}
-                {sessionId && players && playersInLineup.length === 11 && (
-                  <div className="mt-8 pt-8 border-t">
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Panchina
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Gestisci i giocatori in panchina per questa sessione di allenamento
-                      </p>
-                    </div>
-                    <ConvocatiManager 
-                      sessionId={sessionId}
-                      allPlayers={players}
-                      attendance={attendance}
-                      playersInLineup={playersInLineup}
-                      key={`convocati-${refreshKey}`}
+ 
+                <div className="overflow-x-hidden">
+                  {sessionId && convocatiSelectedIds.length >= 11 && (
+                    <LineupManager 
+                      sessionId={sessionId} 
+                      key={`lineup-${refreshKey}`} 
+                      presentPlayers={presentPlayersForLineup}
+                      onLineupChange={handleLineupChange}
                     />
-                  </div>
-                )}
-                
-                {/* Messaggio quando formazione non è completa */}
-                {playersInLineup.length < 11 && (
+                  )}
+                </div>
+ 
+                {/* Messaggio: abilita formazione quando almeno 11 convocati */}
+                {convocatiSelectedIds.length < 11 && (
                   <div className="mt-8 pt-8 border-t">
                     <div className="text-center p-6 bg-muted/50 rounded-lg">
                       <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">Completa la formazione</h3>
+                      <h3 className="text-lg font-medium mb-2">Convoca almeno 11 giocatori</h3>
                       <p className="text-muted-foreground">
-                        Seleziona tutti gli 11 titolari ({playersInLineup.length}/11) per accedere alla gestione della panchina
+                        Seleziona almeno 11 convocati ({convocatiSelectedIds.length}/11) per abilitare la gestione della formazione
                       </p>
                     </div>
                   </div>
                 )}
               </CardContent>
             </Card>
-
+ 
           </TabsContent>
 
           <TabsContent value="public-link" className="space-y-6">

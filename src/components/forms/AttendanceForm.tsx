@@ -9,6 +9,7 @@ import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTrainingAttendance, usePlayers, useTrainingTrialistInvites, useUpdateTrainingTrialistInvite } from '@/hooks/useSupabaseData';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AttendanceFormProps {
   sessionId: string;
@@ -19,6 +20,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const queryClient = useQueryClient();
   
   const { data: allPlayers = [], refetch: refetchPlayers } = usePlayers();
   const { data: existingAttendance = [], refetch } = useTrainingAttendance(sessionId);
@@ -71,6 +73,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
       toast.success('Auto-registrazione aggiornata');
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare l\'auto-registrazione: ' + error.message);
     } finally {
@@ -78,40 +81,42 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
     }
   };
 
+  const withinCoachWindow = () => {
+    // Trova data/ora sessione da props di pagina (non disponibile qui): fallback via /training_sessions fetch non banale.
+    // In questa form operiamo in runtime: abilitiamo la logica solo se esiste un attendance con registration_time mancante ed è passato il cutoff.
+    // La logica server-side o cron farà enforcement definitivo.
+    return true;
+  };
+
   const handleCoachConfirmationChange = async (playerId: string, confirmationStatus: string) => {
     try {
       setIsLoading(true);
-      
-      // Controlla se esiste già un record di presenza
       const existingRecord = existingAttendance.find(a => a.player_id === playerId);
-      
       if (existingRecord) {
-        // Aggiorna il record esistente
+        const autoIsPending = !existingRecord.status || existingRecord.status === 'pending';
         const { error } = await supabase
           .from('training_attendance')
           .update({ 
-            coach_confirmation_status: confirmationStatus
+            coach_confirmation_status: confirmationStatus,
+            status: autoIsPending ? 'no_response' : confirmationStatus
           })
           .eq('id', existingRecord.id);
-
         if (error) throw error;
       } else {
-        // Crea un nuovo record
         const { error } = await supabase
           .from('training_attendance')
           .insert({
             session_id: sessionId,
             player_id: playerId,
-            status: 'pending', // Default auto-registrazione
+            status: 'no_response',
             coach_confirmation_status: confirmationStatus,
             self_registered: false
           });
-
         if (error) throw error;
       }
-
       toast.success('Conferma presenza aggiornata');
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare la conferma: ' + error.message);
     } finally {
@@ -133,6 +138,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
         if (error) throw error;
         refetch();
+        queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
       }
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare il ritardo: ' + error.message);
@@ -151,6 +157,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
         if (error) throw error;
         refetch();
+        queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
       }
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare le note: ' + error.message);
@@ -182,10 +189,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         const existingRecord = existingAttendance.find(a => a.player_id === playerId);
         
         if (existingRecord) {
+          const autoIsPending = !existingRecord.status || existingRecord.status === 'pending';
           await supabase
             .from('training_attendance')
             .update({ 
-              status
+              coach_confirmation_status: status,
+              status: autoIsPending ? 'no_response' : status
             })
             .eq('id', existingRecord.id);
         } else {
@@ -194,15 +203,17 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
             .insert({
               session_id: sessionId,
               player_id: playerId,
-              status,
+              status: 'no_response',
+              coach_confirmation_status: status,
               self_registered: false
             });
         }
       }
 
-      toast.success(`${selectedPlayers.length} giocatori aggiornati`);
+      toast.success(`${selectedPlayers.length} conferme coach aggiornate`);
       setSelectedPlayers([]);
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
     } catch (error: any) {
       toast.error('Errore nell\'aggiornamento bulk: ' + error.message);
     } finally {
@@ -237,8 +248,17 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
       if (error) throw error;
 
+      // Invoca la funzione che marca i non rispondenti come "no_response" per questa sessione
+      try {
+        await supabase.rpc('mark_training_session_no_response', { sid: sessionId });
+      } catch (e) {
+        // Non bloccare la chiusura se la RPC fallisce: segnala solo
+        console.warn('RPC mark_training_session_no_response failed:', e);
+      }
+
       toast.success('Sessione chiusa con successo');
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
     } catch (error: any) {
       toast.error('Errore nella chiusura della sessione: ' + error.message);
     } finally {
@@ -394,6 +414,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                             In attesa
                           </div>
                         </SelectItem>
+                        <SelectItem value="no_response">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                            Non risposto
+                          </div>
+                        </SelectItem>
                         <SelectItem value="present">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -424,6 +450,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-gray-500" />
                             In attesa
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="no_response">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                            Non risposto
                           </div>
                         </SelectItem>
                         <SelectItem value="present">
@@ -517,6 +549,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                               In attesa
                             </div>
                           </SelectItem>
+                          <SelectItem value="no_response">
+                            <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              Non risposto
+                            </div>
+                          </SelectItem>
                           <SelectItem value="present">
                             <div className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-600" />
@@ -547,6 +585,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-gray-500" />
                               In attesa
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="no_response">
+                            <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              Non risposto
                             </div>
                           </SelectItem>
                           <SelectItem value="present">

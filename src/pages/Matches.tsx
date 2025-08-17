@@ -11,23 +11,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import StatsCard from '@/components/StatsCard'
 
-const MiniJersey = ({ o }: { o: any }) => {
-  if (!o) return null
-  if (o.jersey_image_url) return <img src={o.jersey_image_url} alt="jersey" className="h-5 w-5 rounded object-cover" />
-  const shape = o.jersey_shape as 'classic'|'stripes'|'hoops'|undefined
-  const p = o.jersey_primary_color || '#008080'
-  const s = o.jersey_secondary_color || '#ffffff'
-  const style: React.CSSProperties = {}
-  if (shape === 'stripes') {
-    style.backgroundImage = `repeating-linear-gradient(90deg, ${p} 0 6px, ${s} 6px 12px)`
-  } else if (shape === 'hoops') {
-    style.backgroundImage = `repeating-linear-gradient(0deg, ${p} 0 6px, ${s} 6px 12px)`
-  } else {
-    style.backgroundColor = p
-  }
-  return <div className="h-5 w-5 rounded border" style={style} />
-}
-
 const Matches = () => {
   const { data: matches = [], isLoading } = useMatches()
   const { data: players = [] } = usePlayers()
@@ -100,7 +83,6 @@ const Matches = () => {
                     <img src={m.opponents.logo_url} alt={m.opponents?.name || 'logo'} className="h-6 w-6 rounded object-cover" />
                   )}
                   <span className="font-semibold truncate" title={title}>{title}</span>
-                  <MiniJersey o={m.opponents} />
                   <Badge variant="outline">{m.home_away === 'home' ? 'Casa' : 'Trasferta'}</Badge>
                 </div>
                 <div className="mt-1 flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
@@ -233,7 +215,6 @@ const Matches = () => {
                                     <img src={m.opponents.logo_url} alt={m.opponents?.name || 'logo'} className="h-6 w-6 rounded object-cover" />
                                   )}
                                   <span>{m.home_away === 'home' ? 'vs' : '@'} {m.opponent_name}</span>
-                                  <MiniJersey o={m.opponents} />
                                   <Badge variant="outline">{m.home_away === 'home' ? 'Casa' : 'Trasferta'}</Badge>
                                 </div>
                               </TableCell>
@@ -311,7 +292,6 @@ const Matches = () => {
                                     <img src={m.opponents.logo_url} alt={m.opponents?.name || 'logo'} className="h-6 w-6 rounded object-cover" />
                                   )}
                                   <span>{m.home_away === 'home' ? 'vs' : '@'} {m.opponent_name}</span>
-                                  <MiniJersey o={m.opponents} />
                                   <Badge variant="outline">{m.home_away === 'home' ? 'Casa' : 'Trasferta'}</Badge>
                                 </div>
                               </TableCell>

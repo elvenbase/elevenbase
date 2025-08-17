@@ -59,6 +59,7 @@ interface Player {
   jersey_number?: number
   position?: string
   avatar_url?: string
+  isTrialist?: boolean
 }
 
 interface LineupManagerProps {
@@ -616,10 +617,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         <SelectContent>
                           <SelectItem value="none">Rimuovi giocatore</SelectItem>
                           {getAvailablePlayers(position.id).map(player => (
-                            <SelectItem key={player.id} value={player.id}>
+                            <SelectItem key={player.id} value={player.id} className="py-2 min-h-10">
                               <div className="flex items-center gap-3">
                                 <Avatar 
-                                  className="w-8 h-8"
+                                  className="w-8 h-8 shrink-0"
                                   style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
@@ -631,7 +632,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
-                                  <span className="font-medium">{player.first_name} {player.last_name}</span>
+                                  <span className="font-medium flex items-center gap-1">{player.first_name} {player.last_name}{player.isTrialist && (<Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>)}</span>
                                   {player.position && (
                                     <span className="text-xs text-muted-foreground">{player.position}</span>
                                   )}
@@ -772,7 +773,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         )}
                         
                         <div className="text-sm font-medium text-gray-800 bg-white/90 px-2 py-1 rounded-lg shadow-sm">
-                          {assignedPlayer ? `${assignedPlayer.first_name} ${assignedPlayer.last_name}` : position.name}
+                          {assignedPlayer ? (
+                            <span className="inline-flex items-center gap-1">
+                              {assignedPlayer.first_name} {assignedPlayer.last_name}
+                              {assignedPlayer.isTrialist && (
+                                <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>
+                              )}
+                            </span>
+                          ) : position.name}
                         </div>
                       </div>
                     </div>
@@ -790,10 +798,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         <SelectContent>
                           <SelectItem value="none">Nessun giocatore</SelectItem>
                                                      {getAvailablePlayers(position.id).map(player => (
-                            <SelectItem key={player.id} value={player.id}>
+                            <SelectItem key={player.id} value={player.id} className="py-2 min-h-10">
                               <div className="flex items-center gap-3">
                                 <Avatar 
-                                  className="w-8 h-8"
+                                  className="w-8 h-8 shrink-0"
                                   style={getAvatarBackground(player.first_name + player.last_name, !!player.avatar_url)}
                                 >
                                   <AvatarImage src={player.avatar_url || undefined} />
@@ -805,7 +813,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
-                                  <span className="font-medium">{player.first_name} {player.last_name}</span>
+                                  <span className="font-medium flex items-center gap-1">{player.first_name} {player.last_name}{player.isTrialist && (<Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>)}</span>
                                   {player.position && (
                                     <span className="text-xs text-muted-foreground">{player.position}</span>
                                   )}
@@ -854,12 +862,12 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
         </div>
 
         {/* Azioni formazione */}
-        <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={!canSave || !isDirty}>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-start">
+          <Button className="w-full sm:w-auto" onClick={handleSave} disabled={!canSave || !isDirty}>
             <Save className="mr-2 h-4 w-4" />
             {getSaveButtonText()}
           </Button>
-          <Button variant="outline" onClick={handleClear} disabled={loading}>
+          <Button variant="outline" className="w-full sm:w-auto" onClick={handleClear} disabled={loading}>
             <Trash2 className="mr-2 h-4 w-4" />
             Cancella Tutto
           </Button>

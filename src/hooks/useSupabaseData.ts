@@ -50,7 +50,14 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
           presences: 0,
           tardiness: 0,
           totalEvents: 0,
-          attendanceRate: 0
+          attendanceRate: 0,
+          // detailed split fields (for UI)
+          trainingPresences: 0,
+          trainingTardiness: 0,
+          trainingTotal: 0,
+          matchPresences: 0,
+          matchTardiness: 0,
+          matchEndedTotal: 0,
         }));
       }
       
@@ -59,26 +66,25 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
       const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
       const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
       
-      const { data: closedSessions, error: sessionsError } = await supabase
+      const { data: trainingSessions, error: sessionsError } = await supabase
         .from('training_sessions')
         .select('id, session_date, is_closed, title')
         .gte('session_date', startDateStr)
-        .lte('session_date', endDateStr)
-        .eq('is_closed', true);
+        .lte('session_date', endDateStr);
       
       if (sessionsError) {
         console.error('Error fetching training sessions:', sessionsError);
         throw sessionsError;
       }
       
-      const sessionIds = closedSessions?.map(s => s.id) || [];
+      const sessionIds = (trainingSessions || []).map(s => s.id);
       
       // Poi recupera le presenze per quelle sessioni
       let trainingAttendance = [];
       if (sessionIds.length > 0) {
         const { data, error: trainingError } = await supabase
           .from('training_attendance')
-          .select('player_id, status, arrival_time, session_id')
+          .select('player_id, status, coach_confirmation_status, arrival_time, session_id')
           .in('session_id', sessionIds);
         
         if (trainingError) {
@@ -96,30 +102,53 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         .select(`
           player_id,
           status,
-          matches!inner(match_date)
+          coach_confirmation_status,
+          arrival_time,
+          matches!inner(match_date, live_state)
         `)
         .gte('matches.match_date', startDate.toISOString().split('T')[0])
-        .lte('matches.match_date', endDate.toISOString().split('T')[0]);
+        .lte('matches.match_date', endDate.toISOString().split('T')[0])
+        .eq('matches.live_state', 'ended');
 
       if (matchError) {
         console.error('Error fetching match attendance:', matchError);
         throw matchError;
       }
 
+      // Total ended matches in period (team-level)
+      const { data: endedMatches, error: endedErr } = await supabase
+        .from('matches')
+        .select('id')
+        .gte('match_date', startDate.toISOString().split('T')[0])
+        .lte('match_date', endDate.toISOString().split('T')[0])
+        .eq('live_state', 'ended');
+      if (endedErr) {
+        console.error('Error fetching ended matches:', endedErr);
+        throw endedErr;
+      }
+      const totalEndedMatches = (endedMatches || []).length;
+
       // Calculate stats for each player
       return players.map(player => {
         const playerTrainingAttendance = trainingAttendance.filter(ta => ta.player_id === player.id);
         const playerMatchAttendance = matchAttendance.filter(ma => ma.player_id === player.id);
         
-        const trainingPresences = playerTrainingAttendance.filter(ta => ta.status === 'present').length;
-        const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'present' && ta.arrival_time !== null).length;
+                // Presenze/ritardi allenamenti basati su conferma coach se presente
+        const hasCoachConfirm = playerTrainingAttendance.some(ta => ta.coach_confirmation_status && ta.coach_confirmation_status !== 'pending')
+        const trainingPresences = hasCoachConfirm
+          ? playerTrainingAttendance.filter(ta => ['present','late'].includes(ta.coach_confirmation_status || 'pending')).length
+          : playerTrainingAttendance.filter(ta => ta.status === 'present' || ta.status === 'late').length
+        const trainingTardiness = hasCoachConfirm
+          ? playerTrainingAttendance.filter(ta => (ta.coach_confirmation_status === 'late') || ((ta.coach_confirmation_status === 'present' || ta.coach_confirmation_status === 'late') && !!ta.arrival_time)).length
+          : playerTrainingAttendance.filter(ta => (ta.status === 'late') || ((ta.status === 'present' || ta.status === 'late') && !!ta.arrival_time)).length
+        const trainingTotal = playerTrainingAttendance.length;
         
-        const matchPresences = playerMatchAttendance.filter(ma => ma.status === 'present').length;
-        const matchTardiness = playerMatchAttendance.filter(ma => ma.status === 'late').length;
+        const matchPresences = playerMatchAttendance.filter(ma => (ma.coach_confirmation_status === 'present') || (ma.status === 'present')).length;
+        const matchTardiness = playerMatchAttendance.filter(ma => ((ma.coach_confirmation_status === 'present') || (ma.status === 'present')) && !!ma.arrival_time).length;
         
         const totalPresences = trainingPresences + matchPresences;
         const totalTardiness = trainingTardiness + matchTardiness;
-        const totalEvents = playerTrainingAttendance.length + playerMatchAttendance.length;
+        const totalEvents = trainingTotal + playerMatchAttendance.length;
         const attendanceRate = totalEvents > 0 ? Math.round((totalPresences / totalEvents) * 100) : 0;
 
         return {
@@ -127,7 +156,14 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
           presences: totalPresences,
           tardiness: totalTardiness,
           totalEvents,
-          attendanceRate
+          attendanceRate,
+          // detailed split
+          trainingPresences,
+          trainingTardiness,
+          trainingTotal,
+          matchPresences,
+          matchTardiness,
+          matchEndedTotal: totalEndedMatches,
         };
       });
     },
@@ -575,7 +611,7 @@ export const useTrainingTrialistInvites = (sessionId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('training_trialist_invites')
-        .select('*, trialists:trialist_id(first_name,last_name)')
+        .select('*, trialists:trialist_id(id,first_name,last_name,role_code)')
         .eq('session_id', sessionId)
       if (error) throw error
       return data || []
@@ -609,7 +645,7 @@ export const useMatchTrialistInvites = (matchId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('match_trialist_invites')
-        .select('*, trialists:trialist_id(first_name,last_name)')
+        .select('*, trialists:trialist_id(id,first_name,last_name,role_code)')
         .eq('match_id', matchId)
       if (error) throw error
       return data || []
@@ -1215,12 +1251,37 @@ export const useMatchEvents = (matchId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('match_events')
-        .select(`*, players:player_id(first_name,last_name)`).eq('match_id', matchId)
+        .select(`*, players:player_id(first_name,last_name), trialists:trialist_id(id,first_name,last_name)`).eq('match_id', matchId)
         .order('created_at', { ascending: true })
       if (error) throw error
       return data
     },
     enabled: !!matchId
+  })
+}
+
+export const useUpdateMatch = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<{ opponent_name: string; match_date: string; match_time: string; home_away: 'home'|'away'; location?: string|null; competition_id?: string|null; notes?: string|null; allow_trialists?: boolean }> }) => {
+      const { data, error } = await supabase
+        .from('matches')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      queryClient.invalidateQueries({ queryKey: ['match', data.id] })
+      toast({ title: 'Partita aggiornata' })
+    },
+    onError: (e: any) => {
+      toast({ title: 'Errore aggiornamento partita', description: e?.message, variant: 'destructive' })
+    }
   })
 }
 
@@ -1353,33 +1414,6 @@ export const useDeleteOpponent = () => {
   })
 }
 
-export const useUpdateMatch = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: async (payload: { id: string; data: Record<string, any> }) => {
-      const { id, data } = payload;
-      const { data: res, error } = await supabase
-        .from('matches')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
-      if (error) throw error;
-      return res;
-    },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['match', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      toast({ title: 'Partita aggiornata' });
-    },
-    onError: (error: any) => {
-      toast({ title: 'Errore aggiornando la partita', description: error?.message, variant: 'destructive' });
-    }
-  });
-}
-
 export const useDeleteMatch = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -1494,45 +1528,20 @@ export const useCreateAttendance = () => {
 export const useUpdatePlayerStatistics = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ sessionId }: { sessionId: string }) => {
-      // Prendi tutte le presenze per questa sessione
-      const { data: attendance, error: attendanceError } = await supabase
-        .from('training_attendance')
-        .select('player_id, status')
-        .eq('session_id', sessionId);
-
-      if (attendanceError) throw attendanceError;
-
-      // Aggiorna le statistiche per ogni giocatore
-      for (const record of attendance || []) {
-        const { data: existingStats, error: statsError } = await supabase
+    mutationFn: async ({ records }: { records: Array<{ player_id: string; attendanceRate: number }> }) => {
+      for (const record of records) {
+        const attendanceRate = record.attendanceRate;
+        const { data: existingStats, error: fetchError } = await supabase
           .from('player_statistics')
           .select('*')
           .eq('player_id', record.player_id)
-          .maybeSingle();
-
-        if (statsError) throw statsError;
-
-        // Calcola le nuove statistiche basate su tutte le presenze del giocatore
-        const { data: allAttendance, error: allAttendanceError } = await supabase
-          .from('training_attendance')
-          .select('status')
-          .eq('player_id', record.player_id);
-
-        if (allAttendanceError) throw allAttendanceError;
-
-        const totalSessions = allAttendance?.length || 0;
-        const presentSessions = allAttendance?.filter(a => a.status === 'present').length || 0;
-        const attendanceRate = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
+          .single();
+        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
 
         if (existingStats) {
-          // Aggiorna statistiche esistenti
           const { error: updateError } = await supabase
             .from('player_statistics')
-            .update({
-              training_attendance_rate: attendanceRate,
-              updated_at: new Date().toISOString()
-            })
+            .update({ training_attendance_rate: attendanceRate })
             .eq('id', existingStats.id);
 
           if (updateError) throw updateError;
@@ -1553,7 +1562,6 @@ export const useUpdatePlayerStatistics = () => {
       return { success: true };
     },
     onSuccess: () => {
-      const queryClient = useQueryClient();
       queryClient.invalidateQueries({ queryKey: ['player-statistics'] });
     }
   });
@@ -1786,7 +1794,7 @@ export const useBulkUpdateMatchAttendance = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: { match_id: string; player_ids: string[]; status: string }) => {
-      const updates = payload.player_ids.map((player_id) => ({ match_id: payload.match_id, player_id, status: payload.status }))
+      const updates = payload.player_ids.map((player_id) => ({ match_id: payload.match_id, player_id, coach_confirmation_status: payload.status }))
       const { error } = await supabase.from('match_attendance').upsert(updates, { onConflict: 'match_id,player_id' })
       if (error) throw error
       return true
@@ -1821,5 +1829,300 @@ export const useEnsureMatchPublicSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['match', matchId] })
       queryClient.invalidateQueries({ queryKey: ['matches'] })
     }
+  })
+}
+
+export const useFinalizeMatch = () => {
+  return useMutation({
+    mutationFn: async ({ matchId, ourScore, opponentScore }: { matchId: string; ourScore: number; opponentScore: number }) => {
+      const { error } = await supabase.from('matches').update({ live_state: 'ended', our_score: ourScore, opponent_score: opponentScore }).eq('id', matchId)
+      if (error) throw error
+      return true
+    }
+  })
+}
+
+export const useUpsertMatchPlayerStats = () => {
+  return useMutation({
+    mutationFn: async ({ rows }: { rows: Array<any> }) => {
+      const tryUpsert = async (batch: any[], conflict: 'match_id,player_id' | 'match_id,trialist_id') => {
+        if (batch.length === 0) return
+        const { error } = await supabase.from('match_player_stats').upsert(batch, { onConflict: conflict as any })
+        if (error) {
+          // Fallback for environments missing proper UNIQUE CONSTRAINTS (42P10)
+          const code = (error as any).code || (error as any)?.details || ''
+          if (String(code).includes('42P10') || /no unique|ON CONFLICT/.test(String((error as any).message || ''))) {
+            for (const rec of batch) {
+              const isPlayer = !!rec.player_id
+              const eqs = isPlayer
+                ? { match_id: rec.match_id, player_id: rec.player_id }
+                : { match_id: rec.match_id, trialist_id: rec.trialist_id }
+              const { data: existing, error: selErr } = await supabase
+                .from('match_player_stats')
+                .select('id')
+                .match(eqs as any)
+                .maybeSingle()
+              if (selErr) throw selErr
+              if (existing) {
+                const { error: updErr } = await supabase
+                  .from('match_player_stats')
+                  .update({ ...rec })
+                  .eq('id', (existing as any).id)
+                if (updErr) throw updErr
+              } else {
+                const { error: insErr } = await supabase
+                  .from('match_player_stats')
+                  .insert(rec)
+                if (insErr) throw insErr
+              }
+            }
+          } else {
+            throw error
+          }
+        }
+      }
+
+      const playerRows = rows.filter(r => !!r.player_id)
+      const trialistRows = rows.filter(r => !!r.trialist_id)
+
+      await tryUpsert(playerRows, 'match_id,player_id')
+      await tryUpsert(trialistRows, 'match_id,trialist_id')
+      return true
+    }
+  })
+}
+
+export const usePlayerAttendanceSummary = (playerId: string, startDate?: Date, endDate?: Date) => {
+  return useQuery({
+    queryKey: ['player-attendance-summary', playerId, startDate?.toISOString(), endDate?.toISOString()],
+    queryFn: async () => {
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const fmt = (d?: Date) => d ? `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` : undefined
+      const startStr = fmt(startDate)
+      const endStr = fmt(endDate)
+
+      // Fetch sessions in period
+      let tsq = supabase.from('training_sessions').select('id, session_date, start_time, end_time')
+      if (startStr) tsq = tsq.gte('session_date', startStr)
+      if (endStr) tsq = tsq.lte('session_date', endStr)
+      const tsRes = await tsq
+      if (tsRes.error) throw tsRes.error
+      const sessions = (tsRes.data || []) as any[]
+      const sessionIds = sessions.map(s => s.id)
+      const sessionsById = new Map<string, any>(sessions.map(s => [s.id, s]))
+
+      // Training attendance for player within period (by session_id)
+      const trRes = await supabase
+        .from('training_attendance')
+        .select('session_id, status, coach_confirmation_status, arrival_time, self_registered')
+        .eq('player_id', playerId)
+        .in('session_id', sessionIds)
+      if (trRes.error) throw trRes.error
+      const training = (trRes.data || []) as any[]
+
+      // Training convocati for this player in period (to create synthetic events if no attendance row exists)
+      const tcRes = await supabase
+        .from('training_convocati')
+        .select('session_id')
+        .eq('player_id', playerId)
+        .in('session_id', sessionIds)
+      if (tcRes.error) throw tcRes.error
+      const convocati = (tcRes.data || []) as any[]
+
+      // Match attendance joined with match datetime
+      let mtq = supabase
+        .from('match_attendance')
+        .select(`
+          match_id,
+          status,
+          coach_confirmation_status,
+          arrival_time,
+          matches!inner(match_date, match_time, live_state)
+        `)
+        .eq('player_id', playerId)
+      if (startStr) mtq = mtq.gte('matches.match_date', startStr) as any
+      if (endStr) mtq = mtq.lte('matches.match_date', endStr) as any
+      const mtRes = await mtq
+      if (mtRes.error) throw mtRes.error
+      const matches = (mtRes.data || []) as any[]
+
+      const now = Date.now()
+      const fourHours = 4 * 60 * 60 * 1000
+
+      // Helpers
+      const isPresentTraining = (r: any) => {
+        const coach = r.coach_confirmation_status
+        const auto = r.status
+        return (coach === 'present' || coach === 'late') || (auto === 'present' || auto === 'late')
+      }
+      const isPresentMatch = (r: any) => {
+        const coach = r.coach_confirmation_status
+        const auto = r.status
+        return (coach === 'present') || (auto === 'present')
+      }
+
+      const events: any[] = []
+
+      let tPresent = 0, tLate = 0, tTotal = 0, tAutoNoResp = 0, tCoachCovered = 0, tPendingAtGate = 0
+      const trainingBySession = new Map<string, any>()
+      training.forEach(r => trainingBySession.set(r.session_id, r))
+
+      // Merge convocati -> create synthetic record if missing attendance
+      const allTrainingSessions: any[] = []
+      convocati.forEach(c => { allTrainingSessions.push({ source: 'convocati', session_id: c.session_id, training_sessions: sessionsById.get(c.session_id) }) })
+      training.forEach(t => { if (!allTrainingSessions.find(x => x.session_id === t.session_id)) allTrainingSessions.push({ source: 'attendance', session_id: t.session_id, training_sessions: sessionsById.get(t.session_id) }) })
+
+      allTrainingSessions.forEach(item => {
+        const att = trainingBySession.get(item.session_id)
+        const dt = item.training_sessions
+        const startTs = dt?.session_date && dt?.start_time ? new Date(`${dt.session_date}T${dt.start_time}`).getTime() : undefined
+        let rec: any = att
+        if (!rec) {
+          // synthetic: no attendance row, derive status by gate
+          const atGate = startTs ? (now >= (startTs - fourHours)) : false
+          rec = { session_id: item.session_id, status: atGate ? 'no_response' : 'pending', coach_confirmation_status: 'pending', arrival_time: null, self_registered: false, training_sessions: dt }
+        }
+        const present = isPresentTraining(rec)
+        const late = (rec.coach_confirmation_status === 'late') || (rec.status === 'late') || (present && !!rec.arrival_time)
+        const coachCovered = !!rec.coach_confirmation_status && rec.coach_confirmation_status !== 'pending'
+        const atGate = startTs ? (now >= (startTs - fourHours)) : false
+        if (atGate && (rec.status === 'pending' || rec.status == null)) tPendingAtGate += 1
+        if (rec.status === 'no_response') tAutoNoResp += 1
+        if (coachCovered) tCoachCovered += 1
+        if (present) tPresent += 1
+        if (late) tLate += 1
+        tTotal += 1
+        events.push({ type: 'training', date: dt?.session_date || null, time: dt?.start_time || null, start_ts: startTs, present, late, auto: rec.status, coach: rec.coach_confirmation_status, arrival_time: rec.arrival_time })
+      })
+
+      let mPresent = 0, mLate = 0, mTotal = 0, mAutoNoResp = 0, mCoachCovered = 0, mPendingAtGate = 0
+      matches.forEach(r => {
+        const dm = r.matches
+        const startTs = dm?.match_date && dm?.match_time ? new Date(`${dm.match_date}T${dm.match_time}`).getTime() : undefined
+        const present = isPresentMatch(r)
+        const late = present && !!r.arrival_time
+        const coachCovered = !!r.coach_confirmation_status && r.coach_confirmation_status !== 'pending'
+        const atGate = startTs ? (now >= (startTs - fourHours)) : false
+        if (atGate && (r.status === 'pending' || r.status == null)) mPendingAtGate += 1
+        if (r.status === 'no_response') mAutoNoResp += 1
+        if (coachCovered) mCoachCovered += 1
+        if (present) mPresent += 1
+        if (late) mLate += 1
+        mTotal += 1
+        events.push({ type: 'match', date: dm?.match_date || null, time: dm?.match_time || null, start_ts: startTs, present, late, auto: r.status, coach: r.coach_confirmation_status, arrival_time: r.arrival_time, live_state: dm?.live_state })
+      })
+
+      // Distribution of auto statuses
+      const distAutoCounts: Record<string, number> = { present: 0, absent: 0, late: 0, excused: 0, no_response: 0, pending: 0 }
+      training.forEach(r => { if (r.status && distAutoCounts[r.status] !== undefined) distAutoCounts[r.status] += 1 })
+      matches.forEach(r => { if (r.status && distAutoCounts[r.status] !== undefined) distAutoCounts[r.status] += 1 })
+
+      const totalsPresent = tPresent + mPresent
+      const totalsLate = tLate + mLate
+      const totalsEvents = tTotal + mTotal
+      const totalsNoResp = tAutoNoResp + mAutoNoResp
+      const totalsCoachCovered = tCoachCovered + mCoachCovered
+      const totalsAtGate = tPendingAtGate + mPendingAtGate
+
+      const attendanceRate = totalsEvents > 0 ? Math.round((totalsPresent / totalsEvents) * 100) : 0
+      const trainingRate = tTotal > 0 ? Math.round((tPresent / tTotal) * 100) : 0
+      const matchRate = mTotal > 0 ? Math.round((mPresent / mTotal) * 100) : 0
+      const latePct = totalsPresent > 0 ? Math.round((totalsLate / totalsPresent) * 100) : 0
+      const noRespPct = totalsEvents > 0 ? Math.round((totalsNoResp / totalsEvents) * 100) : 0
+      const coachCoveragePct = totalsEvents > 0 ? Math.round((totalsCoachCovered / totalsEvents) * 100) : 0
+      const pendingAtGatePct = totalsAtGate > 0 ? Math.round((totalsAtGate / totalsEvents) * 100) : 0
+
+      return {
+        training: { present: tPresent, tardy: tLate, total: tTotal, autoNoResponse: tAutoNoResp, coachCovered: tCoachCovered, pendingAtGate: tPendingAtGate, rate: trainingRate },
+        match: { present: mPresent, tardy: mLate, total: mTotal, autoNoResponse: mAutoNoResp, coachCovered: mCoachCovered, pendingAtGate: mPendingAtGate, rate: matchRate },
+        totals: { present: totalsPresent, tardy: totalsLate, total: totalsEvents, attendanceRate, latePct, noRespPct, coachCoveragePct, pendingAtGatePct },
+        events,
+        distAuto: distAutoCounts,
+      }
+    },
+    enabled: !!playerId
+  })
+}
+
+export const useMatchEventsRaw = (matchId: string) => {
+  return useQuery({
+    queryKey: ['match-events-raw', matchId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('match_events').select('*').eq('match_id', matchId).order('created_at', { ascending: true })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!matchId
+  })
+}
+
+export const usePlayerMatchStats = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player-match-stats', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('match_player_stats')
+        .select(`
+          id, match_id, player_id, started, minutes, goals, assists, yellow_cards, red_cards, fouls_committed, saves, sub_in_minute, sub_out_minute, was_in_squad,
+          matches:match_id(id, match_date, match_time, opponent_name, our_score, opponent_score, notes, opponent_id, mvp_player_id, mvp_trialist_id,
+            opponents:opponent_id(name, logo_url)
+          )
+        `)
+        .eq('player_id', playerId)
+        .order('match_id', { ascending: false })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!playerId
+  })
+}
+
+export const usePlayerById = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('players').select('*').eq('id', playerId).maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!playerId
+  })
+}
+
+export const useFormerTrialistData = (player: any) => {
+  return useQuery({
+    queryKey: ['former-trialist', player?.email || player?.first_name || '', player?.last_name || ''],
+    queryFn: async () => {
+      if (!player) return null
+      // Try match by email first
+      if (player.email) {
+        const { data: tByEmail } = await supabase.from('trialists').select('*, trial_evaluations:trial_evaluations(*)').eq('email', player.email).order('created_at', { ascending: false })
+        if (tByEmail && tByEmail.length > 0) return tByEmail[0]
+      }
+      // Fallback: by name (best effort)
+      const { data: tByName } = await supabase.from('trialists').select('*, trial_evaluations:trial_evaluations(*)')
+        .ilike('first_name', player.first_name || '')
+        .ilike('last_name', player.last_name || '')
+        .order('created_at', { ascending: false })
+      return (tByName && tByName.length > 0) ? tByName[0] : null
+    },
+    enabled: !!player
+  })
+}
+
+export const usePlayerNoteEvents = (playerId: string) => {
+  return useQuery({
+    queryKey: ['player-note-events', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('match_events')
+        .select('id, match_id, event_type, comment, minute, period, created_at')
+        .eq('player_id', playerId)
+        .eq('event_type', 'note')
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!playerId
   })
 }
