@@ -48,10 +48,16 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         return players.map(player => ({
           ...player,
           presences: 0,
-          matchPresences: 0,
           tardiness: 0,
           totalEvents: 0,
-          attendanceRate: 0
+          attendanceRate: 0,
+          // detailed split fields (for UI)
+          trainingPresences: 0,
+          trainingTardiness: 0,
+          trainingTotal: 0,
+          matchPresences: 0,
+          matchTardiness: 0,
+          matchEndedTotal: 0,
         }));
       }
       
@@ -127,24 +133,30 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         const playerMatchAttendance = matchAttendance.filter(ma => ma.player_id === player.id);
         
         const trainingPresences = playerTrainingAttendance.filter(ta => ta.status === 'present').length;
-        const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'present' && ta.arrival_time !== null).length;
+        const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'late' || (!!ta.arrival_time && ta.status === 'present')).length;
+        const trainingTotal = playerTrainingAttendance.length;
         
         const matchPresences = playerMatchAttendance.filter(ma => ma.status === 'present').length;
         const matchTardiness = playerMatchAttendance.filter(ma => ma.status === 'late').length;
         
         const totalPresences = trainingPresences + matchPresences;
         const totalTardiness = trainingTardiness + matchTardiness;
-        const totalEvents = playerTrainingAttendance.length + playerMatchAttendance.length;
+        const totalEvents = trainingTotal + playerMatchAttendance.length;
         const attendanceRate = totalEvents > 0 ? Math.round((totalPresences / totalEvents) * 100) : 0;
 
         return {
           ...player,
           presences: totalPresences,
-          matchPresences,
-          matchEndedTotal: totalEndedMatches,
           tardiness: totalTardiness,
           totalEvents,
-          attendanceRate
+          attendanceRate,
+          // detailed split
+          trainingPresences,
+          trainingTardiness,
+          trainingTotal,
+          matchPresences,
+          matchTardiness,
+          matchEndedTotal: totalEndedMatches,
         };
       });
     },

@@ -745,6 +745,7 @@ const Squad = () => {
                       <TableHead className="font-semibold">Presenze Partite</TableHead>
                       <TableHead className="font-semibold">Presenze Allenamenti</TableHead>
                       <TableHead className="font-semibold">Ritardi Allenamenti</TableHead>
+                      <TableHead className="font-semibold">Ritardi Partite</TableHead>
                       <TableHead className="font-semibold">Stato</TableHead>
                       <TableHead className="text-right font-semibold">Azioni</TableHead>
                     </TableRow>
@@ -785,18 +786,18 @@ const Squad = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Badge variant="secondary">
-                              {player.presences || 0}/{player.totalEvents || 0}
+                              {player.trainingPresences || 0}/{player.trainingTotal || 0}
                             </Badge>
-                            {player.totalEvents > 0 && (
-                              <span className="text-sm text-muted-foreground">
-                                ({player.attendanceRate}%)
-                              </span>
-                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={player.tardiness > 0 ? "destructive" : "outline"}>
-                            {player.tardiness || 0}
+                          <Badge variant={player.trainingTardiness > 0 ? "destructive" : "outline"}>
+                            {player.trainingTardiness || 0}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={player.matchTardiness > 0 ? "destructive" : "outline"}>
+                            {player.matchTardiness || 0}
                           </Badge>
                         </TableCell>
                         <TableCell>
