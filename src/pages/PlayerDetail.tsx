@@ -402,31 +402,104 @@ const PlayerDetail = () => {
           </TabsContent>
 
           <TabsContent value="presenze">
-            <Card>
-              <CardHeader><CardTitle>Presenze e Ritardi</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4">
-                  <Radial pct={attendance?.totals?.attendanceRate ?? 0} label="Totale" />
-                  <Radial pct={(()=>{ const p = attendance?.training?.present ?? 0; const t = (attendance?.training?.tardy ?? 0); const tot = p + t; return tot>0 ? (p/tot)*100 : (attendance?.totals?.attendanceRate ?? 0) })()} label="Allenamenti" />
-                  <Radial pct={(()=>{ const p = attendance?.match?.present ?? 0; const t = (attendance?.match?.tardy ?? 0); const tot = p + t; return tot>0 ? (p/tot)*100 : (attendance?.totals?.attendanceRate ?? 0) })()} label="Partite" />
+            <Card className="border border-border/40 rounded-2xl shadow-sm">
+              <CardHeader className="pb-2"><CardTitle className="text-base">Presenze e ritardi</CardTitle></CardHeader>
+              <CardContent className="pt-0 space-y-4">
+                {/* Header KPI compatto */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3 overflow-x-auto sm:overflow-visible snap-x">
+                    <Radial pct={attendance?.totals?.attendanceRate ?? 0} label="Totale" />
+                    <Radial pct={attendance?.training?.rate ?? 0} label="Allenamenti" />
+                    <Radial pct={attendance?.match?.rate ?? 0} label="Partite" />
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white"><span className="text-muted-foreground">Late</span><span className="tabular-nums font-semibold">{attendance?.totals?.latePct ?? 0}%</span></div>
+                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white"><span className="text-muted-foreground">No-response</span><span className="tabular-nums font-semibold">{attendance?.totals?.noRespPct ?? 0}%</span></div>
+                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white"><span className="text-muted-foreground">Pending @T-4h</span><span className="tabular-nums font-semibold">{attendance?.totals?.pendingAtGatePct ?? 0}%</span></div>
+                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white"><span className="text-muted-foreground">Coach confermati</span><span className="tabular-nums font-semibold">{attendance?.totals?.coachCoveragePct ?? 0}%</span></div>
+                  </div>
                 </div>
-                <Separator className="my-4" />
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">Allenamenti</div>
-                    <div className="font-medium">Presenze: {attendance?.training.present ?? 0}</div>
-                    <div className="font-medium">Ritardi: {attendance?.training.tardy ?? 0}</div>
+
+                {/* Controlli periodo e filtri (placeholder funzionale) */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
+                    Periodo: 30 giorni
                   </div>
-                  <div>
-                    <div className="text-muted-foreground">Partite</div>
-                    <div className="font-medium">Presenze: {attendance?.match.present ?? 0}</div>
-                    <div className="font-medium">Ritardi: {attendance?.match.tardy ?? 0}</div>
+                  <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
+                    Vista: Tutti
                   </div>
-                  <div>
-                    <div className="text-muted-foreground">Totale</div>
-                    <div className="font-medium">Presenze: {attendance?.totals.present ?? 0}</div>
-                    <div className="font-medium">Ritardi: {attendance?.totals.tardy ?? 0}</div>
-                    <div className="font-medium">Tasso presenza: {attendance?.totals.attendanceRate ?? 0}%</div>
+                  <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
+                    Filtro: —
+                  </div>
+                </div>
+
+                {/* Insight: timeline + distribuzioni (semplificato, senza nuove dep) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Timeline presenze (compatta) */}
+                  <div className="rounded-lg border p-3 bg-white">
+                    <div className="text-xs text-muted-foreground mb-2">Timeline presenze</div>
+                    <div className="flex items-end gap-1 h-24 overflow-x-auto">
+                      {(attendance?.events || []).slice(-20).map((e:any, i:number)=>{
+                        const h = e.present ? 100 : 40
+                        const color = e.present ? '#10b981' : '#ef4444'
+                        const lateMark = e.late ? ' inset-0 ring-1 ring-amber-400' : ''
+                        return (
+                          <div key={i} className={`relative rounded-t`} style={{ height: `${Math.max(6, h)}%`, width: '8px', background: color }} title={`${e.date || ''} ${e.time || ''} • ${e.type} • Coach: ${e.coach || '—'} • Auto: ${e.auto || '—'}${e.arrival_time ? ` • Arrivo: +${e.arrival_time}`:''}`}> 
+                            {e.late && (<div className="absolute -top-1 left-0 right-0 mx-auto h-1 w-1 rounded-full bg-amber-500" />)}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Distribuzione auto-stati */}
+                  <div className="rounded-lg border p-3 bg-white">
+                    <div className="text-xs text-muted-foreground mb-2">Distribuzione auto‑stati</div>
+                    <div className="space-y-2">
+                      {['present','absent','late','excused','no_response','pending'].map(k=>{
+                        const v = (attendance?.distAuto as any)?.[k] || 0
+                        const total = attendance?.totals?.total || 1
+                        const pct = Math.round((v/total)*100)
+                        return (
+                          <div key={k} className="flex items-center gap-2 text-xs">
+                            <div className="w-24 text-muted-foreground capitalize">{k.replace('_','-')}</div>
+                            <div className="flex-1 h-2 rounded bg-muted overflow-hidden">
+                              <div className={`h-full ${k==='present'?'bg-emerald-500':k==='absent'?'bg-rose-500':k==='late'?'bg-amber-500':'bg-neutral-400'}`} style={{ width: `${pct}%` }} />
+                            </div>
+                            <div className="w-10 text-right tabular-nums">{v}</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Registro eventi */}
+                <div className="rounded-lg border bg-white">
+                  <div className="px-3 py-2 text-sm font-medium border-b">Registro</div>
+                  <div className="divide-y max-h-80 overflow-auto">
+                    {(attendance?.events || []).slice().reverse().map((e:any, i:number)=>{
+                      const diverge = (e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)
+                      return (
+                        <div key={i} className={`p-3 text-sm flex items-center gap-3 ${diverge?'border-l-2 border-amber-300 bg-amber-50/30':''}`}>
+                          <div className="shrink-0 w-8 text-center">
+                            <span className={`inline-block h-2.5 w-2.5 rounded-full ${e.type==='training'?'bg-sky-500':'bg-violet-500'}`} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs text-muted-foreground">{e.date || '—'} {e.time || ''} · {e.type==='training'?'Allenamento':'Partita'}</div>
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${e.coach==='present' || e.coach==='late' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : e.coach==='absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-neutral-200 bg-neutral-50 text-neutral-700'}`}>Coach: {e.coach || '—'}</span>
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${e.auto==='present' || e.auto==='late' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : e.auto==='absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : e.auto==='no_response' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-neutral-200 bg-neutral-50 text-neutral-700'}`}>Auto: {e.auto || '—'}</span>
+                              {e.arrival_time && (<span className="text-xs text-amber-600">+ritardo</span>)}
+                              {diverge && (<span className="text-[10px] text-amber-700 bg-amber-100 border border-amber-200 px-1 rounded">Divergenza</span>)}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {(attendance?.events || []).length === 0 && (
+                      <div className="p-6 text-sm text-muted-foreground">Nessun evento nel periodo.</div>
+                    )}
                   </div>
                 </div>
               </CardContent>

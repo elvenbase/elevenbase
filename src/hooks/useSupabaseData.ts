@@ -1892,30 +1892,125 @@ export const useUpsertMatchPlayerStats = () => {
   })
 }
 
-export const usePlayerAttendanceSummary = (playerId: string) => {
+export const usePlayerAttendanceSummary = (playerId: string, startDate?: Date, endDate?: Date) => {
   return useQuery({
-    queryKey: ['player-attendance-summary', playerId],
+    queryKey: ['player-attendance-summary', playerId, startDate?.toISOString(), endDate?.toISOString()],
     queryFn: async () => {
-      const [trRes, mtRes] = await Promise.all([
-        supabase.from('training_attendance').select('status, arrival_time').eq('player_id', playerId),
-        supabase.from('match_attendance').select('status').eq('player_id', playerId)
-      ])
+      const startStr = startDate ? startDate.toISOString().split('T')[0] : undefined
+      const endStr = endDate ? endDate.toISOString().split('T')[0] : undefined
+
+      // Training attendance joined with session datetime
+      let trq = supabase
+        .from('training_attendance')
+        .select(`
+          session_id,
+          status,
+          coach_confirmation_status,
+          arrival_time,
+          self_registered,
+          training_sessions!inner(session_date, start_time, end_time)
+        `)
+        .eq('player_id', playerId)
+      if (startStr) trq = trq.gte('training_sessions.session_date', startStr) as any
+      if (endStr) trq = trq.lte('training_sessions.session_date', endStr) as any
+      const trRes = await trq
       if (trRes.error) throw trRes.error
+      const training = (trRes.data || []) as any[]
+
+      // Match attendance joined with match datetime
+      let mtq = supabase
+        .from('match_attendance')
+        .select(`
+          match_id,
+          status,
+          coach_confirmation_status,
+          arrival_time,
+          matches!inner(match_date, match_time, live_state)
+        `)
+        .eq('player_id', playerId)
+      if (startStr) mtq = mtq.gte('matches.match_date', startStr) as any
+      if (endStr) mtq = mtq.lte('matches.match_date', endStr) as any
+      const mtRes = await mtq
       if (mtRes.error) throw mtRes.error
-      const training = trRes.data || []
-      const matches = mtRes.data || []
-      const trainingPresent = training.filter(t => t.status === 'present').length
-      const trainingTardy = training.filter(t => t.status === 'present' && t.arrival_time !== null).length
-      const matchPresent = matches.filter(m => m.status === 'present').length
-      const matchTardy = matches.filter(m => m.status === 'late').length
-      const totalEvents = training.length + matches.length
-      const totalPresences = trainingPresent + matchPresent
-      const totalTardiness = trainingTardy + matchTardy
-      const attendanceRate = totalEvents > 0 ? Math.round((totalPresences / totalEvents) * 100) : 0
+      const matches = (mtRes.data || []) as any[]
+
+      const now = Date.now()
+      const fourHours = 4 * 60 * 60 * 1000
+
+      // Helpers
+      const isPresentTraining = (r: any) => {
+        const coach = r.coach_confirmation_status
+        const auto = r.status
+        return (coach === 'present' || coach === 'late') || (auto === 'present' || auto === 'late')
+      }
+      const isPresentMatch = (r: any) => {
+        const coach = r.coach_confirmation_status
+        const auto = r.status
+        return (coach === 'present') || (auto === 'present')
+      }
+
+      const events: any[] = []
+
+      let tPresent = 0, tLate = 0, tTotal = 0, tAutoNoResp = 0, tCoachCovered = 0, tPendingAtGate = 0
+      training.forEach(r => {
+        const dt = r.training_sessions
+        const startTs = dt?.session_date && dt?.start_time ? new Date(`${dt.session_date}T${dt.start_time}`).getTime() : undefined
+        const present = isPresentTraining(r)
+        const late = (r.coach_confirmation_status === 'late') || (r.status === 'late') || (present && !!r.arrival_time)
+        const coachCovered = !!r.coach_confirmation_status && r.coach_confirmation_status !== 'pending'
+        const atGate = startTs ? (now >= (startTs - fourHours)) : false
+        if (atGate && (r.status === 'pending' || r.status == null)) tPendingAtGate += 1
+        if (r.status === 'no_response') tAutoNoResp += 1
+        if (coachCovered) tCoachCovered += 1
+        if (present) tPresent += 1
+        if (late) tLate += 1
+        tTotal += 1
+        events.push({ type: 'training', date: dt?.session_date || null, time: dt?.start_time || null, start_ts: startTs, present, late, auto: r.status, coach: r.coach_confirmation_status, arrival_time: r.arrival_time })
+      })
+
+      let mPresent = 0, mLate = 0, mTotal = 0, mAutoNoResp = 0, mCoachCovered = 0, mPendingAtGate = 0
+      matches.forEach(r => {
+        const dm = r.matches
+        const startTs = dm?.match_date && dm?.match_time ? new Date(`${dm.match_date}T${dm.match_time}`).getTime() : undefined
+        const present = isPresentMatch(r)
+        const late = present && !!r.arrival_time
+        const coachCovered = !!r.coach_confirmation_status && r.coach_confirmation_status !== 'pending'
+        const atGate = startTs ? (now >= (startTs - fourHours)) : false
+        if (atGate && (r.status === 'pending' || r.status == null)) mPendingAtGate += 1
+        if (r.status === 'no_response') mAutoNoResp += 1
+        if (coachCovered) mCoachCovered += 1
+        if (present) mPresent += 1
+        if (late) mLate += 1
+        mTotal += 1
+        events.push({ type: 'match', date: dm?.match_date || null, time: dm?.match_time || null, start_ts: startTs, present, late, auto: r.status, coach: r.coach_confirmation_status, arrival_time: r.arrival_time, live_state: dm?.live_state })
+      })
+
+      // Distribution of auto statuses
+      const distAutoCounts: Record<string, number> = { present: 0, absent: 0, late: 0, excused: 0, no_response: 0, pending: 0 }
+      training.forEach(r => { if (r.status && distAutoCounts[r.status] !== undefined) distAutoCounts[r.status] += 1 })
+      matches.forEach(r => { if (r.status && distAutoCounts[r.status] !== undefined) distAutoCounts[r.status] += 1 })
+
+      const totalsPresent = tPresent + mPresent
+      const totalsLate = tLate + mLate
+      const totalsEvents = tTotal + mTotal
+      const totalsNoResp = tAutoNoResp + mAutoNoResp
+      const totalsCoachCovered = tCoachCovered + mCoachCovered
+      const totalsAtGate = tPendingAtGate + mPendingAtGate
+
+      const attendanceRate = totalsEvents > 0 ? Math.round((totalsPresent / totalsEvents) * 100) : 0
+      const trainingRate = tTotal > 0 ? Math.round((tPresent / tTotal) * 100) : 0
+      const matchRate = mTotal > 0 ? Math.round((mPresent / mTotal) * 100) : 0
+      const latePct = totalsPresent > 0 ? Math.round((totalsLate / totalsPresent) * 100) : 0
+      const noRespPct = totalsEvents > 0 ? Math.round((totalsNoResp / totalsEvents) * 100) : 0
+      const coachCoveragePct = totalsEvents > 0 ? Math.round((totalsCoachCovered / totalsEvents) * 100) : 0
+      const pendingAtGatePct = totalsAtGate > 0 ? Math.round((totalsAtGate / totalsEvents) * 100) : 0
+
       return {
-        training: { present: trainingPresent, tardy: trainingTardy, total: training.length },
-        match: { present: matchPresent, tardy: matchTardy, total: matches.length },
-        totals: { present: totalPresences, tardy: totalTardiness, total: totalEvents, attendanceRate }
+        training: { present: tPresent, tardy: tLate, total: tTotal, autoNoResponse: tAutoNoResp, coachCovered: tCoachCovered, pendingAtGate: tPendingAtGate, rate: trainingRate },
+        match: { present: mPresent, tardy: mLate, total: mTotal, autoNoResponse: mAutoNoResp, coachCovered: mCoachCovered, pendingAtGate: mPendingAtGate, rate: matchRate },
+        totals: { present: totalsPresent, tardy: totalsLate, total: totalsEvents, attendanceRate, latePct, noRespPct, coachCoveragePct, pendingAtGatePct },
+        events,
+        distAuto: distAutoCounts,
       }
     },
     enabled: !!playerId
