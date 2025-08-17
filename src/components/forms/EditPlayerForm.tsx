@@ -34,9 +34,12 @@ interface EditPlayerFormProps {
     gaming_platform?: 'PC' | 'PS5' | 'Xbox';
     platform_id?: string;
   };
+  triggerAs?: 'button' | 'link';
+  triggerLabel?: string;
+  triggerClassName?: string;
 }
 
-const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
+const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica', triggerClassName = '' }: EditPlayerFormProps) => {
   const [open, setOpen] = useState(false);
   
   // Parse existing phone number to extract prefix and number
@@ -226,9 +229,13 @@ const EditPlayerForm = ({ player }: EditPlayerFormProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Edit className="h-4 w-4" />
-        </Button>
+        {triggerAs === 'link' ? (
+          <span className={`cursor-pointer ${triggerClassName}`}>{triggerLabel}</span>
+        ) : (
+          <Button variant="outline" size="sm">
+            <Edit className="h-4 w-4" />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>

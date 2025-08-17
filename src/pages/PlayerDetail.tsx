@@ -207,11 +207,14 @@ const PlayerDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-        <div className="flex justify-start">
+        <div className="flex items-center justify-between">
           <Link to="/squad" className="inline-flex items-center gap-1 text-xs sm:text-sm text-neutral-400 hover:text-neutral-600 transition-colors underline-offset-4 hover:underline">
             <ArrowLeft className="h-4 w-4" />
             Torna alla rosa
           </Link>
+          {player && (
+            <EditPlayerForm player={player as any} triggerAs="link" triggerLabel="Modifica" triggerClassName="text-[12px] text-neutral-500 hover:text-neutral-800 underline underline-offset-2" />
+          )}
         </div>
         <div className={`relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-r ${sectorTheme.from} ${sectorTheme.to} min-h-[140px] sm:min-h-[180px]`}>
           {heroAvatarUrl && (
@@ -279,11 +282,7 @@ const PlayerDetail = () => {
                 <TabsTrigger value="partite" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Partite</TabsTrigger>
                 {formerTrialist && (<TabsTrigger value="prova" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Prova</TabsTrigger>)}
               </div>
-              {player && (
-                <div className="ml-2">
-                  <EditPlayerForm player={player as any} />
-                </div>
-              )}
+              {/* Edit spostato sopra la hero */}
             </div>
           </TabsList>
 
