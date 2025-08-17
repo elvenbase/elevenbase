@@ -66,26 +66,25 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
       const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
       const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
       
-      const { data: closedSessions, error: sessionsError } = await supabase
+      const { data: trainingSessions, error: sessionsError } = await supabase
         .from('training_sessions')
         .select('id, session_date, is_closed, title')
         .gte('session_date', startDateStr)
-        .lte('session_date', endDateStr)
-        .eq('is_closed', true);
+        .lte('session_date', endDateStr);
       
       if (sessionsError) {
         console.error('Error fetching training sessions:', sessionsError);
         throw sessionsError;
       }
       
-      const sessionIds = closedSessions?.map(s => s.id) || [];
+      const sessionIds = (trainingSessions || []).map(s => s.id);
       
       // Poi recupera le presenze per quelle sessioni
       let trainingAttendance = [];
       if (sessionIds.length > 0) {
         const { data, error: trainingError } = await supabase
           .from('training_attendance')
-          .select('player_id, status, arrival_time, session_id')
+          .select('player_id, status, coach_confirmation_status, arrival_time, session_id')
           .in('session_id', sessionIds);
         
         if (trainingError) {
@@ -132,9 +131,15 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         const playerTrainingAttendance = trainingAttendance.filter(ta => ta.player_id === player.id);
         const playerMatchAttendance = matchAttendance.filter(ma => ma.player_id === player.id);
         
-        const trainingPresences = playerTrainingAttendance.filter(ta => ta.status === 'present' || ta.status === 'late').length;
-const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'late').length;
-const trainingTotal = playerTrainingAttendance.length;
+                // Presenze/ritardi allenamenti basati su conferma coach se presente
+        const hasCoachConfirm = playerTrainingAttendance.some(ta => ta.coach_confirmation_status && ta.coach_confirmation_status !== 'pending')
+        const trainingPresences = hasCoachConfirm
+          ? playerTrainingAttendance.filter(ta => ['present','late'].includes(ta.coach_confirmation_status || 'pending')).length
+          : playerTrainingAttendance.filter(ta => ta.status === 'present' || ta.status === 'late').length
+        const trainingTardiness = hasCoachConfirm
+          ? playerTrainingAttendance.filter(ta => ta.coach_confirmation_status === 'late').length
+          : playerTrainingAttendance.filter(ta => ta.status === 'late').length
+        const trainingTotal = playerTrainingAttendance.length;
         
         const matchPresences = playerMatchAttendance.filter(ma => ma.status === 'present').length;
         const matchTardiness = playerMatchAttendance.filter(ma => ma.status === 'late').length;
