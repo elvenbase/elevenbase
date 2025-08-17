@@ -248,8 +248,17 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
       if (error) throw error;
 
+      // Invoca la funzione che marca i non rispondenti come "no_response" per questa sessione
+      try {
+        await supabase.rpc('mark_training_session_no_response', { sid: sessionId });
+      } catch (e) {
+        // Non bloccare la chiusura se la RPC fallisce: segnala solo
+        console.warn('RPC mark_training_session_no_response failed:', e);
+      }
+
       toast.success('Sessione chiusa con successo');
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
     } catch (error: any) {
       toast.error('Errore nella chiusura della sessione: ' + error.message);
     } finally {
