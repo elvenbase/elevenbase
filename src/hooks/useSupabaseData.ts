@@ -102,6 +102,8 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         .select(`
           player_id,
           status,
+          coach_confirmation_status,
+          arrival_time,
           matches!inner(match_date, live_state)
         `)
         .gte('matches.match_date', startDate.toISOString().split('T')[0])
@@ -141,8 +143,8 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
           : playerTrainingAttendance.filter(ta => (ta.status === 'late') || ((ta.status === 'present' || ta.status === 'late') && !!ta.arrival_time)).length
         const trainingTotal = playerTrainingAttendance.length;
         
-        const matchPresences = playerMatchAttendance.filter(ma => ma.status === 'present').length;
-        const matchTardiness = playerMatchAttendance.filter(ma => ma.status === 'late').length;
+        const matchPresences = playerMatchAttendance.filter(ma => (ma.coach_confirmation_status === 'present') || (ma.status === 'present')).length;
+        const matchTardiness = playerMatchAttendance.filter(ma => ((ma.coach_confirmation_status === 'present') || (ma.status === 'present')) && !!ma.arrival_time).length;
         
         const totalPresences = trainingPresences + matchPresences;
         const totalTardiness = trainingTardiness + matchTardiness;
@@ -1792,7 +1794,7 @@ export const useBulkUpdateMatchAttendance = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: { match_id: string; player_ids: string[]; status: string }) => {
-      const updates = payload.player_ids.map((player_id) => ({ match_id: payload.match_id, player_id, status: payload.status }))
+      const updates = payload.player_ids.map((player_id) => ({ match_id: payload.match_id, player_id, status: payload.status, coach_confirmation_status: payload.status }))
       const { error } = await supabase.from('match_attendance').upsert(updates, { onConflict: 'match_id,player_id' })
       if (error) throw error
       return true

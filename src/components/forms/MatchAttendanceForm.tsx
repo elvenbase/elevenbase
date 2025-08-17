@@ -52,7 +52,7 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
   const handleCoachConfirmationChange = async (playerId: string, confirmationStatus: string) => {
     try {
       setIsLoading(true);
-      await upsert.mutateAsync({ match_id: matchId, player_id: playerId, coach_confirmation_status: confirmationStatus });
+      await upsert.mutateAsync({ match_id: matchId, player_id: playerId, coach_confirmation_status: confirmationStatus, status: confirmationStatus });
       toast.success('Conferma presenza aggiornata');
       refetch();
     } catch (error: any) {
@@ -87,8 +87,11 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
     }
     try {
       setIsLoading(true);
+      // Bulk: aggiorna conferma coach e replica in status
+      const updates = selectedPlayers.map((player_id) => ({ match_id: matchId, player_id, coach_confirmation_status: status, status }));
       await bulkUpdate.mutateAsync({ match_id: matchId, player_ids: selectedPlayers, status });
-      toast.success(`${selectedPlayers.length} giocatori aggiornati`);
+      // Fallback: se il bulk hook non supporta coach_status, esegue upsert individuali - ma qui preferiamo l'hook
+      toast.success(`${selectedPlayers.length} conferme coach aggiornate`);
       setSelectedPlayers([]);
       refetch();
     } catch (error: any) {
