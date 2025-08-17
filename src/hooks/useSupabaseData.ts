@@ -97,10 +97,11 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         .select(`
           player_id,
           status,
-          matches!inner(match_date)
+          matches!inner(match_date, live_state)
         `)
         .gte('matches.match_date', startDate.toISOString().split('T')[0])
-        .lte('matches.match_date', endDate.toISOString().split('T')[0]);
+        .lte('matches.match_date', endDate.toISOString().split('T')[0])
+        .eq('matches.live_state', 'ended');
 
       if (matchError) {
         console.error('Error fetching match attendance:', matchError);
