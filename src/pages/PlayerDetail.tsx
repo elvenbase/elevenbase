@@ -528,45 +528,18 @@ const PlayerDetail = () => {
                 <div className="sticky top-2 z-10 rounded-xl border bg-white/70 backdrop-blur px-3 py-3">
                   <div className="mb-2 flex justify-center">
                     <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
-                      {([
-                        {k:'7d', l:'7g'},
-                        {k:'30d', l:'30g'},
-                        {k:'90d', l:'90g'}
-                      ] as {k:'7d'|'30d'|'90d', l:string}[]).map(opt => (
-                        <button
-                          key={opt.k}
-                          onClick={()=>{
-                            setPeriodSel(opt.k)
-                            setTimeMode('ultimi')
-                            setUltimiChoice(opt.k as any)
-                          }}
-                          className={`px-2.5 py-0.5 rounded-full ${periodSel===opt.k ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
-                        >{opt.l}</button>
-                      ))}
-                      {/* Selettore unico: bottom sheet con input nativi */}
-                      <div>
-                         <Sheet open={intervalUIOpen} onOpenChange={setIntervalUIOpen}>
-                           <SheetTrigger asChild>
-                             <button onClick={()=>setIntervalUIOpen(true)} className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>Intervallo</button>
-                           </SheetTrigger>
-                           <SheetContent side="bottom" className="h-[48vh] rounded-t-2xl">
-                             <div className="space-y-3">
-                               <div className="text-sm font-medium">Seleziona intervallo</div>
-                               <div className="flex items-center gap-2 text-xs">
-                                 <label className="text-muted-foreground">Dal</label>
-                                 <input autoFocus type="date" value={customStart} onChange={(e)=>setCustomStart(e.target.value)} className="rounded-md border px-2 py-1 bg-white" />
-                                 <span>→</span>
-                                 <label className="text-muted-foreground">Al</label>
-                                 <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="rounded-md border px-2 py-1 bg-white" />
-                               </div>
-                               <div className="flex items-center justify-end gap-2">
-                                 <button className="px-3 py-1 text-xs" onClick={()=>{ setIntervalUIOpen(false) }}>Annulla</button>
-                                 <button className="px-3 py-1 text-xs rounded-full border bg-primary/10 text-primary disabled:opacity-60" disabled={!customStart || !customEnd} onClick={()=>{ if (customStart && customEnd) { setPeriodSel('custom'); setTimeMode('intervallo'); setIntervalUIOpen(false) } }}>Applica</button>
-                               </div>
-                             </div>
-                           </SheetContent>
-                         </Sheet>
-                       </div>
+                      <button
+                        onClick={()=>{ setRange(seasonStart(), new Date()); setTimeMode('intervallo') }}
+                        className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' && customStart && customEnd ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                      >max</button>
+                      <button
+                        onClick={()=>{ setPeriodSel('30d'); setUltimiChoice('30d'); setTimeMode('ultimi') }}
+                        className={`px-2.5 py-0.5 rounded-full ${periodSel==='30d' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                      >ultimo mese</button>
+                      <button
+                        onClick={()=>{ const n=new Date(); const start=new Date(n.getFullYear(), n.getMonth()-1, 1); const end=new Date(n.getFullYear(), n.getMonth(), 0); setCustomStart(start.toISOString().slice(0,10)); setCustomEnd(end.toISOString().slice(0,10)); setPeriodSel('custom'); setTimeMode('intervallo') }}
+                        className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                      >mese precedente</button>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
