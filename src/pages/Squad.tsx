@@ -354,6 +354,14 @@ const Squad = () => {
     NA: 'from-neutral-50 to-neutral-25'
   }
 
+  const sectorChipClass: Record<'P'|'DIF'|'CEN'|'ATT'|'NA', string> = {
+    P: 'bg-sky-100 text-sky-800 border-sky-200',
+    DIF: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    CEN: 'bg-amber-100 text-amber-800 border-amber-200',
+    ATT: 'bg-rose-100 text-rose-800 border-rose-200',
+    NA: 'bg-neutral-100 text-neutral-700 border-neutral-200'
+  }
+
   // Compute only roles present among players for the filter
   const presentRoles = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -691,7 +699,7 @@ const Squad = () => {
                   const matchTot = p.matchEndedTotal || 0
                   const pct = matchTot>0 ? Math.round((matchPres/matchTot)*100) : 0
                   return (
-                    <a key={p.id} href={`/player/${p.id}`} className="block rounded-2xl border border-border/40 bg-white shadow-sm p-3 hover:shadow-md transition">
+                    <a key={p.id} href={`/player/${p.id}`} className={`block rounded-2xl border border-border/40 shadow-sm p-3 hover:shadow-md transition bg-gradient-to-r ${sectorBgClass[sectorFromRoleCode((p as any).role_code)]}`}>
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                           <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
@@ -707,7 +715,7 @@ const Squad = () => {
                         <div className="flex flex-col items-end gap-1 w-[120px]">
                           <div className="flex items-center gap-1">
                             {p.jersey_number && (<Badge variant="outline" className="text-[10px] uppercase">#{p.jersey_number}</Badge>)}
-                            <Badge variant="secondary" className="text-[10px] uppercase">{role?.abbreviation || (p as any).role_code || '-'}</Badge>
+                            <Badge variant="secondary" className={`text-[10px] uppercase border ${sectorChipClass[sectorFromRoleCode((p as any).role_code)]}`}>{role?.abbreviation || (p as any).role_code || '-'}</Badge>
                           </div>
                           <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-[10px] uppercase">{p.status}</Badge>
                         </div>
