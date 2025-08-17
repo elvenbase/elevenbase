@@ -183,10 +183,6 @@ const PlayerDetail = () => {
   const aPer90 = per90(totals.assists, totals.minutes)
   const sPer90 = per90(totals.saves, totals.minutes)
 
-  const lastN = stats.slice(-10)
-  const maxMin = Math.max(90, ...lastN.map((s:any) => s.minutes || 0))
-  const maxGA = Math.max(1, ...lastN.map((s:any) => (s.goals || 0)))
-  const maxAst = Math.max(1, ...lastN.map((s:any) => (s.assists || 0)))
   const presenceCount = stats.filter((r:any) => (r.minutes || 0) > 0).length
   const endedMatchesForPlayer = stats.length
 
@@ -481,34 +477,25 @@ const PlayerDetail = () => {
               )}
             </div>
 
-            {/* 3) Trend ultime 10 */}
-            <Card className="mt-4 border border-border/40 rounded-2xl shadow-sm animate-slide-in">
-              <CardHeader className="pb-2"><CardTitle className="text-base">Trend ultime 10</CardTitle></CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-[11px] text-muted-foreground mb-2">Timeline mini</div>
-                <div className="relative flex items-end gap-2 h-28">
-                  {lastN.map((s:any, i:number) => {
-                    const h = Math.max(6, (Math.min(maxMin, s.minutes || 0)/maxMin)*100)
-                    const goals = s.goals || 0
-                    const assists = s.assists || 0
-                    return (
-                      <div key={i} className="relative flex flex-col items-center" title={`${s.minutes || 0}′ · ${goals} gol · ${assists} assist`}>
-                        <div className="w-[7px] rounded-t bg-neutral-500/70" style={{ height: `${h}%` }} />
-                        <div className="absolute -top-2 flex flex-col items-center gap-1">
-                          {goals > 0 && (<span className="h-1.5 w-1.5 rounded-full bg-rose-500" />)}
-                          {assists > 0 && (<span className="h-1.5 w-1.5 rounded-full bg-amber-500" />)}
-                        </div>
-                      </div>
-                    )
-                  })}
+            {/* Selettore periodo (come in Presenze) */}
+            <div className="mt-4 flex flex-wrap items-center gap-2 animate-slide-in">
+              <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
+                {(['7d','30d','90d','custom'] as const).map(p=> (
+                  <button key={p} onClick={()=>setPeriodSel(p)} className={`px-2 py-0.5 rounded-full ${periodSel===p?'bg-primary/10 text-primary':'text-muted-foreground'}`}>{p==='7d'?'7g':p==='30d'?'30g':p==='90d'?'90g':'Intervallo'}</button>
+                ))}
+              </div>
+              <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
+                <span className="text-muted-foreground">Giorno</span>
+                <input type="date" onChange={(e)=>{ const d=e.target.value; if (!d) return; setPeriodSel('custom'); setCustomStart(d); setCustomEnd(d); }} className="bg-transparent outline-none" />
+              </div>
+              {periodSel==='custom' && (
+                <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
+                  <input type="date" value={customStart} onChange={(e)=>setCustomStart(e.target.value)} className="bg-transparent outline-none" />
+                  <span>→</span>
+                  <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="bg-transparent outline-none" />
                 </div>
-                <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
-                  <span>Minuti</span>
-                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Gol</span>
-                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />Assist</span>
-                </div>
-              </CardContent>
-            </Card>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="presenze">
