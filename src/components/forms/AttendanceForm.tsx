@@ -9,6 +9,7 @@ import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTrainingAttendance, usePlayers, useTrainingTrialistInvites, useUpdateTrainingTrialistInvite } from '@/hooks/useSupabaseData';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AttendanceFormProps {
   sessionId: string;
@@ -19,6 +20,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const queryClient = useQueryClient();
   
   const { data: allPlayers = [], refetch: refetchPlayers } = usePlayers();
   const { data: existingAttendance = [], refetch } = useTrainingAttendance(sessionId);
@@ -71,6 +73,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
       toast.success('Auto-registrazione aggiornata');
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare l\'auto-registrazione: ' + error.message);
     } finally {
@@ -113,6 +116,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       }
       toast.success('Conferma presenza aggiornata');
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare la conferma: ' + error.message);
     } finally {
@@ -134,6 +138,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
         if (error) throw error;
         refetch();
+        queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
       }
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare il ritardo: ' + error.message);
@@ -152,6 +157,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
 
         if (error) throw error;
         refetch();
+        queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
       }
     } catch (error: any) {
       toast.error('Errore nell\'aggiornare le note: ' + error.message);
@@ -207,6 +213,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       toast.success(`${selectedPlayers.length} conferme coach aggiornate`);
       setSelectedPlayers([]);
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
     } catch (error: any) {
       toast.error('Errore nell\'aggiornamento bulk: ' + error.message);
     } finally {
