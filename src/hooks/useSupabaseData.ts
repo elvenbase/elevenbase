@@ -1917,6 +1917,17 @@ export const usePlayerAttendanceSummary = (playerId: string, startDate?: Date, e
       if (trRes.error) throw trRes.error
       const training = (trRes.data || []) as any[]
 
+      // Training convocati for this player in period (to create synthetic events if no attendance row exists)
+      let tcq = supabase
+        .from('training_convocati')
+        .select(`session_id, training_sessions!inner(session_date, start_time, end_time)`) 
+        .eq('player_id', playerId)
+      if (startStr) tcq = tcq.gte('training_sessions.session_date', startStr) as any
+      if (endStr) tcq = tcq.lte('training_sessions.session_date', endStr) as any
+      const tcRes = await tcq
+      if (tcRes.error) throw tcRes.error
+      const convocati = (tcRes.data || []) as any[]
+
       // Match attendance joined with match datetime
       let mtq = supabase
         .from('match_attendance')
@@ -1952,20 +1963,35 @@ export const usePlayerAttendanceSummary = (playerId: string, startDate?: Date, e
       const events: any[] = []
 
       let tPresent = 0, tLate = 0, tTotal = 0, tAutoNoResp = 0, tCoachCovered = 0, tPendingAtGate = 0
-      training.forEach(r => {
-        const dt = r.training_sessions
+      const trainingBySession = new Map<string, any>()
+      training.forEach(r => trainingBySession.set(r.session_id, r))
+
+      // Merge convocati -> create synthetic record if missing attendance
+      const allTrainingSessions: any[] = []
+      convocati.forEach(c => { allTrainingSessions.push({ source: 'convocati', session_id: c.session_id, training_sessions: c.training_sessions }) })
+      training.forEach(t => { if (!allTrainingSessions.find(x => x.session_id === t.session_id)) allTrainingSessions.push({ source: 'attendance', session_id: t.session_id, training_sessions: t.training_sessions }) })
+
+      allTrainingSessions.forEach(item => {
+        const att = trainingBySession.get(item.session_id)
+        const dt = item.training_sessions
         const startTs = dt?.session_date && dt?.start_time ? new Date(`${dt.session_date}T${dt.start_time}`).getTime() : undefined
-        const present = isPresentTraining(r)
-        const late = (r.coach_confirmation_status === 'late') || (r.status === 'late') || (present && !!r.arrival_time)
-        const coachCovered = !!r.coach_confirmation_status && r.coach_confirmation_status !== 'pending'
+        let rec: any = att
+        if (!rec) {
+          // synthetic: no attendance row, derive status by gate
+          const atGate = startTs ? (now >= (startTs - fourHours)) : false
+          rec = { session_id: item.session_id, status: atGate ? 'no_response' : 'pending', coach_confirmation_status: 'pending', arrival_time: null, self_registered: false, training_sessions: dt }
+        }
+        const present = isPresentTraining(rec)
+        const late = (rec.coach_confirmation_status === 'late') || (rec.status === 'late') || (present && !!rec.arrival_time)
+        const coachCovered = !!rec.coach_confirmation_status && rec.coach_confirmation_status !== 'pending'
         const atGate = startTs ? (now >= (startTs - fourHours)) : false
-        if (atGate && (r.status === 'pending' || r.status == null)) tPendingAtGate += 1
-        if (r.status === 'no_response') tAutoNoResp += 1
+        if (atGate && (rec.status === 'pending' || rec.status == null)) tPendingAtGate += 1
+        if (rec.status === 'no_response') tAutoNoResp += 1
         if (coachCovered) tCoachCovered += 1
         if (present) tPresent += 1
         if (late) tLate += 1
         tTotal += 1
-        events.push({ type: 'training', date: dt?.session_date || null, time: dt?.start_time || null, start_ts: startTs, present, late, auto: r.status, coach: r.coach_confirmation_status, arrival_time: r.arrival_time })
+        events.push({ type: 'training', date: dt?.session_date || null, time: dt?.start_time || null, start_ts: startTs, present, late, auto: rec.status, coach: rec.coach_confirmation_status, arrival_time: rec.arrival_time })
       })
 
       let mPresent = 0, mLate = 0, mTotal = 0, mAutoNoResp = 0, mCoachCovered = 0, mPendingAtGate = 0
