@@ -730,7 +730,7 @@ const MatchLive = () => {
 							</div>
 						</div>
 											<Button variant="destructive" className="h-9 rounded-md px-3" onClick={()=>{ setEventMode(null); setNoteOpen(false); handleFinalize() }} disabled={isEnded || finalizing}>
-						{finalizing ? (<span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Terminazione…</span>) : 'Termina partita'}
+						{finalizing ? (<span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Caricamento…</span>) : 'Termina partita'}
 					</Button>
 </div>
 				</div>
@@ -855,9 +855,9 @@ const MatchLive = () => {
 													)}
 {/* Colonna sinistra: In campo + Sostituiti */}
 					<div className="flex flex-col gap-3">
-						<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
-							<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-emerald-50 border-b border-emerald-100">
-								<div className="flex items-center gap-2 text-emerald-800"><Target className="h-4 w-4" />In campo</div>
+								<div className="rounded-xl border border-border/30 bg-white shadow-sm overflow-hidden">
+								<div className="px-3 py-2 text-sm font-semibold flex items-center justify-between bg-gradient-to-r from-emerald-50 via-emerald-100 to-green-50 border-b border-emerald-100">
+<div className="flex items-center gap-2 text-emerald-800"><Target className="h-4 w-4" />In campo</div>
 															<Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>setInCampoCollapsed(prev=>{ const next = !prev; if (!next) setBenchCollapsed(true); return next })} aria-label={"Toggle in campo"}>
 								<span className="material-symbols-outlined text-[16px]">{inCampoCollapsed ? 'expand_more' : 'expand_less'}</span>
 								</Button>
@@ -918,10 +918,10 @@ const MatchLive = () => {
 									<span className="material-symbols-outlined text-[18px]">event_seat</span>
 									<span>Panchina</span>
 								</div>
-								<Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>setBenchCollapsed(prev=>!prev)} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
-									<span className="material-symbols-outlined text-[16px]">{benchCollapsed ? 'expand_more' : 'expand_less'}</span>
-								</Button>
-							</div>
+															<Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>setBenchCollapsed(prev=>{ const next=!prev; if (!benchCollapsed && next===true) {} if (next) setInCampoCollapsed(true); return next })} aria-label={benchCollapsed ? 'Apri panchina' : 'Chiudi panchina'}>
+								<span className="material-symbols-outlined text-[16px]">{benchCollapsed ? 'expand_more' : 'expand_less'}</span>
+							</Button>
+</div>
 							{!benchCollapsed && (
 								<div className="p-3 space-y-1.5 max-h-[200px] overflow-y-auto">
 									{benchVisibleSorted.map((p: any) => {
