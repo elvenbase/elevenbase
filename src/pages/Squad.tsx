@@ -740,7 +740,7 @@ const Squad = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Badge variant="secondary" className="tabular-nums">
-                              {player.matchPresences || 0}
+                              {(player.matchPresences || 0)}/{player.matchEndedTotal || 0}
                             </Badge>
                           </div>
                         </TableCell>

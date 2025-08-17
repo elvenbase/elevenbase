@@ -108,8 +108,21 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         throw matchError;
       }
 
+      // Total ended matches in period (team-level)
+      const { data: endedMatches, error: endedErr } = await supabase
+        .from('matches')
+        .select('id')
+        .gte('match_date', startDate.toISOString().split('T')[0])
+        .lte('match_date', endDate.toISOString().split('T')[0])
+        .eq('live_state', 'ended');
+      if (endedErr) {
+        console.error('Error fetching ended matches:', endedErr);
+        throw endedErr;
+      }
+      const totalEndedMatches = (endedMatches || []).length;
+
       // Calculate stats for each player
-      return players.map(player => {
+      return players.map(player => {​
         const playerTrainingAttendance = trainingAttendance.filter(ta => ta.player_id === player.id);
         const playerMatchAttendance = matchAttendance.filter(ma => ma.player_id === player.id);
         
@@ -128,6 +141,7 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
           ...player,
           presences: totalPresences,
           matchPresences,
+          matchEndedTotal: totalEndedMatches,
           tardiness: totalTardiness,
           totalEvents,
           attendanceRate
