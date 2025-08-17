@@ -951,10 +951,10 @@ const MatchLive = () => {
 								<div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">event</span><span>Eventi</span></div>
 								<span className="text-[10px] uppercase tracking-wide text-neutral-500 bg-white/70 border border-neutral-200 rounded-full px-2 py-0.5">Squadra</span>
 							</div>
-							<div className="p-3 grid grid-cols-2 md:grid-cols-3 gap-2">
-								<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('goal')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='goal' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
-									<GoalIcon className="inline-block h-4 w-4" />Gol
-								</Button>
+													<div className="p-3 grid grid-cols-2 md:grid-cols-3 gap-2 min-h-[140px]">
+							<Button variant="ghost" size="sm" onClick={()=>toggleEventMode('goal')} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='goal' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
+								<GoalIcon className="inline-block h-4 w-4" />Gol
+							</Button>
 								<Button variant="ghost" size="sm" onClick={()=>setPenaltyOpenUs(true)} className={`h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors ${eventMode==='pen_scored' ? 'ring-2 ring-sky-300 border-sky-300 shadow-sm' : ''} bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100`} disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Rigore
 								</Button>
@@ -989,10 +989,10 @@ const MatchLive = () => {
 								<div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">group</span><span>Eventi avversario</span></div>
 								<span className="text-[10px] uppercase tracking-wide text-neutral-500 bg-white/70 border border-neutral-200 rounded-full px-2 py-0.5">Avv.</span>
 							</div>
-							<div className="p-3 grid grid-cols-2 md:grid-cols-3 gap-2">
-								<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
-									<GoalIcon className="inline-block h-4 w-4" />Gol
-								</Button>
+													<div className="p-3 grid grid-cols-2 md:grid-cols-3 gap-2 min-h-[140px]">
+							<Button variant="ghost" size="sm" onClick={()=>postEvent({ event_type: 'goal', team: 'opponent' })} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
+								<GoalIcon className="inline-block h-4 w-4" />Gol
+							</Button>
 								<Button variant="ghost" size="sm" onClick={()=>setPenaltyOpenOpp(true)} className="h-9 px-3 rounded-full border w-full justify-center flex items-center gap-2 transition-colors bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 ring-1 ring-rose-200/60 hover:ring-rose-300" disabled={isEnded || !hasValidLineup}>
 									<span className="material-symbols-outlined text-[18px]">sports_soccer</span>Rigore
 								</Button>
