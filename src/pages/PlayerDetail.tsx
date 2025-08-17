@@ -492,6 +492,29 @@ const PlayerDetail = () => {
                   <div className="mt-2 text-xs text-muted-foreground">
                     {(() => { const p = attendance?.totals?.present ?? 0; const t = attendance?.totals?.total ?? 0; const l = attendance?.totals?.tardy ?? 0; const nr = attendance?.totals?.noRespPct ?? 0; return `Presente ${p}/${t} eventi, ${l} ritardo${l===1?'':'i'}, ${nr}% no-response.` })()}
                   </div>
+
+                  {/* Selettori periodo/data */}
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {/* Periodo rapido */}
+                    <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
+                      {(['7d','30d','90d','custom'] as const).map(p=> (
+                        <button key={p} onClick={()=>setPeriodSel(p)} className={`px-2 py-0.5 rounded-full ${periodSel===p?'bg-primary/10 text-primary':'text-muted-foreground'}`}>{p==='7d'?'7g':p==='30d'?'30g':p==='90d'?'90g':'Intervallo'}</button>
+                      ))}
+                    </div>
+                    {/* Giorno singolo */}
+                    <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
+                      <span className="text-muted-foreground">Giorno</span>
+                      <input type="date" onChange={(e)=>{ const d=e.target.value; if (!d) return; setPeriodSel('custom'); setCustomStart(d); setCustomEnd(d); }} className="bg-transparent outline-none" />
+                    </div>
+                    {/* Intervallo personalizzato */}
+                    {periodSel==='custom' && (
+                      <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
+                        <input type="date" value={customStart} onChange={(e)=>setCustomStart(e.target.value)} className="bg-transparent outline-none" />
+                        <span>→</span>
+                        <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="bg-transparent outline-none" />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Blocco 2 — Andamento nel tempo (timeline a pallini) */}
