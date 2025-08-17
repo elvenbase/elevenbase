@@ -472,150 +472,71 @@ const PlayerDetail = () => {
             <Card className="border border-border/40 rounded-2xl shadow-sm">
               <CardHeader className="pb-2"><CardTitle className="text-base">Presenze e ritardi</CardTitle></CardHeader>
               <CardContent className="pt-0 space-y-4">
-                {/* Header KPI compatto */}
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-3 overflow-x-auto sm:overflow-visible snap-x">
+                {/* Blocco 1 — Riepilogo rapido (sticky) */}
+                <div className="sticky top-2 z-10 rounded-xl border bg-white/70 backdrop-blur px-3 py-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <Radial pct={attendance?.totals?.attendanceRate ?? 0} label="Totale" />
                     <Radial pct={attendance?.training?.rate ?? 0} label="Allenamenti" />
                     <Radial pct={attendance?.match?.rate ?? 0} label="Partite" />
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white"><span className="text-muted-foreground">Late</span><span className="tabular-nums font-semibold">{attendance?.totals?.latePct ?? 0}%</span></div>
-                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white"><span className="text-muted-foreground">No-response</span><span className="tabular-nums font-semibold">{attendance?.totals?.noRespPct ?? 0}%</span></div>
-                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white"><span className="text-muted-foreground">Pending @T-4h</span><span className="tabular-nums font-semibold">{attendance?.totals?.pendingAtGatePct ?? 0}%</span></div>
-                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white"><span className="text-muted-foreground">Coach confermati</span><span className="tabular-nums font-semibold">{attendance?.totals?.coachCoveragePct ?? 0}%</span></div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white">
+                      <span className="text-muted-foreground">Ritardi</span>
+                      <span className="tabular-nums font-semibold">{attendance?.totals?.tardy ?? 0} · {attendance?.totals?.latePct ?? 0}%</span>
+                    </div>
+                    <div className="inline-flex items-center justify-between rounded-lg border px-2 py-1 bg-white">
+                      <span className="text-muted-foreground">No-response</span>
+                      <span className="tabular-nums font-semibold">{attendance?.totals?.noRespPct ?? 0}%</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {(() => { const p = attendance?.totals?.present ?? 0; const t = attendance?.totals?.total ?? 0; const l = attendance?.totals?.tardy ?? 0; const nr = attendance?.totals?.noRespPct ?? 0; return `Presente ${p}/${t} eventi, ${l} ritardo${l===1?'':'i'}, ${nr}% no-response.` })()}
                   </div>
                 </div>
 
-                {/* Controlli periodo e filtri */}
-                <div className="flex flex-wrap items-center gap-2">
-                  {/* Periodo */}
-                  <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
-                    {(['7d','30d','90d','custom'] as const).map(p=> (
-                      <button key={p} onClick={()=>setPeriodSel(p)} className={`px-2 py-0.5 rounded-full ${periodSel===p?'bg-primary/10 text-primary':'text-muted-foreground'}`}>{p==='7d'?'7g':p==='30d'?'30g':p==='90d'?'90g':'Custom'}</button>
-                    ))}
-                  </div>
-                  {periodSel==='custom' && (
-                    <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
-                      <input type="date" value={customStart} onChange={(e)=>setCustomStart(e.target.value)} className="bg-transparent outline-none" />
-                      <span>→</span>
-                      <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="bg-transparent outline-none" />
+                {/* Blocco 2 — Andamento nel tempo (timeline a pallini) */}
+                <div className="rounded-lg border p-3 bg-white">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground">Andamento nel tempo</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {(() => {
+                        const fourWeeksAgo = new Date(); fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28)
+                        const inRange = eventsFiltered.filter((e:any)=> e.date && new Date(e.date) >= fourWeeksAgo)
+                        const tot = inRange.length
+                        const pres = inRange.filter((e:any)=> e.present).length
+                        const late = inRange.filter((e:any)=> e.late).length
+                        const rate = tot>0 ? Math.round((pres/tot)*100) : 0
+                        return `Nelle ultime 4 settimane: ${rate}% presenze, ${late} ritardo${late===1?'':'i'}.`
+                      })()}
                     </div>
-                  )}
-                  {/* Vista */}
-                  <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
-                    {(['all','training','match'] as const).map(v=> (
-                      <button key={v} onClick={()=>setViewSel(v)} className={`px-2 py-0.5 rounded-full ${viewSel===v?'bg-primary/10 text-primary':'text-muted-foreground'}`}>{v==='all'?'Tutti':v==='training'?'Allenamenti':'Partite'}</button>
-                    ))}
                   </div>
-                  {/* Divergenze */}
-                  <button onClick={()=>setDivergencesOnly(s=>!s)} className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs ${divergencesOnly?'bg-amber-50 border-amber-200 text-amber-700':'bg-white text-muted-foreground'}`}>
-                    Divergenze
-                  </button>
-                  {/* Chip filtro attive */}
-                  <div className="inline-flex flex-wrap items-center gap-1">
-                    {periodSel!=='30d' && (
-                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs bg-white">Periodo: {periodSel}{periodSel==='custom' && (customStart||customEnd)?` ${customStart||'—'}→${customEnd||'—'}`:''}<button className="ml-1" onClick={()=>{ setPeriodSel('30d'); setCustomStart(''); setCustomEnd('') }}><X className="h-3 w-3"/></button></span>
-                    )}
-                    {viewSel!=='all' && (
-                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs bg-white">Vista: {viewSel==='training'?'Allenamenti':'Partite'}<button className="ml-1" onClick={()=>setViewSel('all')}><X className="h-3 w-3"/></button></span>
-                    )}
-                    {divergencesOnly && (
-                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs bg-white">Solo divergenze<button className="ml-1" onClick={()=>setDivergencesOnly(false)}><X className="h-3 w-3"/></button></span>
-                    )}
+                  <div className="mt-2 flex items-center gap-2 overflow-x-auto">
+                    {eventsFiltered.map((e:any, i:number)=>{
+                      const d = e.date ? new Date(e.date) : null
+                      const color = e.auto==='no_response' ? 'bg-neutral-300' : (!e.present ? 'bg-rose-500' : (e.late ? 'bg-amber-500' : 'bg-emerald-500'))
+                      return (
+                        <div key={i} className={`h-3 w-3 rounded-full ${color} shrink-0`} title={`${e.date || ''} · ${e.type==='training'?'Allenamento':'Partita'} · ${e.present ? (e.late ? 'Presente (ritardo)' : 'Presente') : (e.auto==='no_response' ? 'No-response' : 'Assente')}`}></div>
+                      )
+                    })}
+                    {eventsFiltered.length===0 && (<div className="text-xs text-muted-foreground">Nessun evento nel periodo selezionato.</div>)}
                   </div>
                 </div>
 
-                {/* Insight: timeline + distribuzioni (semplificato, senza nuove dep) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Timeline presenze (compatta) */}
-                  <div className="rounded-lg border p-3 bg-white">
-                    <div className="text-xs text-muted-foreground mb-2">Timeline presenze</div>
-                    <div className="flex items-end gap-1 h-24 overflow-x-auto">
-                      {eventsFiltered
-                        .slice(-20)
-                        .map((e:any, i:number)=>{
-                        const h = e.present ? 100 : 40
-                        const color = e.present ? '#10b981' : '#ef4444'
-                        const lateMark = e.late ? ' inset-0 ring-1 ring-amber-400' : ''
-                        return (
-                          <div key={i} className={`relative rounded-t`} style={{ height: `${Math.max(6, h)}%`, width: '8px', background: color }} title={`${e.date || ''} ${e.time || ''} • ${e.type} • Coach: ${e.coach || '—'} • Auto: ${e.auto || '—'}${e.arrival_time ? ` • Arrivo: +${e.arrival_time}`:''}`}> 
-                            {e.late && (<div className="absolute -top-1 left-0 right-0 mx-auto h-1 w-1 rounded-full bg-amber-500" />)}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Distribuzione auto-stati */}
-                  <div className="rounded-lg border p-3 bg-white">
-                    <div className="text-xs text-muted-foreground mb-2">Distribuzione auto‑stati</div>
-                    <div className="space-y-2">
-                      {['present','absent','late','excused','no_response','pending'].map(k=>{
-                        const v = (attendance?.distAuto as any)?.[k] || 0
-                        const total = attendance?.totals?.total || 1
-                        const pct = Math.round((v/total)*100)
-                        return (
-                          <div key={k} className="flex items-center gap-2 text-xs">
-                            <div className="w-24 text-muted-foreground capitalize">{k.replace('_','-')}</div>
-                            <div className="flex-1 h-2 rounded bg-muted overflow-hidden">
-                              <div className={`h-full ${k==='present'?'bg-emerald-500':k==='absent'?'bg-rose-500':k==='late'?'bg-amber-500':'bg-neutral-400'}`} style={{ width: `${pct}%` }} />
-                            </div>
-                            <div className="w-10 text-right tabular-nums">{v}</div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Heatmap e Sparkline */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Heatmap Giorno × Fascia */}
-                  <div className="rounded-lg border p-3 bg-white">
-                    <div className="text-xs text-muted-foreground mb-2">Heatmap Giorno × Fascia oraria</div>
-                    <div className="grid grid-rows-5 grid-cols-8 gap-1 text-[10px]">
-                      <div></div>
-                      {['L','M','M','G','V','S','D'].map((d,i)=>(<div key={i} className="text-center text-muted-foreground">{d}</div>))}
-                      {['Notte','Mattina','Pomeriggio','Sera'].map((r,ri)=> (
-                        <>
-                          <div className="text-muted-foreground pr-1 whitespace-nowrap">{r}</div>
-                          {Array.from({length:7}).map((_,ci)=>{
-                            const v = heatmapData.mat[ri][ci]
-                            const intensity = heatmapData.max>0 ? v/heatmapData.max : 0
-                            const bg = `rgba(239,68,68,${Math.min(0.85, intensity)})`
-                            return (<div key={ci} className="h-5 rounded" style={{ background: intensity>0?bg:'#f3f4f6' }} />)
-                          })}
-                        </>
+                {/* Blocco 3 — Registro compatto */}
+                <div className="rounded-lg border bg-white">
+                  <div className="px-3 py-2 text-sm font-medium border-b flex items-center justify-between">
+                    <span>Registro</span>
+                    <div className="inline-flex items-center gap-1">
+                      {(['all','training','match'] as const).map(v=> (
+                        <button key={v} onClick={()=>setViewSel(v)} className={`px-2 py-0.5 rounded-full text-xs border ${viewSel===v?'bg-primary/10 text-primary border-primary/30':'bg-white text-muted-foreground'}`}>{v==='all'?'Tutti':v==='training'?'Allenamenti':'Partite'}</button>
                       ))}
                     </div>
                   </div>
-
-                  {/* Sparkline 7/14 giorni */}
-                  <div className="rounded-lg border p-3 bg-white">
-                    <div className="text-xs text-muted-foreground mb-2">Attendance rate (sparkline)</div>
-                    {[
-                      { label: '7g', data: spark.d7 },
-                      { label: '14g', data: spark.d14 },
-                    ].map((row)=> (
-                      <div key={row.label} className="flex items-end gap-1 h-10 mb-2">
-                        <div className="w-8 text-[10px] text-muted-foreground">{row.label}</div>
-                        <div className="flex-1 flex items-end gap-1 overflow-x-auto">
-                          {row.data.map((v,i)=> (
-                            <div key={i} className="w-2 rounded-t bg-primary/30" style={{ height: `${Math.max(2, v/5)}px`, background: v>0? '#60a5fa':'#e5e7eb' }} title={`${v}%`} />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="px-3 pt-2 text-[11px] text-muted-foreground">
+                    {(() => { const last = eventsFiltered.slice(-10); const tot = last.length; const pres = last.filter((e:any)=> e.present).length; const late = last.filter((e:any)=> e.late).length; const abs = last.filter((e:any)=> !e.present && e.auto!=='no_response').length; return `Ultimi 10 eventi: ${pres} presenti, ${abs} assenze, ${late} ritardo${late===1?'':'i'}.` })()}
                   </div>
-                </div>
-
-                {/* Registro eventi */}
-                <div className="rounded-lg border bg-white">
-                  <div className="px-3 py-2 text-sm font-medium border-b">Registro</div>
                   <div className="divide-y max-h-80 overflow-auto">
-                    {eventsFiltered
-                      .slice().reverse().map((e:any, i:number)=>{
+                    {eventsFiltered.slice().reverse().map((e:any, i:number)=>{
                       const diverge = (e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)
                       return (
                         <div key={i} className={`p-3 text-sm flex items-center gap-3 ${diverge?'border-l-2 border-amber-300 bg-amber-50/30':''}`}>
@@ -623,70 +544,35 @@ const PlayerDetail = () => {
                             <span className={`inline-block h-2.5 w-2.5 rounded-full ${e.type==='training'?'bg-sky-500':'bg-violet-500'}`} />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-xs text-muted-foreground">{e.date || '—'} {e.time || ''} · {e.type==='training'?'Allenamento':'Partita'}</div>
+                            <div className="text-xs text-muted-foreground">{e.date || '—'} {e.time || ''} · {e.type==='training'?'A':'P'}</div>
                             <div className="mt-1 flex items-center gap-2">
-                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${e.coach==='present' || e.coach==='late' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : e.coach==='absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-neutral-200 bg-neutral-50 text-neutral-700'}`}>Coach: {e.coach || '—'}</span>
-                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${e.auto==='present' || e.auto==='late' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : e.auto==='absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : e.auto==='no_response' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-neutral-200 bg-neutral-50 text-neutral-700'}`}>Auto: {e.auto || '—'}</span>
-                              {e.arrival_time && (<span className="text-xs text-amber-600">+ritardo</span>)}
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${e.coach==='present' || e.coach==='late' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : e.coach==='absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-neutral-200 bg-neutral-50 text-neutral-700'}`}>Coach: {e.coach || '—'}</span>
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${e.auto==='present' || e.auto==='late' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : e.auto==='absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : e.auto==='no_response' ? 'border-neutral-200 bg-neutral-500/10 text-neutral-700' : 'border-neutral-200 bg-neutral-50 text-neutral-700'}`}>Auto: {e.auto || '—'}</span>
+                              {e.arrival_time && (<span className="text-xs text-amber-600">+min</span>)}
                               {diverge && (<span className="text-[10px] text-amber-700 bg-amber-100 border border-amber-200 px-1 rounded">Divergenza</span>)}
                             </div>
                           </div>
                         </div>
                       )
                     })}
-                    {(attendance?.events || []).length === 0 && (
+                    {eventsFiltered.length===0 && (
                       <div className="p-6 text-sm text-muted-foreground">Nessun evento nel periodo.</div>
                     )}
                   </div>
                 </div>
+
+                {/* Definizioni (collassabile) */}
+                <details className="rounded-lg border bg-white p-3 text-xs text-neutral-700">
+                  <summary className="cursor-pointer font-medium">Come calcoliamo</summary>
+                  <ul className="mt-2 list-disc pl-5 space-y-1">
+                    <li>Presente: conta prima la decisione del coach; se manca, vale l'auto‑risposta.</li>
+                    <li>Ritardo: allenamenti = "late" o arrivo registrato; partite = arrivo registrato.</li>
+                    <li>No‑response: nessuna risposta entro i tempi.</li>
+                  </ul>
+                </details>
               </CardContent>
             </Card>
           </TabsContent>
-
-          {formerTrialist && (
-            <TabsContent value="prova">
-              <Card>
-                <CardHeader><CardTitle>Valutazioni dal Periodo di Prova</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
-                    <div><div className="text-muted-foreground">Periodo prova</div><div className="font-medium">{formerTrialist?.created_at ? new Date(formerTrialist.created_at).toLocaleDateString() : '-'} → {formerTrialist?.updated_at ? new Date(formerTrialist.updated_at).toLocaleDateString() : '-'}</div></div>
-                    <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{formerTrialist?.role_code || '-'}</div></div>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-left text-muted-foreground">
-                          <th className="py-2 pr-2">Data</th>
-                          <th className="py-2 pr-2">Tecnica</th>
-                          <th className="py-2 pr-2">Fisica</th>
-                          <th className="py-2 pr-2">Tattica</th>
-                          <th className="py-2 pr-2">Atteggiamento</th>
-                          <th className="py-2 pr-2">Media</th>
-                          <th className="py-2 pr-2">Note</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(formerTrialist?.trial_evaluations || []).map((ev:any)=> (
-                          <tr key={ev.id} className="border-t">
-                            <td className="py-2 pr-2 whitespace-nowrap">{ev.evaluation_date ? new Date(ev.evaluation_date).toLocaleDateString() : '-'}</td>
-                            <td className="py-2 pr-2">{ev.technical_score ?? '-'}</td>
-                            <td className="py-2 pr-2">{ev.physical_score ?? '-'}</td>
-                            <td className="py-2 pr-2">{ev.tactical_score ?? '-'}</td>
-                            <td className="py-2 pr-2">{ev.attitude_score ?? '-'}</td>
-                            <td className="py-2 pr-2">{ev.overall_rating ? Number(ev.overall_rating).toFixed(1) : '-'}</td>
-                            <td className="py-2 pr-2 max-w-[320px] truncate" title={ev.notes || ''}>{ev.notes || '-'}</td>
-                          </tr>
-                        ))}
-                        {(formerTrialist?.trial_evaluations || []).length === 0 && (
-                          <tr><td className="py-4 text-muted-foreground" colSpan={7}>Nessuna valutazione dal periodo di prova</td></tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
 
           <TabsContent value="partite">
             <Card>
@@ -741,6 +627,51 @@ const PlayerDetail = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {formerTrialist && (
+            <TabsContent value="prova">
+              <Card>
+                <CardHeader><CardTitle>Valutazioni dal Periodo di Prova</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
+                    <div><div className="text-muted-foreground">Periodo prova</div><div className="font-medium">{formerTrialist?.created_at ? new Date(formerTrialist.created_at).toLocaleDateString() : '-'} → {formerTrialist?.updated_at ? new Date(formerTrialist.updated_at).toLocaleDateString() : '-'}</div></div>
+                    <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{formerTrialist?.role_code || '-'}</div></div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-muted-foreground">
+                          <th className="py-2 pr-2">Data</th>
+                          <th className="py-2 pr-2">Tecnica</th>
+                          <th className="py-2 pr-2">Fisica</th>
+                          <th className="py-2 pr-2">Tattica</th>
+                          <th className="py-2 pr-2">Atteggiamento</th>
+                          <th className="py-2 pr-2">Media</th>
+                          <th className="py-2 pr-2">Note</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(formerTrialist?.trial_evaluations || []).map((ev:any)=> (
+                          <tr key={ev.id} className="border-t">
+                            <td className="py-2 pr-2 whitespace-nowrap">{ev.evaluation_date ? new Date(ev.evaluation_date).toLocaleDateString() : '-'}</td>
+                            <td className="py-2 pr-2">{ev.technical_score ?? '-'}</td>
+                            <td className="py-2 pr-2">{ev.physical_score ?? '-'}</td>
+                            <td className="py-2 pr-2">{ev.tactical_score ?? '-'}</td>
+                            <td className="py-2 pr-2">{ev.attitude_score ?? '-'}</td>
+                            <td className="py-2 pr-2">{ev.overall_rating ? Number(ev.overall_rating).toFixed(1) : '-'}</td>
+                            <td className="py-2 pr-2 max-w-[320px] truncate" title={ev.notes || ''}>{ev.notes || '-'}</td>
+                          </tr>
+                        ))}
+                        {(formerTrialist?.trial_evaluations || []).length === 0 && (
+                          <tr><td className="py-4 text-muted-foreground" colSpan={7}>Nessuna valutazione dal periodo di prova</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
