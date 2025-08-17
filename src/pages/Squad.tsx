@@ -23,7 +23,8 @@ import { useRoles } from '@/hooks/useRoles';
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Search, LayoutGrid, Rows } from 'lucide-react'
+import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X } from 'lucide-react'
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 
 type SortField = 'name' | 'jersey_number' | 'role_code' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -321,6 +322,7 @@ const Squad = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'card'|'table'>('card')
   const [openPlayerId, setOpenPlayerId] = useState<string|null>(null)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   
   // Stato per la modale dell'immagine del giocatore
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -363,6 +365,14 @@ const Squad = () => {
       .map(([code, count]) => ({ code, count, label: rolesByCode[code]?.label || code }))
       .sort((a,b) => a.label.localeCompare(b.label))
   }, [players, rolesByCode])
+
+  const activeFilterChips = useMemo(() => {
+    const chips: Array<{ key: string; label: string; onClear: () => void }> = []
+    if (roleFilter !== 'all') chips.push({ key: 'role', label: rolesByCode[roleFilter]?.label || roleFilter, onClear: () => setRoleFilter('all') })
+    if (statusFilter !== 'all') chips.push({ key: 'status', label: statusFilter, onClear: () => setStatusFilter('all') })
+    if (selectedCaptain !== 'none') chips.push({ key: 'captain', label: 'Capitano', onClear: () => setSelectedCaptain('none') })
+    return chips
+  }, [roleFilter, statusFilter, selectedCaptain, rolesByCode])
 
   const deletePlayer = useDeletePlayer();
   const updatePlayer = useUpdatePlayer();
@@ -531,52 +541,88 @@ const Squad = () => {
   return (
     <div className="container mx-auto py-6">
       {/* Header compatto */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-xl sm:text-2xl font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-base sm:text-lg font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
+        <Button variant="ghost" size="icon" onClick={()=>setFiltersOpen(true)} className="h-9 w-9 rounded-full"><SlidersHorizontal className="h-4 w-4" /></Button>
+      </div>
+
+      {/* Toolbar sticky (mobile-first) */}
+      <div className="sticky top-2 z-10 bg-white/80 backdrop-blur rounded-full border px-2 py-1.5 shadow-sm mb-2">
         <div className="flex items-center gap-2">
-          <PlayerForm />
-          <Button variant="outline" size="sm" onClick={()=>setShowAdvancedFilters(v=>!v)} className="inline-flex items-center gap-2"><Filter className="h-4 w-4" />Filtri</Button>
+          <div className="relative flex-1">
+            <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <Input value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Cerca" className="pl-8 rounded-full h-8" />
+          </div>
+          <ToggleGroup type="single" value={viewMode} onValueChange={(v:any)=> v && setViewMode(v)}>
+            <ToggleGroupItem value="card" className="rounded-full px-2 h-8 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
+            <ToggleGroupItem value="table" className="rounded-full px-2 h-8 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"><Rows className="h-4 w-4" /></ToggleGroupItem>
+          </ToggleGroup>
         </div>
       </div>
 
-      {/* Toolbar sticky */}
-      <div className="sticky top-2 z-10 bg-white/70 backdrop-blur rounded-full border px-3 py-2 shadow-sm mb-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-center">
-          <div className="relative">
-            <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <Input value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Cerca" className="pl-8 rounded-full h-9" />
-          </div>
-                    <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="rounded-full h-9"><SelectValue placeholder="Ruolo" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tutti i ruoli</SelectItem>
-              {presentRoles.map(r => (<SelectItem key={r.code} value={r.code}>{r.label}</SelectItem>))}
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="rounded-full h-9"><SelectValue placeholder="Stato" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tutti gli stati</SelectItem>
-              <SelectItem value="active">Attivo</SelectItem>
-              <SelectItem value="inactive">Inattivo</SelectItem>
-              <SelectItem value="injured">Infortunato</SelectItem>
-              <SelectItem value="suspended">Squalificato</SelectItem>
-            </SelectContent>
-          </Select>
-          <ToggleGroup type="single" value={viewMode} onValueChange={(v:any)=> v && setViewMode(v)} className="justify-self-start lg:justify-self-center">
-            <ToggleGroupItem value="card" className="rounded-full px-3 h-9 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
-            <ToggleGroupItem value="table" className="rounded-full px-3 h-9 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"><Rows className="h-4 w-4" /></ToggleGroupItem>
-          </ToggleGroup>
-          <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
-            <SelectTrigger className="rounded-full h-9"><SelectValue placeholder="Capitano" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nessuno</SelectItem>
-              {players.filter(p => p.status === 'active').map(p => (
-                <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name}{p.jersey_number ? ` (#${p.jersey_number})` : ''}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Active filters chips */}
+      {activeFilterChips.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          {activeFilterChips.map(ch => (
+            <span key={ch.key} className="inline-flex items-center gap-1 text-xs rounded-full border px-2 py-0.5 bg-white">
+              {ch.label}
+              <button onClick={ch.onClear} className="text-neutral-500"><X className="h-3 w-3" /></button>
+            </span>
+          ))}
         </div>
+      )}
+
+      {/* Bottom sheet filters */}
+      <Drawer open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Filtri</DrawerTitle>
+          </DrawerHeader>
+          <div className="p-4 space-y-4">
+            <div>
+              <label className="text-sm font-medium block mb-2">Ruolo</label>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger><SelectValue placeholder="Tutti i ruoli" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tutti i ruoli</SelectItem>
+                  {presentRoles.map(r => (<SelectItem key={r.code} value={r.code}>{r.label}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-2">Stato</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger><SelectValue placeholder="Tutti gli stati" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tutti</SelectItem>
+                  <SelectItem value="active">Attivo</SelectItem>
+                  <SelectItem value="inactive">Inattivo</SelectItem>
+                  <SelectItem value="injured">Infortunato</SelectItem>
+                  <SelectItem value="suspended">Squalificato</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-2">Capitano</label>
+              <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
+                <SelectTrigger><SelectValue placeholder="Capitano" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nessuno</SelectItem>
+                  {players.filter(p => p.status === 'active').map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name}{p.jersey_number ? ` (#${p.jersey_number})` : ''}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* FAB Aggiungi */}
+      <div className="fixed bottom-4 right-4 sm:hidden z-20">
+        <PlayerForm>
+          <Button variant="default" size="icon" className="h-12 w-12 rounded-full shadow-lg"><Plus className="h-5 w-5" /></Button>
+        </PlayerForm>
       </div>
 
       {showAdvancedFilters && (
@@ -638,43 +684,36 @@ const Squad = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-2">
                 {filteredAndSortedPlayers.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || '']
-                  const pres = p.presences || 0
-                  const tot = p.totalEvents || 0
-                  const pct = tot>0 ? Math.round((pres/tot)*100) : 0
+                  const matchPres = p.matchPresences || 0
+                  const matchTot = p.matchEndedTotal || 0
+                  const pct = matchTot>0 ? Math.round((matchPres/matchTot)*100) : 0
                   return (
-                    <div key={p.id} className={`rounded-2xl border border-border/40 shadow-sm p-4 hover:shadow-md transition bg-gradient-to-br ${sectorBgClass[sectorFromRoleCode((p as any).role_code)]}`}>
-  <a href={`/player/${p.id}`} className="block">
-    <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
-                            <div className="min-w-0">
-                              <div className="font-semibold truncate">{p.first_name} {p.last_name}</div>
-                              <div className="mt-1 flex flex-wrap items-center gap-1">
-                                {p.jersey_number && (<Badge variant="outline" className="text-xs">#{p.jersey_number}</Badge>)}
-                                <Badge variant="secondary" className="text-xs">{role?.abbreviation || role?.label || (p as any).role_code || '-'}</Badge>
-                                {p.is_captain && (<Badge className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300">Capitano</Badge>)}
-                                <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-xs">{p.status}</Badge>
-                              </div>
+                    <a key={p.id} href={`/player/${p.id}`} className="block rounded-2xl border border-border/40 bg-white shadow-sm p-3 hover:shadow-md transition">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">{p.first_name} {p.last_name}</div>
+                            <div className="mt-1 flex flex-wrap items-center gap-1">
+                              {p.jersey_number && (<Badge variant="outline" className="text-[10px] uppercase">#{p.jersey_number}</Badge>)}
+                              <Badge variant="secondary" className="text-[10px] uppercase">{role?.abbreviation || (p as any).role_code || '-'}</Badge>
+                              {p.is_captain && (<Badge className="text-[10px] bg-yellow-100 text-yellow-800 border-yellow-300 uppercase">Capitano</Badge>)}
+                              <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-[10px] uppercase">{p.status}</Badge>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <div className="inline-flex items-center gap-2 text-xs">
-                              <Badge variant="secondary" className="text-xs">Presenze {pres}/{tot}</Badge>
-                            </div>
-                            <div className="w-24 h-1.5 rounded-full bg-neutral-200 overflow-hidden">
-                              <div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} />
-                            </div>
-                            <div className="text-xs text-neutral-500">Ritardi {p.tardiness || 0}</div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 w-[100px]">
+                          <div className="text-[11px] text-neutral-600 tabular-nums">{matchPres}/{matchTot}</div>
+                          <div className="w-full h-1.5 rounded-full bg-neutral-200 overflow-hidden">
+                            <div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} />
                           </div>
+                          <div className="text-[11px] text-neutral-500">Ritardi <span className="tabular-nums {p.tardiness ? '' : 'text-neutral-400'}">{p.tardiness || 0}</span></div>
                         </div>
-                        <div className="mt-3 flex justify-end">
-                          <span className="text-xs text-primary hover:underline">Visualizza dettagli</span>
-                        </div>
-                      </a>
-                    </div>
+                      </div>
+                    </a>
                   )
                 })}
               </div>
