@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2, RotateCcw } from 'lucide-react'
+import { Users, Target, ArrowLeft, Play, Pause, Clock3, Plus, Shield, Redo2, StickyNote, Repeat, Trash2, RotateCcw, Loader2 } from 'lucide-react'
 import { useMatch, useMatchEvents, useMatchAttendance, useMatchTrialistInvites, usePlayers } from '@/hooks/useSupabaseData'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 import { supabase } from '@/integrations/supabase/client'
@@ -96,10 +96,12 @@ const MatchLive = () => {
 	const finalizeMatch = useFinalizeMatch()
 	const upsertStats = useUpsertMatchPlayerStats()
 	const { toast } = useToast()
+	const [finalizing, setFinalizing] = useState(false)
 
 	const handleFinalize = async () => {
 		if (!id) return
 		try {
+			setFinalizing(true)
 			// Compute per-player stats
 			const starters = new Set<string>(Object.values(lineup?.players_data?.positions || {}).filter(Boolean) as string[])
 			const benchIdsSet = new Set<string>((convocati || []).map((c:any)=>c.id))
@@ -177,6 +179,8 @@ const MatchLive = () => {
 		} catch (e: any) {
 			console.error('Errore finalizzazione', e)
 			toast({ title: 'Errore finalizzazione', description: String(e?.message || e), variant: 'destructive' })
+		} finally {
+			setFinalizing(false)
 		}
 	}
 
@@ -725,13 +729,10 @@ const MatchLive = () => {
 								</Select>
 							</div>
 						</div>
-						<Button variant="destructive" className="h-9 rounded-md px-3" onClick={()=>{ setEventMode(null); setNoteOpen(false); handleFinalize() }} disabled={isEnded}>
-							Termina partita
-						</Button>
-												<Button variant="ghost" size="icon" className="h-9 w-9 rounded-md" aria-label="Reimposta layout">
-							<RotateCcw className="h-4 w-4" />
-						</Button>
-					</div>
+											<Button variant="destructive" className="h-9 rounded-md px-3" onClick={()=>{ setEventMode(null); setNoteOpen(false); handleFinalize() }} disabled={isEnded || finalizing}>
+						{finalizing ? (<span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Terminazione…</span>) : 'Termina partita'}
+					</Button>
+</div>
 				</div>
 
 				{/* Global Dialogs (Nota, Sostituzione, Rigore nostri, Rigore avversario) */}
