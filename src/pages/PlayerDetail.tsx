@@ -37,7 +37,7 @@ const PlayerDetail = () => {
   const { defaultBackground } = useAvatarBackgrounds()
   const heroAvatarUrl = (player?.avatar_url || (formerTrialist as any)?.avatar_url || (defaultBackground?.type==='image' ? defaultBackground.value : '')) as string
   // Presenze: stato periodo/vista e calcolo date
-  const [periodSel, setPeriodSel] = useState<'7d'|'30d'|'90d'|'custom'>('30d')
+  const [periodSel, setPeriodSel] = useState<'7d'|'30d'|'90d'|'custom'>('90d')
   const [customStart, setCustomStart] = useState<string>('')
   const [customEnd, setCustomEnd] = useState<string>('')
   const [viewSel, setViewSel] = useState<'all'|'training'|'match'>('all')
