@@ -58,6 +58,52 @@ const PlayerDetail = () => {
   }, [periodSel, customStart, customEnd])
   const { data: attendance } = usePlayerAttendanceSummary(id || '', startDate, endDate)
   const { data: roles = [] } = useRoles()
+
+  // Filtri eventi (vista/divergenze)
+  const eventsFiltered = useMemo(()=> {
+    const ev = (attendance?.events || []) as any[]
+    const a = viewSel==='all' ? ev : ev.filter(e => viewSel==='training' ? e.type==='training' : e.type==='match')
+    return divergencesOnly ? a.filter(e => (e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)) : a
+  }, [attendance, viewSel, divergencesOnly])
+
+  // Heatmap Giorno × Fascia oraria
+  const heatmapData = useMemo(()=>{
+    // rows: 0 notte(0-6), 1 mattina(6-12), 2 pom(12-18), 3 sera(18-24)
+    const mat = Array.from({length:4}, ()=> Array.from({length:7}, ()=>0))
+    const bucket = (hh: number) => hh<6?0:hh<12?1:hh<18?2:3
+    eventsFiltered.forEach((e:any)=>{
+      if (!e.date || !e.time) return
+      const d = new Date(`${e.date}T${e.time}`)
+      if (isNaN(d.getTime())) return
+      const day = (d.getDay()+6)%7 // Mon=0 ... Sun=6
+      const hh = d.getHours()
+      const r = bucket(hh)
+      const weight = e.present ? (e.late ? 1 : 0) : 2
+      mat[r][day] += weight
+    })
+    const max = Math.max(1, ...mat.flat())
+    return { mat, max }
+  }, [eventsFiltered])
+
+  // Sparkline attendance rate 7/14 giorni
+  const spark = useMemo(()=>{
+    const dayKey = (d: Date) => d.toISOString().slice(0,10)
+    const build = (days: number) => {
+      const arr: number[] = []
+      for (let i=days-1;i>=0;i--) {
+        const d = new Date(endDate)
+        d.setDate(endDate.getDate()-i)
+        const key = dayKey(d)
+        const dayEvents = eventsFiltered.filter((e:any)=> e.date===key)
+        if (dayEvents.length===0) { arr.push(0); continue }
+        const present = dayEvents.filter((e:any)=> e.present).length
+        const rate = Math.round((present/dayEvents.length)*100)
+        arr.push(rate)
+      }
+      return arr
+    }
+    return { d7: build(7), d14: build(14) }
+  }, [eventsFiltered, endDate])
   const updatePlayer = useUpdatePlayer()
   const { toast } = useToast()
 
@@ -486,9 +532,7 @@ const PlayerDetail = () => {
                   <div className="rounded-lg border p-3 bg-white">
                     <div className="text-xs text-muted-foreground mb-2">Timeline presenze</div>
                     <div className="flex items-end gap-1 h-24 overflow-x-auto">
-                      {(attendance?.events || [])
-                        .filter((e:any)=> viewSel==='all' ? true : (viewSel==='training' ? e.type==='training' : e.type==='match'))
-                        .filter((e:any)=> !divergencesOnly || ((e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)))
+                      {eventsFiltered
                         .slice(-20)
                         .map((e:any, i:number)=>{
                         const h = e.present ? 100 : 40
@@ -525,13 +569,52 @@ const PlayerDetail = () => {
                   </div>
                 </div>
 
+                {/* Heatmap e Sparkline */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Heatmap Giorno × Fascia */}
+                  <div className="rounded-lg border p-3 bg-white">
+                    <div className="text-xs text-muted-foreground mb-2">Heatmap Giorno × Fascia oraria</div>
+                    <div className="grid grid-rows-5 grid-cols-8 gap-1 text-[10px]">
+                      <div></div>
+                      {['L','M','M','G','V','S','D'].map((d,i)=>(<div key={i} className="text-center text-muted-foreground">{d}</div>))}
+                      {['Notte','Mattina','Pomeriggio','Sera'].map((r,ri)=> (
+                        <>
+                          <div className="text-muted-foreground pr-1 whitespace-nowrap">{r}</div>
+                          {Array.from({length:7}).map((_,ci)=>{
+                            const v = heatmapData.mat[ri][ci]
+                            const intensity = heatmapData.max>0 ? v/heatmapData.max : 0
+                            const bg = `rgba(239,68,68,${Math.min(0.85, intensity)})`
+                            return (<div key={ci} className="h-5 rounded" style={{ background: intensity>0?bg:'#f3f4f6' }} />)
+                          })}
+                        </>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sparkline 7/14 giorni */}
+                  <div className="rounded-lg border p-3 bg-white">
+                    <div className="text-xs text-muted-foreground mb-2">Attendance rate (sparkline)</div>
+                    {[
+                      { label: '7g', data: spark.d7 },
+                      { label: '14g', data: spark.d14 },
+                    ].map((row)=> (
+                      <div key={row.label} className="flex items-end gap-1 h-10 mb-2">
+                        <div className="w-8 text-[10px] text-muted-foreground">{row.label}</div>
+                        <div className="flex-1 flex items-end gap-1 overflow-x-auto">
+                          {row.data.map((v,i)=> (
+                            <div key={i} className="w-2 rounded-t bg-primary/30" style={{ height: `${Math.max(2, v/5)}px`, background: v>0? '#60a5fa':'#e5e7eb' }} title={`${v}%`} />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Registro eventi */}
                 <div className="rounded-lg border bg-white">
                   <div className="px-3 py-2 text-sm font-medium border-b">Registro</div>
                   <div className="divide-y max-h-80 overflow-auto">
-                    {(attendance?.events || [])
-                      .filter((e:any)=> viewSel==='all' ? true : (viewSel==='training' ? e.type==='training' : e.type==='match'))
-                      .filter((e:any)=> !divergencesOnly || ((e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)))
+                    {eventsFiltered
                       .slice().reverse().map((e:any, i:number)=>{
                       const diverge = (e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)
                       return (
