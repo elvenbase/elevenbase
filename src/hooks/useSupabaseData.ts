@@ -1899,32 +1899,31 @@ export const usePlayerAttendanceSummary = (playerId: string, startDate?: Date, e
       const startStr = startDate ? startDate.toISOString().split('T')[0] : undefined
       const endStr = endDate ? endDate.toISOString().split('T')[0] : undefined
 
-      // Training attendance joined with session datetime
-      let trq = supabase
+      // Fetch sessions in period
+      let tsq = supabase.from('training_sessions').select('id, session_date, start_time, end_time')
+      if (startStr) tsq = tsq.gte('session_date', startStr)
+      if (endStr) tsq = tsq.lte('session_date', endStr)
+      const tsRes = await tsq
+      if (tsRes.error) throw tsRes.error
+      const sessions = (tsRes.data || []) as any[]
+      const sessionIds = sessions.map(s => s.id)
+      const sessionsById = new Map<string, any>(sessions.map(s => [s.id, s]))
+
+      // Training attendance for player within period (by session_id)
+      const trRes = await supabase
         .from('training_attendance')
-        .select(`
-          session_id,
-          status,
-          coach_confirmation_status,
-          arrival_time,
-          self_registered,
-          training_sessions!inner(session_date, start_time, end_time)
-        `)
+        .select('session_id, status, coach_confirmation_status, arrival_time, self_registered')
         .eq('player_id', playerId)
-      if (startStr) trq = trq.gte('training_sessions.session_date', startStr) as any
-      if (endStr) trq = trq.lte('training_sessions.session_date', endStr) as any
-      const trRes = await trq
+        .in('session_id', sessionIds)
       if (trRes.error) throw trRes.error
       const training = (trRes.data || []) as any[]
 
       // Training convocati for this player in period (to create synthetic events if no attendance row exists)
-      let tcq = supabase
+      const tcRes = await supabase
         .from('training_convocati')
-        .select(`session_id, training_sessions!inner(session_date, start_time, end_time)`) 
+        .select('session_id')
         .eq('player_id', playerId)
-      if (startStr) tcq = tcq.gte('training_sessions.session_date', startStr) as any
-      if (endStr) tcq = tcq.lte('training_sessions.session_date', endStr) as any
-      const tcRes = await tcq
+        .in('session_id', sessionIds)
       if (tcRes.error) throw tcRes.error
       const convocati = (tcRes.data || []) as any[]
 
@@ -1968,8 +1967,8 @@ export const usePlayerAttendanceSummary = (playerId: string, startDate?: Date, e
 
       // Merge convocati -> create synthetic record if missing attendance
       const allTrainingSessions: any[] = []
-      convocati.forEach(c => { allTrainingSessions.push({ source: 'convocati', session_id: c.session_id, training_sessions: c.training_sessions }) })
-      training.forEach(t => { if (!allTrainingSessions.find(x => x.session_id === t.session_id)) allTrainingSessions.push({ source: 'attendance', session_id: t.session_id, training_sessions: t.training_sessions }) })
+      convocati.forEach(c => { allTrainingSessions.push({ source: 'convocati', session_id: c.session_id, training_sessions: sessionsById.get(c.session_id) }) })
+      training.forEach(t => { if (!allTrainingSessions.find(x => x.session_id === t.session_id)) allTrainingSessions.push({ source: 'attendance', session_id: t.session_id, training_sessions: sessionsById.get(t.session_id) }) })
 
       allTrainingSessions.forEach(item => {
         const att = trainingBySession.get(item.session_id)
