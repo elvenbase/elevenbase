@@ -7,6 +7,7 @@ import { usePlayerById, useFormerTrialistData } from '@/hooks/useSupabaseData'
 import { usePlayerAttendanceSummary } from '@/hooks/useSupabaseData'
 import { useRoles } from '@/hooks/useRoles'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
+import EditPlayerForm from '@/components/forms/EditPlayerForm'
 import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
@@ -134,7 +135,7 @@ const PlayerDetail = () => {
         <div className="flex justify-start">
           <Link to="/squad" className="inline-flex items-center gap-1 text-xs sm:text-sm text-neutral-400 hover:text-neutral-600 transition-colors underline-offset-4 hover:underline">
             <ArrowLeft className="h-4 w-4" />
-            Torna alla formazione
+            Torna alla rosa
           </Link>
         </div>
         <div className={`relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-r ${sectorTheme.from} ${sectorTheme.to} min-h-[140px] sm:min-h-[180px]`}>
@@ -192,12 +193,19 @@ const PlayerDetail = () => {
 
         <Tabs defaultValue="profilo" className="w-full">
           <TabsList className="sticky top-2 z-10 bg-transparent p-0">
-            <div className="inline-flex rounded-full border border-border/40 bg-white/70 backdrop-blur px-1 py-1 shadow-sm">
-              <TabsTrigger value="profilo" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Profilo</TabsTrigger>
-              <TabsTrigger value="performance" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Performance</TabsTrigger>
-              <TabsTrigger value="presenze" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Presenze</TabsTrigger>
-              <TabsTrigger value="partite" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Partite</TabsTrigger>
-              {formerTrialist && (<TabsTrigger value="prova" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Prova</TabsTrigger>)}
+            <div className="flex items-center justify-between">
+              <div className="inline-flex rounded-full border border-border/40 bg-white/70 backdrop-blur px-1 py-1 shadow-sm">
+                <TabsTrigger value="profilo" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Profilo</TabsTrigger>
+                <TabsTrigger value="performance" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Performance</TabsTrigger>
+                <TabsTrigger value="presenze" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Presenze</TabsTrigger>
+                <TabsTrigger value="partite" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Partite</TabsTrigger>
+                {formerTrialist && (<TabsTrigger value="prova" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Prova</TabsTrigger>)}
+              </div>
+              {player && (
+                <div className="ml-2">
+                  <EditPlayerForm player={player as any} />
+                </div>
+              )}
             </div>
           </TabsList>
 
