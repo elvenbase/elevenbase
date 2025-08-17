@@ -158,9 +158,6 @@ const PlayerDetail = () => {
               <div className="mt-2 flex flex-wrap items-center gap-2 justify-end">
                 <Badge variant="secondary">#{player?.jersey_number ?? '-'}</Badge>
                 <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
-                <Badge className="bg-yellow-100 border border-yellow-300 text-yellow-800 font-semibold inline-flex items-center gap-1">
-                  <Trophy className="h-3.5 w-3.5" /> MVP {totals.mvp || 0}
-                </Badge>
               </div>
               <div className="mt-3 ml-auto w-full sm:w-auto">
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 justify-end">
