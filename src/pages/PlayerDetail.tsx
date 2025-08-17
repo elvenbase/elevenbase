@@ -32,6 +32,7 @@ const PlayerDetail = () => {
   const { data: stats = [] } = usePlayerMatchStats(id || '')
   const { data: noteEvents = [] } = usePlayerNoteEvents(id || '')
   const { data: formerTrialist } = useFormerTrialistData(player as any)
+  const heroAvatarUrl = (player?.avatar_url || (formerTrialist as any)?.avatar_url || '') as string
   const { data: attendance } = usePlayerAttendanceSummary(id || '')
   const { data: roles = [] } = useRoles()
   const updatePlayer = useUpdatePlayer()
@@ -144,9 +145,9 @@ const PlayerDetail = () => {
           </Link>
         </div>
         <div className={`relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-r ${sectorTheme.from} ${sectorTheme.to} min-h-[140px] sm:min-h-[180px]`}>
-          {player?.avatar_url && (
+          {heroAvatarUrl && (
             <img
-              src={player.avatar_url}
+              src={heroAvatarUrl}
               alt=""
               className="absolute left-[-5%] top-1/2 -translate-y-1/2 h-[98%] w-auto object-cover pointer-events-none"
             />
