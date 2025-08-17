@@ -44,7 +44,7 @@ const PlayerDetail = () => {
   const [ultimiChoice, setUltimiChoice] = useState<'7d'|'30d'|'90d'|'season'|'last10'>('90d')
   const [customStart, setCustomStart] = useState<string>('')
   const [customEnd, setCustomEnd] = useState<string>('')
-  const [intervalUIOpen, setIntervalUIOpen] = useState(false)
+  const [attendancePreset, setAttendancePreset] = useState<'max'|'last30'|'prevMonth'|null>(null)
   const [viewSel, setViewSel] = useState<'all'|'training'|'match'>('all')
   const [divergencesOnly, setDivergencesOnly] = useState(false)
   const { startDate, endDate } = useMemo(() => {
@@ -529,16 +529,16 @@ const PlayerDetail = () => {
                   <div className="mb-2 flex justify-center">
                     <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
                       <button
-                        onClick={()=>{ setRange(seasonStart(), new Date()); setTimeMode('intervallo') }}
-                        className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' && customStart && customEnd ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                        onClick={()=>{ setRange(seasonStart(), new Date()); setTimeMode('intervallo'); setPeriodSel('custom'); setAttendancePreset('max') }}
+                        className={`px-2.5 py-0.5 rounded-full ${attendancePreset==='max' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
                       >max</button>
                       <button
-                        onClick={()=>{ setPeriodSel('30d'); setUltimiChoice('30d'); setTimeMode('ultimi') }}
-                        className={`px-2.5 py-0.5 rounded-full ${periodSel==='30d' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                        onClick={()=>{ setPeriodSel('30d'); setUltimiChoice('30d'); setTimeMode('ultimi'); setAttendancePreset('last30') }}
+                        className={`px-2.5 py-0.5 rounded-full ${attendancePreset==='last30' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
                       >ultimo mese</button>
                       <button
-                        onClick={()=>{ const n=new Date(); const start=new Date(n.getFullYear(), n.getMonth()-1, 1); const end=new Date(n.getFullYear(), n.getMonth(), 0); setCustomStart(start.toISOString().slice(0,10)); setCustomEnd(end.toISOString().slice(0,10)); setPeriodSel('custom'); setTimeMode('intervallo') }}
-                        className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                        onClick={()=>{ const n=new Date(); const start=new Date(n.getFullYear(), n.getMonth()-1, 1); const end=new Date(n.getFullYear(), n.getMonth(), 0); setCustomStart(start.toISOString().slice(0,10)); setCustomEnd(end.toISOString().slice(0,10)); setPeriodSel('custom'); setTimeMode('intervallo'); setAttendancePreset('prevMonth') }}
+                        className={`px-2.5 py-0.5 rounded-full ${attendancePreset==='prevMonth' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
                       >mese precedente</button>
                     </div>
                   </div>
