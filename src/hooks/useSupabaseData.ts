@@ -137,8 +137,8 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
           ? playerTrainingAttendance.filter(ta => ['present','late'].includes(ta.coach_confirmation_status || 'pending')).length
           : playerTrainingAttendance.filter(ta => ta.status === 'present' || ta.status === 'late').length
         const trainingTardiness = hasCoachConfirm
-          ? playerTrainingAttendance.filter(ta => ta.coach_confirmation_status === 'late').length
-          : playerTrainingAttendance.filter(ta => ta.status === 'late').length
+          ? playerTrainingAttendance.filter(ta => (ta.coach_confirmation_status === 'late') || ((ta.coach_confirmation_status === 'present' || ta.coach_confirmation_status === 'late') && !!ta.arrival_time)).length
+          : playerTrainingAttendance.filter(ta => (ta.status === 'late') || ((ta.status === 'present' || ta.status === 'late') && !!ta.arrival_time)).length
         const trainingTotal = playerTrainingAttendance.length;
         
         const matchPresences = playerMatchAttendance.filter(ma => ma.status === 'present').length;
