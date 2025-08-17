@@ -218,7 +218,7 @@ const PlayerDetail = () => {
           </TabsList>
 
           <TabsContent value="profilo">
-            <div className="grid grid-cols-1 md:grid-cols-[1.25fr_1fr] gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] lg:grid-cols-[2fr_1fr] gap-4">
               {/* Card Anagrafica */}
               <Card className="border border-border/40 rounded-2xl shadow-sm">
                 <CardHeader className="pb-2">
@@ -286,7 +286,7 @@ const PlayerDetail = () => {
                     </div>
 
                     {/* Contatti full width */}
-                    <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                    <div className="sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
                       <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
                         <Phone className="h-4 w-4 text-neutral-500" />
                         <span className="text-[11px] uppercase text-neutral-500">Telefono</span>
