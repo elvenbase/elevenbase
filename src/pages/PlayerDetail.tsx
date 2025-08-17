@@ -218,7 +218,7 @@ const PlayerDetail = () => {
           </TabsList>
 
           <TabsContent value="profilo">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-[1.25fr_1fr] gap-4">
               {/* Card Anagrafica */}
               <Card className="border border-border/40 rounded-2xl shadow-sm">
                 <CardHeader className="pb-2">
@@ -311,7 +311,7 @@ const PlayerDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 gap-3">
                     {(() => {
                       const ea = (player as any)?.ea_sport_id
                       const plat = (player as any)?.gaming_platform
