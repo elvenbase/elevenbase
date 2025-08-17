@@ -90,12 +90,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       setIsLoading(true);
       const existingRecord = existingAttendance.find(a => a.player_id === playerId);
       if (existingRecord) {
-        const shouldMarkNoResponse = withinCoachWindow() && !existingRecord.self_registered && (existingRecord.status === 'pending' || !existingRecord.status || existingRecord.status === 'no_response');
+        const autoIsPending = !existingRecord.status || existingRecord.status === 'pending';
         const { error } = await supabase
           .from('training_attendance')
           .update({ 
             coach_confirmation_status: confirmationStatus,
-            status: shouldMarkNoResponse ? 'no_response' : confirmationStatus
+            status: autoIsPending ? 'no_response' : confirmationStatus
           })
           .eq('id', existingRecord.id);
         if (error) throw error;
@@ -105,7 +105,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
           .insert({
             session_id: sessionId,
             player_id: playerId,
-            status: confirmationStatus,
+            status: 'no_response',
             coach_confirmation_status: confirmationStatus,
             self_registered: false
           });
@@ -183,22 +183,21 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
         const existingRecord = existingAttendance.find(a => a.player_id === playerId);
         
         if (existingRecord) {
-          // Aggiorna conferma coach in bulk e replica su status
+          const autoIsPending = !existingRecord.status || existingRecord.status === 'pending';
           await supabase
             .from('training_attendance')
             .update({ 
               coach_confirmation_status: status,
-              status: status
+              status: autoIsPending ? 'no_response' : status
             })
             .eq('id', existingRecord.id);
         } else {
-          // Crea nuovo record con conferma coach e status replicato
           await supabase
             .from('training_attendance')
             .insert({
               session_id: sessionId,
               player_id: playerId,
-              status: status,
+              status: 'no_response',
               coach_confirmation_status: status,
               self_registered: false
             });
