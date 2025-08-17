@@ -52,7 +52,10 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
   const handleCoachConfirmationChange = async (playerId: string, confirmationStatus: string) => {
     try {
       setIsLoading(true);
-      await upsert.mutateAsync({ match_id: matchId, player_id: playerId, coach_confirmation_status: confirmationStatus, status: confirmationStatus });
+      // Se auto-risposta è pending/null, marcala come no_response, lasciando traccia separata
+      const rec = attendance.find(a => a.player_id === playerId);
+      const autoIsPending = !rec?.status || rec?.status === 'pending';
+      await upsert.mutateAsync({ match_id: matchId, player_id: playerId, coach_confirmation_status: confirmationStatus, status: autoIsPending ? 'no_response' : rec?.status });
       toast.success('Conferma presenza aggiornata');
       refetch();
     } catch (error: any) {
@@ -87,11 +90,8 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
     }
     try {
       setIsLoading(true);
-      // Bulk: aggiorna conferma coach e replica in status
-      const updates = selectedPlayers.map((player_id) => ({ match_id: matchId, player_id, coach_confirmation_status: status, status }));
       await bulkUpdate.mutateAsync({ match_id: matchId, player_ids: selectedPlayers, status });
-      // Fallback: se il bulk hook non supporta coach_status, esegue upsert individuali - ma qui preferiamo l'hook
-      toast.success(`${selectedPlayers.length} conferme coach aggiornate`);
+      toast.success(`${selectedPlayers.length} conferme coach aggiornate (auto lasciata intatta o marcata no_response se pending al prossimo update singolo)`);
       setSelectedPlayers([]);
       refetch();
     } catch (error: any) {

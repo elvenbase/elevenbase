@@ -1794,7 +1794,7 @@ export const useBulkUpdateMatchAttendance = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: { match_id: string; player_ids: string[]; status: string }) => {
-      const updates = payload.player_ids.map((player_id) => ({ match_id: payload.match_id, player_id, status: payload.status, coach_confirmation_status: payload.status }))
+      const updates = payload.player_ids.map((player_id) => ({ match_id: payload.match_id, player_id, coach_confirmation_status: payload.status }))
       const { error } = await supabase.from('match_attendance').upsert(updates, { onConflict: 'match_id,player_id' })
       if (error) throw error
       return true
