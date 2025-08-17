@@ -1896,8 +1896,10 @@ export const usePlayerAttendanceSummary = (playerId: string, startDate?: Date, e
   return useQuery({
     queryKey: ['player-attendance-summary', playerId, startDate?.toISOString(), endDate?.toISOString()],
     queryFn: async () => {
-      const startStr = startDate ? startDate.toISOString().split('T')[0] : undefined
-      const endStr = endDate ? endDate.toISOString().split('T')[0] : undefined
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const fmt = (d?: Date) => d ? `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` : undefined
+      const startStr = fmt(startDate)
+      const endStr = fmt(endDate)
 
       // Fetch sessions in period
       let tsq = supabase.from('training_sessions').select('id, session_date, start_time, end_time')
