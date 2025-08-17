@@ -10,6 +10,7 @@ import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import EditPlayerForm from '@/components/forms/EditPlayerForm'
 import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy, X } from 'lucide-react'
+import { Clock3, Shield, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
 import { useToast } from '@/hooks/use-toast'
@@ -200,6 +201,23 @@ const PlayerDetail = () => {
           <div className="absolute inset-1 rounded-full bg-background flex items-center justify-center text-sm font-semibold">{p}%</div>
         </div>
         <div className="text-xs text-muted-foreground">{label}</div>
+      </div>
+    )
+  }
+
+  // Mini ring metric for G/90 and A/90
+  const RingMetric = ({ value, label, color }: { value: number; label: string; color: string }) => {
+    // Normalize ring fill purely decoratively (cap at 2.0 per 90)
+    const maxScale = 2
+    const ratio = Math.max(0, Math.min(1, value / maxScale))
+    const deg = Math.round(ratio * 360)
+    const ringColor = color
+    return (
+      <div className="flex items-center gap-3 rounded-full border border-border/40 bg-white/70 backdrop-blur px-3 py-2 shadow-sm animate-slide-in">
+        <div className="relative w-8 h-8 rounded-full" style={{ background: `conic-gradient(${ringColor} ${deg}deg, rgba(0,0,0,0.08) 0deg)` }}>
+          <div className="absolute inset-[3px] rounded-full bg-white flex items-center justify-center text-[12px] font-semibold tabular-nums" style={{ color: ringColor }}>{value.toFixed(2)}</div>
+        </div>
+        <div className="text-[11px] text-muted-foreground">{label}</div>
       </div>
     )
   }
@@ -406,62 +424,88 @@ const PlayerDetail = () => {
           </TabsContent>
 
           <TabsContent value="performance">
-            <Card>
-              <CardHeader><CardTitle>KPI</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                  {[
-                    { label: 'Partite', v: totals.matches },
-                    { label: 'Titolare', v: totals.started },
-                    { label: 'Minuti', v: totals.minutes },
-                    { label: 'Gol', v: totals.goals },
-                    { label: 'Assist', v: totals.assists },
-                    { label: 'Gialli', v: totals.yellows },
-                    { label: 'Rossi', v: totals.reds },
-                    { label: 'Parate', v: totals.saves },
-                  ].map((k)=> (
-                    <div key={k.label} className="rounded-lg border border-border/30 bg-background/60 p-3">
-                      <div className="text-muted-foreground text-xs">{k.label}</div>
-                      <div className="text-lg sm:text-xl font-semibold tabular-nums">{k.v}</div>
-                    </div>
-                  ))}
+            {/* 1) Performance strip */}
+            <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">KPI</CardTitle>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {(() => {
+                    const p = totals.matches
+                    const m = totals.minutes
+                    const g = totals.goals
+                    const a = totals.assists
+                    const y = totals.yellows
+                    const r = totals.reds
+                    return `${p} partite, ${m}′, ${g} gol / ${a} assist · ${y} gialli${r ? `, ${r} rossi` : ''}.`
+                  })()}
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                  <Badge variant="secondary">G/90: {gPer90.toFixed(2)}</Badge>
-                  <Badge variant="secondary">A/90: {aPer90.toFixed(2)}</Badge>
-                  {sector==='P' && (<Badge variant="secondary">Parate/90: {sPer90.toFixed(2)}</Badge>)}
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                  {[
+                    { key: 'Minuti', v: totals.minutes, icon: <Clock3 className="h-5 w-5" />, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
+                    { key: 'Partite', v: totals.matches, icon: <CalendarDays className="h-5 w-5" />, color: 'text-neutral-700', tint: 'bg-neutral-100', circle: 'bg-neutral-50', semantic: false },
+                    { key: 'Titolare', v: totals.started, icon: <CheckCircle2 className="h-5 w-5" />, color: 'text-emerald-700', tint: 'bg-emerald-100', circle: 'bg-emerald-50', semantic: false },
+                    { key: 'Gol', v: totals.goals, icon: <span className="text-sky-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M12 7a5 5 0 110 10 5 5 0 010-10z"/></svg></span>, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
+                    { key: 'Assist', v: totals.assists, icon: <span className="text-cyan-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M7 12h10"/></svg></span>, color: 'text-cyan-700', tint: 'bg-cyan-100', circle: 'bg-cyan-50', semantic: false },
+                    { key: 'Parate', v: totals.saves, icon: <Shield className="h-5 w-5" />, color: 'text-blue-700', tint: 'bg-blue-100', circle: 'bg-blue-50', semantic: false },
+                    { key: 'Gialli', v: totals.yellows, icon: <span className="inline-block w-3.5 h-4 rounded-[2px] bg-yellow-400" />, color: 'text-yellow-700', tint: 'bg-yellow-100', circle: 'bg-yellow-50', semantic: true },
+                    { key: 'Rossi', v: totals.reds, icon: <span className="inline-block w-3.5 h-4 rounded-[2px] bg-rose-500" />, color: 'text-rose-700', tint: 'bg-rose-100', circle: 'bg-rose-50', semantic: true },
+                  ].map((k) => {
+                    const isZero = !k.v
+                    const zeroCls = isZero ? 'opacity-60 border-dashed' : ''
+                    return (
+                      <div key={k.key} className={`group rounded-2xl border border-border/40 bg-white/70 backdrop-blur p-3 shadow-sm hover:shadow-md transition ${zeroCls}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center ${k.circle} ${k.semantic ? 'ring-0' : ''}`}>
+                            <span className={k.color}>{k.icon}</span>
+                          </div>
+                          <div className="min-w-0">
+                            <div className={`text-base sm:text-lg font-semibold tabular-nums ${k.color}`}>{k.v}</div>
+                            <div className="text-[11px] text-muted-foreground">{k.key}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="mt-4">
-              <CardHeader><CardTitle>Trend ultime 10</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Minuti</div>
-                    <div className="flex items-end gap-1 h-24">
-                      {lastN.map((s:any, i:number)=> (
-                        <div key={i} className="bg-neutral-500/70 rounded-t" style={{ height: `${Math.max(6, (Math.min(maxMin, s.minutes || 0)/maxMin)*100)}%`, width: '8px' }} />
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Gol</div>
-                    <div className="flex items-end gap-1 h-24">
-                      {lastN.map((s:any, i:number)=> (
-                        <div key={i} className="bg-red-500/80 rounded-t" style={{ height: `${Math.max(6, ((s.goals || 0)/maxGA)*100)}%`, width: '8px' }} />
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Assist</div>
-                    <div className="flex items-end gap-1 h-24">
-                      {lastN.map((s:any, i:number)=> (
-                        <div key={i} className="bg-amber-500/80 rounded-t" style={{ height: `${Math.max(6, ((s.assists || 0)/maxAst)*100)}%`, width: '8px' }} />
-                      ))}
-                    </div>
-                  </div>
+            {/* 2) Indice ritmo gara */}
+            <div className="mt-4 flex items-center justify-end gap-3 animate-slide-in">
+              <RingMetric value={gPer90} label="G/90" color="#0ea5e9" />
+              <RingMetric value={aPer90} label="A/90" color="#06b6d4" />
+              {sector==='P' && (
+                <div className="text-[11px] text-muted-foreground ml-2">Parate/90: <span className="tabular-nums font-semibold">{sPer90.toFixed(2)}</span></div>
+              )}
+            </div>
+
+            {/* 3) Trend ultime 10 */}
+            <Card className="mt-4 border border-border/40 rounded-2xl shadow-sm animate-slide-in">
+              <CardHeader className="pb-2"><CardTitle className="text-base">Trend ultime 10</CardTitle></CardHeader>
+              <CardContent className="pt-0">
+                <div className="text-[11px] text-muted-foreground mb-2">Timeline mini</div>
+                <div className="relative flex items-end gap-2 h-28">
+                  {lastN.map((s:any, i:number) => {
+                    const h = Math.max(6, (Math.min(maxMin, s.minutes || 0)/maxMin)*100)
+                    const goals = s.goals || 0
+                    const assists = s.assists || 0
+                    return (
+                      <div key={i} className="relative flex flex-col items-center" title={`${s.minutes || 0}′ · ${goals} gol · ${assists} assist`}>
+                        <div className="w-[7px] rounded-t bg-neutral-500/70" style={{ height: `${h}%` }} />
+                        <div className="absolute -top-2 flex flex-col items-center gap-1">
+                          {goals > 0 && (<span className="h-1.5 w-1.5 rounded-full bg-rose-500" />)}
+                          {assists > 0 && (<span className="h-1.5 w-1.5 rounded-full bg-amber-500" />)}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span>Minuti</span>
+                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Gol</span>
+                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />Assist</span>
                 </div>
               </CardContent>
             </Card>
