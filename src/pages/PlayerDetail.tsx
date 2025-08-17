@@ -7,6 +7,7 @@ import { usePlayerById, useFormerTrialistData } from '@/hooks/useSupabaseData'
 import { usePlayerAttendanceSummary } from '@/hooks/useSupabaseData'
 import { useRoles } from '@/hooks/useRoles'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
+import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import EditPlayerForm from '@/components/forms/EditPlayerForm'
 import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
@@ -32,7 +33,8 @@ const PlayerDetail = () => {
   const { data: stats = [] } = usePlayerMatchStats(id || '')
   const { data: noteEvents = [] } = usePlayerNoteEvents(id || '')
   const { data: formerTrialist } = useFormerTrialistData(player as any)
-  const heroAvatarUrl = (player?.avatar_url || (formerTrialist as any)?.avatar_url || '') as string
+  const { defaultBackground } = useAvatarBackgrounds()
+  const heroAvatarUrl = (player?.avatar_url || (formerTrialist as any)?.avatar_url || (defaultBackground?.type==='image' ? defaultBackground.value : '')) as string
   const { data: attendance } = usePlayerAttendanceSummary(id || '')
   const { data: roles = [] } = useRoles()
   const updatePlayer = useUpdatePlayer()
@@ -160,12 +162,13 @@ const PlayerDetail = () => {
                 <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
               </div>
               <div className="mt-3 ml-auto w-full sm:w-auto">
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 justify-end">
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 justify-end">
                   {[
                     { key: 'gol', label: 'Gol', value: (stats.length>0 ? totals.goals : undefined), svg: <GoalIcon className="h-4 w-4 text-sky-500" />, color: 'text-sky-700', tint: 'bg-sky-50 border-sky-200', iconColor: 'text-sky-500' },
                     { key: 'ast', label: 'Assist', value: (stats.length>0 ? totals.assists : undefined), svg: <AssistIcon className="h-4 w-4 text-cyan-500" />, color: 'text-cyan-700', tint: 'bg-cyan-50 border-cyan-200', iconColor: 'text-cyan-500' },
                     { key: 'gialli', label: 'Gialli', value: (stats.length>0 ? totals.yellows : undefined), icon: '', color: 'text-yellow-700', tint: 'bg-yellow-50 border-yellow-200', iconColor: 'text-yellow-500', card: 'yellow' },
                     { key: 'rossi', label: 'Rossi', value: (stats.length>0 ? totals.reds : undefined), icon: '', color: 'text-rose-700', tint: 'bg-rose-50 border-rose-200', iconColor: 'text-rose-500', card: 'red' },
+                    { key: 'mvp', label: 'MVP', value: (stats.length>0 ? totals.mvp : undefined), icon: '', color: 'text-yellow-700', tint: 'bg-yellow-50 border-yellow-200', iconColor: 'text-yellow-500', trophy: true },
                     { key: 'pres', label: 'Presenze', value: (stats.length>0 ? presenceCount : undefined), total: endedMatchesForPlayer, icon: '👟', color: 'text-neutral-700', tint: 'bg-neutral-50 border-neutral-200', iconColor: 'text-neutral-500', composite: true },
                   ].map((t) => {
                     const isZero = t.composite ? (t.value === 0) : (t.value === 0)
@@ -179,6 +182,8 @@ const PlayerDetail = () => {
                             <span aria-hidden className={`inline-block w-4 h-5 rounded-sm ${t.card==='yellow'?'bg-yellow-400':'bg-red-500'}`} />
                           ) : t.svg ? (
                             <span aria-hidden className="text-base leading-none">{t.svg}</span>
+                          ) : t.trophy ? (
+                            <span aria-hidden className="text-base leading-none"><Trophy className="h-4 w-4 text-yellow-500" /></span>
                           ) : (
                             <span aria-hidden className={`${t.iconColor} text-base leading-none`}>{t.icon || '•'}</span>
                           )}
