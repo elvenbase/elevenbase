@@ -601,12 +601,23 @@ const MatchLive = () => {
 
 	// Period controls
 	const period = (match as any)?.live_state || 'not_started'
+	const canStartLive = (() => {
+		if (!match) return false
+		const dateStr = (match as any)?.match_date
+		const timeStr = (match as any)?.match_time
+		if (!dateStr || !timeStr) return false
+		const startTs = new Date(`${dateStr}T${timeStr}`).getTime()
+		const now = Date.now()
+		const nineHours = 9 * 60 * 60 * 1000
+		return Math.abs(now - startTs) <= nineHours
+	})()
 	const setPeriod = async (p: string) => {
 		if (!id) return
 		await updateMatch.mutateAsync({ id, updates: { live_state: p as any } })
 	}
 	const toggleTimer = async () => {
 		if (!id) return
+		if (!canStartLive) return
 		const now = new Date()
 		if (!running) {
 			await updateMatch.mutateAsync({ id, updates: { clock_started_at: now.toISOString() } })
@@ -623,6 +634,7 @@ const MatchLive = () => {
 	}
 	const resetTimer = async () => {
 		if (!id) return
+		if (!canStartLive) return
 		await updateMatch.mutateAsync({ id, updates: { clock_started_at: null as any, clock_offset_seconds: 0 } })
 		setRunning(false)
 		setSeconds(0)
@@ -708,15 +720,15 @@ const MatchLive = () => {
 						<div className={`flex items-center gap-2 px-2 rounded-md border bg-muted/30 h-9 ${periodBorderClass}`}>
 							<Clock3 className="h-4 w-4" />
 							<span className="tabular-nums font-medium">{String(Math.floor(seconds/60)).padStart(2, '0')}:{String(seconds%60).padStart(2, '0')}</span>
-							<Button variant={running? 'outline':'default'} size="sm" className="h-7 px-2 rounded-md" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup}>
+							<Button variant={running? 'outline':'default'} size="sm" className="h-7 px-2 rounded-md" onClick={()=>setRunning(r=>!r)} disabled={isEnded || !hasValidLineup || !canStartLive}>
 								{running ? (<><Pause className="h-4 w-4"/></>) : (<><Play className="h-4 w-4"/></>)}
 							</Button>
-							<Button variant="outline" size="sm" className="h-7 px-2 rounded-md" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup} aria-label="Reset timer">
+							<Button variant="outline" size="sm" className="h-7 px-2 rounded-md" onClick={()=>{ setRunning(false); setSeconds(0) }} disabled={isEnded || !hasValidLineup || !canStartLive} aria-label="Reset timer">
 								<RotateCcw className="h-4 w-4" />
 							</Button>
 							<div className="h-6 w-px bg-border/70 mx-1" />
 							<div className="h-full flex items-center">
-								<Select value={period} onValueChange={setPeriod as any}>
+								<Select value={period} onValueChange={setPeriod as any} disabled={!canStartLive}>
 									<SelectTrigger className="h-8 sm:h-9 w-[140px] border-none bg-transparent focus:ring-0 focus:outline-none"><SelectValue /></SelectTrigger>
 									<SelectContent>
 										<SelectItem value="not_started">Pre partita</SelectItem>

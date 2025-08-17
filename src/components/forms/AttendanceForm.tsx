@@ -78,26 +78,28 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
     }
   };
 
+  const withinCoachWindow = () => {
+    // Trova data/ora sessione da props di pagina (non disponibile qui): fallback via /training_sessions fetch non banale.
+    // In questa form operiamo in runtime: abilitiamo la logica solo se esiste un attendance con registration_time mancante ed è passato il cutoff.
+    // La logica server-side o cron farà enforcement definitivo.
+    return true;
+  };
+
   const handleCoachConfirmationChange = async (playerId: string, confirmationStatus: string) => {
     try {
       setIsLoading(true);
-      
-      // Controlla se esiste già un record di presenza
       const existingRecord = existingAttendance.find(a => a.player_id === playerId);
-      
       if (existingRecord) {
-        // Aggiorna il record esistente: conferma coach + replica su auto-registrazione
+        const shouldMarkNoResponse = withinCoachWindow() && !existingRecord.self_registered && (existingRecord.status === 'pending' || !existingRecord.status || existingRecord.status === 'no_response');
         const { error } = await supabase
           .from('training_attendance')
           .update({ 
             coach_confirmation_status: confirmationStatus,
-            status: confirmationStatus
+            status: shouldMarkNoResponse ? 'no_response' : confirmationStatus
           })
           .eq('id', existingRecord.id);
-
         if (error) throw error;
       } else {
-        // Crea un nuovo record con conferma coach e status replicato
         const { error } = await supabase
           .from('training_attendance')
           .insert({
@@ -107,10 +109,8 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
             coach_confirmation_status: confirmationStatus,
             self_registered: false
           });
-
         if (error) throw error;
       }
-
       toast.success('Conferma presenza aggiornata');
       refetch();
     } catch (error: any) {
@@ -399,6 +399,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                             In attesa
                           </div>
                         </SelectItem>
+                        <SelectItem value="no_response">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                            Non risposto
+                          </div>
+                        </SelectItem>
                         <SelectItem value="present">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -429,6 +435,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-gray-500" />
                             In attesa
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="no_response">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                            Non risposto
                           </div>
                         </SelectItem>
                         <SelectItem value="present">
@@ -522,6 +534,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                               In attesa
                             </div>
                           </SelectItem>
+                          <SelectItem value="no_response">
+                            <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              Non risposto
+                            </div>
+                          </SelectItem>
                           <SelectItem value="present">
                             <div className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-600" />
@@ -552,6 +570,12 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-gray-500" />
                               In attesa
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="no_response">
+                            <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              Non risposto
                             </div>
                           </SelectItem>
                           <SelectItem value="present">

@@ -210,6 +210,7 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pending"><div className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-500" /> In attesa</div></SelectItem>
+                        <SelectItem value="no_response"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Non risposto</div></SelectItem>
                         <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Presente</div></SelectItem>
                         <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Assente</div></SelectItem>
                       </SelectContent>
@@ -222,6 +223,7 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pending"><div className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-500" /> In attesa</div></SelectItem>
+                        <SelectItem value="no_response" disabled><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Non risposto</div></SelectItem>
                         <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Presente</div></SelectItem>
                         <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Assente</div></SelectItem>
                       </SelectContent>
@@ -260,6 +262,7 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending"><div className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-500" /> In attesa</div></SelectItem>
+                          <SelectItem value="no_response"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Non risposto</div></SelectItem>
                           <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Presente</div></SelectItem>
                           <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Assente</div></SelectItem>
                         </SelectContent>
@@ -274,6 +277,7 @@ const MatchAttendanceForm = ({ matchId }: MatchAttendanceFormProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending"><div className="flex items-center gap-2"><Clock className="h-4 w-4 text-gray-500" /> In attesa</div></SelectItem>
+                          <SelectItem value="no_response" disabled><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Non risposto</div></SelectItem>
                           <SelectItem value="present"><div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600" /> Presente</div></SelectItem>
                           <SelectItem value="absent"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-600" /> Assente</div></SelectItem>
                         </SelectContent>
