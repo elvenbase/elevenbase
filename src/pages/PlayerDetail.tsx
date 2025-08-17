@@ -521,7 +521,7 @@ const PlayerDetail = () => {
           </TabsContent>
 
           <TabsContent value="presenze">
-            <Card className="border border-border/40 rounded-2xl shadow-sm">
+            <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
               <CardHeader className="pb-2"><CardTitle className="text-base">Presenze e ritardi</CardTitle></CardHeader>
               <CardContent className="pt-0 space-y-4">
                 {/* Blocco 1 — Riepilogo rapido (sticky) */}
