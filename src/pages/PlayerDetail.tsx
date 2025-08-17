@@ -8,7 +8,7 @@ import { usePlayerAttendanceSummary } from '@/hooks/useSupabaseData'
 import { useRoles } from '@/hooks/useRoles'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import EditPlayerForm from '@/components/forms/EditPlayerForm'
-import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote } from 'lucide-react'
+import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
 import { useToast } from '@/hooks/use-toast'
@@ -49,8 +49,13 @@ const PlayerDetail = () => {
     acc.reds += r.red_cards || 0
     acc.fouls += r.fouls_committed || 0
     acc.saves += r.saves || 0
+    // MVP: confronta con matches.mvp_player_id / mvp_trialist_id se presenti
+    const m = r.matches as any
+    const mvpPlayerId = m?.mvp_player_id
+    const mvpTrialistId = m?.mvp_trialist_id
+    if (mvpPlayerId === id || mvpTrialistId === id) acc.mvp = (acc.mvp || 0) + 1
     return acc
-  }, { matches: 0, started: 0, minutes: 0, goals: 0, assists: 0, yellows: 0, reds: 0, fouls: 0, saves: 0 })
+  }, { matches: 0, started: 0, minutes: 0, goals: 0, assists: 0, yellows: 0, reds: 0, fouls: 0, saves: 0, mvp: 0 })
 
   const roleMap = Object.fromEntries(roles.map((r:any)=>[r.code, r]))
   const roleLabel = player?.role_code ? `${roleMap[player.role_code]?.label || player.role_code} (${roleMap[player.role_code]?.abbreviation || player.role_code})` : '-'
@@ -152,6 +157,9 @@ const PlayerDetail = () => {
               <div className="mt-2 flex flex-wrap items-center gap-2 justify-end">
                 <Badge variant="secondary">#{player?.jersey_number ?? '-'}</Badge>
                 <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
+                <Badge className="bg-yellow-100 border border-yellow-300 text-yellow-800 font-semibold inline-flex items-center gap-1">
+                  <Trophy className="h-3.5 w-3.5" /> MVP {totals.mvp || 0}
+                </Badge>
               </div>
               <div className="mt-3 ml-auto w-full sm:w-auto">
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 justify-end">

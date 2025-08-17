@@ -1906,7 +1906,7 @@ export const usePlayerMatchStats = (playerId: string) => {
         .from('match_player_stats')
         .select(`
           id, match_id, player_id, started, minutes, goals, assists, yellow_cards, red_cards, fouls_committed, saves, sub_in_minute, sub_out_minute, was_in_squad,
-          matches:match_id(id, match_date, match_time, opponent_name, our_score, opponent_score, notes, opponent_id,
+          matches:match_id(id, match_date, match_time, opponent_name, our_score, opponent_score, notes, opponent_id, mvp_player_id, mvp_trialist_id,
             opponents:opponent_id(name, logo_url)
           )
         `)
