@@ -7,7 +7,7 @@ import { usePlayerById, useFormerTrialistData } from '@/hooks/useSupabaseData'
 import { usePlayerAttendanceSummary } from '@/hooks/useSupabaseData'
 import { useRoles } from '@/hooks/useRoles'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
-import { Upload, ArrowLeft } from 'lucide-react'
+import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
 import { useToast } from '@/hooks/use-toast'
@@ -191,45 +191,133 @@ const PlayerDetail = () => {
         </div>
 
         <Tabs defaultValue="profilo" className="w-full">
-          <TabsList className="flex flex-wrap gap-2">
-            <TabsTrigger value="profilo">Profilo</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="presenze">Presenze</TabsTrigger>
-            <TabsTrigger value="partite">Partite</TabsTrigger>
-            {formerTrialist && (<TabsTrigger value="prova">Prova</TabsTrigger>)}
+          <TabsList className="sticky top-2 z-10 bg-transparent p-0">
+            <div className="inline-flex rounded-full border border-border/40 bg-white/70 backdrop-blur px-1 py-1 shadow-sm">
+              <TabsTrigger value="profilo" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Profilo</TabsTrigger>
+              <TabsTrigger value="performance" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Performance</TabsTrigger>
+              <TabsTrigger value="presenze" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Presenze</TabsTrigger>
+              <TabsTrigger value="partite" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Partite</TabsTrigger>
+              {formerTrialist && (<TabsTrigger value="prova" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Prova</TabsTrigger>)}
+            </div>
           </TabsList>
 
           <TabsContent value="profilo">
-            <Card>
-              <CardHeader><CardTitle>Anagrafica</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><div className="text-muted-foreground">Nome</div><div className="font-medium">{player?.first_name}</div></div>
-                    <div><div className="text-muted-foreground">Cognome</div><div className="font-medium">{player?.last_name}</div></div>
-                    <div><div className="text-muted-foreground">Numero Maglia</div><div className="font-medium">{player?.jersey_number ?? '-'}</div></div>
-                    <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{roleLabel}</div></div>
-                    <div><div className="text-muted-foreground">Telefono</div><div className="font-medium">{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : '-'}</div></div>
-                    <div><div className="text-muted-foreground">📅 Data di Nascita</div><div className="font-medium">{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '-'}</div></div>
-                    <div><div className="text-muted-foreground">📧 Email</div><div className="font-medium">{player?.email || '-'}</div></div>
-                    <div><div className="text-muted-foreground">📝 Note</div><div className="font-medium whitespace-pre-wrap">{player?.notes || '-'}</div></div>
-                    <div><div className="text-muted-foreground">Stato</div><div className="font-medium">{player?.status || '-'}</div></div>
-                    <div className="col-span-2"><div className="text-muted-foreground">🏆 Esperienza Sportiva</div><div className="font-medium whitespace-pre-wrap">{player?.esperienza || '-'}</div></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Card Anagrafica */}
+              <Card className="border border-border/40 rounded-2xl shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"><User className="h-4 w-4"/></span>
+                    Anagrafica
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {/* micro riga riassuntiva */}
+                  <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white px-2 py-0.5">#{player?.jersey_number ?? '—'}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white px-2 py-0.5">{roleLabel}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white px-2 py-0.5">
+                      <CalendarDays className="h-3.5 w-3.5" />{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white px-2 py-0.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />{player?.status || 'Attivo'}
+                    </span>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="mt-4">
-              <CardHeader><CardTitle>Informazioni Gaming (opzionali)</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                  <div><div className="text-muted-foreground">EA Sports ID</div><div className="font-medium">{(player as any)?.ea_sport_id || '-'}</div></div>
-                  <div><div className="text-muted-foreground">Piattaforma Gaming</div><div className="font-medium">{(player as any)?.gaming_platform || 'Seleziona piattaforma'}</div></div>
-                  <div><div className="text-muted-foreground">Platform ID</div><div className="font-medium">{(player as any)?.platform_id || '-'}</div></div>
-                </div>
-              </CardContent>
-            </Card>
+                  {/* definition grid 2 colonne */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Col A */}
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Nome</div>
+                        <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{player?.first_name || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Cognome</div>
+                        <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{player?.last_name || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Data di nascita</div>
+                        <div className="flex items-center gap-2 text-sm"><CalendarDays className="h-4 w-4 text-neutral-500" />{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Esperienza sportiva</div>
+                        <div className="flex items-start gap-2 text-sm whitespace-pre-wrap min-h-[20px]"><StickyNote className="mt-0.5 h-4 w-4 text-neutral-500" />{player?.esperienza ? player.esperienza : '—'}</div>
+                      </div>
+                    </div>
+                    {/* Col B */}
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Numero maglia</div>
+                        <div className="flex items-center gap-2 text-sm"><Hash className="h-4 w-4 text-neutral-500" />{player?.jersey_number ?? '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Ruolo</div>
+                        <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{roleLabel || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Stato</div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-2 py-0.5 text-xs">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{player?.status || 'Attivo'}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Note</div>
+                        <div className="flex items-start gap-2 text-sm whitespace-pre-wrap min-h-[20px]"><StickyNote className="mt-0.5 h-4 w-4 text-neutral-500" />{player?.notes ? player.notes : '—'}</div>
+                      </div>
+                    </div>
+
+                    {/* Contatti full width */}
+                    <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                      <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
+                        <Phone className="h-4 w-4 text-neutral-500" />
+                        <span className="text-[11px] uppercase text-neutral-500">Telefono</span>
+                        <span className="ml-auto text-sm text-neutral-700">{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : 'Non fornito'}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
+                        <Mail className="h-4 w-4 text-neutral-500" />
+                        <span className="text-[11px] uppercase text-neutral-500">Email</span>
+                        <span className="ml-auto text-sm text-neutral-700">{player?.email || 'Non fornito'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card Informazioni Gaming */}
+              <Card className="border border-border/40 rounded-2xl shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"><Gamepad2 className="h-4 w-4"/></span>
+                    Informazioni Gaming <span className="ml-2 text-xs text-neutral-500">(Opzionale)</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {(() => {
+                      const ea = (player as any)?.ea_sport_id
+                      const plat = (player as any)?.gaming_platform
+                      const pid = (player as any)?.platform_id
+                      const chip = (label: string, value?: string) => (
+                        <div className="rounded-lg border border-border/40 bg-white px-3 py-2">
+                          <div className="text-[11px] uppercase text-neutral-500">{label}</div>
+                          <div className="text-sm text-neutral-800">{value && value.trim() ? value : 'Aggiungi'}</div>
+                        </div>
+                      )
+                      return (
+                        <>
+                          {chip('EA Sports ID', ea)}
+                          {chip('Piattaforma', plat)}
+                          {chip('Platform ID', pid)}
+                        </>
+                      )
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="performance">
