@@ -231,7 +231,7 @@ const PlayerDetail = () => {
     let label = 'Tutto il periodo'
     let from = startDate, to = endDate
     if (timeMode==='ultimi') {
-      if (ultimiChoice==='7d' || ultimiChoice==='30d' || ultimichoice==='90d') {
+      if (ultimiChoice==='7d' || ultimiChoice==='30d' || ultimiChoice==='90d') {
         label = `Ultimi ${ultimiChoice.replace('d',' giorni')}`
       } else if (ultimiChoice==='season') {
         label = `Stagione · ${fmt(seasonStart())} → ${fmt(new Date())}`
