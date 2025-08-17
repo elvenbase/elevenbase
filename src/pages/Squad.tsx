@@ -20,7 +20,7 @@ import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRoles } from '@/hooks/useRoles';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Search, LayoutGrid, Rows } from 'lucide-react'
@@ -614,35 +614,35 @@ const Squad = () => {
                   const tot = p.totalEvents || 0
                   const pct = tot>0 ? Math.round((pres/tot)*100) : 0
                   return (
-                    <div key={p.id} className="rounded-2xl border border-border/40 bg-white shadow-sm p-4 hover:shadow-md transition cursor-pointer" onClick={()=>setOpenPlayerId(p.id)}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
-                          <div className="min-w-0">
-                            <div className="font-semibold truncate">{p.first_name} {p.last_name}</div>
-                            <div className="mt-1 flex flex-wrap items-center gap-1">
-                              {p.jersey_number && (<Badge variant="outline" className="text-xs">#{p.jersey_number}</Badge>)}
-                              <Badge variant="secondary" className="text-xs">{role?.abbreviation || role?.label || (p as any).role_code || '-'}</Badge>
-                              {p.is_captain && (<Badge className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300">Capitano</Badge>)}
-                              <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-xs">{p.status}</Badge>
+                    <div key={p.id} className="rounded-2xl border border-border/40 bg-white shadow-sm p-4 hover:shadow-md transition">
+                      <a href={`/player/${p.id}`} className="block">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
+                            <div className="min-w-0">
+                              <div className="font-semibold truncate">{p.first_name} {p.last_name}</div>
+                              <div className="mt-1 flex flex-wrap items-center gap-1">
+                                {p.jersey_number && (<Badge variant="outline" className="text-xs">#{p.jersey_number}</Badge>)}
+                                <Badge variant="secondary" className="text-xs">{role?.abbreviation || role?.label || (p as any).role_code || '-'}</Badge>
+                                {p.is_captain && (<Badge className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300">Capitano</Badge>)}
+                                <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-xs">{p.status}</Badge>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <div className="inline-flex items-center gap-2 text-xs">
-                            <Badge variant="secondary" className="text-xs">Presenze {pres}/{tot}</Badge>
+                          <div className="flex flex-col items-end gap-1">
+                            <div className="inline-flex items-center gap-2 text-xs">
+                              <Badge variant="secondary" className="text-xs">Presenze {pres}/{tot}</Badge>
+                            </div>
+                            <div className="w-24 h-1.5 rounded-full bg-neutral-200 overflow-hidden">
+                              <div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} />
+                            </div>
+                            <div className="text-xs text-neutral-500">Ritardi {p.tardiness || 0}</div>
                           </div>
-                          <div className="w-24 h-1.5 rounded-full bg-neutral-200 overflow-hidden">
-                            <div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} />
-                          </div>
-                          <div className="text-xs text-neutral-500">Ritardi {p.tardiness || 0}</div>
                         </div>
-                      </div>
-                      <div className="mt-3 flex justify-end gap-2">
-                        <EditPlayerForm player={p as any} />
-                        <PlayerStatsModal player={p as any} />
-                        <Button variant="ghost" size="icon"><Settings className="h-4 w-4" /></Button>
-                      </div>
+                        <div className="mt-3 flex justify-end">
+                          <span className="text-xs text-primary hover:underline">Visualizza dettagli</span>
+                        </div>
+                      </a>
                     </div>
                   )
                 })}
@@ -828,9 +828,7 @@ const Squad = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <EditPlayerForm player={player} />
-                            
-                            <PlayerStatsModal player={player} />
+                            <a href={`/player/${player.id}`} className="text-sm text-primary hover:underline">Visualizza dettagli</a>
 
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
