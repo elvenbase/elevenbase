@@ -9,13 +9,14 @@ import { useRoles } from '@/hooks/useRoles'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import EditPlayerForm from '@/components/forms/EditPlayerForm'
-import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy } from 'lucide-react'
+import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy, X } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
 import { useToast } from '@/hooks/use-toast'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
+import { useEffect, useMemo, useState } from 'react'
 
 // Match icons (same style as live match)
 const GOAL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" xml:space="preserve"><g transform="translate(1.4066 1.4066) scale(2.81 2.81)"><path d="M 78.362 27.04 c -4.492 -4.266 -10.521 -6.921 -17.174 -7.052 l 1.505 6.224 l 7.664 3.141 L 78.362 27.04 z" fill="#f1f1f1"/><polygon points="75.58,54.87 78.06,46.58 70.67,39.99 62.1,42.53 59.27,50.93 64.08,56.43 " fill="#f1f1f1"/><polygon points="60.46,41.99 55.38,35.17 44.57,37.42 42.75,43.9 49.91,52.19 57.62,50.41 " fill="#f1f1f1"/><path d="M 79.741 28.445 l -8.093 2.339 v 7.755 l 7.882 7.039 l 6.818 -0.513 C 86.2 38.676 83.734 32.862 79.741 28.445 z" fill="#f1f1f1"/><path d="M 59.413 20.014 c -7.895 0.384 -14.856 4.324 -19.306 10.261 l 4.146 5.443 l 10.843 -2.254 l 5.88 -6.986 L 59.413 20.014 z" fill="#f1f1f1"/><path d="M 59.624 70.531 v -0.077 l -0.989 -5.847 l -8.8 -2.62 l -5.467 3.501 c 4.221 3.477 9.557 5.645 15.404 5.848 l -0.136 -0.805 H 59.624 z" fill="#f1f1f1"/><path d="M 48.96 60.492 v -6.763 l -7.54 -8.723 l -6.433 0.662 c 0 7.34 3.083 13.956 8.019 18.637 L 48.96 60.492 z" fill="#f1f1f1"/><path d="M 64.493 58.119 l -4.178 6.035 l 1.215 7.183 c 7.034 -0.23 13.351 -3.282 17.853 -8.068 l -3.699 -6.667 L 64.493 58.119 z" fill="#f1f1f1"/><path d="M 59.746 20.905 c -0.031 0.031 -0.063 0.063 -0.095 0.094 l -0.238 -0.985 c -7.895 0.384 -14.856 4.324 -19.306 10.261 l 4.146 5.443 l 10.843 -2.254 l 5.88 -6.986 L 59.746 20.905 z" fill="#dbdbdb"/><path d="M 44.571 37.422 l -1.819 6.476 l 5.61 6.491 c -0.939 -4.701 -0.603 -9.355 1 -13.962 L 44.571 37.422 z" fill="#dbdbdb"/><path d="M 59.624 70.531 v -0.077 l -0.046 -0.271 c 0.015 0.016 0.031 0.033 0.046 0.049 v -0.018 c -2.163 -2.339 -4.051 -4.668 -5.617 -6.985 l -4.172 -1.242 l -5.467 3.501 c 4.221 3.477 9.557 5.645 15.404 5.848 l -0.136 -0.805 H 59.624 z" fill="#57595d"/><path d="M 59.651 20.999 c 0.339 -0.341 0.674 -0.682 1.028 -1.023 c -0.425 0 -0.847 0.012 -1.267 0.032 L 59.651 20.999 z" fill="#3f4042"/><path d="M 48.96 53.729 v 6.763 l -5.955 3.814 c 0.435 0.413 0.879 0.815 1.342 1.197 l 5.487 -3.514 l 4.172 1.242 c -2.919 -4.318 -4.798 -8.599 -5.645 -12.841 l -5.61 -6.491 l 1.819 -6.476 l 4.791 -0.996 c 0.223 -0.642 0.469 -1.283 0.742 -1.923 l -5.85 1.216 l -4.146 -5.443 c -1.663 2.281 -2.894 4.643 -3.735 7.079 c -0.061 0.195 -0.12 0.391 -0.177 0.587 c -0.087 0.346 -0.168 0.693 -0.241 1.044 c -0.082 0.403 -0.155 0.81 -0.218 1.219 c -0.062 0.504 -0.111 1.012 -0.147 1.524 c -0.009 0.15 -0.019 0.299 -0.026 0.449 c -0.017 0.386 -0.029 0.774 -0.029 1.164 l 6.433 -0.662 L 48.96 53.729 z" fill="#3f4042"/><path d="M 59.773 71.337 c 0.301 0.01 0.602 0.023 0.906 0.023 c -0.379 -0.393 -0.739 -0.785 -1.101 -1.176 L 59.773 71.337 z" fill="#3f4042"/><path d="M 3.085 90 c -0.578 0 -1.047 -0.468 -1.047 -1.047 c 0 -0.578 0.469 -1.047 1.047 -1.047 c 45.647 0 82.783 -19.248 82.783 -42.907 S 48.732 2.093 3.085 2.093 c -0.578 0 -1.047 -0.469 -1.047 -1.047 S 2.507 0 3.085 0 c 46.801 0 84.876 20.187 84.876 45 C 87.961 69.813 49.886 90 3.085 90 z" fill="#3f4042"/><path d="M 3.085 67.102 c -0.578 0 -1.047 -0.468 -1.047 -1.047 c 0 -0.578 0.469 -1.047 1.047 -1.047 c 49.518 0 82.783 -9.966 82.783 -19.276 c 0 -9.309 -33.265 -19.276 -82.783 -19.276 c -0.578 0 -1.047 -0.469 -1.047 -1.047 s 0.469 -1.047 1.047 -1.047 c 41.721 0 84.876 7.993 84.876 21.369 S 44.807 67.102 3.085 67.102 z" fill="#3f4042"/><path d="M 58.664 78.95 c -0.182 0 -0.366 -0.047 -0.533 -0.146 c -0.497 -0.295 -0.66 -0.937 -0.366 -1.435 c 13.368 -22.522 13.376 -44.29 0.025 -64.698 c -0.317 -0.483 -0.181 -1.132 0.303 -1.449 c 0.484 -0.317 1.132 -0.181 1.449 0.303 c 13.825 21.132 13.834 43.644 0.025 66.913 C 59.369 78.767 59.022 78.95 58.664 78.95 z" fill="#3f4042"/><path d="M 33.364 86.895 c -0.138 0 -0.278 -0.028 -0.413 -0.085 c -0.531 -0.229 -0.776 -0.845 -0.547 -1.376 c 10.926 -25.371 10.951 -52.636 0.076 -81.04 c -0.206 -0.54 0.063 -1.145 0.603 -1.352 c 0.539 -0.205 1.145 0.063 1.352 0.603 c 11.076 28.93 11.039 56.727 -0.109 82.616 C 34.155 86.658 33.769 86.895 33.364 86.895 z" fill="#3f4042"/></g></svg>`
@@ -35,7 +36,27 @@ const PlayerDetail = () => {
   const { data: formerTrialist } = useFormerTrialistData(player as any)
   const { defaultBackground } = useAvatarBackgrounds()
   const heroAvatarUrl = (player?.avatar_url || (formerTrialist as any)?.avatar_url || (defaultBackground?.type==='image' ? defaultBackground.value : '')) as string
-  const { data: attendance } = usePlayerAttendanceSummary(id || '')
+  // Presenze: stato periodo/vista e calcolo date
+  const [periodSel, setPeriodSel] = useState<'7d'|'30d'|'90d'|'custom'>('30d')
+  const [customStart, setCustomStart] = useState<string>('')
+  const [customEnd, setCustomEnd] = useState<string>('')
+  const [viewSel, setViewSel] = useState<'all'|'training'|'match'>('all')
+  const [divergencesOnly, setDivergencesOnly] = useState(false)
+  const { startDate, endDate } = useMemo(() => {
+    const end = new Date()
+    let start = new Date()
+    if (periodSel === '7d') start = new Date(end.getTime() - 7*24*60*60*1000)
+    else if (periodSel === '30d') start = new Date(end.getTime() - 30*24*60*60*1000)
+    else if (periodSel === '90d') start = new Date(end.getTime() - 90*24*60*60*1000)
+    else if (periodSel === 'custom') {
+      if (customStart) start = new Date(customStart)
+      if (customEnd) end.setTime(new Date(customEnd).getTime())
+    }
+    // Normalizza a data senza ora
+    const norm = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
+    return { startDate: norm(start), endDate: norm(end) }
+  }, [periodSel, customStart, customEnd])
+  const { data: attendance } = usePlayerAttendanceSummary(id || '', startDate, endDate)
   const { data: roles = [] } = useRoles()
   const updatePlayer = useUpdatePlayer()
   const { toast } = useToast()
@@ -420,16 +441,42 @@ const PlayerDetail = () => {
                   </div>
                 </div>
 
-                {/* Controlli periodo e filtri (placeholder funzionale) */}
+                {/* Controlli periodo e filtri */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
-                    Periodo: 30 giorni
+                  {/* Periodo */}
+                  <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
+                    {(['7d','30d','90d','custom'] as const).map(p=> (
+                      <button key={p} onClick={()=>setPeriodSel(p)} className={`px-2 py-0.5 rounded-full ${periodSel===p?'bg-primary/10 text-primary':'text-muted-foreground'}`}>{p==='7d'?'7g':p==='30d'?'30g':p==='90d'?'90g':'Custom'}</button>
+                    ))}
                   </div>
-                  <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
-                    Vista: Tutti
+                  {periodSel==='custom' && (
+                    <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
+                      <input type="date" value={customStart} onChange={(e)=>setCustomStart(e.target.value)} className="bg-transparent outline-none" />
+                      <span>→</span>
+                      <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="bg-transparent outline-none" />
+                    </div>
+                  )}
+                  {/* Vista */}
+                  <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
+                    {(['all','training','match'] as const).map(v=> (
+                      <button key={v} onClick={()=>setViewSel(v)} className={`px-2 py-0.5 rounded-full ${viewSel===v?'bg-primary/10 text-primary':'text-muted-foreground'}`}>{v==='all'?'Tutti':v==='training'?'Allenamenti':'Partite'}</button>
+                    ))}
                   </div>
-                  <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
-                    Filtro: —
+                  {/* Divergenze */}
+                  <button onClick={()=>setDivergencesOnly(s=>!s)} className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs ${divergencesOnly?'bg-amber-50 border-amber-200 text-amber-700':'bg-white text-muted-foreground'}`}>
+                    Divergenze
+                  </button>
+                  {/* Chip filtro attive */}
+                  <div className="inline-flex flex-wrap items-center gap-1">
+                    {periodSel!=='30d' && (
+                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs bg-white">Periodo: {periodSel}{periodSel==='custom' && (customStart||customEnd)?` ${customStart||'—'}→${customEnd||'—'}`:''}<button className="ml-1" onClick={()=>{ setPeriodSel('30d'); setCustomStart(''); setCustomEnd('') }}><X className="h-3 w-3"/></button></span>
+                    )}
+                    {viewSel!=='all' && (
+                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs bg-white">Vista: {viewSel==='training'?'Allenamenti':'Partite'}<button className="ml-1" onClick={()=>setViewSel('all')}><X className="h-3 w-3"/></button></span>
+                    )}
+                    {divergencesOnly && (
+                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs bg-white">Solo divergenze<button className="ml-1" onClick={()=>setDivergencesOnly(false)}><X className="h-3 w-3"/></button></span>
+                    )}
                   </div>
                 </div>
 
@@ -439,7 +486,11 @@ const PlayerDetail = () => {
                   <div className="rounded-lg border p-3 bg-white">
                     <div className="text-xs text-muted-foreground mb-2">Timeline presenze</div>
                     <div className="flex items-end gap-1 h-24 overflow-x-auto">
-                      {(attendance?.events || []).slice(-20).map((e:any, i:number)=>{
+                      {(attendance?.events || [])
+                        .filter((e:any)=> viewSel==='all' ? true : (viewSel==='training' ? e.type==='training' : e.type==='match'))
+                        .filter((e:any)=> !divergencesOnly || ((e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)))
+                        .slice(-20)
+                        .map((e:any, i:number)=>{
                         const h = e.present ? 100 : 40
                         const color = e.present ? '#10b981' : '#ef4444'
                         const lateMark = e.late ? ' inset-0 ring-1 ring-amber-400' : ''
@@ -478,7 +529,10 @@ const PlayerDetail = () => {
                 <div className="rounded-lg border bg-white">
                   <div className="px-3 py-2 text-sm font-medium border-b">Registro</div>
                   <div className="divide-y max-h-80 overflow-auto">
-                    {(attendance?.events || []).slice().reverse().map((e:any, i:number)=>{
+                    {(attendance?.events || [])
+                      .filter((e:any)=> viewSel==='all' ? true : (viewSel==='training' ? e.type==='training' : e.type==='match'))
+                      .filter((e:any)=> !divergencesOnly || ((e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)))
+                      .slice().reverse().map((e:any, i:number)=>{
                       const diverge = (e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)
                       return (
                         <div key={i} className={`p-3 text-sm flex items-center gap-3 ${diverge?'border-l-2 border-amber-300 bg-amber-50/30':''}`}>
