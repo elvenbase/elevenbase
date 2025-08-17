@@ -11,6 +11,7 @@ import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import EditPlayerForm from '@/components/forms/EditPlayerForm'
 import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy, X } from 'lucide-react'
 import { Clock3, Shield, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
 import { useToast } from '@/hooks/use-toast'
@@ -39,6 +40,8 @@ const PlayerDetail = () => {
   const heroAvatarUrl = (player?.avatar_url || (formerTrialist as any)?.avatar_url || (defaultBackground?.type==='image' ? defaultBackground.value : '')) as string
   // Presenze: stato periodo/vista e calcolo date
   const [periodSel, setPeriodSel] = useState<'7d'|'30d'|'90d'|'custom'>('90d')
+  const [timeMode, setTimeMode] = useState<'ultimi'|'intervallo'|'giorno'>('ultimi')
+  const [ultimiChoice, setUltimiChoice] = useState<'7d'|'30d'|'90d'|'season'|'last10'>('90d')
   const [customStart, setCustomStart] = useState<string>('')
   const [customEnd, setCustomEnd] = useState<string>('')
   const [viewSel, setViewSel] = useState<'all'|'training'|'match'>('all')
@@ -200,6 +203,116 @@ const PlayerDetail = () => {
       </div>
     )
   }
+
+  const fmt = (d?: Date) => d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}` : ''
+  const seasonStart = () => {
+    const now = new Date()
+    const y = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear()-1
+    return new Date(y, 7, 1)
+  }
+  const setRange = (from: Date, to: Date) => {
+    setPeriodSel('custom')
+    setCustomStart(from.toISOString().slice(0,10))
+    setCustomEnd(to.toISOString().slice(0,10))
+  }
+  const shortcuts = {
+    thisMonth: () => { const n=new Date(); setRange(new Date(n.getFullYear(), n.getMonth(), 1), new Date(n.getFullYear(), n.getMonth()+1, 0)) },
+    lastMonth: () => { const n=new Date(); setRange(new Date(n.getFullYear(), n.getMonth()-1, 1), new Date(n.getFullYear(), n.getMonth(), 0)) },
+    thisQuarter: () => { const n=new Date(); const q=Math.floor(n.getMonth()/3); const s=new Date(n.getFullYear(), q*3, 1); const e=new Date(n.getFullYear(), q*3+3, 0); setRange(s,e) }
+  }
+  const shiftDay = (delta: number) => {
+    const base = customStart ? new Date(customStart) : new Date()
+    const d = new Date(base)
+    d.setDate(d.getDate()+delta)
+    setRange(d,d)
+    setTimeMode('giorno')
+  }
+  const periodAbstract = useMemo(() => {
+    let label = 'Tutto il periodo'
+    let from = startDate, to = endDate
+    if (timeMode==='ultimi') {
+      if (ultimiChoice==='7d' || ultimiChoice==='30d' || ultimichoice==='90d') {
+        label = `Ultimi ${ultimiChoice.replace('d',' giorni')}`
+      } else if (ultimiChoice==='season') {
+        label = `Stagione · ${fmt(seasonStart())} → ${fmt(new Date())}`
+        from = seasonStart(); to = new Date()
+      } else if (ultimiChoice==='last10') {
+        label = 'Ultime 10'
+      }
+    } else if (timeMode==='intervallo') {
+      label = (customStart && customEnd) ? `Dal ${fmt(new Date(customStart))} al ${fmt(new Date(customEnd))}` : 'Seleziona intervallo'
+    } else if (timeMode==='giorno') {
+      label = customStart ? `${fmt(new Date(customStart))}` : 'Scegli giorno'
+    }
+    // Counts (best effort)
+    const ev = ((attendance as any)?.events || []) as any[]
+    let eventsIn: any[] = []
+    if (ultimiChoice==='last10' && timeMode==='ultimi') {
+      eventsIn = ev.slice(-10)
+    } else {
+      const inRange = (e:any) => {
+        const dt = e.date ? new Date(e.date) : null
+        if (!dt) return false
+        return dt >= from && dt <= to
+      }
+      eventsIn = ev.filter(inRange)
+    }
+    const tm = eventsIn.reduce((acc:any, e:any)=>{ if (e.type==='match') acc.m++; else if (e.type==='training') acc.t++; return acc }, { m:0, t:0 })
+    const tail = (tm.m || tm.t) ? ` · ${tm.m} partite · ${tm.t} allenamenti` : ''
+    return `${label}${tail}`
+  }, [timeMode, ultimiChoice, periodSel, customStart, customEnd, attendance, startDate, endDate])
+  const DateBar = () => (
+    <div className="w-full rounded-xl border border-border/40 bg-white/70 backdrop-blur px-3 py-2 shadow-sm">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-xs font-medium text-muted-foreground">Periodo</div>
+        <div className="ml-auto flex items-center gap-2 text-xs">
+          <button onClick={()=>{ setTimeMode('ultimi'); setUltimiChoice('90d'); setPeriodSel('90d'); setCustomStart(''); setCustomEnd('') }} className="text-primary hover:underline">Azzera</button>
+          <CalendarDays className="h-4 w-4 text-neutral-500" />
+        </div>
+      </div>
+      <div className="mt-2 flex items-center gap-2 overflow-x-auto">
+        <div className="inline-flex rounded-full border bg-white p-1 text-xs">
+          {(['ultimi','intervallo','giorno'] as const).map(m => (
+            <button key={m} onClick={()=>{ setTimeMode(m as any); if (m==='ultimi') { if (ultimiChoice==='7d') setPeriodSel('7d'); else if (ultimiChoice==='30d') setPeriodSel('30d'); else if (ultimiChoice==='90d') setPeriodSel('90d'); else if (ultimiChoice==='season') setRange(seasonStart(), new Date()); else if (ultimiChoice==='last10') { /* noop */ } } else if (m==='giorno') { setRange(new Date(), new Date()) } }} className={`px-3 py-1 rounded-full ${timeMode===m ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>{m==='ultimi'?'Ultimi':m==='intervallo'?'Intervallo':'Giorno'}</button>
+          ))}
+        </div>
+        <div className="flex-1 min-w-[220px]">
+          {timeMode==='ultimi' && (
+            <div className="flex items-center gap-2 overflow-x-auto">
+              {([
+                {k:'7d', l:'7g'}, {k:'30d', l:'30g'}, {k:'90d', l:'90g'}, {k:'season', l:'Stagione'}, {k:'last10', l:'Ultime 10'}
+              ] as any[]).map(c => (
+                <button key={c.k} onClick={()=>{ setUltimiChoice(c.k); if (c.k==='7d'||c.k==='30d'||c.k==='90d'){ setPeriodSel(c.k as any) } else if (c.k==='season'){ setRange(seasonStart(), new Date()) } }} className={`px-3 py-1 rounded-full border ${ultimiChoice===c.k ? 'bg-primary/10 text-primary border-primary/30' : 'text-neutral-600 bg-white'}`}>{c.l}</button>
+              ))}
+            </div>
+          )}
+          {timeMode==='intervallo' && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 bg-white text-xs">
+                <span>Dal</span>
+                <input type="date" value={customStart} onChange={(e)=>{ setCustomStart(e.target.value); setPeriodSel('custom') }} className="bg-transparent outline-none" />
+                <span>→</span>
+                <input type="date" value={customEnd} onChange={(e)=>{ setCustomEnd(e.target.value); setPeriodSel('custom') }} className="bg-transparent outline-none" />
+              </div>
+              <div className="inline-flex items-center gap-1">
+                <button className="px-3 py-1 rounded-full border text-xs bg-white" onClick={shortcuts.thisMonth}>Questo mese</button>
+                <button className="px-3 py-1 rounded-full border text-xs bg-white" onClick={shortcuts.lastMonth}>Ultimo mese</button>
+                <button className="px-3 py-1 rounded-full border text-xs bg-white" onClick={shortcuts.thisQuarter}>Questo trimestre</button>
+              </div>
+            </div>
+          )}
+          {timeMode==='giorno' && (
+            <div className="inline-flex items-center gap-2 rounded-full border px-2 py-1 bg-white text-xs">
+              <button onClick={()=>shiftDay(-1)} className="h-6 w-6 inline-flex items-center justify-center rounded-full hover:bg-muted"><ChevronLeft className="h-4 w-4" /></button>
+              <span className="text-muted-foreground">{customStart ? fmt(new Date(customStart)) : 'Scegli giorno'}</span>
+              <button onClick={()=>shiftDay(1)} className="h-6 w-6 inline-flex items-center justify-center rounded-full hover:bg-muted"><ChevronRight className="h-4 w-4" /></button>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="mt-1 text-[11px] text-muted-foreground">{periodAbstract}</div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-background">
@@ -403,25 +516,7 @@ const PlayerDetail = () => {
           </TabsContent>
 
           <TabsContent value="performance">
-            {/* Selettore periodo (come in Presenze) */}
-            <div className="mb-3 flex flex-wrap items-center gap-2 animate-slide-in">
-              <div className="inline-flex items-center gap-1 rounded-full border px-1 py-1 text-xs bg-white">
-                {(['7d','30d','90d','custom'] as const).map(p=> (
-                  <button key={p} onClick={()=>setPeriodSel(p)} className={`px-2 py-0.5 rounded-full ${periodSel===p?'bg-primary/10 text-primary':'text-muted-foreground'}`}>{p==='7d'?'7g':p==='30d'?'30g':p==='90d'?'90g':'Intervallo'}</button>
-                ))}
-              </div>
-              <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
-                <span className="text-muted-foreground">Giorno</span>
-                <input type="date" onChange={(e)=>{ const d=e.target.value; if (!d) return; setPeriodSel('custom'); setCustomStart(d); setCustomEnd(d); }} className="bg-transparent outline-none" />
-              </div>
-              {periodSel==='custom' && (
-                <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs bg-white">
-                  <input type="date" value={customStart} onChange={(e)=>setCustomStart(e.target.value)} className="bg-transparent outline-none" />
-                  <span>→</span>
-                  <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="bg-transparent outline-none" />
-                </div>
-              )}
-            </div>
+            <DateBar />
             {/* 1) Performance strip */}
             <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
               <CardHeader className="pb-2">
@@ -473,6 +568,7 @@ const PlayerDetail = () => {
           </TabsContent>
 
           <TabsContent value="presenze">
+            <DateBar />
             <Card className="border border-border/40 rounded-2xl shadow-sm">
               <CardHeader className="pb-2"><CardTitle className="text-base">Presenze e ritardi</CardTitle></CardHeader>
               <CardContent className="pt-0 space-y-4">
