@@ -122,7 +122,7 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
       const totalEndedMatches = (endedMatches || []).length;
 
       // Calculate stats for each player
-      return players.map(player => {​
+      return players.map(player => {
         const playerTrainingAttendance = trainingAttendance.filter(ta => ta.player_id === player.id);
         const playerMatchAttendance = matchAttendance.filter(ma => ma.player_id === player.id);
         
