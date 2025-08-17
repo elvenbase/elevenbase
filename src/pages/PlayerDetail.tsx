@@ -46,6 +46,7 @@ const PlayerDetail = () => {
   const [ultimiChoice, setUltimiChoice] = useState<'7d'|'30d'|'90d'|'season'|'last10'>('90d')
   const [customStart, setCustomStart] = useState<string>('')
   const [customEnd, setCustomEnd] = useState<string>('')
+  const [intervalUIOpen, setIntervalUIOpen] = useState(false)
   const [viewSel, setViewSel] = useState<'all'|'training'|'match'>('all')
   const [divergencesOnly, setDivergencesOnly] = useState(false)
   const { startDate, endDate } = useMemo(() => {
@@ -546,9 +547,9 @@ const PlayerDetail = () => {
                       ))}
                       {/* Mobile: bottom sheet; Desktop: popover */}
                       <div className="sm:hidden">
-                        <Sheet>
+                        <Sheet open={intervalUIOpen} onOpenChange={setIntervalUIOpen}>
                           <SheetTrigger asChild>
-                            <button className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>Intervallo</button>
+                            <button onClick={()=>setIntervalUIOpen(true)} className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>Intervallo</button>
                           </SheetTrigger>
                           <SheetContent side="bottom" className="h-[60vh] rounded-t-2xl">
                             <div className="space-y-3">
@@ -561,17 +562,17 @@ const PlayerDetail = () => {
                                 <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="rounded-md border px-2 py-1 bg-white" />
                               </div>
                               <div className="flex items-center justify-end gap-2">
-                                <button className="px-3 py-1 text-xs" onClick={()=>{ /* close by swiping down or tapping outside */ }}>Annulla</button>
-                                <button className="px-3 py-1 text-xs rounded-full border bg-primary/10 text-primary disabled:opacity-60" disabled={!customStart || !customEnd} onClick={()=>{ if (customStart && customEnd) { setPeriodSel('custom'); setTimeMode('intervallo') } }}>Applica</button>
+                                <button className="px-3 py-1 text-xs" onClick={()=>{ setIntervalUIOpen(false) }}>Annulla</button>
+                                <button className="px-3 py-1 text-xs rounded-full border bg-primary/10 text-primary disabled:opacity-60" disabled={!customStart || !customEnd} onClick={()=>{ if (customStart && customEnd) { setPeriodSel('custom'); setTimeMode('intervallo'); setIntervalUIOpen(false) } }}>Applica</button>
                               </div>
                             </div>
                           </SheetContent>
                         </Sheet>
                       </div>
                       <div className="hidden sm:block">
-                        <Popover>
+                        <Popover open={intervalUIOpen} onOpenChange={setIntervalUIOpen}>
                           <PopoverTrigger asChild>
-                            <button className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>Intervallo</button>
+                            <button onClick={()=>setIntervalUIOpen(true)} className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>Intervallo</button>
                           </PopoverTrigger>
                           <PopoverContent className="w-[320px] p-3">
                             <div className="space-y-2">
@@ -584,8 +585,8 @@ const PlayerDetail = () => {
                                 <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="rounded-md border px-2 py-1 bg-white" />
                               </div>
                               <div className="flex items-center justify-end gap-2 pt-2">
-                                <button className="px-2 py-1 text-xs text-muted-foreground" onClick={()=>{/* close via click outside */}}>Annulla</button>
-                                <button className="px-2 py-1 text-xs rounded-full border bg-primary/10 text-primary disabled:opacity-60" disabled={!customStart || !customEnd} onClick={()=>{ if (customStart && customEnd) { setPeriodSel('custom'); setTimeMode('intervallo') } }}>Applica</button>
+                                <button className="px-2 py-1 text-xs text-muted-foreground" onClick={()=>{ setIntervalUIOpen(false) }}>Annulla</button>
+                                <button className="px-2 py-1 text-xs rounded-full border bg-primary/10 text-primary disabled:opacity-60" disabled={!customStart || !customEnd} onClick={()=>{ if (customStart && customEnd) { setPeriodSel('custom'); setTimeMode('intervallo'); setIntervalUIOpen(false) } }}>Applica</button>
                               </div>
                             </div>
                           </PopoverContent>
