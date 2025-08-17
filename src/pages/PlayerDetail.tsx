@@ -351,9 +351,9 @@ const PlayerDetail = () => {
           </TabsList>
 
           <TabsContent value="profilo">
-            <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] lg:grid-cols-[2fr_1fr] gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] lg:grid-cols-[2fr_1fr] gap-4 animate-slide-in">
               {/* Card Anagrafica */}
-              <Card className="border border-border/40 rounded-2xl shadow-sm">
+              <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"><User className="h-4 w-4"/></span>
@@ -670,7 +670,7 @@ const PlayerDetail = () => {
           </TabsContent>
 
           <TabsContent value="partite">
-            <Card>
+            <Card className="animate-slide-in">
               <CardHeader><CardTitle>Storico partite</CardTitle></CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -725,7 +725,7 @@ const PlayerDetail = () => {
 
           {formerTrialist && (
             <TabsContent value="prova">
-              <Card>
+              <Card className="animate-slide-in">
                 <CardHeader><CardTitle>Valutazioni dal Periodo di Prova</CardTitle></CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
