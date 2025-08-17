@@ -468,7 +468,6 @@ const PlayerDetail = () => {
           </TabsContent>
 
           <TabsContent value="performance">
-            <div className="w-full rounded-xl border border-border/40 bg-white/70 backdrop-blur px-3 py-2 shadow-sm sticky top-2 z-10 sm:static"><div className="text-xs font-medium text-muted-foreground">Periodo</div><div className="mt-0.5 text-[11px] text-muted-foreground">{periodAbstract}</div></div>
             {/* 1) Performance strip */}
             <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
               <CardHeader className="pb-2">
@@ -520,7 +519,6 @@ const PlayerDetail = () => {
           </TabsContent>
 
           <TabsContent value="presenze">
-            <div className="w-full rounded-xl border border-border/40 bg-white/70 backdrop-blur px-3 py-2 shadow-sm sticky top-2 z-10 sm:static"><div className="text-xs font-medium text-muted-foreground">Periodo</div><div className="mt-0.5 text-[11px] text-muted-foreground">{periodAbstract}</div></div>
             <Card className="border border-border/40 rounded-2xl shadow-sm">
               <CardHeader className="pb-2"><CardTitle className="text-base">Presenze e ritardi</CardTitle></CardHeader>
               <CardContent className="pt-0 space-y-4">
