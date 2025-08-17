@@ -695,7 +695,7 @@ const Squad = () => {
                             />
                             <div>
                               <div className="flex items-center gap-2">
-                                <span>{player.first_name} {player.last_name}</span>
+                                <a href={`/player/${player.id}`} className="hover:underline">{player.first_name} {player.last_name}</a>
                                 {player.is_captain && (
                                   <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">
                                     ⭐ Capitano
@@ -711,26 +711,7 @@ const Squad = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          {editingRolePlayerId === player.id ? (
-                            <Select
-                              value={(player as any).role_code || ''}
-                              onValueChange={async (value) => {
-                                try { await updatePlayer.mutateAsync({ id: player.id, role_code: value as any }); setEditingRolePlayerId(null) } catch {}
-                              }}
-                            >
-                              <SelectTrigger className="h-8 w-[180px]"><SelectValue placeholder="Seleziona ruolo" /></SelectTrigger>
-                              <SelectContent>
-                                {roles.map(r => (
-                                  <SelectItem key={r.code} value={r.code}>{r.label} ({r.abbreviation})</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <span>{rolesByCode[(player as any).role_code || '']?.label || (player as any).role_code || '-'}</span>
-                              <Button variant="outline" size="sm" onClick={() => setEditingRolePlayerId(player.id)}>Modifica</Button>
-                            </div>
-                          )}
+                          <span>{rolesByCode[(player as any).role_code || '']?.abbreviation || (player as any).role_code || '-'}</span>
                         </TableCell>
                         <TableCell>
                           {player.phone ? (
