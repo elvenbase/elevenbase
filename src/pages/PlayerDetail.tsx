@@ -550,17 +550,16 @@ const PlayerDetail = () => {
                           <SheetTrigger asChild>
                             <button className={`px-2.5 py-0.5 rounded-full ${periodSel==='custom' ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>Intervallo</button>
                           </SheetTrigger>
-                          <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
+                          <SheetContent side="bottom" className="h-[60vh] rounded-t-2xl">
                             <div className="space-y-3">
-                              <div className="text-sm font-medium">Seleziona inizio e fine</div>
-                              <Calendar
-                                mode="range"
-                                numberOfMonths={2}
-                                selected={customStart && customEnd ? { from: new Date(customStart), to: new Date(customEnd) } as any : undefined}
-                                onSelect={(r:any)=>{ if (r?.from) setCustomStart(r.from.toISOString().slice(0,10)); if (r?.to) setCustomEnd(r.to.toISOString().slice(0,10)) }}
-                                className="border rounded-xl"
-                                classNames={{ months:'flex flex-col space-y-4' }}
-                              />
+                              <div className="text-sm font-medium">Seleziona intervallo</div>
+                              <div className="flex items-center gap-2 text-xs">
+                                <label className="text-muted-foreground">Dal</label>
+                                <input type="date" value={customStart} onChange={(e)=>setCustomStart(e.target.value)} className="rounded-md border px-2 py-1 bg-white" />
+                                <span>→</span>
+                                <label className="text-muted-foreground">Al</label>
+                                <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="rounded-md border px-2 py-1 bg-white" />
+                              </div>
                               <div className="flex items-center justify-end gap-2">
                                 <button className="px-3 py-1 text-xs" onClick={()=>{ /* close by swiping down or tapping outside */ }}>Annulla</button>
                                 <button className="px-3 py-1 text-xs rounded-full border bg-primary/10 text-primary disabled:opacity-60" disabled={!customStart || !customEnd} onClick={()=>{ if (customStart && customEnd) { setPeriodSel('custom'); setTimeMode('intervallo') } }}>Applica</button>
@@ -576,16 +575,15 @@ const PlayerDetail = () => {
                           </PopoverTrigger>
                           <PopoverContent className="w-[320px] p-3">
                             <div className="space-y-2">
-                              <div className="text-xs text-muted-foreground">Seleziona inizio e fine</div>
-                              <Calendar
-                                mode="range"
-                                numberOfMonths={2}
-                                selected={customStart && customEnd ? { from: new Date(customStart), to: new Date(customEnd) } as any : undefined}
-                                onSelect={(r:any)=>{ if (r?.from) setCustomStart(r.from.toISOString().slice(0,10)); if (r?.to) setCustomEnd(r.to.toISOString().slice(0,10)) }}
-                                className="border rounded-xl"
-                                classNames={{ months:'flex flex-col space-y-4' }}
-                              />
-                              <div className="flex items-center justify-end gap-2 pt-1">
+                              <div className="text-xs text-muted-foreground">Seleziona intervallo</div>
+                              <div className="flex items-center gap-2 text-xs">
+                                <label className="text-muted-foreground">Dal</label>
+                                <input type="date" value={customStart} onChange={(e)=>setCustomStart(e.target.value)} className="rounded-md border px-2 py-1 bg-white" />
+                                <span>→</span>
+                                <label className="text-muted-foreground">Al</label>
+                                <input type="date" value={customEnd} onChange={(e)=>setCustomEnd(e.target.value)} className="rounded-md border px-2 py-1 bg-white" />
+                              </div>
+                              <div className="flex items-center justify-end gap-2 pt-2">
                                 <button className="px-2 py-1 text-xs text-muted-foreground" onClick={()=>{/* close via click outside */}}>Annulla</button>
                                 <button className="px-2 py-1 text-xs rounded-full border bg-primary/10 text-primary disabled:opacity-60" disabled={!customStart || !customEnd} onClick={()=>{ if (customStart && customEnd) { setPeriodSel('custom'); setTimeMode('intervallo') } }}>Applica</button>
                               </div>
