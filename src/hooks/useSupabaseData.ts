@@ -132,9 +132,9 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         const playerTrainingAttendance = trainingAttendance.filter(ta => ta.player_id === player.id);
         const playerMatchAttendance = matchAttendance.filter(ma => ma.player_id === player.id);
         
-        const trainingPresences = playerTrainingAttendance.filter(ta => ta.status === 'present').length;
-        const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'late' || (!!ta.arrival_time && ta.status === 'present')).length;
-        const trainingTotal = playerTrainingAttendance.length;
+        const trainingPresences = playerTrainingAttendance.filter(ta => ta.status === 'present' || ta.status === 'late').length;
+const trainingTardiness = playerTrainingAttendance.filter(ta => ta.status === 'late').length;
+const trainingTotal = playerTrainingAttendance.length;
         
         const matchPresences = playerMatchAttendance.filter(ma => ma.status === 'present').length;
         const matchTardiness = playerMatchAttendance.filter(ma => ma.status === 'late').length;
