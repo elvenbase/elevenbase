@@ -20,6 +20,10 @@ import PlayerStatsModal from '@/components/forms/PlayerStatsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRoles } from '@/hooks/useRoles';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Search, LayoutGrid, Rows } from 'lucide-react'
 
 type SortField = 'name' | 'jersey_number' | 'role_code' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -306,6 +310,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
 const Squad = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState<string>('all')
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -314,6 +319,8 @@ const Squad = () => {
   });
   const [selectedCaptain, setSelectedCaptain] = useState<string>('none');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'card'|'table'>('card')
+  const [openPlayerId, setOpenPlayerId] = useState<string|null>(null)
   
   // Stato per la modale dell'immagine del giocatore
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -413,8 +420,9 @@ const Squad = () => {
         (player.jersey_number && player.jersey_number.toString().includes(searchTerm));
       
       const matchesStatus = statusFilter === 'all' || player.status === statusFilter;
+      const matchesRole = roleFilter === 'all' || (rolesByCode[(player as any).role_code || '']?.code === roleFilter)
       
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus && matchesRole;
     });
 
     // Sort the filtered results
@@ -476,7 +484,7 @@ const Squad = () => {
     });
 
     return sorted;
-  }, [players, searchTerm, statusFilter, sortField, sortDirection, rolesByCode]);
+  }, [players, searchTerm, statusFilter, roleFilter, sortField, sortDirection, rolesByCode]);
 
   const handleDeletePlayer = async (playerId: string) => {
     console.log('🗑️ Attempting to delete player with ID:', playerId);
@@ -490,144 +498,205 @@ const Squad = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold">Rosa Squadra</CardTitle>
-          <CardDescription>
-            Gestisci i giocatori della squadra con statistiche di presenze e ritardi agli allenamenti
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Controlli principali - sempre visibili */}
-          <div className="space-y-4 mb-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <PlayerForm />
-                <div className="w-full sm:w-auto">
-                  <label className="text-sm font-medium block mb-2">Capitano squadra:</label>
-                  <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
-                    <SelectTrigger className="w-full sm:w-48">
-                      <SelectValue placeholder="Seleziona capitano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nessuno</SelectItem>
-                      {players.filter(p => p.status === 'active').map(player => (
-                        <SelectItem key={player.id} value={player.id}>
-                          {player.first_name} {player.last_name}
-                          {player.jersey_number ? ` (#${player.jersey_number})` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              {/* Search - sempre visibile */}
+    <div className="container mx-auto py-6">
+      {/* Header compatto */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-xl sm:text-2xl font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
+        <div className="flex items-center gap-2">
+          <PlayerForm />
+          <Button variant="outline" size="sm" onClick={()=>setShowAdvancedFilters(v=>!v)} className="inline-flex items-center gap-2"><Filter className="h-4 w-4" />Filtri</Button>
+        </div>
+      </div>
+
+      {/* Toolbar sticky */}
+      <div className="sticky top-2 z-10 bg-white/70 backdrop-blur rounded-full border px-3 py-2 shadow-sm mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-center">
+          <div className="relative">
+            <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <Input value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Cerca" className="pl-8 rounded-full h-9" />
+          </div>
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="rounded-full h-9"><SelectValue placeholder="Ruolo" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tutti i ruoli</SelectItem>
+              {roles.map(r => (<SelectItem key={r.code} value={r.code}>{r.label}</SelectItem>))}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="rounded-full h-9"><SelectValue placeholder="Stato" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tutti gli stati</SelectItem>
+              <SelectItem value="active">Attivo</SelectItem>
+              <SelectItem value="inactive">Inattivo</SelectItem>
+              <SelectItem value="injured">Infortunato</SelectItem>
+              <SelectItem value="suspended">Squalificato</SelectItem>
+            </SelectContent>
+          </Select>
+          <ToggleGroup type="single" value={viewMode} onValueChange={(v:any)=> v && setViewMode(v)} className="justify-self-start lg:justify-self-center">
+            <ToggleGroupItem value="card" className="rounded-full px-3 h-9 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
+            <ToggleGroupItem value="table" className="rounded-full px-3 h-9 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"><Rows className="h-4 w-4" /></ToggleGroupItem>
+          </ToggleGroup>
+          <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
+            <SelectTrigger className="rounded-full h-9"><SelectValue placeholder="Capitano" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nessuno</SelectItem>
+              {players.filter(p => p.status === 'active').map(p => (
+                <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name}{p.jersey_number ? ` (#${p.jersey_number})` : ''}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {showAdvancedFilters && (
+        <Card className="mb-4"><CardContent className="p-4">{/* keep existing advanced filters UI */}
+          <div className="space-y-4">
+            {/* Stato, ordina, direzione, periodo */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Input
-                  placeholder="Cerca giocatore..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
+                <label className="text-sm font-medium block mb-2">Ordina per:</label>
+                <Select value={sortField} onValueChange={(value: SortField) => setSortField(value)}>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Seleziona campo" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Nome/Cognome</SelectItem>
+                    <SelectItem value="jersey_number">Numero di maglia</SelectItem>
+                    <SelectItem value="role_code">Ruolo</SelectItem>
+                    <SelectItem value="phone">Telefono</SelectItem>
+                    <SelectItem value="presences">Presenze allenamenti</SelectItem>
+                    <SelectItem value="tardiness">Ritardi allenamenti</SelectItem>
+                    <SelectItem value="attendanceRate">Percentuale presenze</SelectItem>
+                    <SelectItem value="status">Stato</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              
-              {/* Toggle filtri avanzati */}
-              <div className="flex items-center justify-between pt-2 border-t">
-                <span className="text-sm font-medium text-muted-foreground">
-                  {filteredAndSortedPlayers.length} giocatori
-                  {searchTerm && ` (filtrati)`}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className="flex items-center gap-2"
-                >
-                  <Filter className="h-4 w-4" />
-                  <span className="hidden sm:inline">Filtri avanzati</span>
-                  {showAdvancedFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
+              <div>
+                <label className="text-sm font-medium block mb-2">Direzione:</label>
+                <Select value={sortDirection} onValueChange={(value: SortDirection) => setSortDirection(value)}>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Ordine" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="asc">Crescente</SelectItem>
+                    <SelectItem value="desc">Decrescente</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            
-            {/* Filtri avanzati - collassabili */}
-            {showAdvancedFilters && (
-              <div className="space-y-4 pt-4 border-t bg-muted/20 rounded-lg p-4">
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <label className="text-sm font-medium block mb-2">Filtra per stato:</label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Filtra per stato" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tutti gli stati</SelectItem>
-                        <SelectItem value="active">Attivo</SelectItem>
-                        <SelectItem value="inactive">Inattivo</SelectItem>
-                        <SelectItem value="injured">Infortunato</SelectItem>
-                        <SelectItem value="suspended">Squalificato</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium block mb-2">Ordina per:</label>
-                      <Select value={sortField} onValueChange={(value: SortField) => setSortField(value)}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Seleziona campo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="name">Nome/Cognome</SelectItem>
-                          <SelectItem value="jersey_number">Numero di maglia</SelectItem>
-                          <SelectItem value="role_code">Ruolo</SelectItem>
-                          <SelectItem value="phone">Telefono</SelectItem>
-                          <SelectItem value="presences">Presenze allenamenti</SelectItem>
-                          <SelectItem value="tardiness">Ritardi allenamenti</SelectItem>
-                          <SelectItem value="attendanceRate">Percentuale presenze</SelectItem>
-                          <SelectItem value="status">Stato</SelectItem>
-                        </SelectContent>
-                      </Select>
+            <div>
+              <label className="text-sm font-medium block mb-2">Periodo analisi presenze:</label>
+              <DateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} placeholder="Seleziona periodo" />
+            </div>
+          </div>
+        </CardContent></Card>
+      )}
+
+      {/* Vista Card */}
+      {viewMode === 'card' && (
+        <div className="">
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_,i)=> (
+                <div key={i} className="rounded-2xl border p-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-56" />
                     </div>
-                    <div>
-                      <label className="text-sm font-medium block mb-2">Direzione:</label>
-                      <Select value={sortDirection} onValueChange={(value: SortDirection) => setSortDirection(value)}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Ordine" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="asc">Crescente</SelectItem>
-                          <SelectItem value="desc">Decrescente</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium block mb-2">Periodo analisi presenze:</label>
-                    <DateRangePicker
-                      dateRange={dateRange}
-                      onDateRangeChange={setDateRange}
-                      placeholder="Seleziona periodo"
-                    />
-                    {dateRange?.from && dateRange?.to && (
-                      <div className="text-xs text-muted-foreground mt-2">
-                        Statistiche allenamenti calcolate per il periodo selezionato
-                      </div>
-                    )}
                   </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredAndSortedPlayers.map((p)=> {
+                  const role = rolesByCode[(p as any).role_code || '']
+                  const pres = p.presences || 0
+                  const tot = p.totalEvents || 0
+                  const pct = tot>0 ? Math.round((pres/tot)*100) : 0
+                  return (
+                    <div key={p.id} className="rounded-2xl border border-border/40 bg-white shadow-sm p-4 hover:shadow-md transition cursor-pointer" onClick={()=>setOpenPlayerId(p.id)}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
+                          <div className="min-w-0">
+                            <div className="font-semibold truncate">{p.first_name} {p.last_name}</div>
+                            <div className="mt-1 flex flex-wrap items-center gap-1">
+                              {p.jersey_number && (<Badge variant="outline" className="text-xs">#{p.jersey_number}</Badge>)}
+                              <Badge variant="secondary" className="text-xs">{role?.abbreviation || role?.label || (p as any).role_code || '-'}</Badge>
+                              {p.is_captain && (<Badge className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300">Capitano</Badge>)}
+                              <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-xs">{p.status}</Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="inline-flex items-center gap-2 text-xs">
+                            <Badge variant="secondary" className="text-xs">Presenze {pres}/{tot}</Badge>
+                          </div>
+                          <div className="w-24 h-1.5 rounded-full bg-neutral-200 overflow-hidden">
+                            <div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} />
+                          </div>
+                          <div className="text-xs text-neutral-500">Ritardi {p.tardiness || 0}</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex justify-end gap-2">
+                        <EditPlayerForm player={p as any} />
+                        <PlayerStatsModal player={p as any} />
+                        <Button variant="ghost" size="icon"><Settings className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardContent className="p-4 sm:p-6">
+              {/* Quick Drawer */}
+              <Sheet open={!!openPlayerId} onOpenChange={(o)=> !o && setOpenPlayerId(null)}>
+                <SheetContent side="right" className="w-full sm:max-w-md">
+                  {(() => {
+                    const p = filteredAndSortedPlayers.find(pp=>pp.id===openPlayerId)
+                    if (!p) return null
+                    const role = rolesByCode[(p as any).role_code || '']
+                    return (
+                      <div className="space-y-4">
+                        <SheetHeader>
+                          <SheetTitle className="flex items-center gap-3">
+                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="md" />
+                            <span>{p.first_name} {p.last_name}</span>
+                          </SheetTitle>
+                        </SheetHeader>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {p.jersey_number && (<Badge variant="outline">#{p.jersey_number}</Badge>)}
+                          <Badge variant="secondary">{role?.label || (p as any).role_code || '-'}</Badge>
+                          {p.is_captain && (<Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">Capitano</Badge>)}
+                          <Badge variant={p.status==='active' ? 'default' : 'outline'}>{p.status}</Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <div className="text-xs text-muted-foreground">Presenze</div>
+                            <div className="font-medium">{p.presences || 0}/{p.totalEvents || 0}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">Ritardi</div>
+                            <div className="font-medium">{p.tardiness || 0}</div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <EditPlayerForm player={p as any} />
+                          <PlayerStatsModal player={p as any} />
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </SheetContent>
+              </Sheet>
+            </>
+          )}
+        </div>
+      )}
 
+      {/* Vista Tabella */}
+      {viewMode === 'table' && (
+        <Card><CardContent className="p-4 sm:p-6">
+ 
           {isLoading ? (
             <div className="text-center py-8">Caricamento giocatori...</div>
           ) : filteredAndSortedPlayers.length === 0 ? (
@@ -637,7 +706,7 @@ const Squad = () => {
           ) : (
             <>
               {/* Desktop Table (1100px and above) */}
-              <div className="hidden xl:block overflow-x-auto">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -795,25 +864,11 @@ const Squad = () => {
                 </Table>
               </div>
 
-              {/* Mobile Cards (under 1100px) */}
-              <div className="block xl:hidden space-y-4 sm:space-y-5">
-                {filteredAndSortedPlayers.map((player) => (
-                  <MobilePlayerCard 
-                    key={player.id}
-                    player={player}
-                    onImageClick={openImageModal}
-                    onDelete={handleDeletePlayer}
-                    formatWhatsAppLink={formatWhatsAppLink}
-                    getRoleLabel={(code?: string) => rolesByCode[code || '']?.label || (code || 'Non specificato')}
-                    roles={roles as any}
-                    onChangeRole={async (pid: string, rc: string) => { try { await updatePlayer.mutateAsync({ id: pid, role_code: rc as any }) } catch {} }}
-                  />
-                ))}
-              </div>
+              {/* No mobile accordion in table view */}
             </>
           )}
-        </CardContent>
-      </Card>
+        </CardContent></Card>
+      )}
 
       {/* Modale per visualizzare l'immagine del giocatore */}
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
