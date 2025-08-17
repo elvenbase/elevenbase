@@ -332,7 +332,38 @@ const Squad = () => {
   
   const { data: players = [], isLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
   const { data: roles = [] } = useRoles();
-  const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles]);
+  const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
+
+  // Role -> sector mapping for card background theme
+  const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
+    if (!code) return 'NA'
+    const c = code.toUpperCase()
+    if (c === 'P') return 'P'
+    if (['TD','DC','DCD','DCS','TS'].includes(c)) return 'DIF'
+    if (['MC','MED','REG','MD','MS','ED','ES','QD','QS'].includes(c)) return 'CEN'
+    if (['PU','ATT','AD','AS'].includes(c)) return 'ATT'
+    return 'NA'
+  }
+  const sectorBgClass: Record<'P'|'DIF'|'CEN'|'ATT'|'NA', string> = {
+    P: 'from-sky-50 to-sky-25',
+    DIF: 'from-emerald-50 to-emerald-25',
+    CEN: 'from-amber-50 to-amber-25',
+    ATT: 'from-rose-50 to-rose-25',
+    NA: 'from-neutral-50 to-neutral-25'
+  }
+
+  // Compute only roles present among players for the filter
+  const presentRoles = useMemo(() => {
+    const counts: Record<string, number> = {}
+    players.forEach((p:any) => {
+      const rc = (p as any).role_code
+      if (rc) counts[rc] = (counts[rc] || 0) + 1
+    })
+    return Object.entries(counts)
+      .map(([code, count]) => ({ code, count, label: rolesByCode[code]?.label || code }))
+      .sort((a,b) => a.label.localeCompare(b.label))
+  }, [players, rolesByCode])
+
   const deletePlayer = useDeletePlayer();
   const updatePlayer = useUpdatePlayer();
   const [editingRolePlayerId, setEditingRolePlayerId] = useState<string|null>(null);
@@ -515,11 +546,11 @@ const Squad = () => {
             <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400" />
             <Input value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Cerca" className="pl-8 rounded-full h-9" />
           </div>
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
             <SelectTrigger className="rounded-full h-9"><SelectValue placeholder="Ruolo" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tutti i ruoli</SelectItem>
-              {roles.map(r => (<SelectItem key={r.code} value={r.code}>{r.label}</SelectItem>))}
+              {presentRoles.map(r => (<SelectItem key={r.code} value={r.code}>{r.label}</SelectItem>))}
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -614,9 +645,9 @@ const Squad = () => {
                   const tot = p.totalEvents || 0
                   const pct = tot>0 ? Math.round((pres/tot)*100) : 0
                   return (
-                    <div key={p.id} className="rounded-2xl border border-border/40 bg-white shadow-sm p-4 hover:shadow-md transition">
-                      <a href={`/player/${p.id}`} className="block">
-                        <div className="flex items-start justify-between gap-3">
+                    <div key={p.id} className={`rounded-2xl border border-border/40 shadow-sm p-4 hover:shadow-md transition bg-gradient-to-br ${sectorBgClass[sectorFromRoleCode((p as any).role_code)]}`}>
+  <a href={`/player/${p.id}`} className="block">
+    <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3 min-w-0">
                             <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
                             <div className="min-w-0">
