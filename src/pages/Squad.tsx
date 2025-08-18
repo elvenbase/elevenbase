@@ -104,9 +104,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
                   </Badge>
                 )}
                 {player.is_captain && (
-                  <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">
-                    ⭐ Capitano
-                  </Badge>
+                  <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">(C)</Badge>
                 )}
                 <Badge 
                   variant={
@@ -389,7 +387,7 @@ const Squad = () => {
     const chips: Array<{ key: string; label: string; onClear: () => void }> = []
     if (roleFilter !== 'all') chips.push({ key: 'role', label: rolesByCode[roleFilter]?.label || roleFilter, onClear: () => setRoleFilter('all') })
     if (statusFilter !== 'all') chips.push({ key: 'status', label: statusFilter, onClear: () => setStatusFilter('all') })
-    if (selectedCaptain !== 'none') chips.push({ key: 'captain', label: 'Capitano', onClear: () => setSelectedCaptain('none') })
+    if (selectedCaptain !== 'none') chips.push({ key: 'captain', label: '(C)', onClear: () => setSelectedCaptain('none') })
     return chips
   }, [roleFilter, statusFilter, selectedCaptain, rolesByCode])
 
@@ -648,9 +646,9 @@ const Squad = () => {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium block mb-2">Capitano</label>
+              <label className="text-sm font-medium block mb-2">(C)</label>
               <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
-                <SelectTrigger><SelectValue placeholder="Capitano" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="(C)" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nessuno</SelectItem>
                   {players.filter(p => p.status === 'active').map(p => (
@@ -783,7 +781,7 @@ const Squad = () => {
                             <div className="flex items-center gap-2 min-w-0">
                               <div className="text-xs md:text-sm text-muted-foreground truncate" title={role?.label || ''}>{role?.label || '—'}</div>
                               {p.is_captain && (
-                                <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">Capitano</Badge>
+                                <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">(C)</Badge>
                               )}
                             </div>
                           </div>
@@ -866,9 +864,7 @@ const Squad = () => {
                               <div className="flex items-center gap-2">
                                 <a href={`/player/${player.id}`} className="hover:underline">{player.first_name} {player.last_name}</a>
                                 {player.is_captain && (
-                                  <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">
-                                    ⭐ Capitano
-                                  </Badge>
+                                  <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">(C)</Badge>
                                 )}
                               </div>
                             </div>
