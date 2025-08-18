@@ -583,7 +583,7 @@ const Squad = () => {
       </div>
 
       {/* Toolbar sticky (mobile-first) */}
-      <div className="sticky top-2 z-10 bg-white/80 backdrop-blur rounded-full border px-2 py-1.5 shadow-sm mb-2">
+      <div className="sticky top-2 z-10 bg-white/80 backdrop-blur rounded-full border px-2 py-1.5 shadow-sm mb-8">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -598,7 +598,7 @@ const Squad = () => {
 
       {/* Active filters chips */}
       {activeFilterChips.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4">
           {activeFilterChips.map(ch => (
             <span key={ch.key} className="inline-flex items-center gap-1 text-xs rounded-full border px-2 py-0.5 bg-white">
               {ch.label}
@@ -736,12 +736,12 @@ const Squad = () => {
                       tabIndex={0}
                       onClick={() => (window.location.href = `/player/${p.id}`)}
                       onKeyDown={(e) => { if (e.key === 'Enter') (window.location.href = `/player/${p.id}`) }}
-                      className="relative rounded-2xl border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible"
+                      className="relative rounded-xl border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible"
                     >
                       <div className="relative p-4 md:p-6">
                         {/* Photo: sporge solo in alto, non a sinistra. Dimensioni dimezzate */}
                         {imageSrc ? (
-                          <div className="absolute -top-3 left-4 md:-top-4 md:left-6 w-12 h-16 md:w-16 md:h-20 overflow-hidden rounded-lg shadow-sm">
+                          <div className="absolute -top-3 left-4 md:-top-4 md:left-6 w-[72px] h-[96px] md:w-[96px] md:h-[120px] overflow-hidden rounded-md shadow-sm">
                             <img
                               src={imageSrc}
                               alt={`${p.first_name} ${p.last_name}`}
@@ -756,7 +756,7 @@ const Squad = () => {
                         )}
 
                         {/* Riga 1: solo titolo e sottotitolo accanto all'immagine */}
-                        <div className="pl-20 md:pl-28 min-h-16">
+                        <div className="pl-24 md:pl-36 min-h-[96px] md:min-h-[120px]">
                           <div className="space-y-1 pr-2">
                             <div className="font-semibold text-lg md:text-xl leading-tight truncate">{p.first_name} {p.last_name}</div>
                             <div className="flex items-center gap-2 min-w-0">
