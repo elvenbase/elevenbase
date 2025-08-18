@@ -364,6 +364,15 @@ const Squad = () => {
     NA: 'bg-neutral-100 text-neutral-700 border-neutral-200'
   }
 
+  // Hero-like gradient background by role (same scheme used in PlayerDetail)
+  const sectorHeroBgClass: Record<'P'|'DIF'|'CEN'|'ATT'|'NA', string> = {
+    P: 'from-sky-500/20 to-sky-500/5',
+    DIF: 'from-emerald-500/20 to-emerald-500/5',
+    CEN: 'from-amber-500/25 to-amber-500/5',
+    ATT: 'from-rose-500/25 to-rose-500/5',
+    NA: 'from-neutral-500/20 to-neutral-500/5'
+  }
+
   // Compute only roles present among players for the filter
   const presentRoles = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -736,12 +745,12 @@ const Squad = () => {
                       tabIndex={0}
                       onClick={() => (window.location.href = `/player/${p.id}`)}
                       onKeyDown={(e) => { if (e.key === 'Enter') (window.location.href = `/player/${p.id}`) }}
-                      className="relative rounded-xl border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible"
+                      className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${sectorHeroBgClass[sectorFromRoleCode((p as any).role_code)]}`}
                     >
                       <div className="relative p-4 md:p-6">
-                        {/* Photo: sporge solo in alto, non a sinistra. Dimensioni dimezzate */}
+                        {/* Photo: sporge solo in alto, non a sinistra. Aumentata di un ulteriore 1.5x */}
                         {imageSrc ? (
-                          <div className="absolute -top-3 left-4 md:-top-4 md:left-6 w-[72px] h-[96px] md:w-[96px] md:h-[120px] overflow-hidden rounded-md shadow-sm">
+                          <div className="absolute -top-4 left-4 md:-top-6 md:left-6 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm shadow-sm">
                             <img
                               src={imageSrc}
                               alt={`${p.first_name} ${p.last_name}`}
@@ -756,8 +765,8 @@ const Squad = () => {
                         )}
 
                         {/* Riga 1: solo titolo e sottotitolo accanto all'immagine */}
-                        <div className="pl-24 md:pl-36 min-h-[96px] md:min-h-[120px]">
-                          <div className="space-y-1 pr-2">
+                        <div className="pl-[132px] md:pl-[180px] min-h-[144px] md:min-h-[180px]">
+                          <div className="space-y-0.5 pr-2">
                             <div className="font-semibold text-lg md:text-xl leading-tight truncate">{p.first_name} {p.last_name}</div>
                             <div className="flex items-center gap-2 min-w-0">
                               <div className="text-xs md:text-sm text-muted-foreground truncate" title={role?.label || ''}>{role?.label || '—'}</div>
@@ -768,8 +777,8 @@ const Squad = () => {
                           </div>
                         </div>
 
-                        {/* Riga 2: 3 label a tutta larghezza */}
-                        <div className="mt-3 grid grid-cols-3 gap-4">
+                        {/* Riga 2: 3 label a tutta larghezza con spazio ridotto */}
+                        <div className="mt-2 grid grid-cols-3 gap-3">
                           <div>
                             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
                             <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
