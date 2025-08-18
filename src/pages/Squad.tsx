@@ -755,6 +755,18 @@ const Squad = () => {
                               src={imageSrc}
                               alt={`${p.first_name} ${p.last_name}`}
                               className="w-full h-full object-cover object-center select-none border-0 ring-0 outline-none"
+                              onError={(e) => {
+                                const img = e.currentTarget as HTMLImageElement
+                                // Prevent infinite loop by applying fallback only once
+                                const fallback = (defaultBackground && defaultBackground.type === 'image') ? defaultBackground.value : ''
+                                const already = (img as any).dataset.fallbackApplied === '1'
+                                if (!already && fallback && img.src !== fallback) {
+                                  ;(img as any).dataset.fallbackApplied = '1'
+                                  img.src = fallback
+                                } else {
+                                  img.style.display = 'none'
+                                }
+                              }}
                               draggable={false}
                             />
                           </div>
@@ -778,7 +790,7 @@ const Squad = () => {
                         </div>
 
                         {/* Riga 2: 3 label a tutta larghezza con spazio ridotto */}
-                        <div className="mt-1 grid grid-cols-3 gap-3">
+                        <div className="mt-0.5 grid grid-cols-3 gap-2">
                           <div>
                             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
                             <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
