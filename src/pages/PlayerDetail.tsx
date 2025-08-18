@@ -519,27 +519,36 @@ const PlayerDetail = () => {
                 </div>
               </CardContent>
             </Card>
-            {/* 2) Trend mensili: Gol, Assist, Gialli, Rossi */}
+            {/* 2) Trend giornaliero (ultimo mese): Gol, Assist, Gialli, Rossi */}
             <Card className="border border-border/40 rounded-2xl shadow-sm mt-4 animate-slide-in">
-              <CardHeader className="pb-2"><CardTitle className="text-base">Andamento per mese</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Andamento ultimo mese</CardTitle></CardHeader>
               <CardContent className="pt-0">
                 {(() => {
-                  // Build per-month aggregates from match stats
-                  const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-                  const map = new Map<string, {month:string; goals:number; assists:number; yellows:number; reds:number}>()
+                  // Build per-day aggregates for the last 30 days from match stats
+                  const dayKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+                  const end = new Date(); end.setHours(0,0,0,0)
+                  const start = new Date(end); start.setDate(start.getDate() - 29)
+                  const map = new Map<string, {day:string; goals:number; assists:number; yellows:number; reds:number}>()
+                  // Seed all days with zero values to keep the timeline continuous
+                  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                    const key = dayKey(d)
+                    map.set(key, { day: key, goals: 0, assists: 0, yellows: 0, reds: 0 })
+                  }
                   for (const r of stats as any[]) {
                     const m = r.matches as any
-                    const d = m?.match_date ? new Date(m.match_date) : null
-                    if (!d || isNaN(d.getTime())) continue
-                    const key = monthKey(d)
-                    if (!map.has(key)) map.set(key, { month: key, goals: 0, assists: 0, yellows: 0, reds: 0 })
-                    const rec = map.get(key)!
+                    const raw = m?.match_date ? new Date(m.match_date) : null
+                    if (!raw || isNaN(raw.getTime())) continue
+                    const d = new Date(raw.getFullYear(), raw.getMonth(), raw.getDate())
+                    if (d < start || d > end) continue
+                    const key = dayKey(d)
+                    const rec = map.get(key)
+                    if (!rec) continue
                     rec.goals += r.goals || 0
                     rec.assists += r.assists || 0
                     rec.yellows += r.yellow_cards || 0
                     rec.reds += r.red_cards || 0
                   }
-                  const data = Array.from(map.values()).sort((a,b)=> a.month.localeCompare(b.month))
+                  const data = Array.from(map.values()).sort((a,b)=> a.day.localeCompare(b.day))
                   const cfg = {
                     goals: { label: 'Gol', color: 'hsl(199 89% 48%)' },
                     assists: { label: 'Assist', color: 'hsl(190 90% 42%)' },
@@ -550,7 +559,14 @@ const PlayerDetail = () => {
                     <ChartContainer config={{ [dataKey as string]: { label: (cfg as any)[dataKey].label, color: (cfg as any)[dataKey].color } }} className="h-48">
                       <ReBarChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" tickFormatter={(v)=> (String(v)).slice(5)} interval={0} angle={-30} dy={10} dx={-10} height={40} />
+                        <XAxis
+                          dataKey="day"
+                          tickFormatter={(v)=> String(v).slice(8)}
+                          interval="preserveStartEnd"
+                          minTickGap={8}
+                          tickMargin={8}
+                          height={30}
+                        />
                         <YAxis allowDecimals={false} width={28} />
                         <Bar dataKey={dataKey as any} fill={(cfg as any)[dataKey].color} radius={[3,3,0,0]} />
                         <ChartTooltip content={<ChartTooltipContent hideIndicator nameKey={dataKey as string} />} />
@@ -560,19 +576,19 @@ const PlayerDetail = () => {
                   return (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="rounded-lg border p-2 bg-white">
-                        <div className="text-xs text-muted-foreground mb-1">Gol per mese</div>
+                        <div className="text-xs text-muted-foreground mb-1">Gol per giorno</div>
                         <Chart dataKey={'goals' as any} />
                       </div>
                       <div className="rounded-lg border p-2 bg-white">
-                        <div className="text-xs text-muted-foreground mb-1">Assist per mese</div>
+                        <div className="text-xs text-muted-foreground mb-1">Assist per giorno</div>
                         <Chart dataKey={'assists' as any} />
                       </div>
                       <div className="rounded-lg border p-2 bg-white">
-                        <div className="text-xs text-muted-foreground mb-1">Gialli per mese</div>
+                        <div className="text-xs text-muted-foreground mb-1">Gialli per giorno</div>
                         <Chart dataKey={'yellows' as any} />
                       </div>
                       <div className="rounded-lg border p-2 bg-white">
-                        <div className="text-xs text-muted-foreground mb-1">Rossi per mese</div>
+                        <div className="text-xs text-muted-foreground mb-1">Rossi per giorno</div>
                         <Chart dataKey={'reds' as any} />
                       </div>
                     </div>
