@@ -755,8 +755,8 @@ const Squad = () => {
                           </div>
                         )}
 
-                        {/* Contenuto a destra della foto: solo nome (grande, grassetto) e sotto ruolo + capitano */}
-                        <div className="pl-20 md:pl-28">
+                        {/* Riga 1: solo titolo e sottotitolo accanto all'immagine */}
+                        <div className="pl-20 md:pl-28 min-h-16">
                           <div className="space-y-1 pr-2">
                             <div className="font-semibold text-lg md:text-xl leading-tight truncate">{p.first_name} {p.last_name}</div>
                             <div className="flex items-center gap-2 min-w-0">
@@ -766,35 +766,35 @@ const Squad = () => {
                               )}
                             </div>
                           </div>
+                        </div>
 
-                          {/* Sotto la foto: 3 label PARTITE, ETÀ, NUMERO con valore sotto */}
-                          <div className="mt-3 grid grid-cols-3 gap-4">
-                            <div>
-                              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
-                              <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
-                            </div>
-                            <div>
-                              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">ETÀ</div>
-                              <div className="mt-1 text-xs tabular-nums">{age ?? '—'}</div>
-                            </div>
-                            <div>
-                              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">NUMERO</div>
-                              <div className="mt-1 text-xs tabular-nums">{numero ?? '—'}</div>
-                            </div>
+                        {/* Riga 2: 3 label a tutta larghezza */}
+                        <div className="mt-3 grid grid-cols-3 gap-4">
+                          <div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
+                            <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
                           </div>
+                          <div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">ETÀ</div>
+                            <div className="mt-1 text-xs tabular-nums">{age ?? '—'}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">NUMERO</div>
+                            <div className="mt-1 text-xs tabular-nums">{numero ?? '—'}</div>
+                          </div>
+                        </div>
 
-                          {/* Divider e footer: link a sinistra, stato a destra */}
-                          <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                            <a
-                              href={`/player/${p.id}`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="text-sm text-primary inline-flex items-center gap-1 hover:underline"
-                            >
-                              <Eye className="h-4 w-4" />
-                              maggiori dettagli
-                            </a>
-                            <Badge variant="outline" className={`text-xs ${statoCls}`}>{statoLabel}</Badge>
-                          </div>
+                        {/* Riga 3: divider e footer - stato a sinistra, link a destra */}
+                        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+                          <Badge variant="outline" className={`text-xs ${statoCls}`}>{statoLabel}</Badge>
+                          <a
+                            href={`/player/${p.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-primary inline-flex items-center gap-1 hover:underline"
+                          >
+                            <Eye className="h-4 w-4" />
+                            maggiori dettagli
+                          </a>
                         </div>
                       </div>
                     </div>
