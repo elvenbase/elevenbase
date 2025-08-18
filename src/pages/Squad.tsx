@@ -750,11 +750,11 @@ const Squad = () => {
                       <div className="relative p-4 md:p-6">
                         {/* Photo: sporge solo in alto, non a sinistra. Aumentata di un ulteriore 1.5x */}
                         {imageSrc ? (
-                          <div className="absolute -top-4 left-4 md:-top-6 md:left-6 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm shadow-sm">
+                          <div className="absolute -top-4 left-4 md:-top-6 md:left-6 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm border-0 ring-0">
                             <img
                               src={imageSrc}
                               alt={`${p.first_name} ${p.last_name}`}
-                              className="w-full h-full object-cover object-center select-none"
+                              className="w-full h-full object-cover object-center select-none border-0 ring-0 outline-none"
                               draggable={false}
                             />
                           </div>
@@ -778,7 +778,7 @@ const Squad = () => {
                         </div>
 
                         {/* Riga 2: 3 label a tutta larghezza con spazio ridotto */}
-                        <div className="mt-2 grid grid-cols-3 gap-3">
+                        <div className="mt-1 grid grid-cols-3 gap-3">
                           <div>
                             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
                             <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
