@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -145,237 +144,239 @@ const TrialistsTable = () => {
       {/* Desktop Table */}
       <div className="hidden lg:block">
         <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Avatar</TableHead>
-                <TableHead>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => handleSort('first_name')}
-                    className="h-auto p-0 font-semibold hover:bg-transparent"
-                  >
-                    Nome {getSortIcon('first_name')}
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => handleSort('position')}
-                    className="h-auto p-0 font-semibold hover:bg-transparent"
-                  >
-                    Ruolo {getSortIcon('position')}
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => handleSort('status')}
-                    className="h-auto p-0 font-semibold hover:bg-transparent"
-                  >
-                    Stato {getSortIcon('status')}
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => handleSort('trial_start_date')}
-                    className="h-auto p-0 font-semibold hover:bg-transparent"
-                  >
-                    Data Inizio {getSortIcon('trial_start_date')}
-                  </Button>
-                </TableHead>
-                <TableHead>Telefono</TableHead>
-                <TableHead>Dettagli</TableHead>
-                <TableHead className="text-right">Azioni</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAndSortedTrialists.map((trialist) => (
-                <React.Fragment key={trialist.id}>
-                  <TableRow>
-                  <TableCell>
-                    <PlayerAvatar
-                      firstName={trialist.first_name}
-                      lastName={trialist.last_name}
-                      avatarUrl={trialist.avatar_url}
-                      size="sm"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center space-x-2">
-                      <span>{trialist.first_name} {trialist.last_name}</span>
-                      <SessionCounter trialistId={trialist.id} />
-                    </div>
-                  </TableCell>
-                  <TableCell>{trialist.position || 'Non specificata'}</TableCell>
-                  <TableCell>{getStatusBadge(trialist.status)}</TableCell>
-                  <TableCell>
-                    {new Date(trialist.trial_start_date).toLocaleDateString('it-IT')}
-                  </TableCell>
-                  <TableCell>{trialist.phone || 'Non specificato'}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleRowExpansion(trialist.id)}
-                      className="text-xs"
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Avatar</TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('first_name')}
+                      className="h-auto p-0 font-semibold hover:bg-transparent"
                     >
-                      {expandedRows.has(trialist.id) ? (
-                        <>
-                          <ChevronUp className="h-4 w-4 mr-1" />
-                          Nascondi
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-4 w-4 mr-1" />
-                          Dettagli
-                        </>
-                      )}
+                      Nome {getSortIcon('first_name')}
                     </Button>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <EditTrialistForm trialist={trialist} />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteTrialist(trialist)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                  </TableRow>
-                  
-                  {/* Expanded Row with Gaming Details */}
-                  {expandedRows.has(trialist.id) && (
-                    <TableRow key={`${trialist.id}-expanded`}>
-                      <TableCell colSpan={8} className="bg-muted/30 border-t-0">
-                        <div className="p-4 space-y-3">
-                          <h4 className="text-sm font-semibold text-muted-foreground mb-3">
-                            📋 Dettagli Gaming & Aggiuntivi
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">Numero Maglia:</span>
-                              <div className="flex items-center">
-                                {trialist.jersey_number ? (
-                                  <Badge variant="outline" className="text-sm">
-                                    #{trialist.jersey_number}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-sm text-muted-foreground">Non assegnato</span>
-                                )}
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">Gaming Platform:</span>
-                              <div className="flex items-center">
-                                {trialist.gaming_platform ? (
-                                  <Badge variant="secondary" className="text-sm">
-                                    🎮 {trialist.gaming_platform}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-sm text-muted-foreground">Non specificata</span>
-                                )}
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">EA Sport ID:</span>
-                              <div className="text-sm">
-                                {trialist.ea_sport_id || <span className="text-muted-foreground">Non specificato</span>}
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">Platform ID:</span>
-                              <div className="text-sm">
-                                {trialist.platform_id || <span className="text-muted-foreground">Non specificato</span>}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Additional Info Row */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2 border-t border-border/50">
-                            <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">📧 Email:</span>
-                              <div className="text-sm">
-                                {trialist.email || <span className="text-muted-foreground">Non specificata</span>}
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">📅 Data di Nascita:</span>
-                              <div className="text-sm">
-                                {trialist.birth_date ? 
-                                  new Date(trialist.birth_date).toLocaleDateString('it-IT') : 
-                                  <span className="text-muted-foreground">Non specificata</span>
-                                }
-                              </div>
-                            </div>
-
-                            <div className="space-y-1">
-                              <span className="text-xs font-medium text-muted-foreground">📱 Telefono:</span>
-                              <div className="text-sm space-y-1">
-                                {trialist.phone ? (
-                                  <>
-                                    <div className="font-mono">
-                                      {trialist.phone}
-                                    </div>
-                                    <div>
-                                      <a
-                                        href={`https://wa.me/${trialist.phone.replace(/[^0-9]/g, '')}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 text-xs font-medium hover:underline"
-                                      >
-                                        💬 WhatsApp
-                                      </a>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <span className="text-muted-foreground">Non specificato</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {trialist.esperienza && (
-                            <div className="pt-2 border-t border-border/50">
-                              <span className="text-xs font-medium text-muted-foreground">🏆 Esperienza Sportiva:</span>
-                              <div className="text-sm mt-1 p-2 bg-background rounded border">
-                                {trialist.esperienza}
-                              </div>
-                            </div>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('position')}
+                      className="h-auto p-0 font-semibold hover:bg-transparent"
+                    >
+                      Ruolo {getSortIcon('position')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('status')}
+                      className="h-auto p-0 font-semibold hover:bg-transparent"
+                    >
+                      Stato {getSortIcon('status')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('trial_start_date')}
+                      className="h-auto p-0 font-semibold hover:bg-transparent"
+                    >
+                      Data Inizio {getSortIcon('trial_start_date')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>Telefono</TableHead>
+                  <TableHead>Dettagli</TableHead>
+                  <TableHead className="text-right">Azioni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAndSortedTrialists.map((trialist) => (
+                  <React.Fragment key={trialist.id}>
+                    <TableRow>
+                      <TableCell>
+                        <PlayerAvatar
+                          firstName={trialist.first_name}
+                          lastName={trialist.last_name}
+                          avatarUrl={trialist.avatar_url}
+                          size="sm"
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center space-x-2">
+                          <span>{trialist.first_name} {trialist.last_name}</span>
+                          <SessionCounter trialistId={trialist.id} />
+                        </div>
+                      </TableCell>
+                      <TableCell>{trialist.position || 'Non specificata'}</TableCell>
+                      <TableCell>{getStatusBadge(trialist.status)}</TableCell>
+                      <TableCell>
+                        {new Date(trialist.trial_start_date).toLocaleDateString('it-IT')}
+                      </TableCell>
+                      <TableCell>{trialist.phone || 'Non specificato'}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleRowExpansion(trialist.id)}
+                          className="text-xs"
+                        >
+                          {expandedRows.has(trialist.id) ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              Nascondi
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              Dettagli
+                            </>
                           )}
-                          
-                          {trialist.notes && (
-                            <div className="pt-2 border-t border-border/50">
-                              <span className="text-xs font-medium text-muted-foreground">Note:</span>
-                              <div className="text-sm mt-1 p-2 bg-background rounded border">
-                                {trialist.notes}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Valutazioni */}
-                          <div className="pt-4 border-t border-border/50">
-                            <h4 className="text-sm font-semibold text-muted-foreground mb-3">
-                              ⚡ Valutazioni
-                            </h4>
-                            <QuickEvaluationDisplay trialistId={trialist.id} />
-                          </div>
+                        </Button>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <EditTrialistForm trialist={trialist} />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteTrialist(trialist)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  )}
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
+                    
+                    {/* Expanded Row with Gaming Details */}
+                    {expandedRows.has(trialist.id) && (
+                      <TableRow key={`${trialist.id}-expanded`}>
+                        <TableCell colSpan={8} className="bg-muted/30 border-t-0">
+                          <div className="p-4 space-y-3">
+                            <h4 className="text-sm font-semibold text-muted-foreground mb-3">
+                              📋 Dettagli Gaming & Aggiuntivi
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <div className="space-y-1">
+                                <span className="text-xs font-medium text-muted-foreground">Numero Maglia:</span>
+                                <div className="flex items-center">
+                                  {trialist.jersey_number ? (
+                                    <Badge variant="outline" className="text-sm">
+                                      #{trialist.jersey_number}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-sm text-muted-foreground">Non assegnato</span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-1">
+                                <span className="text-xs font-medium text-muted-foreground">Gaming Platform:</span>
+                                <div className="flex items-center">
+                                  {trialist.gaming_platform ? (
+                                    <Badge variant="secondary" className="text-sm">
+                                      🎮 {trialist.gaming_platform}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-sm text-muted-foreground">Non specificata</span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-1">
+                                <span className="text-xs font-medium text-muted-foreground">EA Sport ID:</span>
+                                <div className="text-sm">
+                                  {trialist.ea_sport_id || <span className="text-muted-foreground">Non specificato</span>}
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-1">
+                                <span className="text-xs font-medium text-muted-foreground">Platform ID:</span>
+                                <div className="text-sm">
+                                  {trialist.platform_id || <span className="text-muted-foreground">Non specificato</span>}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Additional Info Row */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2 border-t border-border/50">
+                              <div className="space-y-1">
+                                <span className="text-xs font-medium text-muted-foreground">📧 Email:</span>
+                                <div className="text-sm">
+                                  {trialist.email || <span className="text-muted-foreground">Non specificata</span>}
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-1">
+                                <span className="text-xs font-medium text-muted-foreground">📅 Data di Nascita:</span>
+                                <div className="text-sm">
+                                  {trialist.birth_date ? 
+                                    new Date(trialist.birth_date).toLocaleDateString('it-IT') : 
+                                    <span className="text-muted-foreground">Non specificata</span>
+                                  }
+                                </div>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-xs font-medium text-muted-foreground">📱 Telefono:</span>
+                                <div className="text-sm space-y-1">
+                                  {trialist.phone ? (
+                                    <>
+                                      <div className="font-mono">
+                                        {trialist.phone}
+                                      </div>
+                                      <div>
+                                        <a
+                                          href={`https://wa.me/${trialist.phone.replace(/[^0-9]/g, '')}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 text-xs font-medium hover:underline"
+                                        >
+                                          💬 WhatsApp
+                                        </a>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <span className="text-muted-foreground">Non specificato</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {trialist.esperienza && (
+                              <div className="pt-2 border-t border-border/50">
+                                <span className="text-xs font-medium text-muted-foreground">🏆 Esperienza Sportiva:</span>
+                                <div className="text-sm mt-1 p-2 bg-background rounded border">
+                                  {trialist.esperienza}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {trialist.notes && (
+                              <div className="pt-2 border-t border-border/50">
+                                <span className="text-xs font-medium text-muted-foreground">Note:</span>
+                                <div className="text-sm mt-1 p-2 bg-background rounded border">
+                                  {trialist.notes}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Valutazioni */}
+                            <div className="pt-4 border-t border-border/50">
+                              <h4 className="text-sm font-semibold text-muted-foreground mb-3">
+                                ⚡ Valutazioni
+                              </h4>
+                              <QuickEvaluationDisplay trialistId={trialist.id} />
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </Card>
       </div>
 
@@ -437,7 +438,7 @@ const TrialistsTable = () => {
 
             {/* Dettagli expandable */}
             {expandedRows.has(trialist.id) && (
-              <div className="mt-4 pt-4 border-t bg-muted/20 -mx-4 -mb-4 px-4 pb-4 rounded-b-lg">
+              <div className="mt-4 pt-4 border-t bg-muted/20 px-4 pb-4 rounded-b-lg overflow-x-hidden">
                 <h4 className="text-sm font-semibold text-muted-foreground mb-3">
                   🎮 Dettagli Gaming & Aggiuntivi
                 </h4>
