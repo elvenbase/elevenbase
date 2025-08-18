@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import { useEffect, useMemo, useState } from 'react'
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { LineChart as ReLineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
 
 // Match icons (same style as live match)
 const GOAL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" xml:space="preserve"><g transform="translate(1.4066 1.4066) scale(2.81 2.81)"><path d="M 78.362 27.04 c -4.492 -4.266 -10.521 -6.921 -17.174 -7.052 l 1.505 6.224 l 7.664 3.141 L 78.362 27.04 z" fill="#f1f1f1"/><polygon points="75.58,54.87 78.06,46.58 70.67,39.99 62.1,42.53 59.27,50.93 64.08,56.43 " fill="#f1f1f1"/><polygon points="60.46,41.99 55.38,35.17 44.57,37.42 42.75,43.9 49.91,52.19 57.62,50.41 " fill="#f1f1f1"/><path d="M 79.741 28.445 l -8.093 2.339 v 7.755 l 7.882 7.039 l 6.818 -0.513 C 86.2 38.676 83.734 32.862 79.741 28.445 z" fill="#f1f1f1"/><path d="M 59.413 20.014 c -7.895 0.384 -14.856 4.324 -19.306 10.261 l 4.146 5.443 l 10.843 -2.254 l 5.88 -6.986 L 59.413 20.014 z" fill="#f1f1f1"/><path d="M 59.624 70.531 v -0.077 l -0.989 -5.847 l -8.8 -2.62 l -5.467 3.501 c 4.221 3.477 9.557 5.645 15.404 5.848 l -0.136 -0.805 H 59.624 z" fill="#f1f1f1"/><path d="M 48.96 60.492 v -6.763 l -7.54 -8.723 l -6.433 0.662 c 0 7.34 3.083 13.956 8.019 18.637 L 48.96 60.492 z" fill="#f1f1f1"/><path d="M 64.493 58.119 l -4.178 6.035 l 1.215 7.183 c 7.034 -0.23 13.351 -3.282 17.853 -8.068 l -3.699 -6.667 L 64.493 58.119 z" fill="#f1f1f1"/><path d="M 59.746 20.905 c -0.031 0.031 -0.063 0.063 -0.095 0.094 l -0.238 -0.985 c -7.895 0.384 -14.856 4.324 -19.306 10.261 l 4.146 5.443 l 10.843 -2.254 l 5.88 -6.986 L 59.746 20.905 z" fill="#dbdbdb"/><path d="M 44.571 37.422 l -1.819 6.476 l 5.61 6.491 c -0.939 -4.701 -0.603 -9.355 1 -13.962 L 44.571 37.422 z" fill="#dbdbdb"/><path d="M 59.624 70.531 v -0.077 l -0.046 -0.271 c 0.015 0.016 0.031 0.033 0.046 0.049 v -0.018 c -2.163 -2.339 -4.051 -4.668 -5.617 -6.985 l -4.172 -1.242 l -5.467 3.501 c 4.221 3.477 9.557 5.645 15.404 5.848 l -0.136 -0.805 H 59.624 z" fill="#57595d"/><path d="M 59.651 20.999 c 0.339 -0.341 0.674 -0.682 1.028 -1.023 c -0.425 0 -0.847 0.012 -1.267 0.032 L 59.651 20.999 z" fill="#3f4042"/><path d="M 48.96 53.729 v 6.763 l -5.955 3.814 c 0.435 0.413 0.879 0.815 1.342 1.197 l 5.487 -3.514 l 4.172 1.242 c -2.919 -4.318 -4.798 -8.599 -5.645 -12.841 l -5.61 -6.491 l 1.819 -6.476 l 4.791 -0.996 c 0.223 -0.642 0.469 -1.283 0.742 -1.923 l -5.85 1.216 l -4.146 -5.443 c -1.663 2.281 -2.894 4.643 -3.735 7.079 c -0.061 0.195 -0.12 0.391 -0.177 0.587 c -0.087 0.346 -0.168 0.693 -0.241 1.044 c -0.082 0.403 -0.155 0.81 -0.218 1.219 c -0.062 0.504 -0.111 1.012 -0.147 1.524 c -0.009 0.15 -0.019 0.299 -0.026 0.449 c -0.017 0.386 -0.029 0.774 -0.029 1.164 l 6.433 -0.662 L 48.96 53.729 z" fill="#3f4042"/><path d="M 59.773 71.337 c 0.301 0.01 0.602 0.023 0.906 0.023 c -0.379 -0.393 -0.739 -0.785 -1.101 -1.176 L 59.773 71.337 z" fill="#3f4042"/><path d="M 3.085 90 c -0.578 0 -1.047 -0.468 -1.047 -1.047 c 0 -0.578 0.469 -1.047 1.047 -1.047 c 45.647 0 82.783 -19.248 82.783 -42.907 S 48.732 2.093 3.085 2.093 c -0.578 0 -1.047 -0.469 -1.047 -1.047 S 2.507 0 3.085 0 c 46.801 0 84.876 20.187 84.876 45 C 87.961 69.813 49.886 90 3.085 90 z" fill="#3f4042"/><path d="M 3.085 67.102 c -0.578 0 -1.047 -0.468 -1.047 -1.047 c 0 -0.578 0.469 -1.047 1.047 -1.047 c 49.518 0 82.783 -9.966 82.783 -19.276 c 0 -9.309 -33.265 -19.276 -82.783 -19.276 c -0.578 0 -1.047 -0.469 -1.047 -1.047 s 0.469 -1.047 1.047 -1.047 c 41.721 0 84.876 7.993 84.876 21.369 S 44.807 67.102 3.085 67.102 z" fill="#3f4042"/><path d="M 58.664 78.95 c -0.182 0 -0.366 -0.047 -0.533 -0.146 c -0.497 -0.295 -0.66 -0.937 -0.366 -1.435 c 13.368 -22.522 13.376 -44.29 0.025 -64.698 c -0.317 -0.483 -0.181 -1.132 0.303 -1.449 c 0.484 -0.317 1.132 -0.181 1.449 0.303 c 13.825 21.132 13.834 43.644 0.025 66.913 C 59.369 78.767 59.022 78.95 58.664 78.95 z" fill="#3f4042"/><path d="M 33.364 86.895 c -0.138 0 -0.278 -0.028 -0.413 -0.085 c -0.531 -0.229 -0.776 -0.845 -0.547 -1.376 c 10.926 -25.371 10.951 -52.636 0.076 -81.04 c -0.206 -0.54 0.063 -1.145 0.603 -1.352 c 0.539 -0.205 1.145 0.063 1.352 0.603 c 11.076 28.93 11.039 56.727 -0.109 82.616 C 34.155 86.658 33.769 86.895 33.364 86.895 z" fill="#3f4042"/></g></svg>`
@@ -519,27 +519,36 @@ const PlayerDetail = () => {
                 </div>
               </CardContent>
             </Card>
-            {/* 2) Trend mensili: Gol, Assist, Gialli, Rossi */}
+            {/* 2) Trend giornaliero (ultimo mese): Gol, Assist, Gialli, Rossi */}
             <Card className="border border-border/40 rounded-2xl shadow-sm mt-4 animate-slide-in">
-              <CardHeader className="pb-2"><CardTitle className="text-base">Andamento per mese</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Andamento ultimo mese</CardTitle></CardHeader>
               <CardContent className="pt-0">
                 {(() => {
-                  // Build per-month aggregates from match stats
-                  const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-                  const map = new Map<string, {month:string; goals:number; assists:number; yellows:number; reds:number}>()
+                  // Build per-day aggregates for the last 30 days from match stats
+                  const dayKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+                  const end = new Date(); end.setHours(0,0,0,0)
+                  const start = new Date(end); start.setDate(start.getDate() - 29)
+                  const map = new Map<string, {day:string; goals:number; assists:number; yellows:number; reds:number}>()
+                  // Seed all days with zero values to keep the timeline continuous
+                  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                    const key = dayKey(d)
+                    map.set(key, { day: key, goals: 0, assists: 0, yellows: 0, reds: 0 })
+                  }
                   for (const r of stats as any[]) {
                     const m = r.matches as any
-                    const d = m?.match_date ? new Date(m.match_date) : null
-                    if (!d || isNaN(d.getTime())) continue
-                    const key = monthKey(d)
-                    if (!map.has(key)) map.set(key, { month: key, goals: 0, assists: 0, yellows: 0, reds: 0 })
-                    const rec = map.get(key)!
+                    const raw = m?.match_date ? new Date(m.match_date) : null
+                    if (!raw || isNaN(raw.getTime())) continue
+                    const d = new Date(raw.getFullYear(), raw.getMonth(), raw.getDate())
+                    if (d < start || d > end) continue
+                    const key = dayKey(d)
+                    const rec = map.get(key)
+                    if (!rec) continue
                     rec.goals += r.goals || 0
                     rec.assists += r.assists || 0
                     rec.yellows += r.yellow_cards || 0
                     rec.reds += r.red_cards || 0
                   }
-                  const data = Array.from(map.values()).sort((a,b)=> a.month.localeCompare(b.month))
+                  const data = Array.from(map.values()).sort((a,b)=> a.day.localeCompare(b.day))
                   const cfg = {
                     goals: { label: 'Gol', color: 'hsl(199 89% 48%)' },
                     assists: { label: 'Assist', color: 'hsl(190 90% 42%)' },
@@ -548,31 +557,38 @@ const PlayerDetail = () => {
                   }
                   const Chart = ({ dataKey }: { dataKey: keyof typeof data[number] }) => (
                     <ChartContainer config={{ [dataKey as string]: { label: (cfg as any)[dataKey].label, color: (cfg as any)[dataKey].color } }} className="h-48">
-                      <ReBarChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
+                      <ReLineChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" tickFormatter={(v)=> (String(v)).slice(5)} interval={0} angle={-30} dy={10} dx={-10} height={40} />
+                        <XAxis
+                          dataKey="day"
+                          tickFormatter={(v)=> String(v).slice(8)}
+                          interval="preserveStartEnd"
+                          minTickGap={8}
+                          tickMargin={8}
+                          height={30}
+                        />
                         <YAxis allowDecimals={false} width={28} />
-                        <Bar dataKey={dataKey as any} fill={(cfg as any)[dataKey].color} radius={[3,3,0,0]} />
+                        <Line type="monotone" dataKey={dataKey as any} stroke={(cfg as any)[dataKey].color} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} connectNulls />
                         <ChartTooltip content={<ChartTooltipContent hideIndicator nameKey={dataKey as string} />} />
-                      </ReBarChart>
+                      </ReLineChart>
                     </ChartContainer>
                   )
                   return (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="rounded-lg border p-2 bg-white">
-                        <div className="text-xs text-muted-foreground mb-1">Gol per mese</div>
+                        <div className="text-xs text-muted-foreground mb-1">Gol per giorno</div>
                         <Chart dataKey={'goals' as any} />
                       </div>
                       <div className="rounded-lg border p-2 bg-white">
-                        <div className="text-xs text-muted-foreground mb-1">Assist per mese</div>
+                        <div className="text-xs text-muted-foreground mb-1">Assist per giorno</div>
                         <Chart dataKey={'assists' as any} />
                       </div>
                       <div className="rounded-lg border p-2 bg-white">
-                        <div className="text-xs text-muted-foreground mb-1">Gialli per mese</div>
+                        <div className="text-xs text-muted-foreground mb-1">Gialli per giorno</div>
                         <Chart dataKey={'yellows' as any} />
                       </div>
                       <div className="rounded-lg border p-2 bg-white">
-                        <div className="text-xs text-muted-foreground mb-1">Rossi per mese</div>
+                        <div className="text-xs text-muted-foreground mb-1">Rossi per giorno</div>
                         <Chart dataKey={'reds' as any} />
                       </div>
                     </div>
