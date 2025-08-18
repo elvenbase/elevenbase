@@ -24,6 +24,7 @@ import { useRoles } from '@/hooks/useRoles';
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X, Eye } from 'lucide-react'
+import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 
 type SortField = 'name' | 'jersey_number' | 'role_code' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
@@ -335,6 +336,7 @@ const Squad = () => {
   const { data: players = [], isLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
   const { data: roles = [] } = useRoles();
   const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
+  const { defaultBackground } = useAvatarBackgrounds()
 
   // Role -> sector mapping for card background theme
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
@@ -721,7 +723,7 @@ const Squad = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {filteredAndSortedPlayers.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || ''];
-                  const hasPhoto = !!p.avatar_url;
+                  const imageSrc = p.avatar_url || (defaultBackground && defaultBackground.type === 'image' ? defaultBackground.value : '');
                   const age = computeAge(p.birth_date);
                   const pres = p.matchPresences ?? 0; // keep zeros visible
                   const numero = p.jersey_number ?? null;
@@ -737,66 +739,61 @@ const Squad = () => {
                       className="relative rounded-2xl border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible"
                     >
                       <div className="relative p-4 md:p-6">
-                        {/* Photo or Avatar */}
-                        {hasPhoto ? (
-                          <div className="absolute -top-4 -left-4 md:-top-6 md:-left-6 w-24 h-28 md:w-32 md:h-40 overflow-hidden rounded-xl shadow-sm">
+                        {/* Photo: sporge solo in alto, non a sinistra. Dimensioni dimezzate */}
+                        {imageSrc ? (
+                          <div className="absolute -top-3 left-4 md:-top-4 md:left-6 w-12 h-16 md:w-16 md:h-20 overflow-hidden rounded-lg shadow-sm">
                             <img
-                              src={p.avatar_url!}
+                              src={imageSrc}
                               alt={`${p.first_name} ${p.last_name}`}
                               className="w-full h-full object-cover object-center select-none"
                               draggable={false}
                             />
                           </div>
                         ) : (
-                          <div className="absolute top-4 left-4">
-                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="xl" />
+                          <div className="absolute top-4 left-4 md:top-6 md:left-6">
+                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
                           </div>
                         )}
 
-                        {/* Content aligned to the right of the image (safe area) */}
-                        <div className="pl-28 md:pl-40">
-                          {/* Header: Name, Role subtitle + Captain badge */}
+                        {/* Contenuto a destra della foto: solo nome (grande, grassetto) e sotto ruolo + capitano */}
+                        <div className="pl-20 md:pl-28">
                           <div className="space-y-1 pr-2">
-                            <div className="font-semibold leading-tight truncate">{p.first_name} {p.last_name}</div>
+                            <div className="font-semibold text-lg md:text-xl leading-tight truncate">{p.first_name} {p.last_name}</div>
                             <div className="flex items-center gap-2 min-w-0">
-                              <div className="text-sm text-muted-foreground truncate" title={role?.label || ''}>{role?.label || '—'}</div>
+                              <div className="text-xs md:text-sm text-muted-foreground truncate" title={role?.label || ''}>{role?.label || '—'}</div>
                               {p.is_captain && (
                                 <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">Capitano</Badge>
                               )}
                             </div>
                           </div>
 
-                          {/* Metrics grid: 2x2 mobile, 1x4 on md+ */}
-                          <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {/* Sotto la foto: 3 label PARTITE, ETÀ, NUMERO con valore sotto */}
+                          <div className="mt-3 grid grid-cols-3 gap-4">
                             <div>
-                              <div className="text-[11px] uppercase text-muted-foreground">Presenze</div>
-                              <div className={`mt-0.5 text-sm tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
+                              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
+                              <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
                             </div>
                             <div>
-                              <div className="text-[11px] uppercase text-muted-foreground">Età</div>
-                              <div className="mt-0.5 text-sm tabular-nums">{age ?? '—'}</div>
+                              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">ETÀ</div>
+                              <div className="mt-1 text-xs tabular-nums">{age ?? '—'}</div>
                             </div>
                             <div>
-                              <div className="text-[11px] uppercase text-muted-foreground">Numero</div>
-                              <div className="mt-0.5 text-sm tabular-nums">{numero ?? '—'}</div>
-                            </div>
-                            <div>
-                              <div className="text-[11px] uppercase text-muted-foreground">Ruolo</div>
-                              <div className="mt-0.5 text-sm uppercase truncate">{ruoloBreve}</div>
+                              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">NUMERO</div>
+                              <div className="mt-1 text-xs tabular-nums">{numero ?? '—'}</div>
                             </div>
                           </div>
 
-                          {/* Footer: Stato pill left, Eye link right */}
-                          <div className="mt-4 flex items-center justify-between">
-                            <Badge variant="outline" className={`text-xs ${statoCls}`}>{statoLabel}</Badge>
+                          {/* Divider e footer: link a sinistra, stato a destra */}
+                          <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
                             <a
                               href={`/player/${p.id}`}
                               onClick={(e) => e.stopPropagation()}
                               className="text-sm text-primary inline-flex items-center gap-1 hover:underline"
                             >
                               <Eye className="h-4 w-4" />
-                              Vedi dettagli
+                              maggiori dettagli
                             </a>
+                            <Badge variant="outline" className={`text-xs ${statoCls}`}>{statoLabel}</Badge>
                           </div>
                         </div>
                       </div>
