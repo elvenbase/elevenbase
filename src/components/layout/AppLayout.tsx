@@ -49,7 +49,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <Sidebar variant="sidebar" collapsible="icon" className="bg-sidebar text-sidebar-foreground">
         <SidebarHeader className="h-[60px] p-0">
           <div className="flex h-full items-center px-4 gap-0">
-            <img src="/assets/IMG_0055.png" alt="Logo" className="h-full w-[108px] max-w-full object-contain" />
+            <img src="/assets/IMG_0055.png" alt="Logo" className="h-full w-[216px] max-w-full object-contain" />
           </div>
         </SidebarHeader>
         <SidebarContent>
