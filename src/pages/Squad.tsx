@@ -750,7 +750,7 @@ const Squad = () => {
                       <div className="relative p-4 md:p-6">
                         {/* Photo: sporge solo in alto, non a sinistra. Aumentata di un ulteriore 1.5x */}
                         {imageSrc ? (
-                          <div className="absolute -top-4 left-4 md:-top-6 md:left-6 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm border-0 ring-0">
+                          <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm border-0 ring-0">
                             <img
                               src={imageSrc}
                               alt={`${p.first_name} ${p.last_name}`}
@@ -771,13 +771,13 @@ const Squad = () => {
                             />
                           </div>
                         ) : (
-                          <div className="absolute top-4 left-4 md:top-6 md:left-6">
+                          <div className="absolute top-4 left-0 md:top-6 md:left-0">
                             <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
                           </div>
                         )}
 
                         {/* Riga 1: solo titolo e sottotitolo accanto all'immagine */}
-                        <div className="pl-[132px] md:pl-[180px] min-h-[144px] md:min-h-[180px]">
+                        <div className="pl-[109.6px] md:pl-[146.4px] min-h-[144px] md:min-h-[180px]">
                           <div className="space-y-0.5 pr-2">
                             <div className="font-semibold text-lg md:text-xl leading-tight truncate">{p.first_name} {p.last_name}</div>
                             <div className="flex items-center gap-2 min-w-0">
