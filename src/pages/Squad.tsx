@@ -23,7 +23,8 @@ import { useRoles } from '@/hooks/useRoles';
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X } from 'lucide-react'
+import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X, Eye } from 'lucide-react'
+import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 
 type SortField = 'name' | 'jersey_number' | 'role_code' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
@@ -335,6 +336,7 @@ const Squad = () => {
   const { data: players = [], isLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
   const { data: roles = [] } = useRoles();
   const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
+  const { defaultBackground } = useAvatarBackgrounds()
 
   // Role -> sector mapping for card background theme
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
@@ -360,6 +362,15 @@ const Squad = () => {
     CEN: 'bg-amber-100 text-amber-800 border-amber-200',
     ATT: 'bg-rose-100 text-rose-800 border-rose-200',
     NA: 'bg-neutral-100 text-neutral-700 border-neutral-200'
+  }
+
+  // Hero-like gradient background by role (same scheme used in PlayerDetail)
+  const sectorHeroBgClass: Record<'P'|'DIF'|'CEN'|'ATT'|'NA', string> = {
+    P: 'from-sky-500/20 to-sky-500/5',
+    DIF: 'from-emerald-500/20 to-emerald-500/5',
+    CEN: 'from-amber-500/25 to-amber-500/5',
+    ATT: 'from-rose-500/25 to-rose-500/5',
+    NA: 'from-neutral-500/20 to-neutral-500/5'
   }
 
   // Compute only roles present among players for the filter
@@ -546,6 +557,32 @@ const Squad = () => {
     }
   };
 
+  // Helpers for the new card
+  const computeAge = (birthDate?: string): number | null => {
+    if (!birthDate) return null;
+    const birth = new Date(birthDate);
+    if (isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age >= 0 ? age : null;
+  };
+
+  const getStatusPill = (status?: Player['status']) => {
+    const label = status === 'active' ? 'Attivo'
+      : status === 'inactive' ? 'Inattivo'
+      : status === 'injured' ? 'Infortunato'
+      : status === 'suspended' ? 'Squalificato'
+      : '—';
+    const cls = status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      : status === 'injured' ? 'bg-rose-50 text-rose-700 border-rose-200'
+      : status === 'suspended' ? 'bg-amber-50 text-amber-700 border-amber-200'
+      : status === 'inactive' ? 'bg-neutral-100 text-neutral-700 border-neutral-200'
+      : 'bg-neutral-50 text-neutral-600 border-neutral-200';
+    return { label, cls };
+  };
+
   return (
     <div className="mx-auto w-full px-2 sm:px-4 lg:px-6 py-6">
       {/* Header compatto */}
@@ -555,7 +592,7 @@ const Squad = () => {
       </div>
 
       {/* Toolbar sticky (mobile-first) */}
-      <div className="sticky top-2 z-10 bg-white/80 backdrop-blur rounded-full border px-2 py-1.5 shadow-sm mb-2">
+      <div className="sticky top-2 z-10 bg-white/80 backdrop-blur rounded-full border px-2 py-1.5 shadow-sm mb-8">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -570,7 +607,7 @@ const Squad = () => {
 
       {/* Active filters chips */}
       {activeFilterChips.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4">
           {activeFilterChips.map(ch => (
             <span key={ch.key} className="inline-flex items-center gap-1 text-xs rounded-full border px-2 py-0.5 bg-white">
               {ch.label}
@@ -694,33 +731,94 @@ const Squad = () => {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {filteredAndSortedPlayers.map((p)=> {
-                  const role = rolesByCode[(p as any).role_code || '']
-                  const matchPres = p.matchPresences || 0
-                  const matchTot = p.matchEndedTotal || 0
-                  const pct = matchTot>0 ? Math.round((matchPres/matchTot)*100) : 0
+                  const role = rolesByCode[(p as any).role_code || ''];
+                  const imageSrc = p.avatar_url || (defaultBackground && defaultBackground.type === 'image' ? defaultBackground.value : '');
+                  const age = computeAge(p.birth_date);
+                  const pres = p.matchPresences ?? 0; // keep zeros visible
+                  const numero = p.jersey_number ?? null;
+                  const ruoloBreve = role?.abbreviation || (p as any).role_code || '—';
+                  const { label: statoLabel, cls: statoCls } = getStatusPill(p.status);
                   return (
-                    <a key={p.id} href={`/player/${p.id}`} className={`block rounded-2xl border border-border/40 shadow-sm p-3 hover:shadow-md transition bg-gradient-to-r ${sectorBgClass[sectorFromRoleCode((p as any).role_code)]}`}>
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium truncate">{p.first_name} {p.last_name}</div>
-                            {p.is_captain && (
-                              <div className="mt-1 flex flex-wrap items-center gap-1">
-                                <Badge className="text-[10px] bg-yellow-100 text-yellow-800 border-yellow-300 uppercase">Capitano</Badge>
-                              </div>
-                            )}
+                    <div
+                      key={p.id}
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => (window.location.href = `/player/${p.id}`)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') (window.location.href = `/player/${p.id}`) }}
+                      className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${sectorHeroBgClass[sectorFromRoleCode((p as any).role_code)]}`}
+                    >
+                      <div className="relative p-4 md:p-6">
+                        {/* Photo: sporge solo in alto, non a sinistra. Aumentata di un ulteriore 1.5x */}
+                        {imageSrc ? (
+                          <div className="absolute -top-4 left-4 md:-top-6 md:left-6 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm border-0 ring-0">
+                            <img
+                              src={imageSrc}
+                              alt={`${p.first_name} ${p.last_name}`}
+                              className="w-full h-full object-cover object-center select-none border-0 ring-0 outline-none"
+                              onError={(e) => {
+                                const img = e.currentTarget as HTMLImageElement
+                                // Prevent infinite loop by applying fallback only once
+                                const fallback = (defaultBackground && defaultBackground.type === 'image') ? defaultBackground.value : ''
+                                const already = (img as any).dataset.fallbackApplied === '1'
+                                if (!already && fallback && img.src !== fallback) {
+                                  ;(img as any).dataset.fallbackApplied = '1'
+                                  img.src = fallback
+                                } else {
+                                  img.style.display = 'none'
+                                }
+                              }}
+                              draggable={false}
+                            />
+                          </div>
+                        ) : (
+                          <div className="absolute top-4 left-4 md:top-6 md:left-6">
+                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
+                          </div>
+                        )}
+
+                        {/* Riga 1: solo titolo e sottotitolo accanto all'immagine */}
+                        <div className="pl-[132px] md:pl-[180px] min-h-[144px] md:min-h-[180px]">
+                          <div className="space-y-0.5 pr-2">
+                            <div className="font-semibold text-lg md:text-xl leading-tight truncate">{p.first_name} {p.last_name}</div>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="text-xs md:text-sm text-muted-foreground truncate" title={role?.label || ''}>{role?.label || '—'}</div>
+                              {p.is_captain && (
+                                <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">Capitano</Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1 w-[120px]">
-                          <div className="flex items-center gap-1">
-                            {p.jersey_number && (<Badge variant="outline" className="text-[10px] uppercase">#{p.jersey_number}</Badge>)}
-                            <Badge variant="secondary" className={`text-[10px] uppercase border ${sectorChipClass[sectorFromRoleCode((p as any).role_code)]}`}>{role?.abbreviation || (p as any).role_code || '-'}</Badge>
+
+                        {/* Riga 2: 3 label a tutta larghezza con spazio ridotto */}
+                        <div className="mt-0.5 grid grid-cols-3 gap-2">
+                          <div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
+                            <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
                           </div>
-                          <Badge variant={p.status==='active' ? 'default' : 'outline'} className="text-[10px] uppercase">{p.status}</Badge>
+                          <div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">ETÀ</div>
+                            <div className="mt-1 text-xs tabular-nums">{age ?? '—'}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">NUMERO</div>
+                            <div className="mt-1 text-xs tabular-nums">{numero ?? '—'}</div>
+                          </div>
+                        </div>
+
+                        {/* Riga 3: divider e footer - stato a sinistra, link a destra */}
+                        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+                          <Badge variant="outline" className={`text-xs ${statoCls}`}>{statoLabel}</Badge>
+                          <a
+                            href={`/player/${p.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-primary inline-flex items-center gap-1 hover:underline"
+                          >
+                            <Eye className="h-4 w-4" />
+                            maggiori dettagli
+                          </a>
                         </div>
                       </div>
-                    </a>
+                    </div>
                   )
                 })}
               </div>
