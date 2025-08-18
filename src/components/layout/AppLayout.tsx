@@ -80,7 +80,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset className="min-w-0 overflow-x-hidden">
         <div className="sticky top-0 z-40 flex h-12 items-center gap-2 border-b bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <SidebarTrigger />
           <div className="ml-auto flex items-center gap-1">
@@ -91,7 +91,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </NavLink>
           </div>
         </div>
-        <div className="p-3 md:p-4 lg:p-6">
+        <div className="p-3 md:p-4 lg:p-6 min-w-0 overflow-x-hidden">
           {children}
         </div>
       </SidebarInset>

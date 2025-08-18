@@ -116,7 +116,7 @@ const TrialistsTable = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 overflow-x-hidden">
       {/* Filtri e Ricerca */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">

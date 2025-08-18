@@ -218,7 +218,7 @@ const TrialsKanban = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background overflow-x-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-w-0">
           <div className="text-center">Caricamento...</div>
         </div>
       </div>
@@ -227,7 +227,7 @@ const TrialsKanban = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-w-0">
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
             Kanban Trials

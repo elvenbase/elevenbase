@@ -127,7 +127,7 @@ const TrialEvaluations = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-w-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
@@ -278,7 +278,7 @@ const TrialEvaluations = () => {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-2 mb-3">
+                  <div className="grid grid-cols-3 gap-2 mb-3 min-w-0">
                   {/* Personality Column */}
                   <div className="text-center">
                     <h5 className="font-medium text-xs mb-1">Personalità</h5>
