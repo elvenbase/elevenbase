@@ -296,6 +296,9 @@ const PlayerDetail = () => {
               <div className="mt-2 flex flex-wrap items-center gap-2 justify-end">
                 <Badge variant="secondary">#{player?.jersey_number ?? '-'}</Badge>
                 <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
+                {player?.is_captain && (
+                  <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">(C)</Badge>
+                )}
               </div>
               <div className="mt-3 ml-auto w-full sm:w-auto">
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 justify-end">
