@@ -47,9 +47,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <SidebarProvider defaultOpen>
       <Sidebar variant="sidebar" collapsible="icon" className="bg-sidebar text-sidebar-foreground">
-        <SidebarHeader className="p-3">
-          <div className="flex items-center gap-3 px-1">
-            <img src="/assets/IMG_0055.png" alt="Logo" className="h-9 w-auto object-contain" />
+        <SidebarHeader className="h-[60px] p-0">
+          <div className="flex h-full items-center px-4 gap-0">
+            <img src="/assets/IMG_0055.png" alt="Logo" className="h-full w-[108px] max-w-full object-contain" />
           </div>
         </SidebarHeader>
         <SidebarContent>
