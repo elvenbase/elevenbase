@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Edit, Trash2, BarChart3, MessageCircle, ChevronDown, ChevronUp, ArrowUpDown, Filter, Settings } from 'lucide-react';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { usePlayersWithAttendance, useDeletePlayer, useUpdatePlayer } from '@/hooks/useSupabaseData';
@@ -26,6 +26,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X, Eye } from 'lucide-react'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
+import { useQueryClient } from '@tanstack/react-query'
 
 type SortField = 'name' | 'jersey_number' | 'role_code' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -322,6 +323,7 @@ const Squad = () => {
   const [viewMode, setViewMode] = useState<'card'|'table'>('card')
   const [openPlayerId, setOpenPlayerId] = useState<string|null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [captainDialogOpen, setCaptainDialogOpen] = useState(false)
   
   // Stato per la modale dell'immagine del giocatore
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -387,7 +389,6 @@ const Squad = () => {
     const chips: Array<{ key: string; label: string; onClear: () => void }> = []
     if (roleFilter !== 'all') chips.push({ key: 'role', label: rolesByCode[roleFilter]?.label || roleFilter, onClear: () => setRoleFilter('all') })
     if (statusFilter !== 'all') chips.push({ key: 'status', label: statusFilter, onClear: () => setStatusFilter('all') })
-    if (selectedCaptain !== 'none') chips.push({ key: 'captain', label: '(C)', onClear: () => setSelectedCaptain('none') })
     return chips
   }, [roleFilter, statusFilter, selectedCaptain, rolesByCode])
 
@@ -406,6 +407,8 @@ const Squad = () => {
   }, [players]);
 
   // Funzione per aggiornare il capitano
+  const queryClient = useQueryClient()
+
   const updateCaptain = async (newCaptainId: string) => {
     try {
       // Rimuovi is_captain da tutti i giocatori
@@ -425,8 +428,15 @@ const Squad = () => {
         
         const captain = players.find(p => p.id === newCaptainId);
         toast.success(`${captain?.first_name} ${captain?.last_name} è ora il capitano`);
+        // Refresh immediato
+        queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] })
+        queryClient.invalidateQueries({ queryKey: ['players'] })
+        setCaptainDialogOpen(false)
       } else {
         toast.success('Nessun capitano selezionato');
+        queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] })
+        queryClient.invalidateQueries({ queryKey: ['players'] })
+        setCaptainDialogOpen(false)
       }
     } catch (error) {
       console.error('🔥 ERRORE DETTAGLIATO CAPITANO:', {
@@ -586,7 +596,30 @@ const Squad = () => {
       {/* Header compatto */}
       <div className="flex items-center justify-between mb-2">
         <div className="text-base sm:text-lg font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
-        <Button variant="ghost" size="icon" onClick={()=>setFiltersOpen(true)} className="h-9 w-9 rounded-full"><SlidersHorizontal className="h-4 w-4" /></Button>
+        <div className="flex items-center gap-2">
+          <Dialog open={captainDialogOpen} onOpenChange={setCaptainDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">(C)</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Seleziona Capitano</DialogTitle>
+              </DialogHeader>
+              <div className="p-2 space-y-3">
+                <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
+                  <SelectTrigger><SelectValue placeholder="Nessuno" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nessuno</SelectItem>
+                    {players.filter(p => p.status === 'active').map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name}{p.jersey_number ? ` (#${p.jersey_number})` : ''}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="ghost" size="icon" onClick={()=>setFiltersOpen(true)} className="h-9 w-9 rounded-full"><SlidersHorizontal className="h-4 w-4" /></Button>
+        </div>
       </div>
 
       {/* Toolbar sticky (mobile-first) */}
@@ -645,18 +678,7 @@ const Squad = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <label className="text-sm font-medium block mb-2">(C)</label>
-              <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
-                <SelectTrigger><SelectValue placeholder="(C)" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nessuno</SelectItem>
-                  {players.filter(p => p.status === 'active').map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name}{p.jersey_number ? ` (#${p.jersey_number})` : ''}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            
           </div>
         </DrawerContent>
       </Drawer>
