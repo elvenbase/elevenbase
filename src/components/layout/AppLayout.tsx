@@ -49,10 +49,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <Sidebar variant="sidebar" collapsible="icon" className="bg-sidebar text-sidebar-foreground">
         <SidebarHeader className="p-3">
           <div className="flex items-center gap-3 px-1">
-            <img src="/assets/IMG_0055.png" alt="Logo" className="h-9 w-9 rounded-md" />
-            <div className="text-sm font-semibold group-data-[collapsible=icon]:hidden">
-              App
-            </div>
+            <img src="/assets/logo_elevenBase.png" alt="ElevenBase" className="h-9 w-auto object-contain" />
           </div>
         </SidebarHeader>
         <SidebarContent>
