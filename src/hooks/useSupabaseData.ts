@@ -2191,10 +2191,13 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
 
       // Aggregate training attendance by player
       const trainingByPlayer = new Map<string, number>()
+      const latesByPlayer = new Map<string, number>()
       for (const row of trainingRows) {
         if (!row.player_id) continue
         const present = isPresentTraining(row)
         if (present) trainingByPlayer.set(row.player_id, (trainingByPlayer.get(row.player_id) || 0) + 1)
+        const isLate = (row.coach_confirmation_status === 'late') || (row.status === 'late')
+        if (isLate) latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
       }
       const trainingPresences = Array.from(trainingByPlayer.entries())
         .map(([player_id, count]) => ({
@@ -2211,6 +2214,8 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         if (!row.player_id) continue
         const present = isPresentMatch(row)
         if (present) matchByPlayer.set(row.player_id, (matchByPlayer.get(row.player_id) || 0) + 1)
+        const isLate = present && !!row.arrival_time
+        if (isLate) latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
       }
       const matchPresences = Array.from(matchByPlayer.entries())
         .map(([player_id, count]) => ({
@@ -2250,6 +2255,15 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         }))
         .sort((x, y) => y.value - x.value)
 
+      const toArrayFromMap = (m: Map<string, number>) => Array.from(m.entries())
+        .map(([player_id, value]) => ({
+          player_id,
+          value,
+          first_name: playersById.get(player_id)?.first_name || '—',
+          last_name: playersById.get(player_id)?.last_name || ''
+        }))
+        .sort((x, y) => y.value - x.value)
+
       return {
         trainingPresences,
         matchPresences,
@@ -2258,7 +2272,8 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         minutes: toArray('minutes'),
         yellowCards: toArray('yellow_cards'),
         redCards: toArray('red_cards'),
-        saves: toArray('saves')
+        saves: toArray('saves'),
+        lates: toArrayFromMap(latesByPlayer),
       }
     }
   })

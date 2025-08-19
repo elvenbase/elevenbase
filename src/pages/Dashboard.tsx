@@ -145,7 +145,7 @@ const Dashboard = () => {
                     <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                   )}
                   {trend && (
-                    <div className="mt-3 text-xs text-muted-foreground">Periodo: ultime 10 partite · Bilancio <span className="text-foreground font-medium">{trend.wdl.wins}V {trend.wdl.draws}N {trend.wdl.losses}P</span></div>
+                    <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite · Bilancio <span className="text-foreground font-medium">{trend.wdl.wins}V {trend.wdl.draws}N {trend.wdl.losses}P</span></div>
                   )}
                 </div>
               )
@@ -169,7 +169,7 @@ const Dashboard = () => {
                     <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                   )}
                   {trainingSeries && (
-                    <div className="mt-3 text-xs text-muted-foreground">Ultimi 30 giorni · Variazione vs periodo precedente: <span className={trainingSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{trainingSeries.deltaPct >= 0 ? '+' : ''}{trainingSeries.deltaPct}%</span></div>
+                    <div className="mt-3 text-xs text-muted-foreground break-words">Ultimi 30 giorni · Variazione vs periodo precedente: <span className={trainingSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{trainingSeries.deltaPct >= 0 ? '+' : ''}{trainingSeries.deltaPct}%</span></div>
                   )}
                 </div>
               )
@@ -193,7 +193,7 @@ const Dashboard = () => {
                     <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                   )}
                   {matchSeries && (
-                    <div className="mt-3 text-xs text-muted-foreground">Ultime 10 partite · Variazione vs periodo precedente: <span className={matchSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{matchSeries.deltaPct >= 0 ? '+' : ''}{matchSeries.deltaPct}%</span></div>
+                    <div className="mt-3 text-xs text-muted-foreground break-words">Ultime 10 partite · Variazione vs periodo precedente: <span className={matchSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{matchSeries.deltaPct >= 0 ? '+' : ''}{matchSeries.deltaPct}%</span></div>
                   )}
                 </div>
               )
@@ -227,7 +227,7 @@ const Dashboard = () => {
                   ) : (
                     <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                   )}
-                  <div className="mt-3 text-xs text-muted-foreground">Periodo: mese corrente</div>
+                  <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: mese corrente</div>
                 </div>
               )
             },
@@ -240,6 +240,11 @@ const Dashboard = () => {
                     title="Presenze allenamento"
                     metricLabel="Presenze"
                     {...pickBestWorst(leaders?.trainingPresences?.map((r:any)=>({ ...r, value: r.count })))}
+                  />
+                  <BestWorstCard
+                    title="Ritardi (all. + partite)"
+                    metricLabel="Ritardi"
+                    {...pickBestWorst(leaders?.lates)}
                   />
                   <BestWorstCard
                     title="Presenze partite"
