@@ -3,7 +3,7 @@ import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { Award, RotateCcw, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { PieChart as RePieChart, Pie as RePie, Cell as ReCell, Tooltip as ReTooltip, ResponsiveContainer as ReResponsiveContainer } from 'recharts'
 
 type PlayerRef = { id: string; first_name: string; last_name: string; avatar_url?: string | null; role_code?: string | null }
 
@@ -174,20 +174,20 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
             <button className="text-xs text-muted-foreground hover:text-foreground" onClick={()=>setFlipped(false)} aria-label="Torna al fronte"><RotateCcw className="h-4 w-4"/></button>
           </div>
           <div className="mt-2 h-36">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>
+            <ReResponsiveContainer width="100%" height="100%">
+              <RePieChart>
+                <RePie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>
                   {pieData?.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                    <ReCell key={`cell-${index}`} fill={entry.fill} />
                   ))}
-                </Pie>
-                <Tooltip formatter={(value:any, name:any, props:any)=>{
+                </RePie>
+                <ReTooltip formatter={(value:any, name:any)=>{
                   const n = Number(value || 0)
                   const pct = baseN ? Math.round((n / baseN) * 100) : 0
                   return [`${pct}% (${n} giocatori)`, name]
                 }} />
-              </PieChart>
-            </ResponsiveContainer>
+              </RePieChart>
+            </ReResponsiveContainer>
           </div>
           <div className="mt-2 space-y-1">
             {legend?.map((l, i) => (
