@@ -79,30 +79,42 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
 
   // Dynamic caption for backside base count, tailored by metric/variant
   const baseCaption = useMemo(() => {
+    const lower = metricLabel.toLowerCase()
+    const mentionsTraining = /allenament/.test(lower) || /all\./.test(lower)
+    const mentionsMatches = /partit/.test(lower)
+    const scope = mentionsTraining && mentionsMatches
+      ? 'agli allenamenti e partite'
+      : mentionsTraining
+        ? 'agli allenamenti'
+        : mentionsMatches
+          ? 'alle partite'
+          : ''
+    const withScope = (base: string) => scope ? `${base} ${scope}` : base
+
     switch (variant) {
       case 'training':
-        return 'Giocatori con almeno 1 presenza agli allenamenti'
+        return withScope('Giocatori con almeno 1 presenza')
       case 'matches':
-        return 'Giocatori con almeno 1 presenza alle partite'
+        return withScope('Giocatori con almeno 1 presenza')
       case 'lates':
-        return 'Giocatori con almeno 1 ritardo'
+        return withScope('Giocatori con almeno 1 ritardo')
       case 'no_response':
-        return 'Giocatori con almeno 1 mancata risposta'
+        return withScope('Giocatori con almeno 1 mancata risposta')
       case 'goals':
-        return 'Giocatori con almeno 1 gol'
+        return withScope('Giocatori con almeno 1 gol')
       case 'assists':
-        return 'Giocatori con almeno 1 assist'
+        return withScope('Giocatori con almeno 1 assist')
       case 'minutes':
         return 'Giocatori con minuti registrati'
       case 'saves':
-        return 'Giocatori con almeno 1 parata'
+        return withScope('Giocatori con almeno 1 parata')
       case 'yellow':
-        return 'Giocatori con almeno 1 ammonizione'
+        return withScope('Giocatori con almeno 1 ammonizione')
       case 'red':
-        return 'Giocatori con almeno 1 espulsione'
+        return withScope('Giocatori con almeno 1 espulsione')
       default: {
-        if (/Assenze/i.test(metricLabel)) return 'Giocatori con almeno 1 assenza'
-        if (/Presenze/i.test(metricLabel)) return 'Giocatori con almeno 1 presenza'
+        if (/assenze/i.test(lower)) return withScope('Giocatori con almeno 1 assenza')
+        if (/presenze/i.test(lower)) return withScope('Giocatori con almeno 1 presenza')
         return 'Giocatori coinvolti'
       }
     }
