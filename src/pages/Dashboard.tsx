@@ -41,7 +41,7 @@ const Dashboard = () => {
 
   // Helpers to compose best/worst from leaders arrays using players list for avatar/role
   const playerById = new Map<string, any>(players.map((p:any)=>[p.id, p]))
-  const pickBestWorst = (arr?: Array<{ player_id: string; value?: number; count?: number; first_name?: string; last_name?: string }>) => {
+  const pickBestWorst = (arr?: Array<{ player_id: string; value?: number; count?: number; percent?: number; first_name?: string; last_name?: string }>) => {
     if (!arr || arr.length===0) return { best: null, worst: null }
     const withVal = arr.map(r=>({
       player: {
@@ -51,7 +51,8 @@ const Dashboard = () => {
         avatar_url: playerById.get(r.player_id)?.avatar_url || null,
         role_code: playerById.get(r.player_id)?.role_code || null,
       },
-      value: (typeof r.value === 'number' ? r.value : (typeof r.count === 'number' ? r.count : 0))
+      value: (typeof r.value === 'number' ? r.value : (typeof r.count === 'number' ? r.count : 0)),
+      percent: (typeof (r as any).percent === 'number' ? (r as any).percent : undefined)
     }))
     const best = withVal.slice().sort((a,b)=>b.value-a.value)[0] || null
     const worst = withVal.slice().sort((a,b)=>a.value-b.value)[0] || null
