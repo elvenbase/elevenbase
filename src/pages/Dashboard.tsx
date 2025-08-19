@@ -82,10 +82,10 @@ const Dashboard = () => {
         {/* Chip actions bar */}
         <div className="mb-6">
           <StatChipBar chips={[
-            { label: 'Nuovo allenamento', icon: <Calendar className=\"h-4 w-4\" />, color: 'accent' },
-            { label: 'Registra partita', icon: <Trophy className=\"h-4 w-4\" />, color: 'primary' },
-            { label: 'Aggiungi giocatore', icon: <Users className=\"h-4 w-4\" />, color: 'success' },
-            { label: 'Valuta candidato', icon: <Target className=\"h-4 w-4\" />, color: 'secondary' },
+            { label: 'Nuovo allenamento', icon: <Calendar className="h-4 w-4" />, color: 'accent' },
+            { label: 'Registra partita', icon: <Trophy className="h-4 w-4" />, color: 'primary' },
+            { label: 'Aggiungi giocatore', icon: <Users className="h-4 w-4" />, color: 'success' },
+            { label: 'Valuta candidato', icon: <Target className="h-4 w-4" />, color: 'secondary' },
           ]} />
         </div>
 
