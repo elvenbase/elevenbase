@@ -5,6 +5,7 @@ import StatsCard from "@/components/StatsCard";
 import DndGrid from "@/components/Dashboard/DndGrid";
 import StatChipBar from "@/components/Dashboard/StatChipBar";
 import BestWorstCard from "@/components/Dashboard/BestWorstCard";
+import TopLeaderCard from "@/components/Dashboard/TopLeaderCard";
 import QuickActions from "@/components/QuickActions";
 import { 
   Users, 
@@ -251,89 +252,77 @@ const Dashboard = () => {
               title: 'Leader del mese',
               render: () => (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <BestWorstCard
-                    title="Presenze allenamento"
-                    metricLabel="Presenze (%)"
-                    icon={CalendarDays}
+                  <TopLeaderCard
+                    metricLabel="Presenze allenamento"
+                    valueUnit="presenze"
                     variant="training"
-                    {...pickBestWorst(leaders?.trainingPresences)}
+                    item={pickBestWorst(leaders?.trainingPresences).best}
                   />
-                  <BestWorstCard
-                    title="Ritardi (all. + partite)"
-                    metricLabel="Ritardi (%)"
-                    icon={AlarmClock}
+                  <TopLeaderCard
+                    metricLabel="Ritardi (all. + partite)"
+                    valueUnit="ritardi"
                     variant="lates"
-                    {...pickBestWorst(leaders?.lates)}
+                    item={pickBestWorst(leaders?.lates).best}
                   />
-                  <BestWorstCard
-                    title="Ritardi allenamento"
-                    metricLabel="Ritardi (%)"
-                    icon={AlarmClock}
+                  <TopLeaderCard
+                    metricLabel="Ritardi allenamento"
+                    valueUnit="ritardi"
                     variant="lates"
-                    {...pickBestWorst(leaders?.trainingLates)}
+                    item={pickBestWorst(leaders?.trainingLates).best}
                   />
-                  <BestWorstCard
-                    title="Ritardi partite"
-                    metricLabel="Ritardi (%)"
-                    icon={AlarmClock}
+                  <TopLeaderCard
+                    metricLabel="Ritardi partite"
+                    valueUnit="ritardi"
                     variant="lates"
-                    {...pickBestWorst(leaders?.matchLates)}
+                    item={pickBestWorst(leaders?.matchLates).best}
                   />
-                  <BestWorstCard
-                    title="Presenze partite"
-                    metricLabel="Presenze (%)"
-                    icon={BadgeCheck}
+                  <TopLeaderCard
+                    metricLabel="Presenze partite"
+                    valueUnit="presenze"
                     variant="matches"
-                    {...pickBestWorst(leaders?.matchPresences)}
+                    item={pickBestWorst(leaders?.matchPresences).best}
                   />
-                  <BestWorstCard
-                    title="No response (all. + partite)"
-                    metricLabel="No resp. (%)"
-                    icon={CircleX}
+                  <TopLeaderCard
+                    metricLabel="No response (all. + partite)"
+                    valueUnit="no resp."
                     variant="no_response"
-                    {...pickBestWorst(leaders?.noResponses)}
+                    item={pickBestWorst(leaders?.noResponses).best}
                   />
-                  <BestWorstCard
-                    title="Gol"
+                  <TopLeaderCard
                     metricLabel="Gol"
-                    icon={Trophy}
+                    valueUnit="gol"
                     variant="goals"
-                    {...pickBestWorst(leaders?.goals)}
+                    item={pickBestWorst(leaders?.goals).best}
                   />
-                  <BestWorstCard
-                    title="Assist"
+                  <TopLeaderCard
                     metricLabel="Assist"
-                    icon={SquarePlus}
+                    valueUnit="assist"
                     variant="assists"
-                    {...pickBestWorst(leaders?.assists)}
+                    item={pickBestWorst(leaders?.assists).best}
                   />
-                  <BestWorstCard
-                    title="Minuti giocati"
-                    metricLabel="Minuti"
-                    icon={Timer}
+                  <TopLeaderCard
+                    metricLabel="Minuti giocati"
+                    valueUnit="min"
                     variant="minutes"
-                    {...pickBestWorst(leaders?.minutes)}
+                    item={pickBestWorst(leaders?.minutes).best}
                   />
-                  <BestWorstCard
-                    title="Parate"
+                  <TopLeaderCard
                     metricLabel="Parate"
-                    icon={Hand}
+                    valueUnit="parate"
                     variant="saves"
-                    {...pickBestWorst(leaders?.saves)}
+                    item={pickBestWorst(leaders?.saves).best}
                   />
-                  <BestWorstCard
-                    title="Ammonizioni"
-                    metricLabel="Gialli"
-                    icon={SquareMinus}
+                  <TopLeaderCard
+                    metricLabel="Ammonizioni"
+                    valueUnit="gialli"
                     variant="yellow"
-                    {...pickBestWorst(leaders?.yellowCards)}
+                    item={pickBestWorst(leaders?.yellowCards).best}
                   />
-                  <BestWorstCard
-                    title="Espulsioni"
-                    metricLabel="Rossi"
-                    icon={SquareMinus}
+                  <TopLeaderCard
+                    metricLabel="Espulsioni"
+                    valueUnit="rossi"
                     variant="red"
-                    {...pickBestWorst(leaders?.redCards)}
+                    item={pickBestWorst(leaders?.redCards).best}
                   />
                 </div>
               )
