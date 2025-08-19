@@ -734,7 +734,7 @@ const Squad = () => {
       {viewMode === 'card' && (
         <div className="">
                       {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1000px]:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {Array.from({ length: 8 }).map((_,i)=> (
                 <div key={i} className="rounded-2xl border p-4">
                   <div className="flex items-center gap-3">
@@ -749,7 +749,7 @@ const Squad = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1000px]:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {filteredAndSortedPlayers.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || ''];
                   const imageSrc = p.avatar_url || (defaultBackground && defaultBackground.type === 'image' ? defaultBackground.value : '');
