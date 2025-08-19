@@ -18,7 +18,13 @@ import {
   Timer,
   UserPlus,
   Shield,
-  CircleX
+  CircleX,
+  CalendarDays,
+  AlarmClock,
+  BadgeCheck,
+  Hand,
+  SquareMinus,
+  SquarePlus
 } from "lucide-react";
 import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries } from "@/hooks/useSupabaseData";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
@@ -248,51 +254,71 @@ const Dashboard = () => {
                   <BestWorstCard
                     title="Presenze allenamento"
                     metricLabel="Presenze (%)"
+                    icon={CalendarDays}
+                    variant="training"
                     {...pickBestWorst(leaders?.trainingPresences)}
                   />
                   <BestWorstCard
                     title="Ritardi (all. + partite)"
                     metricLabel="Ritardi (%)"
+                    icon={AlarmClock}
+                    variant="lates"
                     {...pickBestWorst(leaders?.lates)}
                   />
                   <BestWorstCard
                     title="Presenze partite"
                     metricLabel="Presenze (%)"
+                    icon={BadgeCheck}
+                    variant="matches"
                     {...pickBestWorst(leaders?.matchPresences)}
                   />
                   <BestWorstCard
                     title="No response (all. + partite)"
                     metricLabel="No resp. (%)"
+                    icon={CircleX}
+                    variant="no_response"
                     {...pickBestWorst(leaders?.noResponses)}
                   />
                   <BestWorstCard
                     title="Gol"
                     metricLabel="Gol"
+                    icon={Trophy}
+                    variant="goals"
                     {...pickBestWorst(leaders?.goals)}
                   />
                   <BestWorstCard
                     title="Assist"
                     metricLabel="Assist"
+                    icon={SquarePlus}
+                    variant="assists"
                     {...pickBestWorst(leaders?.assists)}
                   />
                   <BestWorstCard
                     title="Minuti giocati"
                     metricLabel="Minuti"
+                    icon={Timer}
+                    variant="minutes"
                     {...pickBestWorst(leaders?.minutes)}
                   />
                   <BestWorstCard
                     title="Parate"
                     metricLabel="Parate"
+                    icon={Hand}
+                    variant="saves"
                     {...pickBestWorst(leaders?.saves)}
                   />
                   <BestWorstCard
                     title="Ammonizioni"
                     metricLabel="Gialli"
+                    icon={SquareMinus}
+                    variant="yellow"
                     {...pickBestWorst(leaders?.yellowCards)}
                   />
                   <BestWorstCard
                     title="Espulsioni"
                     metricLabel="Rossi"
+                    icon={SquareMinus}
+                    variant="red"
                     {...pickBestWorst(leaders?.redCards)}
                   />
                 </div>
