@@ -128,22 +128,24 @@ const Dashboard = () => {
               id: 'trend-matches',
               title: 'Trend ultime partite (ultime 10)',
               render: () => (
-                <div className="h-64">
-                  {trend?.series && trend.series.length > 0 ? (
-                    <ChartContainer config={{
-                      points: { label: 'Punti', color: 'hsl(var(--primary))' },
-                    }} className="h-full">
-                      <ReLineChart data={trend.series} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis stroke="hsl(var(--muted-foreground))" />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} />
-                      </ReLineChart>
-                    </ChartContainer>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                  )}
+                <div>
+                  <div className="h-64">
+                    {trend?.series && trend.series.length > 0 ? (
+                      <ChartContainer config={{
+                        points: { label: 'Punti', color: 'hsl(var(--primary))' },
+                      }} className="h-full">
+                        <ReLineChart data={trend.series} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} />
+                        </ReLineChart>
+                      </ChartContainer>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
+                    )}
+                  </div>
                   {trend && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite · Bilancio <span className="text-foreground font-medium">{trend.wdl.wins}V {trend.wdl.draws}N {trend.wdl.losses}P</span></div>
                   )}
@@ -154,20 +156,22 @@ const Dashboard = () => {
               id: 'training-series',
               title: 'Presenze allenamenti (ultimi 30 giorni)',
               render: () => (
-                <div className="h-64">
-                  {trainingSeries?.curr ? (
-                    <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
-                      <ReLineChart data={trainingSeries.curr} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis stroke="hsl(var(--muted-foreground))" />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
-                      </ReLineChart>
-                    </ChartContainer>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                  )}
+                <div>
+                  <div className="h-64">
+                    {trainingSeries?.curr ? (
+                      <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
+                        <ReLineChart data={trainingSeries.curr} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
+                        </ReLineChart>
+                      </ChartContainer>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
+                    )}
+                  </div>
                   {trainingSeries && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Ultimi 30 giorni · Variazione vs periodo precedente: <span className={trainingSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{trainingSeries.deltaPct >= 0 ? '+' : ''}{trainingSeries.deltaPct}%</span></div>
                   )}
@@ -178,20 +182,22 @@ const Dashboard = () => {
               id: 'match-presences',
               title: 'Presenze partite (ultime 10)',
               render: () => (
-                <div className="h-64">
-                  {matchSeries?.curr ? (
-                    <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
-                      <ReLineChart data={matchSeries.curr} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis stroke="hsl(var(--muted-foreground))" />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
-                      </ReLineChart>
-                    </ChartContainer>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                  )}
+                <div>
+                  <div className="h-64">
+                    {matchSeries?.curr ? (
+                      <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
+                        <ReLineChart data={matchSeries.curr} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
+                        </ReLineChart>
+                      </ChartContainer>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
+                    )}
+                  </div>
                   {matchSeries && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Ultime 10 partite · Variazione vs periodo precedente: <span className={matchSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{matchSeries.deltaPct >= 0 ? '+' : ''}{matchSeries.deltaPct}%</span></div>
                   )}
@@ -202,31 +208,33 @@ const Dashboard = () => {
               id: 'attendance-month',
               title: 'Distribuzione presenze mese',
               render: () => (
-                <div className="h-64">
-                  {attendanceDist ? (
-                    <ChartContainer config={{
-                      present: { label: 'Presenti', color: 'hsl(var(--success))' },
-                      late: { label: 'Ritardi', color: '#f59e0b' },
-                      absent: { label: 'Assenti', color: 'hsl(var(--destructive))' },
-                      pending: { label: 'In attesa', color: '#94a3b8' },
-                      no_response: { label: 'No response', color: '#a3a3a3' },
-                    }} className="h-full">
-                      <ReBarChart data={[{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }]} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis stroke="hsl(var(--muted-foreground))" />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <ChartLegend content={<ChartLegendContent />} />
-                        <Bar dataKey="present" fill="var(--color-present)" />
-                        <Bar dataKey="late" fill="var(--color-late)" />
-                        <Bar dataKey="absent" fill="var(--color-absent)" />
-                        <Bar dataKey="pending" fill="var(--color-pending)" />
-                        <Bar dataKey="no_response" fill="var(--color-no_response)" />
-                      </ReBarChart>
-                    </ChartContainer>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                  )}
+                <div>
+                  <div className="h-64">
+                    {attendanceDist ? (
+                      <ChartContainer config={{
+                        present: { label: 'Presenti', color: 'hsl(var(--success))' },
+                        late: { label: 'Ritardi', color: '#f59e0b' },
+                        absent: { label: 'Assenti', color: 'hsl(var(--destructive))' },
+                        pending: { label: 'In attesa', color: '#94a3b8' },
+                        no_response: { label: 'No response', color: '#a3a3a3' },
+                      }} className="h-full">
+                        <ReBarChart data={[{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }]} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <ChartLegend content={<ChartLegendContent />} />
+                          <Bar dataKey="present" fill="var(--color-present)" />
+                          <Bar dataKey="late" fill="var(--color-late)" />
+                          <Bar dataKey="absent" fill="var(--color-absent)" />
+                          <Bar dataKey="pending" fill="var(--color-pending)" />
+                          <Bar dataKey="no_response" fill="var(--color-no_response)" />
+                        </ReBarChart>
+                      </ChartContainer>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
+                    )}
+                  </div>
                   <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: mese corrente</div>
                 </div>
               )
