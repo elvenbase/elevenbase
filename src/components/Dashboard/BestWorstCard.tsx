@@ -13,7 +13,7 @@ type Props = {
 }
 
 export const BestWorstCard = ({ title, metricLabel, best, worst }: Props) => {
-  const Item = ({ kind, data }: { kind: 'best'|'worst'; data?: { player: PlayerRef; value: number; percent?: number } | null }) => {
+  const Item = ({ kind, data }: { kind: 'best'|'worst'; data?: { player: PlayerRef; value?: number; percent?: number; count?: number } | null }) => {
     if (!data) return (
       <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
         <div className="text-xs text-muted-foreground">{kind === 'best' ? 'Migliore' : 'Peggiore'}</div>
@@ -29,7 +29,7 @@ export const BestWorstCard = ({ title, metricLabel, best, worst }: Props) => {
             <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="md" />
             <div>
               <div className="text-sm font-medium text-foreground">{p.first_name} {p.last_name}</div>
-              <div className="text-xs text-muted-foreground">{metricLabel}: <span className="text-foreground font-semibold">{data.value}{typeof data.percent === 'number' ? ` (${data.percent}%)` : ''}</span></div>
+              <div className="text-xs text-muted-foreground">{metricLabel}: <span className="text-foreground font-semibold">{(data.value ?? data.count ?? 0)}{typeof data.percent === 'number' ? ` (${data.percent}%)` : ''}</span></div>
             </div>
           </div>
           {kind === 'best' ? (

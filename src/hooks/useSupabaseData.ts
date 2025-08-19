@@ -2193,6 +2193,7 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       const trainingByPlayer = new Map<string, number>()
       const trainingTotalsByPlayer = new Map<string, number>()
       const latesByPlayer = new Map<string, number>()
+      const noRespByPlayer = new Map<string, number>()
       for (const row of trainingRows) {
         if (!row.player_id) continue
         trainingTotalsByPlayer.set(row.player_id, (trainingTotalsByPlayer.get(row.player_id) || 0) + 1)
@@ -2203,18 +2204,22 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         if (row.status === 'no_response') noRespByPlayer.set(row.player_id, (noRespByPlayer.get(row.player_id) || 0) + 1)
       }
       const trainingPresences = Array.from(trainingByPlayer.entries())
-        .map(([player_id, count]) => ({
-          player_id,
-          count,
-          first_name: playersById.get(player_id)?.first_name || '—',
-          last_name: playersById.get(player_id)?.last_name || ''
-        }))
-        .sort((a, b) => b.count - a.count)
+        .map(([player_id, count]) => {
+          const total = trainingTotalsByPlayer.get(player_id) || 0
+          const percent = total > 0 ? Math.round((count / total) * 100) : 0
+          return {
+            player_id,
+            value: count,
+            percent,
+            first_name: playersById.get(player_id)?.first_name || '—',
+            last_name: playersById.get(player_id)?.last_name || ''
+          }
+        })
+        .sort((a, b) => b.value - a.value)
 
       // Aggregate match attendance by player
       const matchByPlayer = new Map<string, number>()
       const matchTotalsByPlayer = new Map<string, number>()
-      const noRespByPlayer = new Map<string, number>()
       for (const row of matchAttRows) {
         if (!row.player_id) continue
         matchTotalsByPlayer.set(row.player_id, (matchTotalsByPlayer.get(row.player_id) || 0) + 1)
@@ -2222,6 +2227,7 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         if (present) matchByPlayer.set(row.player_id, (matchByPlayer.get(row.player_id) || 0) + 1)
         const isLate = present && !!row.arrival_time
         if (isLate) latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
+        if (row.status === 'no_response') noRespByPlayer.set(row.player_id, (noRespByPlayer.get(row.player_id) || 0) + 1)
       }
       const matchPresences = Array.from(matchByPlayer.entries())
         .map(([player_id, count]) => ({
