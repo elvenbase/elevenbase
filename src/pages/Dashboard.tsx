@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import StatsCard from "@/components/StatsCard";
 import DndGrid from "@/components/Dashboard/DndGrid";
 import StatChipBar from "@/components/Dashboard/StatChipBar";
-import BestWorstCard from "@/components/Dashboard/BestWorstCard";
+// removed BestWorstCard
 import TopLeaderCard from "@/components/Dashboard/TopLeaderCard";
 import QuickActions from "@/components/QuickActions";
 import { 
