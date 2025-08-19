@@ -246,18 +246,23 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <BestWorstCard
                     title="Presenze allenamento"
-                    metricLabel="Presenze"
+                    metricLabel="Presenze (%)"
                     {...pickBestWorst(leaders?.trainingPresences?.map((r:any)=>({ ...r, value: r.count })))}
                   />
                   <BestWorstCard
                     title="Ritardi (all. + partite)"
-                    metricLabel="Ritardi"
+                    metricLabel="Ritardi (%)"
                     {...pickBestWorst(leaders?.lates)}
                   />
                   <BestWorstCard
                     title="Presenze partite"
-                    metricLabel="Presenze"
+                    metricLabel="Presenze (%)"
                     {...pickBestWorst(leaders?.matchPresences?.map((r:any)=>({ ...r, value: r.count })))}
+                  />
+                  <BestWorstCard
+                    title="No response (all. + partite)"
+                    metricLabel="No resp. (%)"
+                    {...pickBestWorst(leaders?.noResponses)}
                   />
                   <BestWorstCard
                     title="Gol"
