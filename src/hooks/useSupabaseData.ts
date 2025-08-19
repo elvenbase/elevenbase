@@ -2386,6 +2386,18 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         goals: toArray('goals'),
         assists: toArray('assists'),
         minutes: toArray('minutes'),
+        minutesAvg: Array.from(aggByPlayer.entries())
+          .map(([player_id, a]) => {
+            const totalMatches = matchTotalsByPlayer.get(player_id) || 0
+            const avg = totalMatches > 0 ? Math.round(a.minutes / totalMatches) : 0
+            return {
+              player_id,
+              value: avg,
+              first_name: playersById.get(player_id)?.first_name || '—',
+              last_name: playersById.get(player_id)?.last_name || ''
+            }
+          })
+          .sort((x, y) => y.value - x.value),
         yellowCards: toArray('yellow_cards'),
         redCards: toArray('red_cards'),
         saves: toArray('saves'),
