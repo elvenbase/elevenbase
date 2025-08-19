@@ -177,7 +177,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
       <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
         {/* Front */}
         <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
-          <Card className={`p-4 sm:px-6 lg:px-8 bg-card/80 border border-border rounded-2xl shadow-card hover:shadow-glow transition-smooth h-full overflow-hidden`} onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}>
+          <Card className={`p-4 sm:p-[18px] lg:p-[22px] bg-card/80 border border-border rounded-2xl shadow-card hover:shadow-glow transition-smooth h-full overflow-hidden`} onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}>
             <div className="flex flex-col h-full animate-in fade-in-0">
               {/* Header metric band */}
               <div className="flex items-center gap-2 h-10 sm:h-10 rounded-t-[inherit] px-3 sm:px-4" style={{ backgroundColor: metricStyle.headerBg }}>
@@ -192,6 +192,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 <div className="relative -translate-x-1.5 sm:-translate-x-2 flex items-center">
                   <div className="relative shadow-sm">
                     <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 sm:h-16 sm:w-16 lg:h-[72px] lg:w-[72px]" />
+                    <span className="absolute -bottom-1 -right-1 inline-flex items-center justify-center h-4 w-4 rounded bg-white border border-white text-[10px]" aria-hidden>🏆</span>
                   </div>
                 </div>
                 {/* Name + subtitle and pill (mobile stacks) */}
