@@ -121,7 +121,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   }, [variant, metricLabel])
 
   // Backside distribution
-  const { pieData, legend, baseN } = useMemo(() => {
+  const { pieData, legend, baseN, topFive } = useMemo(() => {
     const src = (distribution || []) as Array<any>
     const nPlayers = src.length
     const clamp = (x: number) => Math.max(0, Math.min(100, Math.round(x)))
@@ -159,7 +159,16 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
     const chartData = buckets.map((b, i) => ({ name: b.key, value: b.ids.length, fill: colors[i % colors.length], ids: b.ids }))
     const total = chartData.reduce((s, r) => s + r.value, 0)
     const legendItems = chartData.map(d => ({ label: d.name, pct: total ? clamp((d.value / total) * 100) : 0, color: d.fill, ids: d.ids }))
-    return { pieData: chartData, legend: legendItems, baseN: nPlayers }
+    const getVal = (r: any) => isRate ? Number(r.percent || 0) : Number(r.value ?? r.count ?? 0)
+    const sorted = [...src].sort((a, b) => getVal(b) - getVal(a))
+    const topFive = sorted.slice(0, 5).map((r, idx) => ({
+      rank: idx + 1,
+      id: r.player_id,
+      first_name: r.first_name,
+      last_name: r.last_name,
+      value: getVal(r),
+    }))
+    return { pieData: chartData, legend: legendItems, baseN: nPlayers, topFive }
   }, [distribution, metricLabel, variant])
 
   if (!item) {
@@ -245,39 +254,32 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
               <button className="text-xs text-muted-foreground hover:text-foreground" onClick={()=>setFlipped(false)} aria-label="Torna al fronte"><RotateCcw className="h-4 w-4"/></button>
             </div>
-            <div className="mt-2 h-[7.5rem] flex-shrink-0">
-              <ReResponsiveContainer width="100%" height="100%">
-                <RePieChart>
-                  <RePie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>
-                    {pieData?.map((entry, index) => (
-                      <ReCell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </RePie>
-                  <ReTooltip formatter={(value:any, name:any)=>{
-                    const n = Number(value || 0)
-                    const pct = baseN ? Math.round((n / baseN) * 100) : 0
-                    return [`${pct}% (${n} giocatori)`, name]
-                  }} />
-                </RePieChart>
-              </ReResponsiveContainer>
-            </div>
-            <div className="mt-2 space-y-1 overflow-auto">
-              {legend?.map((l, i) => (
-                <div key={i} className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: l.color }} />
-                    <span className="text-muted-foreground">{l.label}</span>
-                  </div>
-                  <div className="inline-flex items-center gap-2">
-                    <span className="font-semibold text-foreground">{l.pct}%</span>
-                    {onSegmentOpen && (
-                      <button className="text-muted-foreground hover:text-foreground" onClick={()=>onSegmentOpen({ label: l.label, playerIds: l.ids })} aria-label="Apri dettagli segmento">
-                        <Search className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="mt-2 h-[7.5rem] flex items-start gap-3">
+              <div className="w-[48%] h-full">
+                <ReResponsiveContainer width="100%" height="100%">
+                  <RePieChart>
+                    <RePie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>
+                      {pieData?.map((entry, index) => (
+                        <ReCell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </RePie>
+                    <ReTooltip formatter={(value:any, name:any)=>{
+                      const n = Number(value || 0)
+                      const pct = baseN ? Math.round((n / baseN) * 100) : 0
+                      return [`${pct}% (${n} giocatori)`, name]
+                    }} />
+                  </RePieChart>
+                </ReResponsiveContainer>
+              </div>
+              <div className="flex-1 h-full overflow-auto">
+                <ol className="text-[11px] leading-5 text-muted-foreground">
+                  {topFive?.map((t: any) => (
+                    <li key={t.id} className="truncate">
+                      {t.rank}) {(t.first_name?.[0] || '?')}. {t.last_name || ''}
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
           </div>
         </Card>
