@@ -191,8 +191,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 {/* Avatar block */}
                 <div className="relative -translate-x-1.5 sm:-translate-x-2 flex items-center">
                   <div className="relative shadow-sm">
-                    <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 sm:h-16 sm:w-16 lg:h-[72px] lg:w-[72px]" />
-                    <span className="absolute -bottom-1 -right-1 inline-flex items-center justify-center h-4 w-4 rounded bg-white border border-white text-[10px]" aria-hidden>🏆</span>
+                    <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 sm:h-16 sm:w-16 lg:h-[72px] lg:w-[72px] rounded-[12px]" />
                   </div>
                 </div>
                 {/* Name + subtitle and pill (mobile stacks) */}
