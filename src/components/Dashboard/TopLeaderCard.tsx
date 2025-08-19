@@ -144,32 +144,47 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 <div className="line-clamp-2 font-semibold text-[14px]" style={{ color: '#2B2B2B' }}>{metricLabel}</div>
               </div>
               {/* Hero */}
-              <div className="relative flex-1 flex flex-col sm:flex-row items-start gap-3 px-4 py-2 pb-5">
-                <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: `radial-gradient(60% 60% at 15% 50%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
-                <div className="relative -translate-x-1.5 flex items-center">
+              <div className="relative flex-1 px-4 py-2 pb-5">
+                {/* Gradient overlays: centered on mobile, anchored to avatar on >=sm */}
+                <div className="pointer-events-none absolute inset-0 sm:hidden" style={{ backgroundImage: `radial-gradient(60% 60% at 50% 40%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
+                <div className="pointer-events-none absolute inset-0 hidden sm:block" style={{ backgroundImage: `radial-gradient(60% 60% at 15% 50%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
+
+                {/* Mobile: centered stack */}
+                <div className="sm:hidden flex h-full flex-col items-center justify-center text-center">
                   <div className="relative shadow-sm">
                     <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
                   </div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 max-w-full">
-                      <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                      <div className="mt-1 text-[13px] text-muted-foreground">Migliore {metricLabel.toLowerCase()} nel periodo</div>
-                    </div>
-                    <div className="hidden sm:flex items-center">
-                      <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
-                        <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
-                        <span className="font-bold tabular-nums text-[22px]" style={{ color: metricStyle.accent }}>{value}</span>
-                        <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-2 sm:hidden flex items-center justify-center mb-5">
+                  <div className="mt-2 max-w-[85%] line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
+                  <div className="mt-1 text-[13px] text-muted-foreground">Migliore {metricLabel.toLowerCase()} nel periodo</div>
+                  <div className="mt-3 flex items-center justify-center mb-5">
                     <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
                       <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
                       <span className="font-bold tabular-nums text-[24px]" style={{ color: metricStyle.accent }}>{value}</span>
                       <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* >= sm: avatar left, text + pill right */}
+                <div className="hidden sm:flex items-start gap-3">
+                  <div className="relative flex items-center">
+                    <div className="relative shadow-sm">
+                      <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 max-w-full">
+                        <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
+                        <div className="mt-1 text-[13px] text-muted-foreground">Migliore {metricLabel.toLowerCase()} nel periodo</div>
+                      </div>
+                      <div className="hidden sm:flex items-center">
+                        <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
+                          <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
+                          <span className="font-bold tabular-nums text-[22px]" style={{ color: metricStyle.accent }}>{value}</span>
+                          <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
