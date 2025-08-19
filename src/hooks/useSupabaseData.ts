@@ -2126,3 +2126,335 @@ export const usePlayerNoteEvents = (playerId: string) => {
     enabled: !!playerId
   })
 }
+
+// Leaders and team performance hooks for dashboard
+export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
+  return useQuery({
+    queryKey: ['leaders', opts?.startDate?.toISOString(), opts?.endDate?.toISOString()],
+    queryFn: async () => {
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const fmt = (d?: Date) => d ? `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` : undefined
+      const startStr = fmt(opts?.startDate)
+      const endStr = fmt(opts?.endDate)
+
+      // Fetch players to map names later
+      const { data: players, error: playersErr } = await supabase
+        .from('players')
+        .select('id, first_name, last_name, status')
+      if (playersErr) throw playersErr
+      const playersById = new Map<string, any>((players || []).map(p => [p.id, p]))
+
+      // Training attendance joined with sessions for date filters
+      let trSel = supabase
+        .from('training_attendance')
+        .select('player_id, status, coach_confirmation_status, arrival_time, session_id, training_sessions!inner(session_date)')
+      if (startStr) trSel = trSel.gte('training_sessions.session_date', startStr) as any
+      if (endStr) trSel = trSel.lte('training_sessions.session_date', endStr) as any
+      const trRes = await trSel
+      if (trRes.error) throw trRes.error
+      const trainingRows = (trRes.data || []) as any[]
+
+      // Match attendance joined with matches for date filters and state
+      let mtSel = supabase
+        .from('match_attendance')
+        .select('player_id, status, coach_confirmation_status, arrival_time, matches!inner(match_date, live_state)')
+        .eq('matches.live_state', 'ended')
+      if (startStr) mtSel = mtSel.gte('matches.match_date', startStr) as any
+      if (endStr) mtSel = mtSel.lte('matches.match_date', endStr) as any
+      const mtRes = await mtSel
+      if (mtRes.error) throw mtRes.error
+      const matchAttRows = (mtRes.data || []) as any[]
+
+      // Match player stats for goals/assists/minutes/cards/saves; include ended matches only
+      let mpsSel = supabase
+        .from('match_player_stats')
+        .select('player_id, goals, assists, minutes, yellow_cards, red_cards, saves, matches!inner(match_date, live_state)')
+        .not('player_id', 'is', null)
+        .eq('matches.live_state', 'ended')
+      if (startStr) mpsSel = mpsSel.gte('matches.match_date', startStr) as any
+      if (endStr) mpsSel = mpsSel.lte('matches.match_date', endStr) as any
+      const mpsRes = await mpsSel
+      if (mpsRes.error) throw mpsRes.error
+      const statsRows = (mpsRes.data || []) as any[]
+
+      // Helpers
+      const isPresentTraining = (r: any) => {
+        const coach = r.coach_confirmation_status
+        const auto = r.status
+        return (coach === 'present' || coach === 'late') || (auto === 'present' || auto === 'late')
+      }
+      const isPresentMatch = (r: any) => {
+        const coach = r.coach_confirmation_status
+        const auto = r.status
+        return (coach === 'present') || (auto === 'present')
+      }
+
+      // Aggregate training attendance by player
+      const trainingByPlayer = new Map<string, number>()
+      for (const row of trainingRows) {
+        if (!row.player_id) continue
+        const present = isPresentTraining(row)
+        if (present) trainingByPlayer.set(row.player_id, (trainingByPlayer.get(row.player_id) || 0) + 1)
+      }
+      const trainingPresences = Array.from(trainingByPlayer.entries())
+        .map(([player_id, count]) => ({
+          player_id,
+          count,
+          first_name: playersById.get(player_id)?.first_name || '—',
+          last_name: playersById.get(player_id)?.last_name || ''
+        }))
+        .sort((a, b) => b.count - a.count)
+
+      // Aggregate match attendance by player
+      const matchByPlayer = new Map<string, number>()
+      for (const row of matchAttRows) {
+        if (!row.player_id) continue
+        const present = isPresentMatch(row)
+        if (present) matchByPlayer.set(row.player_id, (matchByPlayer.get(row.player_id) || 0) + 1)
+      }
+      const matchPresences = Array.from(matchByPlayer.entries())
+        .map(([player_id, count]) => ({
+          player_id,
+          count,
+          first_name: playersById.get(player_id)?.first_name || '—',
+          last_name: playersById.get(player_id)?.last_name || ''
+        }))
+        .sort((a, b) => b.count - a.count)
+
+      // Aggregate match player stats sums
+      type Agg = { goals: number; assists: number; minutes: number; yellow_cards: number; red_cards: number; saves: number }
+      const aggByPlayer = new Map<string, Agg>()
+      const ensureAgg = (id: string) => {
+        let a = aggByPlayer.get(id)
+        if (!a) { a = { goals: 0, assists: 0, minutes: 0, yellow_cards: 0, red_cards: 0, saves: 0 }; aggByPlayer.set(id, a) }
+        return a
+      }
+      for (const r of statsRows) {
+        const pid = r.player_id as string
+        if (!pid) continue
+        const a = ensureAgg(pid)
+        a.goals += Number(r.goals || 0)
+        a.assists += Number(r.assists || 0)
+        a.minutes += Number(r.minutes || 0)
+        a.yellow_cards += Number(r.yellow_cards || 0)
+        a.red_cards += Number(r.red_cards || 0)
+        a.saves += Number(r.saves || 0)
+      }
+
+      const toArray = (field: keyof Agg) => Array.from(aggByPlayer.entries())
+        .map(([player_id, a]) => ({
+          player_id,
+          value: a[field] as number,
+          first_name: playersById.get(player_id)?.first_name || '—',
+          last_name: playersById.get(player_id)?.last_name || ''
+        }))
+        .sort((x, y) => y.value - x.value)
+
+      return {
+        trainingPresences,
+        matchPresences,
+        goals: toArray('goals'),
+        assists: toArray('assists'),
+        minutes: toArray('minutes'),
+        yellowCards: toArray('yellow_cards'),
+        redCards: toArray('red_cards'),
+        saves: toArray('saves')
+      }
+    }
+  })
+}
+
+export const useTeamTrend = (opts?: { limit?: number; startDate?: Date; endDate?: Date }) => {
+  return useQuery({
+    queryKey: ['team-trend', opts?.limit, opts?.startDate?.toISOString(), opts?.endDate?.toISOString()],
+    queryFn: async () => {
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const fmt = (d?: Date) => d ? `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` : undefined
+      const startStr = fmt(opts?.startDate)
+      const endStr = fmt(opts?.endDate)
+      const limit = opts?.limit || 10
+
+      let q = supabase
+        .from('matches')
+        .select('id, match_date, opponent_name, our_score, opponent_score, live_state')
+        .eq('live_state', 'ended')
+        .order('match_date', { ascending: true })
+      if (startStr) q = q.gte('match_date', startStr)
+      if (endStr) q = q.lte('match_date', endStr)
+      const res = await q
+      if (res.error) throw res.error
+      let rows = (res.data || []) as any[]
+      if (!startStr && !endStr) {
+        // If no date window provided, take last N chronologically
+        rows = rows.slice(Math.max(rows.length - limit, 0))
+      }
+
+      let wins = 0, draws = 0, losses = 0, gf = 0, ga = 0
+      const series = rows.map(r => {
+        const d = new Date(r.match_date)
+        const dateLabel = `${pad(d.getDate())}/${pad(d.getMonth()+1)}`
+        const points = r.our_score > r.opponent_score ? 3 : (r.our_score === r.opponent_score ? 1 : 0)
+        if (points === 3) wins += 1; else if (points === 1) draws += 1; else losses += 1
+        gf += Number(r.our_score || 0)
+        ga += Number(r.opponent_score || 0)
+        return { id: r.id, date: dateLabel, goalsFor: r.our_score || 0, goalsAgainst: r.opponent_score || 0, goalDiff: (r.our_score || 0) - (r.opponent_score || 0), points }
+      })
+
+      return {
+        matches: rows,
+        series,
+        wdl: { wins, draws, losses },
+        totals: { goalsFor: gf, goalsAgainst: ga }
+      }
+    }
+  })
+}
+
+export const useAttendanceDistribution = (opts?: { startDate?: Date; endDate?: Date }) => {
+  return useQuery({
+    queryKey: ['attendance-distribution', opts?.startDate?.toISOString(), opts?.endDate?.toISOString()],
+    queryFn: async () => {
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const fmt = (d?: Date) => d ? `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` : undefined
+      const startStr = fmt(opts?.startDate)
+      const endStr = fmt(opts?.endDate)
+
+      // Training
+      let tr = supabase
+        .from('training_attendance')
+        .select('status, session_id, training_sessions!inner(session_date)')
+      if (startStr) tr = tr.gte('training_sessions.session_date', startStr) as any
+      if (endStr) tr = tr.lte('training_sessions.session_date', endStr) as any
+      const trRes = await tr
+      if (trRes.error) throw trRes.error
+      const tCounts: Record<string, number> = { present: 0, late: 0, absent: 0, excused: 0, pending: 0, no_response: 0 }
+      for (const r of (trRes.data || []) as any[]) {
+        const s = r.status || 'pending'
+        tCounts[s] = (tCounts[s] || 0) + 1
+      }
+
+      // Matches only ended
+      let mt = supabase
+        .from('match_attendance')
+        .select('status, match_id, matches!inner(match_date, live_state)')
+        .eq('matches.live_state', 'ended')
+      if (startStr) mt = mt.gte('matches.match_date', startStr) as any
+      if (endStr) mt = mt.lte('matches.match_date', endStr) as any
+      const mtRes = await mt
+      if (mtRes.error) throw mtRes.error
+      const mCounts: Record<string, number> = { present: 0, late: 0, absent: 0, excused: 0, pending: 0, no_response: 0 }
+      for (const r of (mtRes.data || []) as any[]) {
+        const s = r.status || 'pending'
+        mCounts[s] = (mCounts[s] || 0) + 1
+      }
+
+      return { training: tCounts, match: mCounts }
+    }
+  })
+}
+
+// Time series: training presences per session date (last N days vs previous N)
+export const useTrainingPresenceSeries = (days: number = 30) => {
+  return useQuery({
+    queryKey: ['training-presence-series', days],
+    queryFn: async () => {
+      const today = new Date()
+      const startPrev = new Date(today)
+      startPrev.setDate(startPrev.getDate() - (days * 2) + 1)
+      const endAll = today
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+      const startStr = fmt(startPrev)
+      const endStr = fmt(endAll)
+
+      // Fetch sessions and attendance within window
+      const tsRes = await supabase
+        .from('training_sessions')
+        .select('id, session_date')
+        .gte('session_date', startStr)
+        .lte('session_date', endStr)
+      if (tsRes.error) throw tsRes.error
+      const sessions = (tsRes.data || []) as any[]
+      const sessionIds = sessions.map(s => s.id)
+      const sessById = new Map<string, any>(sessions.map(s => [s.id, s]))
+      let attRows: any[] = []
+      if (sessionIds.length > 0) {
+        const atRes = await supabase
+          .from('training_attendance')
+          .select('session_id, status, coach_confirmation_status')
+          .in('session_id', sessionIds)
+        if (atRes.error) throw atRes.error
+        attRows = atRes.data || []
+      }
+      const isPresent = (r: any) => {
+        const coach = r.coach_confirmation_status
+        const auto = r.status
+        return (coach === 'present' || coach === 'late') || (auto === 'present' || auto === 'late')
+      }
+      const byDate = new Map<string, number>()
+      for (const r of attRows) {
+        const date = sessById.get(r.session_id)?.session_date
+        if (!date) continue
+        if (isPresent(r)) byDate.set(date, (byDate.get(date) || 0) + 1)
+      }
+      // Build chronological array of last 2*days days
+      const allDates: string[] = []
+      const startAll = new Date(startPrev)
+      for (let i = 0; i < days * 2; i++) {
+        const d = new Date(startAll)
+        d.setDate(startAll.getDate() + i)
+        allDates.push(fmt(d))
+      }
+      const seriesAll = allDates.map(d => ({ date: d, value: byDate.get(d) || 0 }))
+      const prev = seriesAll.slice(0, days)
+      const curr = seriesAll.slice(days)
+      const sum = (arr: {value: number}[]) => arr.reduce((s, r) => s + r.value, 0)
+      const prevSum = sum(prev)
+      const currSum = sum(curr)
+      const pct = prevSum > 0 ? Math.round(((currSum - prevSum) / prevSum) * 100) : (currSum > 0 ? 100 : 0)
+      return { prev: prev, curr: curr, deltaPct: pct }
+    }
+  })
+}
+
+// Time series: match presences per ended match, ordered chronologically (last N vs previous N)
+export const useMatchPresenceSeries = (limit: number = 10) => {
+  return useQuery({
+    queryKey: ['match-presence-series', limit],
+    queryFn: async () => {
+      // Fetch last 2*limit ended matches chronologically ascending
+      const mRes = await supabase
+        .from('matches')
+        .select('id, match_date')
+        .eq('live_state', 'ended')
+        .order('match_date', { ascending: true })
+      if (mRes.error) throw mRes.error
+      const matches = (mRes.data || []) as any[]
+      const take = matches.slice(Math.max(matches.length - (limit * 2), 0))
+      const ids = take.map(m => m.id)
+      let att: any[] = []
+      if (ids.length > 0) {
+        const aRes = await supabase
+          .from('match_attendance')
+          .select('match_id, status, coach_confirmation_status, matches:match_id(match_date)')
+          .in('match_id', ids)
+        if (aRes.error) throw aRes.error
+        att = aRes.data || []
+      }
+      const isPresent = (r: any) => (r.coach_confirmation_status === 'present') || (r.status === 'present')
+      const countByMatch = new Map<string, number>()
+      for (const r of att) {
+        if (!r.match_id) continue
+        if (isPresent(r)) countByMatch.set(r.match_id, (countByMatch.get(r.match_id) || 0) + 1)
+      }
+      const all = take.map(m => ({ id: m.id, date: m.match_date, value: countByMatch.get(m.id) || 0 }))
+      const prev = all.slice(0, Math.max(all.length - limit, 0)).slice(-limit)
+      const curr = all.slice(-limit)
+      const sum = (arr: {value: number}[]) => arr.reduce((s, r) => s + r.value, 0)
+      const prevSum = sum(prev)
+      const currSum = sum(curr)
+      const pct = prevSum > 0 ? Math.round(((currSum - prevSum) / prevSum) * 100) : (currSum > 0 ? 100 : 0)
+      return { prev, curr, deltaPct: pct }
+    }
+  })
+}
