@@ -2206,6 +2206,10 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       const trainingLatesByPlayer = new Map<string, number>()
       const matchLatesByPlayer = new Map<string, number>()
       const noRespByPlayer = new Map<string, number>()
+      const trainingNoRespByPlayer = new Map<string, number>()
+      const matchNoRespByPlayer = new Map<string, number>()
+      const trainingAbsencesByPlayer = new Map<string, number>()
+      const matchAbsencesByPlayer = new Map<string, number>()
       // Use convocation count as total sessions for training (align with PlayerDetail synthetic events)
       for (const row of trainingConvRows) {
         if (!row.player_id) continue
@@ -2225,7 +2229,13 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
           latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
           trainingLatesByPlayer.set(row.player_id, (trainingLatesByPlayer.get(row.player_id) || 0) + 1)
         }
-        if (row.status === 'no_response') noRespByPlayer.set(row.player_id, (noRespByPlayer.get(row.player_id) || 0) + 1)
+        if (row.status === 'no_response') {
+          noRespByPlayer.set(row.player_id, (noRespByPlayer.get(row.player_id) || 0) + 1)
+          trainingNoRespByPlayer.set(row.player_id, (trainingNoRespByPlayer.get(row.player_id) || 0) + 1)
+        }
+        if (row.status === 'absent') {
+          trainingAbsencesByPlayer.set(row.player_id, (trainingAbsencesByPlayer.get(row.player_id) || 0) + 1)
+        }
       }
       const trainingPresences = Array.from(trainingByPlayer.entries())
         .map(([player_id, count]) => {
@@ -2254,7 +2264,13 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
           latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
           matchLatesByPlayer.set(row.player_id, (matchLatesByPlayer.get(row.player_id) || 0) + 1)
         }
-        if (row.status === 'no_response') noRespByPlayer.set(row.player_id, (noRespByPlayer.get(row.player_id) || 0) + 1)
+        if (row.status === 'no_response') {
+          noRespByPlayer.set(row.player_id, (noRespByPlayer.get(row.player_id) || 0) + 1)
+          matchNoRespByPlayer.set(row.player_id, (matchNoRespByPlayer.get(row.player_id) || 0) + 1)
+        }
+        if (row.status === 'absent') {
+          matchAbsencesByPlayer.set(row.player_id, (matchAbsencesByPlayer.get(row.player_id) || 0) + 1)
+        }
       }
       const matchPresences = Array.from(matchByPlayer.entries())
         .map(([player_id, count]) => {
@@ -2346,9 +2362,27 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
           }
         })
         .sort((x, y) => y.value - x.value)
+
+      // Combined present and absences across training + matches
+      const presentCombinedByPlayer = new Map<string, number>()
+      for (const [pid, val] of trainingByPlayer.entries()) {
+        presentCombinedByPlayer.set(pid, (presentCombinedByPlayer.get(pid) || 0) + val)
+      }
+      for (const [pid, val] of matchByPlayer.entries()) {
+        presentCombinedByPlayer.set(pid, (presentCombinedByPlayer.get(pid) || 0) + val)
+      }
+      const absencesCombinedByPlayer = new Map<string, number>()
+      for (const [pid, val] of trainingAbsencesByPlayer.entries()) {
+        absencesCombinedByPlayer.set(pid, (absencesCombinedByPlayer.get(pid) || 0) + val)
+      }
+      for (const [pid, val] of matchAbsencesByPlayer.entries()) {
+        absencesCombinedByPlayer.set(pid, (absencesCombinedByPlayer.get(pid) || 0) + val)
+      }
       return {
         trainingPresences,
+        trainingAbsences: toArrayFromMapTraining(trainingAbsencesByPlayer),
         matchPresences,
+        matchAbsences: toArrayFromMapMatch(matchAbsencesByPlayer),
         goals: toArray('goals'),
         assists: toArray('assists'),
         minutes: toArray('minutes'),
@@ -2359,6 +2393,10 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         trainingLates: toArrayFromMapTraining(trainingLatesByPlayer),
         matchLates: toArrayFromMapMatch(matchLatesByPlayer),
         noResponses: toArrayFromMap(noRespByPlayer),
+        trainingNoResponses: toArrayFromMapTraining(trainingNoRespByPlayer),
+        matchNoResponses: toArrayFromMapMatch(matchNoRespByPlayer),
+        totalPresences: toArrayFromMap(presentCombinedByPlayer),
+        totalAbsences: toArrayFromMap(absencesCombinedByPlayer),
       }
     }
   })

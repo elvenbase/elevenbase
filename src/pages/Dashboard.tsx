@@ -252,36 +252,22 @@ const Dashboard = () => {
               title: 'Leader del mese',
               render: () => (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <TopLeaderCard
-                    metricLabel="Presenze allenamento"
-                    valueUnit="presenze"
-                    variant="training"
-                    item={pickBestWorst(leaders?.trainingPresences).best}
-                  />
+                  <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} />
+                  <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.trainingAbsences).best} />
                   <TopLeaderCard
                     metricLabel="Ritardi (all. + partite)"
                     valueUnit="ritardi"
                     variant="lates"
                     item={pickBestWorst(leaders?.lates).best}
                   />
-                  <TopLeaderCard
-                    metricLabel="Ritardi allenamento"
-                    valueUnit="ritardi"
-                    variant="lates"
-                    item={pickBestWorst(leaders?.trainingLates).best}
-                  />
-                  <TopLeaderCard
-                    metricLabel="Ritardi partite"
-                    valueUnit="ritardi"
-                    variant="lates"
-                    item={pickBestWorst(leaders?.matchLates).best}
-                  />
-                  <TopLeaderCard
-                    metricLabel="Presenze partite"
-                    valueUnit="presenze"
-                    variant="matches"
-                    item={pickBestWorst(leaders?.matchPresences).best}
-                  />
+                  <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.trainingLates).best} />
+                  <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.matchLates).best} />
+                  <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} />
+                  <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.matchAbsences).best} />
+                  <TopLeaderCard metricLabel="No response (allenamenti)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.trainingNoResponses).best} />
+                  <TopLeaderCard metricLabel="No response (partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.matchNoResponses).best} />
+                  <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} />
+                  <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.totalAbsences).best} />
                   <TopLeaderCard
                     metricLabel="No response (all. + partite)"
                     valueUnit="no resp."
