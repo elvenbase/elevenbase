@@ -132,16 +132,16 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const to = `/player/${p.id}`
 
   return (
-    <div className="group [perspective:1000px] min-h-[220px] w-full">
+    <div className="group [perspective:1000px] min-h-[240px] w-full">
       <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
         {/* Front */}
         <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
           <Card className="p-0 bg-card/80 border border-border rounded-2xl shadow-card hover:shadow-glow transition-smooth h-full overflow-hidden" onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}>
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-start gap-2.5 px-4 py-2 min-h-[48px]" style={{ backgroundColor: metricStyle.headerBg }}>
+              <div className="flex items-start gap-2 px-3 py-1 min-h-[25px]" style={{ backgroundColor: metricStyle.headerBg }}>
                 <SectionIcon className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: metricStyle.accent }} aria-hidden />
-                <div className="line-clamp-2 font-semibold text-[14px] leading-snug" style={{ color: '#2B2B2B' }}>{metricLabel}</div>
+                <div className="line-clamp-2 font-semibold text-[14px] leading-tight" style={{ color: '#2B2B2B' }}>{metricLabel}</div>
               </div>
               {/* Hero */}
               <div className="relative flex-1 px-4 py-2 pb-5">
