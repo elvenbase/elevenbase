@@ -4,7 +4,8 @@ import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@d
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Card } from '@/components/ui/card'
-import { GripVertical } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { GripVertical, RotateCcw } from 'lucide-react'
 
 type GridProps = {
   modules: Array<{ id: string; title: string; render: () => JSX.Element }>
@@ -116,11 +117,21 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <SortableContext items={currentOrder} strategy={rectSortingStrategy}>
-        <div className="mb-2 flex items-center justify-end">
+        <div className="mb-2 flex items-center justify-between gap-2">
           <label className="inline-flex items-center gap-2 text-xs text-muted-foreground select-none">
             <input type="checkbox" checked={locked} onChange={(e)=>{ setLocked(e.target.checked); persistToDb(order.length?order:ids) }} />
             Blocca disposizione
           </label>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full px-3 py-1.5 hover:shadow-sm transition-bounce"
+            onClick={()=>{ setOrder(ids); persistToDb(ids); localStorage.setItem(storageKey, JSON.stringify(ids)) }}
+            title="Ripristina ordine predefinito"
+          >
+            <RotateCcw className="h-4 w-4" />
+            <span className="text-xs">Reset layout</span>
+          </Button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {currentOrder.map(id => (
