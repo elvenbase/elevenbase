@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
-import { Award, RotateCcw, Search } from 'lucide-react'
+import { Award, RotateCcw, Search, CalendarCheck2, CalendarX, AlarmClock, MailX, CornerDownRight, Timer, Trophy, SquareMinus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { PieChart as RePieChart, Pie as RePie, Cell as ReCell, Tooltip as ReTooltip, ResponsiveContainer as ReResponsiveContainer } from 'recharts'
