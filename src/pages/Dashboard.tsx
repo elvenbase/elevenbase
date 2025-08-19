@@ -24,6 +24,7 @@ import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useA
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart as ReLineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as ReBarChart, Bar } from 'recharts'
 import { PlayerForm } from "@/components/forms/PlayerForm";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
   const { data: players = [], isLoading: playersLoading } = usePlayers();
@@ -121,6 +122,7 @@ const Dashboard = () => {
 
         {/* Modular grid with drag-and-drop */}
         <DndGrid
+          userId={useAuth().user?.id || null}
           modules={[
             {
               id: 'trend-matches',

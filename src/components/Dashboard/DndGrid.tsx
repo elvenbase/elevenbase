@@ -9,13 +9,18 @@ import { GripVertical } from 'lucide-react'
 type GridProps = {
   modules: Array<{ id: string; title: string; render: () => JSX.Element }>
   storageKey?: string
+  userId?: string | null
+  preferenceKey?: string
 }
 
-export const DndGrid = ({ modules, storageKey = 'dashboard-layout' }: GridProps) => {
+import { supabase } from '@/integrations/supabase/client'
+
+export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, preferenceKey = 'dashboard_layout' }: GridProps) => {
   const [order, setOrder] = useState<string[]>([])
+  const [locked, setLocked] = useState<boolean>(false)
   const ids = useMemo(() => modules.map(m => m.id), [modules])
 
-  // Load and persist order
+  // Load and persist order (localStorage + user preference if available)
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey)
@@ -25,9 +30,38 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout' }: GridProps)
       }
     } catch {}
   }, [storageKey, ids])
+
+  useEffect(() => {
+    const loadFromDb = async () => {
+      if (!userId) return
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .select('value')
+        .eq('user_id', userId)
+        .eq('key', preferenceKey)
+        .maybeSingle()
+      if (!error && data && data.value && Array.isArray(data.value.order)) {
+        const arr = data.value.order as string[]
+        if (arr.every(id => ids.includes(id))) setOrder(arr)
+        if (typeof data.value.locked === 'boolean') setLocked(!!data.value.locked)
+      }
+    }
+    loadFromDb()
+  }, [userId, preferenceKey, ids])
   useEffect(() => {
     if (order.length > 0) localStorage.setItem(storageKey, JSON.stringify(order))
   }, [order, storageKey])
+
+  const persistToDb = async (nextOrder: string[]) => {
+    try {
+      if (!userId) return
+      const payload = { user_id: userId, key: preferenceKey, value: { order: nextOrder, locked } }
+      const { error } = await supabase.from('user_preferences').upsert(payload, { onConflict: 'user_id,key' as any })
+      if (error) console.error('Failed to persist layout', error)
+    } catch (e) {
+      console.error('Persist layout error', e)
+    }
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -42,6 +76,7 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout' }: GridProps)
     const newIndex = current.indexOf(String(over.id))
     const next = arrayMove(current, oldIndex, newIndex)
     setOrder(next)
+    persistToDb(next)
   }
 
   const currentOrder = order.length ? order : ids
@@ -65,8 +100,8 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout' }: GridProps)
               className="inline-flex items-center gap-2 rounded-md px-2 py-1 bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-grab active:cursor-grabbing transition-bounce"
               aria-label="Trascina per spostare"
               title="Sposta modulo"
-              {...attributes}
-              {...listeners}
+              {...(locked ? {} as any : { ...attributes, ...listeners })}
+              disabled={locked}
             >
               <GripVertical className="h-4 w-4" />
               <span className="text-xs hidden sm:inline">Muovi</span>
@@ -81,6 +116,12 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout' }: GridProps)
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <SortableContext items={currentOrder} strategy={rectSortingStrategy}>
+        <div className="mb-2 flex items-center justify-end">
+          <label className="inline-flex items-center gap-2 text-xs text-muted-foreground select-none">
+            <input type="checkbox" checked={locked} onChange={(e)=>{ setLocked(e.target.checked); persistToDb(order.length?order:ids) }} />
+            Blocca disposizione
+          </label>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {currentOrder.map(id => (
             <SortableModule key={id} id={id} />
