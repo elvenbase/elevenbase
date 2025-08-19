@@ -2352,3 +2352,109 @@ export const useAttendanceDistribution = (opts?: { startDate?: Date; endDate?: D
     }
   })
 }
+
+// Time series: training presences per session date (last N days vs previous N)
+export const useTrainingPresenceSeries = (days: number = 30) => {
+  return useQuery({
+    queryKey: ['training-presence-series', days],
+    queryFn: async () => {
+      const today = new Date()
+      const startPrev = new Date(today)
+      startPrev.setDate(startPrev.getDate() - (days * 2) + 1)
+      const endAll = today
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+      const startStr = fmt(startPrev)
+      const endStr = fmt(endAll)
+
+      // Fetch sessions and attendance within window
+      const tsRes = await supabase
+        .from('training_sessions')
+        .select('id, session_date')
+        .gte('session_date', startStr)
+        .lte('session_date', endStr)
+      if (tsRes.error) throw tsRes.error
+      const sessions = (tsRes.data || []) as any[]
+      const sessionIds = sessions.map(s => s.id)
+      const sessById = new Map<string, any>(sessions.map(s => [s.id, s]))
+      let attRows: any[] = []
+      if (sessionIds.length > 0) {
+        const atRes = await supabase
+          .from('training_attendance')
+          .select('session_id, status, coach_confirmation_status')
+          .in('session_id', sessionIds)
+        if (atRes.error) throw atRes.error
+        attRows = atRes.data || []
+      }
+      const isPresent = (r: any) => {
+        const coach = r.coach_confirmation_status
+        const auto = r.status
+        return (coach === 'present' || coach === 'late') || (auto === 'present' || auto === 'late')
+      }
+      const byDate = new Map<string, number>()
+      for (const r of attRows) {
+        const date = sessById.get(r.session_id)?.session_date
+        if (!date) continue
+        if (isPresent(r)) byDate.set(date, (byDate.get(date) || 0) + 1)
+      }
+      // Build chronological array of last 2*days days
+      const allDates: string[] = []
+      const startAll = new Date(startPrev)
+      for (let i = 0; i < days * 2; i++) {
+        const d = new Date(startAll)
+        d.setDate(startAll.getDate() + i)
+        allDates.push(fmt(d))
+      }
+      const seriesAll = allDates.map(d => ({ date: d, value: byDate.get(d) || 0 }))
+      const prev = seriesAll.slice(0, days)
+      const curr = seriesAll.slice(days)
+      const sum = (arr: {value: number}[]) => arr.reduce((s, r) => s + r.value, 0)
+      const prevSum = sum(prev)
+      const currSum = sum(curr)
+      const pct = prevSum > 0 ? Math.round(((currSum - prevSum) / prevSum) * 100) : (currSum > 0 ? 100 : 0)
+      return { prev: prev, curr: curr, deltaPct: pct }
+    }
+  })
+}
+
+// Time series: match presences per ended match, ordered chronologically (last N vs previous N)
+export const useMatchPresenceSeries = (limit: number = 10) => {
+  return useQuery({
+    queryKey: ['match-presence-series', limit],
+    queryFn: async () => {
+      // Fetch last 2*limit ended matches chronologically ascending
+      const mRes = await supabase
+        .from('matches')
+        .select('id, match_date')
+        .eq('live_state', 'ended')
+        .order('match_date', { ascending: true })
+      if (mRes.error) throw mRes.error
+      const matches = (mRes.data || []) as any[]
+      const take = matches.slice(Math.max(matches.length - (limit * 2), 0))
+      const ids = take.map(m => m.id)
+      let att: any[] = []
+      if (ids.length > 0) {
+        const aRes = await supabase
+          .from('match_attendance')
+          .select('match_id, status, coach_confirmation_status, matches:match_id(match_date)')
+          .in('match_id', ids)
+        if (aRes.error) throw aRes.error
+        att = aRes.data || []
+      }
+      const isPresent = (r: any) => (r.coach_confirmation_status === 'present') || (r.status === 'present')
+      const countByMatch = new Map<string, number>()
+      for (const r of att) {
+        if (!r.match_id) continue
+        if (isPresent(r)) countByMatch.set(r.match_id, (countByMatch.get(r.match_id) || 0) + 1)
+      }
+      const all = take.map(m => ({ id: m.id, date: m.match_date, value: countByMatch.get(m.id) || 0 }))
+      const prev = all.slice(0, Math.max(all.length - limit, 0)).slice(-limit)
+      const curr = all.slice(-limit)
+      const sum = (arr: {value: number}[]) => arr.reduce((s, r) => s + r.value, 0)
+      const prevSum = sum(prev)
+      const currSum = sum(curr)
+      const pct = prevSum > 0 ? Math.round(((currSum - prevSum) / prevSum) * 100) : (currSum > 0 ? 100 : 0)
+      return { prev, curr, deltaPct: pct }
+    }
+  })
+}
