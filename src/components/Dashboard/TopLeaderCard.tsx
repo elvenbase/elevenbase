@@ -16,7 +16,7 @@ type Props = {
   onSegmentOpen?: (filter: { label: string; playerIds: string[] }) => void
 }
 
-export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', item }: Props) => {
+export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', item, distribution = [], onSegmentOpen }: Props) => {
   const theme = (() => {
     switch (variant) {
       case 'training':
