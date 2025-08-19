@@ -22,7 +22,7 @@ interface Player {
 
 interface AttendanceRec {
   player_id: string
-  status: 'pending' | 'present' | 'absent' | 'late' | 'excused'
+  status: 'pending' | 'present' | 'absent' | 'late'
 }
 
 interface BenchRec {
@@ -164,11 +164,11 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
   const indisponibiliCount = allPlayers.filter(player => {
     const a = attendance.find(x => x.player_id === player.id)
     if (player.isTrialist) {
-      return a?.status === 'absent' || a?.status === 'excused'
+      return a?.status === 'absent'
     }
     const rosterStatus = (player.status || 'active')
     const notActive = rosterStatus !== 'active' && rosterStatus !== undefined
-    return a?.status === 'absent' || a?.status === 'excused' || notActive
+    return a?.status === 'absent' || notActive
   }).length
   const senzaRispostaCount = allPlayers.filter(player => {
     const a = attendance.find(x => x.player_id === player.id)

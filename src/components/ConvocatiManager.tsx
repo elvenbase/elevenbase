@@ -25,7 +25,7 @@ interface Player {
 interface Attendance {
   id: string
   player_id: string
-  status: 'pending' | 'present' | 'absent' | 'late' | 'excused'
+  status: 'pending' | 'present' | 'absent' | 'late'
 }
 
 interface Convocato {
@@ -210,7 +210,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
     const playerAttendance = attendance?.find(a => a.player_id === player.id)
     return player.status !== 'active' || 
            playerAttendance?.status === 'absent' || 
-           playerAttendance?.status === 'excused'
+           false
   }).length
   const senzaRispostaCount = allPlayers.filter(player => {
     const a = attendance?.find(x => x.player_id === player.id)

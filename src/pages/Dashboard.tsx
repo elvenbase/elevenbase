@@ -208,7 +208,6 @@ const Dashboard = () => {
                       present: { label: 'Presenti', color: 'hsl(var(--success))' },
                       late: { label: 'Ritardi', color: '#f59e0b' },
                       absent: { label: 'Assenti', color: 'hsl(var(--destructive))' },
-                      excused: { label: 'Giustificati', color: '#64748b' },
                       pending: { label: 'In attesa', color: '#94a3b8' },
                       no_response: { label: 'No response', color: '#a3a3a3' },
                     }} className="h-full">
@@ -221,7 +220,6 @@ const Dashboard = () => {
                         <Bar dataKey="present" fill="var(--color-present)" />
                         <Bar dataKey="late" fill="var(--color-late)" />
                         <Bar dataKey="absent" fill="var(--color-absent)" />
-                        <Bar dataKey="excused" fill="var(--color-excused)" />
                         <Bar dataKey="pending" fill="var(--color-pending)" />
                         <Bar dataKey="no_response" fill="var(--color-no_response)" />
                       </ReBarChart>

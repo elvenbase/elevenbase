@@ -2013,7 +2013,7 @@ export const usePlayerAttendanceSummary = (playerId: string, startDate?: Date, e
       })
 
       // Distribution of auto statuses
-      const distAutoCounts: Record<string, number> = { present: 0, absent: 0, late: 0, excused: 0, no_response: 0, pending: 0 }
+      const distAutoCounts: Record<string, number> = { present: 0, absent: 0, late: 0, no_response: 0, pending: 0 }
       training.forEach(r => { if (r.status && distAutoCounts[r.status] !== undefined) distAutoCounts[r.status] += 1 })
       matches.forEach(r => { if (r.status && distAutoCounts[r.status] !== undefined) distAutoCounts[r.status] += 1 })
 
@@ -2327,7 +2327,7 @@ export const useAttendanceDistribution = (opts?: { startDate?: Date; endDate?: D
       if (endStr) tr = tr.lte('training_sessions.session_date', endStr) as any
       const trRes = await tr
       if (trRes.error) throw trRes.error
-      const tCounts: Record<string, number> = { present: 0, late: 0, absent: 0, excused: 0, pending: 0, no_response: 0 }
+      const tCounts: Record<string, number> = { present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }
       for (const r of (trRes.data || []) as any[]) {
         const s = r.status || 'pending'
         tCounts[s] = (tCounts[s] || 0) + 1
@@ -2342,7 +2342,7 @@ export const useAttendanceDistribution = (opts?: { startDate?: Date; endDate?: D
       if (endStr) mt = mt.lte('matches.match_date', endStr) as any
       const mtRes = await mt
       if (mtRes.error) throw mtRes.error
-      const mCounts: Record<string, number> = { present: 0, late: 0, absent: 0, excused: 0, pending: 0, no_response: 0 }
+      const mCounts: Record<string, number> = { present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }
       for (const r of (mtRes.data || []) as any[]) {
         const s = r.status || 'pending'
         mCounts[s] = (mCounts[s] || 0) + 1
