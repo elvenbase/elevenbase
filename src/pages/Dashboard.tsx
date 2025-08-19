@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import StatsCard from "@/components/StatsCard";
 import DndGrid from "@/components/Dashboard/DndGrid";
 import StatChipBar from "@/components/Dashboard/StatChipBar";
+import BestWorstCard from "@/components/Dashboard/BestWorstCard";
 import QuickActions from "@/components/QuickActions";
 import { 
   Users, 
@@ -36,6 +37,25 @@ const Dashboard = () => {
   const { data: attendanceDist } = useAttendanceDistribution({ startDate: start, endDate: end })
   const { data: trainingSeries } = useTrainingPresenceSeries(30)
   const { data: matchSeries } = useMatchPresenceSeries(10)
+
+  // Helpers to compose best/worst from leaders arrays using players list for avatar/role
+  const playerById = new Map<string, any>(players.map((p:any)=>[p.id, p]))
+  const pickBestWorst = (arr?: Array<{ player_id: string; value?: number; count?: number; first_name?: string; last_name?: string }>) => {
+    if (!arr || arr.length===0) return { best: null, worst: null }
+    const withVal = arr.map(r=>({
+      player: {
+        id: r.player_id,
+        first_name: playerById.get(r.player_id)?.first_name || r.first_name || '-',
+        last_name: playerById.get(r.player_id)?.last_name || r.last_name || '-',
+        avatar_url: playerById.get(r.player_id)?.avatar_url || null,
+        role_code: playerById.get(r.player_id)?.role_code || null,
+      },
+      value: (typeof r.value === 'number' ? r.value : (typeof r.count === 'number' ? r.count : 0))
+    }))
+    const best = withVal.slice().sort((a,b)=>b.value-a.value)[0] || null
+    const worst = withVal.slice().sort((a,b)=>a.value-b.value)[0] || null
+    return { best, worst }
+  }
   
   // Debug logging
   console.log('Dashboard Debug:', {
@@ -215,39 +235,47 @@ const Dashboard = () => {
               id: 'leaders-month',
               title: 'Leader del mese',
               render: () => (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Clock className="h-4 w-4" /> Presenze Allenamento</div>
-                    <div className="text-sm font-medium text-foreground">{leaders?.trainingPresences?.[0] ? `${leaders.trainingPresences[0].first_name} ${leaders.trainingPresences[0].last_name} (${leaders.trainingPresences[0].count})` : '-'}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Timer className="h-4 w-4" /> Presenze Partite</div>
-                    <div className="text-sm font-medium text-foreground">{leaders?.matchPresences?.[0] ? `${leaders.matchPresences[0].first_name} ${leaders.matchPresences[0].last_name} (${leaders.matchPresences[0].count})` : '-'}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Trophy className="h-4 w-4" /> Gol</div>
-                    <div className="text-sm font-medium text-foreground">{leaders?.goals?.[0] ? `${leaders.goals[0].first_name} ${leaders.goals[0].last_name} (${leaders.goals[0].value})` : '-'}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><UserPlus className="h-4 w-4" /> Assist</div>
-                    <div className="text-sm font-medium text-foreground">{leaders?.assists?.[0] ? `${leaders.assists[0].first_name} ${leaders.assists[0].last_name} (${leaders.assists[0].value})` : '-'}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Clock className="h-4 w-4" /> Minuti giocati</div>
-                    <div className="text-sm font-medium text-foreground">{leaders?.minutes?.[0] ? `${leaders.minutes[0].first_name} ${leaders.minutes[0].last_name} (${leaders.minutes[0].value})` : '-'}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Shield className="h-4 w-4" /> Parate</div>
-                    <div className="text-sm font-medium text-foreground">{leaders?.saves?.[0] ? `${leaders.saves[0].first_name} ${leaders.saves[0].last_name} (${leaders.saves[0].value})` : '-'}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Shield className="h-4 w-4" /> Ammonizioni</div>
-                    <div className="text-sm font-medium text-foreground">{leaders?.yellowCards?.[0] ? `${leaders.yellowCards[0].first_name} ${leaders.yellowCards[0].last_name} (${leaders.yellowCards[0].value})` : '-'}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><CircleX className="h-4 w-4" /> Espulsioni</div>
-                    <div className="text-sm font-medium text-foreground">{leaders?.redCards?.[0] ? `${leaders.redCards[0].first_name} ${leaders.redCards[0].last_name} (${leaders.redCards[0].value})` : '-'}</div>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <BestWorstCard
+                    title="Presenze allenamento"
+                    metricLabel="Presenze"
+                    {...pickBestWorst(leaders?.trainingPresences?.map((r:any)=>({ ...r, value: r.count })))}
+                  />
+                  <BestWorstCard
+                    title="Presenze partite"
+                    metricLabel="Presenze"
+                    {...pickBestWorst(leaders?.matchPresences?.map((r:any)=>({ ...r, value: r.count })))}
+                  />
+                  <BestWorstCard
+                    title="Gol"
+                    metricLabel="Gol"
+                    {...pickBestWorst(leaders?.goals)}
+                  />
+                  <BestWorstCard
+                    title="Assist"
+                    metricLabel="Assist"
+                    {...pickBestWorst(leaders?.assists)}
+                  />
+                  <BestWorstCard
+                    title="Minuti giocati"
+                    metricLabel="Minuti"
+                    {...pickBestWorst(leaders?.minutes)}
+                  />
+                  <BestWorstCard
+                    title="Parate"
+                    metricLabel="Parate"
+                    {...pickBestWorst(leaders?.saves)}
+                  />
+                  <BestWorstCard
+                    title="Ammonizioni"
+                    metricLabel="Gialli"
+                    {...pickBestWorst(leaders?.yellowCards)}
+                  />
+                  <BestWorstCard
+                    title="Espulsioni"
+                    metricLabel="Rossi"
+                    {...pickBestWorst(leaders?.redCards)}
+                  />
                 </div>
               )
             },
