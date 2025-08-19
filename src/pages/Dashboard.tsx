@@ -247,7 +247,7 @@ const Dashboard = () => {
                   <BestWorstCard
                     title="Presenze allenamento"
                     metricLabel="Presenze (%)"
-                    {...pickBestWorst(leaders?.trainingPresences?.map((r:any)=>({ ...r, value: r.count })))}
+                    {...pickBestWorst(leaders?.trainingPresences)}
                   />
                   <BestWorstCard
                     title="Ritardi (all. + partite)"
@@ -257,7 +257,7 @@ const Dashboard = () => {
                   <BestWorstCard
                     title="Presenze partite"
                     metricLabel="Presenze (%)"
-                    {...pickBestWorst(leaders?.matchPresences?.map((r:any)=>({ ...r, value: r.count })))}
+                    {...pickBestWorst(leaders?.matchPresences)}
                   />
                   <BestWorstCard
                     title="No response (all. + partite)"
