@@ -252,64 +252,23 @@ const Dashboard = () => {
               title: 'Leader del mese',
               render: () => (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} />
-                  <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.trainingAbsences).best} />
-                  <TopLeaderCard
-                    metricLabel="Ritardi (all. + partite)"
-                    valueUnit="ritardi"
-                    variant="lates"
-                    item={pickBestWorst(leaders?.lates).best}
-                  />
-                  <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.trainingLates).best} />
-                  <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.matchLates).best} />
-                  <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} />
-                  <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.matchAbsences).best} />
-                  <TopLeaderCard metricLabel="No response (allenamenti)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.trainingNoResponses).best} />
-                  <TopLeaderCard metricLabel="No response (partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.matchNoResponses).best} />
-                  <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} />
-                  <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.totalAbsences).best} />
-                  <TopLeaderCard
-                    metricLabel="No response (all. + partite)"
-                    valueUnit="no resp."
-                    variant="no_response"
-                    item={pickBestWorst(leaders?.noResponses).best}
-                  />
-                  <TopLeaderCard
-                    metricLabel="Gol"
-                    valueUnit="gol"
-                    variant="goals"
-                    item={pickBestWorst(leaders?.goals).best}
-                  />
-                  <TopLeaderCard
-                    metricLabel="Assist"
-                    valueUnit="assist"
-                    variant="assists"
-                    item={pickBestWorst(leaders?.assists).best}
-                  />
-                  <TopLeaderCard
-                    metricLabel="Minuti giocati"
-                    valueUnit="min"
-                    variant="minutes"
-                    item={pickBestWorst(leaders?.minutes).best}
-                  />
-                  <TopLeaderCard
-                    metricLabel="Parate"
-                    valueUnit="parate"
-                    variant="saves"
-                    item={pickBestWorst(leaders?.saves).best}
-                  />
-                  <TopLeaderCard
-                    metricLabel="Ammonizioni"
-                    valueUnit="gialli"
-                    variant="yellow"
-                    item={pickBestWorst(leaders?.yellowCards).best}
-                  />
-                  <TopLeaderCard
-                    metricLabel="Espulsioni"
-                    valueUnit="rossi"
-                    variant="red"
-                    item={pickBestWorst(leaders?.redCards).best}
-                  />
+                  <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} distribution={leaders?.trainingPresences} />
+                  <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.trainingAbsences).best} distribution={leaders?.trainingAbsences} />
+                  <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.lates).best} distribution={leaders?.lates} />
+                  <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.trainingLates).best} distribution={leaders?.trainingLates} />
+                  <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.matchLates).best} distribution={leaders?.matchLates} />
+                  <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} distribution={leaders?.matchPresences} />
+                  <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.matchAbsences).best} distribution={leaders?.matchAbsences} />
+                  <TopLeaderCard metricLabel="No response (allenamenti)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.trainingNoResponses).best} distribution={leaders?.trainingNoResponses} />
+                  <TopLeaderCard metricLabel="No response (partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.matchNoResponses).best} distribution={leaders?.matchNoResponses} />
+                  <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} distribution={leaders?.totalPresences} />
+                  <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.totalAbsences).best} distribution={leaders?.totalAbsences} />
+                  <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.noResponses).best} distribution={leaders?.noResponses} />
+                  <TopLeaderCard metricLabel="Gol" valueUnit="gol" variant="goals" item={pickBestWorst(leaders?.goals).best} distribution={leaders?.goals} />
+                  <TopLeaderCard metricLabel="Assist" valueUnit="assist" variant="assists" item={pickBestWorst(leaders?.assists).best} distribution={leaders?.assists} />
+                  <TopLeaderCard metricLabel="Minuti giocati" valueUnit="min" variant="minutes" item={pickBestWorst(leaders?.minutesAvg).best} distribution={leaders?.minutesAvg} />
+                  <TopLeaderCard metricLabel="Ammonizioni" valueUnit="gialli" variant="yellow" item={pickBestWorst(leaders?.yellowCards).best} distribution={leaders?.yellowCards} />
+                  <TopLeaderCard metricLabel="Espulsioni" valueUnit="rossi" variant="red" item={pickBestWorst(leaders?.redCards).best} distribution={leaders?.redCards} />
                 </div>
               )
             },
