@@ -139,9 +139,9 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
           <Card className="p-0 bg-card/80 border border-border rounded-2xl shadow-card hover:shadow-glow transition-smooth h-full overflow-hidden" onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}>
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center gap-2 h-10 px-3" style={{ backgroundColor: metricStyle.headerBg }}>
-                <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
-                <div className="line-clamp-2 font-semibold text-[14px]" style={{ color: '#2B2B2B' }}>{metricLabel}</div>
+              <div className="flex items-start gap-3 px-4 py-3 min-h-[64px]" style={{ backgroundColor: metricStyle.headerBg }}>
+                <SectionIcon className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: metricStyle.accent }} aria-hidden />
+                <div className="line-clamp-2 font-semibold text-[14px] leading-snug" style={{ color: '#2B2B2B' }}>{metricLabel}</div>
               </div>
               {/* Hero */}
               <div className="relative flex-1 px-4 py-2 pb-5">
