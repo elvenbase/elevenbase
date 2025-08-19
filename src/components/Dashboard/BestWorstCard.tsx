@@ -25,15 +25,19 @@ export const BestWorstCard = ({ title, metricLabel, icon: SectionIcon, variant =
           headerIcon: 'text-success',
           chipBg: 'bg-success/15',
           chipText: 'text-success',
-          ring: 'ring-success',
+          pillBg: 'bg-success/20',
+          pillText: 'text-success',
+          cardBg: 'bg-gradient-to-br from-success/5 to-transparent',
         }
       case 'lates':
         return {
-          bg: 'bg-warning/10',
-          headerIcon: 'text-warning',
-          chipBg: 'bg-warning/15',
-          chipText: 'text-warning',
-          ring: 'ring-warning',
+          bg: 'bg-destructive/10',
+          headerIcon: 'text-destructive',
+          chipBg: 'bg-destructive/15',
+          chipText: 'text-destructive',
+          pillBg: 'bg-destructive/15',
+          pillText: 'text-destructive',
+          cardBg: 'bg-gradient-to-br from-destructive/5 to-transparent',
         }
       case 'matches':
         return {
@@ -41,7 +45,9 @@ export const BestWorstCard = ({ title, metricLabel, icon: SectionIcon, variant =
           headerIcon: 'text-accent',
           chipBg: 'bg-accent/15',
           chipText: 'text-accent',
-          ring: 'ring-accent',
+          pillBg: 'bg-accent/15',
+          pillText: 'text-accent',
+          cardBg: 'bg-gradient-to-br from-accent/5 to-transparent',
         }
       case 'no_response':
         return {
@@ -49,26 +55,29 @@ export const BestWorstCard = ({ title, metricLabel, icon: SectionIcon, variant =
           headerIcon: 'text-muted-foreground',
           chipBg: 'bg-muted',
           chipText: 'text-muted-foreground',
-          ring: 'ring-muted',
+          pillBg: 'bg-muted',
+          pillText: 'text-foreground',
+          cardBg: 'bg-gradient-to-br from-muted/30 to-transparent',
         }
       case 'goals':
-        return { bg: 'bg-primary/10', headerIcon: 'text-primary', chipBg: 'bg-primary/15', chipText: 'text-primary', ring: 'ring-primary' }
+        return { bg: 'bg-primary/10', headerIcon: 'text-primary', chipBg: 'bg-primary/15', chipText: 'text-primary', pillBg: 'bg-primary/15', pillText: 'text-primary', cardBg: 'bg-gradient-to-br from-primary/5 to-transparent' }
       case 'assists':
-        return { bg: 'bg-accent/10', headerIcon: 'text-accent', chipBg: 'bg-accent/15', chipText: 'text-accent', ring: 'ring-accent' }
+        return { bg: 'bg-accent/10', headerIcon: 'text-accent', chipBg: 'bg-accent/15', chipText: 'text-accent', pillBg: 'bg-accent/15', pillText: 'text-accent', cardBg: 'bg-gradient-to-br from-accent/5 to-transparent' }
       case 'minutes':
-        return { bg: 'bg-secondary/10', headerIcon: 'text-secondary', chipBg: 'bg-secondary/15', chipText: 'text-secondary', ring: 'ring-secondary' }
+        return { bg: 'bg-secondary/10', headerIcon: 'text-secondary', chipBg: 'bg-secondary/15', chipText: 'text-secondary', pillBg: 'bg-secondary/15', pillText: 'text-secondary', cardBg: 'bg-gradient-to-br from-secondary/10 to-transparent' }
       case 'saves':
-        return { bg: 'bg-success/10', headerIcon: 'text-success', chipBg: 'bg-success/15', chipText: 'text-success', ring: 'ring-success' }
+        return { bg: 'bg-success/10', headerIcon: 'text-success', chipBg: 'bg-success/15', chipText: 'text-success', pillBg: 'bg-success/20', pillText: 'text-success', cardBg: 'bg-gradient-to-br from-success/5 to-transparent' }
       case 'yellow':
-        return { bg: 'bg-warning/10', headerIcon: 'text-warning', chipBg: 'bg-warning/15', chipText: 'text-warning', ring: 'ring-warning' }
+        return { bg: 'bg-warning/10', headerIcon: 'text-warning', chipBg: 'bg-warning/15', chipText: 'text-warning', pillBg: 'bg-warning/15', pillText: 'text-warning', cardBg: 'bg-gradient-to-br from-warning/5 to-transparent' }
       case 'red':
-        return { bg: 'bg-destructive/10', headerIcon: 'text-destructive', chipBg: 'bg-destructive/15', chipText: 'text-destructive', ring: 'ring-destructive' }
+        return { bg: 'bg-destructive/10', headerIcon: 'text-destructive', chipBg: 'bg-destructive/15', chipText: 'text-destructive', pillBg: 'bg-destructive/15', pillText: 'text-destructive', cardBg: 'bg-gradient-to-br from-destructive/5 to-transparent' }
       default:
-        return { bg: 'bg-muted/20', headerIcon: 'text-foreground', chipBg: 'bg-muted', chipText: 'text-foreground', ring: 'ring-primary' }
+        return { bg: 'bg-muted/20', headerIcon: 'text-foreground', chipBg: 'bg-muted', chipText: 'text-foreground', pillBg: 'bg-muted', pillText: 'text-foreground', cardBg: 'bg-gradient-to-br from-muted/20 to-transparent' }
     }
   })()
   const AnimatedNumber = ({ value, suffix = '' }: { value: number; suffix?: string }) => {
     const [display, setDisplay] = useState(0)
+    const [bump, setBump] = useState(false)
     useEffect(() => {
       let raf: number
       const start = performance.now()
@@ -83,10 +92,15 @@ export const BestWorstCard = ({ title, metricLabel, icon: SectionIcon, variant =
         if (p < 1) raf = requestAnimationFrame(step)
       }
       raf = requestAnimationFrame(step)
+      if (value > display) {
+        setBump(true)
+        const id = setTimeout(() => setBump(false), 500)
+        return () => { cancelAnimationFrame(raf); clearTimeout(id) }
+      }
       return () => cancelAnimationFrame(raf)
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value])
-    return <span className="text-foreground font-semibold">{display}{suffix}</span>
+    return <span className={`text-foreground font-bold ${bump ? 'animate-pulse' : ''}`}>{display}{suffix}</span>
   }
   const Item = ({ kind, data }: { kind: 'best'|'worst'; data?: { player: PlayerRef; value?: number; percent?: number; count?: number } | null }) => {
     if (!data) return (
@@ -99,48 +113,52 @@ export const BestWorstCard = ({ title, metricLabel, icon: SectionIcon, variant =
     const to = `/player/${p.id}`
     return (
       <Link to={to} className="group block">
-        <div className={`p-3 rounded-lg ${theme.bg} hover:bg-muted/60 transition-smooth`}> 
+        <div className={`p-3 rounded-lg ${theme.bg} hover:bg-muted/60 transition-smooth`}>
+          {/* Row 1: Avatar + Name + Pill Number */}
           <div className="flex items-center justify-between gap-3">
-            <div className="relative flex items-center gap-3">
+            <div className="relative flex items-center gap-3 min-w-0">
               <div className="relative">
                 <PlayerAvatar
                   firstName={p.first_name}
                   lastName={p.last_name}
                   avatarUrl={p.avatar_url || undefined}
                   size="md"
-                  className={`ring-2 ${theme.ring} ring-offset-2 ring-offset-background group-hover:shadow-glow transition-smooth ${kind==='best' ? 'animate-glow-pulse' : ''}`}
                 />
-                {SectionIcon && (
-                  <span className={`absolute -bottom-1 -right-1 inline-flex items-center justify-center h-4 w-4 rounded-full ${theme.chipBg} ${theme.chipText} ring-1 ring-white/40`}>
-                    <SectionIcon className="h-3 w-3" />
-                  </span>
-                )}
+                {/* Small badge overlay: up/down arrow */}
+                <span className={`absolute -bottom-1 -right-1 inline-flex items-center justify-center h-4 w-4 rounded-full ${theme.chipBg} ${theme.chipText} ring-1 ring-white/40`}>
+                  {kind === 'best' ? (
+                    <ArrowUpRight className="h-3 w-3" />
+                  ) : (
+                    <ArrowDownRight className="h-3 w-3" />
+                  )}
+                </span>
               </div>
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-foreground truncate">{p.first_name} {p.last_name}</div>
               </div>
             </div>
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${theme.chipBg} ${theme.chipText} text-xs font-semibold transition-smooth group-hover:scale-105`}>
-              {kind === 'best' ? (
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              ) : (
-                <ArrowDownRight className="h-3.5 w-3.5 text-destructive" />
+            <div className="flex flex-col items-end gap-0.5">
+              <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${theme.pillBg} ${theme.pillText} text-sm sm:text-base font-bold transition-smooth group-hover:scale-105`}>
+                <AnimatedNumber value={(data.value ?? data.count ?? 0)} />
+              </div>
+              {typeof data.percent === 'number' && (
+                <div className="text-[10px] sm:text-xs text-neutral-600 dark:text-neutral-400">({data.percent}%)</div>
               )}
-              <span className="text-foreground">
-                <AnimatedNumber value={(data.value ?? data.count ?? 0)} suffix={typeof data.percent === 'number' ? ` (${data.percent}%)` : ''} />
-              </span>
             </div>
           </div>
-          <div className="mt-2 flex items-center justify-between text-xs">
-            <div className="text-muted-foreground">{metricLabel}</div>
-            <div className={`text-muted-foreground ${kind==='best' ? 'text-success' : 'text-destructive'}`}>{kind === 'best' ? 'Top' : 'Peggiore'}</div>
+          {/* Row 2: Metric + optional Top/Peggiore chip */}
+          <div className="mt-2 flex items-center justify-between">
+            <div className="text-xs text-muted-foreground">{metricLabel}</div>
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${kind==='best' ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'}`}>{kind==='best' ? 'Top' : 'Peggiore'}</span>
+            </div>
           </div>
         </div>
       </Link>
     )
   }
   return (
-    <Card className={`p-4 bg-card/80 border-border hover:shadow-glow transition-smooth`}>
+    <Card className={`p-4 ${theme.cardBg} bg-card/80 border-border hover:shadow-glow transition-smooth`}>
       <div className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
         {SectionIcon && <SectionIcon className={`h-4 w-4 ${theme.headerIcon}`} />}
         <span>{title}</span>
