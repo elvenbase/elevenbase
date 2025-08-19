@@ -155,7 +155,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                     <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
                   </div>
                   <div className="mt-2 max-w-[85%] line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                  <div className="mt-1 text-[13px] text-muted-foreground">Migliore {metricLabel.toLowerCase()} nel periodo</div>
+                  <div className="mt-1 text-[13px] text-muted-foreground">{metricLabel.toLowerCase()} nel periodo</div>
                   <div className="mt-3 flex items-center justify-center mb-5">
                     <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
                       <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
@@ -176,7 +176,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 max-w-full">
                         <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                        <div className="mt-1 text-[13px] text-muted-foreground">Migliore {metricLabel.toLowerCase()} nel periodo</div>
+                        <div className="mt-1 text-[13px] text-muted-foreground">{metricLabel.toLowerCase()} nel periodo</div>
                       </div>
                       <div className="hidden sm:flex items-center">
                         <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
@@ -191,7 +191,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               </div>
               {/* Footer */}
               <div className="flex items-center justify-between h-7 text-[12px] px-4" style={{ color: '#5A5A5A' }}>
-                <span className="truncate">Migliore nel periodo. Tocca per vedere il confronto squadra.</span>
+                <span className="truncate">nel periodo. Tocca per vedere il confronto squadra.</span>
                 <button onClick={(e)=>{ e.preventDefault(); setFlipped(true) }} className="hover:opacity-80" aria-label="Apri confronto squadra con flip">↻ Flip</button>
               </div>
             </div>
