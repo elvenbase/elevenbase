@@ -2154,6 +2154,16 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       if (trRes.error) throw trRes.error
       const trainingRows = (trRes.data || []) as any[]
 
+      // Training convocations joined with sessions to compute totals consistently with PlayerDetail
+      let tcSel = supabase
+        .from('training_convocati')
+        .select('player_id, session_id, training_sessions!inner(session_date)')
+      if (startStr) tcSel = tcSel.gte('training_sessions.session_date', startStr) as any
+      if (endStr) tcSel = tcSel.lte('training_sessions.session_date', endStr) as any
+      const tcRes = await tcSel
+      if (tcRes.error) throw tcRes.error
+      const trainingConvRows = (tcRes.data || []) as any[]
+
       // Match attendance joined with matches for date filters and state
       let mtSel = supabase
         .from('match_attendance')
@@ -2196,12 +2206,21 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       const trainingLatesByPlayer = new Map<string, number>()
       const matchLatesByPlayer = new Map<string, number>()
       const noRespByPlayer = new Map<string, number>()
-      for (const row of trainingRows) {
+      // Use convocation count as total sessions for training (align with PlayerDetail synthetic events)
+      for (const row of trainingConvRows) {
         if (!row.player_id) continue
         trainingTotalsByPlayer.set(row.player_id, (trainingTotalsByPlayer.get(row.player_id) || 0) + 1)
+      }
+      // Also include any attendance-only rows that might exist without a convocation record (defensive)
+      for (const row of trainingRows) {
+        if (!row.player_id) continue
+        if (!trainingTotalsByPlayer.has(row.player_id)) {
+          trainingTotalsByPlayer.set(row.player_id, 0)
+        }
+        // do not increment here to avoid double counting; totals rely on convocations primarily
         const present = isPresentTraining(row)
         if (present) trainingByPlayer.set(row.player_id, (trainingByPlayer.get(row.player_id) || 0) + 1)
-        const isLate = (row.coach_confirmation_status === 'late') || (row.status === 'late')
+        const isLate = (row.coach_confirmation_status === 'late') || (row.status === 'late') || (present && !!row.arrival_time)
         if (isLate) {
           latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
           trainingLatesByPlayer.set(row.player_id, (trainingLatesByPlayer.get(row.player_id) || 0) + 1)
@@ -2222,7 +2241,7 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         })
         .sort((a, b) => b.value - a.value)
 
-      // Aggregate match attendance by player
+      // Aggregate match attendance by player (only ended matches, align totals to ended matches count)
       const matchByPlayer = new Map<string, number>()
       const matchTotalsByPlayer = new Map<string, number>()
       for (const row of matchAttRows) {
