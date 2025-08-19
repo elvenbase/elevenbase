@@ -2192,7 +2192,9 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       // Aggregate training attendance by player
       const trainingByPlayer = new Map<string, number>()
       const trainingTotalsByPlayer = new Map<string, number>()
-      const latesByPlayer = new Map<string, number>()
+      const latesByPlayer = new Map<string, number>() // combined (training + match)
+      const trainingLatesByPlayer = new Map<string, number>()
+      const matchLatesByPlayer = new Map<string, number>()
       const noRespByPlayer = new Map<string, number>()
       for (const row of trainingRows) {
         if (!row.player_id) continue
@@ -2200,7 +2202,10 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         const present = isPresentTraining(row)
         if (present) trainingByPlayer.set(row.player_id, (trainingByPlayer.get(row.player_id) || 0) + 1)
         const isLate = (row.coach_confirmation_status === 'late') || (row.status === 'late')
-        if (isLate) latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
+        if (isLate) {
+          latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
+          trainingLatesByPlayer.set(row.player_id, (trainingLatesByPlayer.get(row.player_id) || 0) + 1)
+        }
         if (row.status === 'no_response') noRespByPlayer.set(row.player_id, (noRespByPlayer.get(row.player_id) || 0) + 1)
       }
       const trainingPresences = Array.from(trainingByPlayer.entries())
@@ -2226,16 +2231,24 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         const present = isPresentMatch(row)
         if (present) matchByPlayer.set(row.player_id, (matchByPlayer.get(row.player_id) || 0) + 1)
         const isLate = present && !!row.arrival_time
-        if (isLate) latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
+        if (isLate) {
+          latesByPlayer.set(row.player_id, (latesByPlayer.get(row.player_id) || 0) + 1)
+          matchLatesByPlayer.set(row.player_id, (matchLatesByPlayer.get(row.player_id) || 0) + 1)
+        }
         if (row.status === 'no_response') noRespByPlayer.set(row.player_id, (noRespByPlayer.get(row.player_id) || 0) + 1)
       }
       const matchPresences = Array.from(matchByPlayer.entries())
-        .map(([player_id, count]) => ({
-          player_id,
-          count,
-          first_name: playersById.get(player_id)?.first_name || '—',
-          last_name: playersById.get(player_id)?.last_name || ''
-        }))
+        .map(([player_id, count]) => {
+          const total = matchTotalsByPlayer.get(player_id) || 0
+          const percent = total > 0 ? Math.round((count / total) * 100) : 0
+          return {
+            player_id,
+            count,
+            percent,
+            first_name: playersById.get(player_id)?.first_name || '—',
+            last_name: playersById.get(player_id)?.last_name || ''
+          }
+        })
         .sort((a, b) => b.count - a.count)
 
       // Aggregate match player stats sums
@@ -2285,6 +2298,35 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
           }
         })
         .sort((x, y) => y.value - x.value)
+
+      // Split arrays by context for lates
+      const toArrayFromMapTraining = (m: Map<string, number>) => Array.from(m.entries())
+        .map(([player_id, value]) => {
+          const total = trainingTotalsByPlayer.get(player_id) || 0
+          const percent = total > 0 ? Math.round((value / total) * 100) : 0
+          return {
+            player_id,
+            value,
+            percent,
+            first_name: playersById.get(player_id)?.first_name || '—',
+            last_name: playersById.get(player_id)?.last_name || ''
+          }
+        })
+        .sort((x, y) => y.value - x.value)
+
+      const toArrayFromMapMatch = (m: Map<string, number>) => Array.from(m.entries())
+        .map(([player_id, value]) => {
+          const total = matchTotalsByPlayer.get(player_id) || 0
+          const percent = total > 0 ? Math.round((value / total) * 100) : 0
+          return {
+            player_id,
+            value,
+            percent,
+            first_name: playersById.get(player_id)?.first_name || '—',
+            last_name: playersById.get(player_id)?.last_name || ''
+          }
+        })
+        .sort((x, y) => y.value - x.value)
       return {
         trainingPresences,
         matchPresences,
@@ -2295,6 +2337,8 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         redCards: toArray('red_cards'),
         saves: toArray('saves'),
         lates: toArrayFromMap(latesByPlayer),
+        trainingLates: toArrayFromMapTraining(trainingLatesByPlayer),
+        matchLates: toArrayFromMapMatch(matchLatesByPlayer),
         noResponses: toArrayFromMap(noRespByPlayer),
       }
     }

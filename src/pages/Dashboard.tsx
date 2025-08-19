@@ -266,6 +266,20 @@ const Dashboard = () => {
                     {...pickBestWorst(leaders?.lates)}
                   />
                   <BestWorstCard
+                    title="Ritardi allenamento"
+                    metricLabel="Ritardi (%)"
+                    icon={AlarmClock}
+                    variant="lates"
+                    {...pickBestWorst(leaders?.trainingLates)}
+                  />
+                  <BestWorstCard
+                    title="Ritardi partite"
+                    metricLabel="Ritardi (%)"
+                    icon={AlarmClock}
+                    variant="lates"
+                    {...pickBestWorst(leaders?.matchLates)}
+                  />
+                  <BestWorstCard
                     title="Presenze partite"
                     metricLabel="Presenze (%)"
                     icon={BadgeCheck}
