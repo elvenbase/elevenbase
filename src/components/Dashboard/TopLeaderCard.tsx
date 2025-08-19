@@ -198,7 +198,6 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                     <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
                   </div>
                   <div className="mt-2 max-w-[85%] line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                  <div className="mt-1 text-[13px] text-muted-foreground">{metricLabel.toLowerCase()}</div>
                   <div className="mt-3 flex items-center justify-center mb-5">
                     <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
                       <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
@@ -219,7 +218,6 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 max-w-full">
                         <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                        <div className="mt-1 text-[13px] text-muted-foreground">{metricLabel.toLowerCase()}</div>
                       </div>
                       <div className="hidden sm:flex items-center">
                         <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
