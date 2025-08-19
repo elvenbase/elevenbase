@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
-import { Award, Undo2, Search } from 'lucide-react'
+import { Award, RotateCcw, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
@@ -171,7 +171,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
         <Card className={`p-4 ${theme.cardBg} bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden]`}>
           <div className="flex items-start justify-between">
             <div className="text-xs text-muted-foreground">Base: {baseN} giocatori</div>
-            <button className="text-xs text-muted-foreground hover:text-foreground" onClick={()=>setFlipped(false)} aria-label="Torna al fronte"><Undo2 className="h-4 w-4"/></button>
+            <button className="text-xs text-muted-foreground hover:text-foreground" onClick={()=>setFlipped(false)} aria-label="Torna al fronte"><RotateCcw className="h-4 w-4"/></button>
           </div>
           <div className="mt-2 h-36">
             <ResponsiveContainer width="100%" height="100%">
