@@ -7,8 +7,10 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { GripVertical, RotateCcw } from 'lucide-react'
 
+type GridModule = { id: string; title: string; render: () => JSX.Element; gridClassName?: string }
+
 type GridProps = {
-  modules: Array<{ id: string; title: string; render: () => JSX.Element }>
+  modules: Array<GridModule>
   storageKey?: string
   userId?: string | null
   preferenceKey?: string
@@ -93,7 +95,7 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
     } as React.CSSProperties
     if (!mod) return null
     return (
-      <div ref={setNodeRef} style={style} className="min-w-0">
+      <div ref={setNodeRef} style={style} className={`min-w-0 ${mod.gridClassName || ''}`}>
         <Card className={`p-4 bg-card border-border transition-smooth ${isDragging ? 'shadow-lg ring-1 ring-primary/30' : 'hover:shadow-glow'}`}>
           <div className="mb-3 flex items-center justify-between gap-2">
             <h3 className="text-sm font-semibold text-foreground truncate">{mod.title}</h3>

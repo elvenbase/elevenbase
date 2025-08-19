@@ -250,8 +250,9 @@ const Dashboard = () => {
             {
               id: 'leaders-month',
               title: 'Leader del mese',
+              gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                   <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} distribution={leaders?.trainingPresences} />
                   <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" variant="lates" item={pickBestWorst(leaders?.trainingAbsences).best} distribution={leaders?.trainingAbsences} />
                   <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.lates).best} distribution={leaders?.lates} />
@@ -312,4 +313,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
