@@ -144,12 +144,12 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const to = `/player/${p.id}`
 
   return (
-    <div className="group [perspective:1000px]">
+    <div className="group [perspective:1000px] h-60 sm:h-64 w-full">
       <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
         {/* Front */}
         <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
           <Card className={`p-4 ${theme.cardBg} bg-card/80 border-border hover:shadow-glow transition-smooth h-full`} onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}>
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-start justify-between gap-3 h-full">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative">
                   <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="md" className="animate-in fade-in-0" />
@@ -165,6 +165,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 <span className="text-foreground text-sm sm:text-base font-semibold">{` ${valueUnit}`}</span>
               </div>
             </div>
+            <div className="mt-3 text-[11px] text-muted-foreground line-clamp-2">Top {metricLabel.toLowerCase()} nel periodo. Tocca per vedere il confronto squadra.</div>
           </Card>
         </Link>
         {/* Back */}
@@ -173,7 +174,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
             <div className="text-xs text-muted-foreground">Base: {baseN} giocatori</div>
             <button className="text-xs text-muted-foreground hover:text-foreground" onClick={()=>setFlipped(false)} aria-label="Torna al fronte"><RotateCcw className="h-4 w-4"/></button>
           </div>
-          <div className="mt-2 h-36">
+          <div className="mt-2 h-[7.5rem] sm:h-[8.5rem]">
             <ReResponsiveContainer width="100%" height="100%">
               <RePieChart>
                 <RePie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>
