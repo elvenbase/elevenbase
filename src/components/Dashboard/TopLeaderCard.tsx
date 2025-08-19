@@ -275,7 +275,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 <ol className="text-[11px] leading-5 text-muted-foreground">
                   {topFive?.map((t: any) => (
                     <li key={t.id} className="truncate">
-                      {t.rank}) {(t.first_name?.[0] || '?')}. {t.last_name || ''}
+                      {t.rank}) {(t.first_name?.[0] || '?')}. {t.last_name || ''} | {t.value}
                     </li>
                   ))}
                 </ol>
