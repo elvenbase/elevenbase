@@ -5,7 +5,7 @@ plugins = []
 [functions."*"]
 
 [build]
-publish = "/workspace/dist"
+publish = "/workspace/elevenbase/dist"
 publishOrigin = "config"
 commandOrigin = "config"
 command = "npm ci && npm run build"

@@ -77,6 +77,37 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   })()
   const SectionIcon = metricStyle.icon
 
+  // Dynamic caption for backside base count, tailored by metric/variant
+  const baseCaption = useMemo(() => {
+    switch (variant) {
+      case 'training':
+        return 'Giocatori con almeno 1 presenza agli allenamenti'
+      case 'matches':
+        return 'Giocatori con almeno 1 presenza alle partite'
+      case 'lates':
+        return 'Giocatori con almeno 1 ritardo'
+      case 'no_response':
+        return 'Giocatori con almeno 1 mancata risposta'
+      case 'goals':
+        return 'Giocatori con almeno 1 gol'
+      case 'assists':
+        return 'Giocatori con almeno 1 assist'
+      case 'minutes':
+        return 'Giocatori con minuti registrati'
+      case 'saves':
+        return 'Giocatori con almeno 1 parata'
+      case 'yellow':
+        return 'Giocatori con almeno 1 ammonizione'
+      case 'red':
+        return 'Giocatori con almeno 1 espulsione'
+      default: {
+        if (/Assenze/i.test(metricLabel)) return 'Giocatori con almeno 1 assenza'
+        if (/Presenze/i.test(metricLabel)) return 'Giocatori con almeno 1 presenza'
+        return 'Giocatori coinvolti'
+      }
+    }
+  }, [variant, metricLabel])
+
   // Backside distribution
   const { pieData, legend, baseN } = useMemo(() => {
     const src = (distribution || []) as Array<any>
@@ -155,7 +186,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                     <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
                   </div>
                   <div className="mt-2 max-w-[85%] line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                  <div className="mt-1 text-[13px] text-muted-foreground">{metricLabel.toLowerCase()} nel periodo</div>
+                  <div className="mt-1 text-[13px] text-muted-foreground">{metricLabel.toLowerCase()}</div>
                   <div className="mt-3 flex items-center justify-center mb-5">
                     <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
                       <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
@@ -176,7 +207,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 max-w-full">
                         <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                        <div className="mt-1 text-[13px] text-muted-foreground">{metricLabel.toLowerCase()} nel periodo</div>
+                        <div className="mt-1 text-[13px] text-muted-foreground">{metricLabel.toLowerCase()}</div>
                       </div>
                       <div className="hidden sm:flex items-center">
                         <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
@@ -191,7 +222,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               </div>
               {/* Footer */}
               <div className="flex items-center justify-between h-7 text-[12px] px-4" style={{ color: '#5A5A5A' }}>
-                <span className="truncate">nel periodo. Tocca per vedere il confronto squadra.</span>
+                <span className="truncate">Tocca per vedere il confronto squadra.</span>
                 <button onClick={(e)=>{ e.preventDefault(); setFlipped(true) }} className="hover:opacity-80" aria-label="Apri confronto squadra con flip">↻ Flip</button>
               </div>
             </div>
@@ -201,7 +232,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
         <Card className="p-4 bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-hidden">
           <div className="flex flex-col h-full">
             <div className="flex items-start justify-between">
-              <div className="text-xs text-muted-foreground">Base: {baseN} giocatori</div>
+              <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
               <button className="text-xs text-muted-foreground hover:text-foreground" onClick={()=>setFlipped(false)} aria-label="Torna al fronte"><RotateCcw className="h-4 w-4"/></button>
             </div>
             <div className="mt-2 h-[7.5rem] flex-shrink-0">
