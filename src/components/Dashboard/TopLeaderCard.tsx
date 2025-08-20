@@ -253,9 +253,14 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 </div>
               </div>
               {/* Footer */}
-              <div className="flex items-center justify-between h-7 text-[12px] px-4 mb-2" style={{ color: '#5A5A5A' }}>
-                <span className="truncate">Tocca per vedere il confronto squadra.</span>
-                <button onClick={(e)=>{ e.preventDefault(); setFlipped(true) }} className="hover:opacity-80" aria-label="Apri confronto squadra con flip">↻ Flip</button>
+              <div className="flex items-center justify-center h-7 text-[12px] px-4 mb-2" style={{ color: '#5A5A5A' }}>
+                <button
+                  onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}
+                  className="underline underline-offset-2 hover:no-underline"
+                  aria-label="Apri confronto squadra"
+                >
+                  confronto squadra
+                </button>
               </div>
             </div>
           </Card>
