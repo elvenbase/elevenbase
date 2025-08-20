@@ -69,7 +69,7 @@ const Navigation = () => {
           <NavLink to="/" className="flex items-center space-x-3">
             <div>
               <img
-                src="/IMG_0055.png"
+                src={`/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
                 alt="Logo"
                 className="h-10 w-auto"
                 onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
