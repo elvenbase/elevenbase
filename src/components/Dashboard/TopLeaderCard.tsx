@@ -251,11 +251,11 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
         </Link>
         {/* Back */}
         <Card className="p-4 bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-hidden relative">
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full pb-3">
             <div className="flex items-start justify-between">
               <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
             </div>
-            <div className="mt-2 h-[7.5rem] flex items-start gap-3">
+            <div className="mt-2 flex-1 min-h-[7.5rem] flex items-start gap-3">
               <div className="w-[48%] h-full">
                 <ReResponsiveContainer width="100%" height="100%">
                   <RePieChart>
