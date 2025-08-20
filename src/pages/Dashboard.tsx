@@ -352,14 +352,6 @@ const Dashboard = () => {
               )
             },
             {
-              id: 'players-stats-table',
-              title: 'Statistiche Giocatori (tabella completa)',
-              gridClassName: 'col-span-1',
-              render: () => (
-                <PlayersStatsTable />
-              )
-            },
-            {
               id: 'leaders-match-performance',
               title: 'Performance Partite',
               gridClassName: 'col-span-1',
@@ -370,6 +362,14 @@ const Dashboard = () => {
                   <TopLeaderCard metricLabel="Ammonizioni" valueUnit="gialli" variant="yellow" item={pickBestWorst(leaders?.yellowCards).best} distribution={leaders?.yellowCards} />
                   <TopLeaderCard metricLabel="Espulsioni" valueUnit="rossi" variant="red" item={pickBestWorst(leaders?.redCards).best} distribution={leaders?.redCards} />
                 </div>
+              )
+            },
+            {
+              id: 'players-stats-table',
+              title: 'Statistiche Giocatori (tabella completa)',
+              gridClassName: 'col-span-1',
+              render: () => (
+                <PlayersStatsTable />
               )
             },
             {
