@@ -202,8 +202,8 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   }, [])
 
   useLayoutEffect(() => {
-    // Base min heights per spec
-    const base = vw >= 900 ? 260 : 200
+    // Base min heights per spec (+30px)
+    const base = vw >= 900 ? 290 : 230
     // Estimate content height: header (≈30) + footer (≈28) + content blocks (avatar/name/chip/role/pill ≈ 160)
     // We'll cap to at least base and allow growth if content exceeds base
     const estimate = base
@@ -211,7 +211,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   }, [vw, item])
 
   return (
-    <div className="group [perspective:1000px] min-h-[200px] min-[900px]:min-h-[260px] w-full" style={computedMin ? { minHeight: `${computedMin}px` } : undefined}>
+    <div className="group [perspective:1000px] min-h-[230px] min-[900px]:min-h-[290px] w-full" style={computedMin ? { minHeight: `${computedMin}px` } : undefined}>
       <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
         {/* Front */}
         <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
