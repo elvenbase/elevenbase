@@ -149,7 +149,7 @@ const EmailConfirm = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <img
-              src={`/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
+              src={`/assets/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
               alt="ElevenBase"
               className="h-16 w-auto"
               onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
