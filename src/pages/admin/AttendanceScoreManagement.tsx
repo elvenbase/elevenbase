@@ -108,7 +108,7 @@ export default function AttendanceScoreManagement() {
             </div>
             <CardDescription>Come viene calcolato lo score</CardDescription>
           </CardHeader>
-          <CardContent className="prose prose-sm max-w-none dark:prose-invert">
+          <CardContent className="prose prose-sm sm:prose-base max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-li:marker:text-muted-foreground">
             <article>
               <header>
                 <h2>Algoritmo di affidabilità (scala 0–100)</h2>
