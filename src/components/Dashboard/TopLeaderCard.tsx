@@ -159,14 +159,16 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
     const chartData = buckets.map((b, i) => ({ name: b.key, value: b.ids.length, fill: colors[i % colors.length], ids: b.ids }))
     const total = chartData.reduce((s, r) => s + r.value, 0)
     const legendItems = chartData.map(d => ({ label: d.name, pct: total ? clamp((d.value / total) * 100) : 0, color: d.fill, ids: d.ids }))
-    const getVal = (r: any) => isRate ? Number(r.percent || 0) : Number(r.value ?? r.count ?? 0)
-    const sorted = [...src].sort((a, b) => getVal(b) - getVal(a))
+    const useCountForTop = /Presenze/i.test(metricLabel)
+    const getCount = (r: any) => Number(r.value ?? r.count ?? 0)
+    const getSortVal = (r: any) => useCountForTop ? getCount(r) : (isRate ? Number(r.percent || 0) : getCount(r))
+    const sorted = [...src].sort((a, b) => getSortVal(b) - getSortVal(a))
     const topFive = sorted.slice(0, 5).map((r, idx) => ({
       rank: idx + 1,
       id: r.player_id,
       first_name: r.first_name,
       last_name: r.last_name,
-      value: getVal(r),
+      value: getCount(r),
     }))
     return { pieData: chartData, legend: legendItems, baseN: nPlayers, topFive }
   }, [distribution, metricLabel, variant])
