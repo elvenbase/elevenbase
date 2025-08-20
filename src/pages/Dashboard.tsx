@@ -49,6 +49,23 @@ const Dashboard = () => {
   const { data: matchSeries } = useMatchPresenceSeries(10)
   const navigate = useNavigate();
 
+  const formatDayMonth = (value: any) => {
+    try {
+      if (!value) return ''
+      // Support ISO strings (YYYY-MM-DD or with time)
+      const d = new Date(typeof value === 'string' ? value : String(value))
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })
+      }
+      // Fallback: try to parse YYYY-MM-DD manually
+      const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
+      if (m) return `${m[3]}/${m[2]}`
+      return String(value)
+    } catch {
+      return String(value)
+    }
+  }
+
   // Helpers to compose best/worst from leaders arrays using players list for avatar/role
   const playerById = new Map<string, any>(players.map((p:any)=>[p.id, p]))
   const pickBestWorst = (arr?: Array<{ player_id: string; value?: number; count?: number; percent?: number; first_name?: string; last_name?: string }>) => {
@@ -61,7 +78,7 @@ const Dashboard = () => {
         avatar_url: playerById.get(r.player_id)?.avatar_url || null,
         role_code: playerById.get(r.player_id)?.role_code || null,
       },
-      value: (typeof r.value === 'number' ? r.value : (typeof r.count === 'number' ? r.count : 0)),
+        value: (typeof r.value === 'number' ? r.value : (typeof r.count === 'number' ? r.count : 0)),
       percent: (typeof (r as any).percent === 'number' ? (r as any).percent : undefined)
     }))
     const best = withVal.slice().sort((a,b)=>b.value-a.value)[0] || null
@@ -147,7 +164,7 @@ const Dashboard = () => {
                       }} className="h-full">
                         <ReLineChart data={trend.series} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} />
                           <YAxis stroke="hsl(var(--muted-foreground))" />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} />
@@ -173,7 +190,7 @@ const Dashboard = () => {
                       <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
                         <ReLineChart data={trainingSeries.curr} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} />
                           <YAxis stroke="hsl(var(--muted-foreground))" />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
@@ -199,7 +216,7 @@ const Dashboard = () => {
                       <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
                         <ReLineChart data={matchSeries.curr} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} />
                           <YAxis stroke="hsl(var(--muted-foreground))" />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
@@ -234,7 +251,7 @@ const Dashboard = () => {
                           <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
                           <YAxis stroke="hsl(var(--muted-foreground))" />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <ChartLegend content={<ChartLegendContent />} />
+                          <ChartLegend content={<ChartLegendContent className="text-[9px] sm:text-xs" />} />
                           <Bar dataKey="present" fill="var(--color-present)" />
                           <Bar dataKey="late" fill="var(--color-late)" />
                           <Bar dataKey="absent" fill="var(--color-absent)" />
