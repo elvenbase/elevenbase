@@ -82,7 +82,11 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
     persistToDb(next)
   }
 
-  const currentOrder = order.length ? order : ids
+  const currentOrder = useMemo(() => {
+    const base = order.length ? order : ids
+    const missing = ids.filter(id => !base.includes(id))
+    return [...base, ...missing]
+  }, [order, ids])
   const byId = new Map(modules.map(m => [m.id, m]))
 
   const SortableModule = ({ id }: { id: string }) => {
