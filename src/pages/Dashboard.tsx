@@ -280,16 +280,6 @@ const Dashboard = () => {
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
                 <div>
-                  <div className="mb-2 text-xs text-muted-foreground break-words">
-                    {(() => {
-                      const sum = (arr?: Array<any>) => (arr || []).reduce((acc, r) => acc + Number((r as any).value ?? (r as any).count ?? 0), 0)
-                      const pres = sum(leaders?.totalPresences)
-                      const abs = sum(leaders?.totalAbsences)
-                      const late = sum(leaders?.lates)
-                      const nr = sum(leaders?.noResponses)
-                      return `Totali periodo: Presenze ${pres} · Assenze ${abs} · Ritardi ${late} · No response ${nr}`
-                    })()}
-                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
                     <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} distribution={leaders?.totalPresences} />
                     <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" item={pickBestWorst(leaders?.totalAbsences).best} distribution={leaders?.totalAbsences} />
