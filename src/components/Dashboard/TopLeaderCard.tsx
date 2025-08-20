@@ -12,8 +12,8 @@ type PlayerRef = { id: string; first_name: string; last_name: string; avatar_url
 type Props = {
   metricLabel: string
   valueUnit: string
-  variant?: 'training' | 'lates' | 'matches' | 'no_response' | 'goals' | 'assists' | 'minutes' | 'saves' | 'yellow' | 'red' | 'neutral'
-  item?: { player: PlayerRef; value?: number; percent?: number; count?: number } | null
+  variant?: 'training' | 'lates' | 'matches' | 'no_response' | 'goals' | 'assists' | 'minutes' | 'saves' | 'yellow' | 'red' | 'neutral' | 'score_best' | 'score_worst'
+  item?: { player: PlayerRef; value?: number; percent?: number; count?: number; meta?: any } | null
   distribution?: Array<{ player_id: string; value?: number; count?: number; percent?: number; first_name?: string; last_name?: string }>
   onSegmentOpen?: (filter: { label: string; playerIds: string[] }) => void
 }
@@ -76,6 +76,10 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
         return { headerBg: '#FFF8DB', accent: '#C7A300', icon: SquareMinus }
       case 'red':
         return { headerBg: '#FFE9EB', accent: '#D83A3A', icon: SquareMinus }
+      case 'score_best':
+        return { headerBg: '#E8F6EE', accent: '#2EB872', icon: null as any }
+      case 'score_worst':
+        return { headerBg: '#FFE9EB', accent: '#D83A3A', icon: null as any }
       default: {
         const isAbs = /Assenze/i.test(metricLabel)
         if (isAbs) return { headerBg: '#F7F1E6', accent: '#A77D2C', icon: CalendarX }
@@ -83,7 +87,8 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
       }
     }
   })()
-  const SectionIcon = metricStyle.icon
+  const SectionIcon = metricStyle.icon as any
+  const isScoreVariant = variant === 'score_best' || variant === 'score_worst'
 
   // Dynamic caption for backside base count, tailored by metric/variant
   const baseCaption = useMemo(() => {
@@ -220,7 +225,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center gap-2 px-3 py-1 min-h-[30px]" style={{ backgroundColor: metricStyle.headerBg }}>
-                <SectionIcon className="h-5 w-5 flex-shrink-0" style={{ color: metricStyle.accent }} aria-hidden />
+                {!!SectionIcon && <SectionIcon className="h-5 w-5 flex-shrink-0" style={{ color: metricStyle.accent }} aria-hidden />}
                 <div className="relative top-[2px] sm:top-0 line-clamp-2 font-semibold text-[14px] leading-tight" style={{ color: '#2B2B2B' }}>{metricLabel}</div>
               </div>
               {/* Hero */}
@@ -246,7 +251,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                   )}
                   <div className="mt-3 flex items-center justify-center -mb-5 lg:mb-2.5">
                     <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
-                      <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
+                      {!!SectionIcon && <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />}
                       <span className="font-bold tabular-nums text-[24px]" style={{ color: metricStyle.accent }}>{value}</span>
                       <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
                     </div>
@@ -258,9 +263,9 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 <button
                   onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}
                   className="underline underline-offset-2 hover:no-underline"
-                  aria-label="Apri confronto squadra"
+                  aria-label={isScoreVariant ? 'Vedi dettagli' : 'Apri confronto squadra'}
                 >
-                  confronto squadra
+                  {isScoreVariant ? 'vedi dettagli' : 'confronto squadra'}
                 </button>
               </div>
             </div>
@@ -268,39 +273,92 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
         </Link>
         {/* Back */}
         <Card className="p-4 bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-hidden relative h-full" style={{ minHeight: 'inherit' }}>
-          <div className="flex flex-col h-full pb-3">
-            <div className="flex items-start justify-between">
-              <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
-            </div>
-            <div className="mt-2 flex-1 min-h-[8.5rem] flex flex-col lg:flex-row items-stretch gap-3">
-              <div className="w-full lg:w-[48%] h-[120px] sm:h-[140px]">
-                <ReResponsiveContainer width="100%" height="100%">
-                  <RePieChart>
-                    <RePie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>
-                      {pieData?.map((entry, index) => (
-                        <ReCell key={`cell-${index}`} fill={entry.fill} />
+          {isScoreVariant ? (
+            <div className="flex flex-col h-full pb-3">
+              <div className="mb-2">
+                <div className="text-sm font-semibold">Dettagli punteggio</div>
+                <div className="text-xs text-muted-foreground">Parametri che hanno contribuito allo score</div>
+              </div>
+              {(() => {
+                const meta = (item as any)?.meta || {}
+                const pct = (n: number) => `${Math.round((n || 0) * 100)}%`
+                return (
+                  <div className="flex-1 grid grid-cols-2 gap-3 text-[12px]">
+                    <div className="space-y-2">
+                      <div className="rounded-lg border p-2">
+                        <div className="text-muted-foreground">Opportunità</div>
+                        <div className="font-semibold">{meta.opportunities ?? '—'}</div>
+                      </div>
+                      <div className="rounded-lg border p-2">
+                        <div className="text-muted-foreground">Punti grezzi</div>
+                        <div className="font-semibold">{typeof meta.pointsRaw === 'number' ? meta.pointsRaw.toFixed(2) : '—'}</div>
+                      </div>
+                      <div className="rounded-lg border p-2">
+                        <div className="text-muted-foreground">No response rate</div>
+                        <div className="font-semibold">{pct(meta.noResponseRate || 0)}</div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="rounded-lg border p-2">
+                        <div className="text-muted-foreground">Presenze partite</div>
+                        <div className="font-semibold">{pct(meta.matchPresenceRate || 0)}</div>
+                      </div>
+                      <div className="rounded-lg border p-2">
+                        <div className="text-muted-foreground">Ritardi partite</div>
+                        <div className="font-semibold">{pct(meta.matchLateRate || 0)}</div>
+                      </div>
+                    </div>
+                    <div className="col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
+                      {[
+                        ['T_P', meta.T_P], ['T_L', meta.T_L], ['T_A', meta.T_A], ['T_NR', meta.T_NR],
+                        ['M_P', meta.M_P], ['M_L', meta.M_L], ['M_A', meta.M_A], ['M_NR', meta.M_NR],
+                      ].map(([k,v]: any, i: number) => (
+                        <div key={i} className="rounded-full px-3 py-1 text-center border bg-muted/40">
+                          <span className="text-muted-foreground mr-1">{k}</span>
+                          <span className="font-semibold">{v ?? 0}</span>
+                        </div>
                       ))}
-                    </RePie>
-                    <ReTooltip formatter={(value:any, name:any)=>{
-                      const n = Number(value || 0)
-                      const pct = baseN ? Math.round((n / baseN) * 100) : 0
-                      return [`${pct}% (${n} giocatori)`, name]
-                    }} />
-                  </RePieChart>
-                </ReResponsiveContainer>
-              </div>
-              <div className="flex-1 h-full overflow-auto">
-                <ol className="text-[11px] leading-5 text-muted-foreground">
-                  {topFive?.map((t: any) => (
-                    <li key={t.id} className="truncate">
-                      {t.rank}) {(t.first_name?.[0] || '?')}. {t.last_name || ''} | {t.value}
-                    </li>
-                  ))}
-                </ol>
-              </div>
+                    </div>
+                  </div>
+                )
+              })()}
+              <div className="h-7 mb-2" />
             </div>
-            <div className="h-7 mb-2" />
-          </div>
+          ) : (
+            <div className="flex flex-col h-full pb-3">
+              <div className="flex items-start justify-between">
+                <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
+              </div>
+              <div className="mt-2 flex-1 min-h-[8.5rem] flex flex-col lg:flex-row items-stretch gap-3">
+                <div className="w-full lg:w-[48%] h-[120px] sm:h-[140px]">
+                  <ReResponsiveContainer width="100%" height="100%">
+                    <RePieChart>
+                      <RePie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>
+                        {pieData?.map((entry, index) => (
+                          <ReCell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </RePie>
+                      <ReTooltip formatter={(value:any, name:any)=>{
+                        const n = Number(value || 0)
+                        const pct = baseN ? Math.round((n / baseN) * 100) : 0
+                        return [`${pct}% (${n} giocatori)`, name]
+                      }} />
+                    </RePieChart>
+                  </ReResponsiveContainer>
+                </div>
+                <div className="flex-1 h-full overflow-auto">
+                  <ol className="text-[11px] leading-5 text-muted-foreground">
+                    {topFive?.map((t: any) => (
+                      <li key={t.id} className="truncate">
+                        {t.rank}) {(t.first_name?.[0] || '?')}. {t.last_name || ''} | {t.value}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </div>
+              <div className="h-7 mb-2" />
+            </div>
+          )}
           <button className="absolute bottom-2 right-2 text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-1" onClick={()=>setFlipped(false)} aria-label="Torna al fronte">
             <span>back</span>
             <RotateCcw className="h-3.5 w-3.5" />

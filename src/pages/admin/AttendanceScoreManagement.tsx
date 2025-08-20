@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { Separator } from '@/components/ui/separator'
+import { Info } from 'lucide-react'
 
 export default function AttendanceScoreManagement() {
   const { toast } = useToast()
@@ -73,28 +75,90 @@ export default function AttendanceScoreManagement() {
   }
 
   return (
-    <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 max-w-3xl">
-      <Card>
-        <CardHeader>
-          <CardTitle>Attendance Score</CardTitle>
-          <CardDescription>Configura pesi e imposta un ricalcolo manuale</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Object.entries(weights).map(([k,v]) => (
-              <label key={k} className="text-sm space-y-1">
-                <span className="block capitalize">{k.replace(/[A-Z]/g, m=>' '+m).trim()}</span>
-                <Input type="number" step="0.1" value={v as any} onChange={(e)=>setWeights(w=>({ ...w, [k]: Number(e.target.value) }))} />
-              </label>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={load} variant="outline">Carica</Button>
-            <Button onClick={save} disabled={loading}>{loading?'Salvataggio...':'Salva'}</Button>
-            <Button onClick={runNow} variant="secondary" disabled={loading}>{loading?'Esecuzione...':'Esegui ora'}</Button>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 max-w-6xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="border-border/80 shadow-sm hover:shadow-glow transition-smooth">
+          <CardHeader>
+            <CardTitle>Attendance Score</CardTitle>
+            <CardDescription>Configura pesi e imposta un ricalcolo manuale</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {Object.entries(weights).map(([k,v]) => (
+                <label key={k} className="text-sm space-y-1">
+                  <span className="block font-medium text-foreground/90">{k.replace(/[A-Z]/g, m=>' '+m).trim()}</span>
+                  <Input type="number" step="0.1" value={v as any} onChange={(e)=>setWeights(w=>({ ...w, [k]: Number(e.target.value) }))} />
+                </label>
+              ))}
+            </div>
+            <Separator />
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={load} variant="outline">Carica</Button>
+              <Button onClick={save} disabled={loading}>{loading?'Salvataggio...':'Salva'}</Button>
+              <Button onClick={runNow} variant="secondary" disabled={loading}>{loading?'Esecuzione...':'Esegui ora'}</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Info className="h-4 w-4 text-primary" />
+              <CardTitle>Algoritmo di affidabilità (scala 0–100)</CardTitle>
+            </div>
+            <CardDescription>Come viene calcolato lo score</CardDescription>
+          </CardHeader>
+          <CardContent className="prose prose-sm max-w-none dark:prose-invert">
+            <p>Il sistema assegna a ogni giocatore un punteggio di affidabilità su scala 0–100, basato sul comportamento di partecipazione a allenamenti e partite. Ogni evento genera punti positivi o negativi; i punti vengono poi normalizzati in funzione del numero di opportunità avute (per evitare che chi ha pochi eventi risulti avvantaggiato).</p>
+
+            <h4>Punteggi per evento</h4>
+            <h5>Allenamenti</h5>
+            <ul>
+              <li>Presente puntuale: <strong>+1</strong></li>
+              <li>Presente in ritardo: <strong>+0,6</strong></li>
+              <li>Assente: <strong>−0,8</strong></li>
+              <li>No response (assenza senza risposta): <strong>−1</strong></li>
+            </ul>
+            <h5>Partite</h5>
+            <ul>
+              <li>Presente puntuale: <strong>+2,5</strong></li>
+              <li>Presente in ritardo: <strong>+1,5</strong></li>
+              <li>Assente: <strong>−2</strong></li>
+              <li>No response (assenza senza risposta): <strong>−2,5</strong></li>
+            </ul>
+
+            <h4>Calcolo e normalizzazione</h4>
+            <ol>
+              <li>Si sommano i punti di tutti gli eventi del giocatore (allenamenti e partite).</li>
+              <li>Il totale viene normalizzato su 0–100 confrontandolo con il minimo teorico (tutte no response) e il massimo teorico (tutte presenze puntuali) per lo stesso numero di opportunità del giocatore; il punteggio grezzo viene riportato in percentuale su tale intervallo e poi limitato tra 0 e 100.</li>
+            </ol>
+
+            <h4>Elegibilità e classifiche</h4>
+            <ul>
+              <li>Entrano in classifica solo i giocatori con almeno <strong>10 eventi totali</strong> (allenamenti + partite).</li>
+              <li>In caso di parità, l’ordinamento applica nell’ordine:
+                <ol>
+                  <li>minor <em>tasso di no response</em> complessivo,</li>
+                  <li>maggiore <em>percentuale di presenze alle partite</em>,</li>
+                  <li>minor <em>tasso di ritardi alle partite</em>.</li>
+                </ol>
+              </li>
+            </ul>
+
+            <h4>Definizioni operative</h4>
+            <ul>
+              <li>Il conteggio “ritardi” è un sottoinsieme delle presenze; una presenza può essere puntuale o in ritardo.</li>
+              <li>I contatori devono essere mantenuti separati per allenamenti e partite; gli eventuali aggregati “allenamenti + partite” sono solo informativi e non si usano nel calcolo.</li>
+            </ul>
+
+            <h4>Esito</h4>
+            <ul>
+              <li><strong>Miglior giocatore</strong>: punteggio 0–100 più alto tra gli eleggibili.</li>
+              <li><strong>Peggior giocatore</strong>: punteggio 0–100 più basso tra gli eleggibili.</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

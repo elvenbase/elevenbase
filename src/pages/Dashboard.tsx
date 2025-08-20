@@ -391,10 +391,60 @@ const Dashboard = () => {
               render: () => (
                 <div className="grid grid-cols-1 min-[800px]:grid-cols-4 gap-4 justify-items-center">
                   {scoreLeaders.bestTwo.map((s, idx)=> (
-                    <TopLeaderCard key={`best-${idx}`} metricLabel={`Score migliore #${idx+1}`} valueUnit="pt" variant="neutral" item={{ player: { id: s.player_id, first_name: s.first_name||'—', last_name: s.last_name||'', jersey_number: undefined, role_code: undefined }, value: Number(s.score0to100.toFixed(1)) }} distribution={[]} />
+                    <TopLeaderCard
+                      key={`best-${idx}`}
+                      metricLabel={`Score migliore #${idx+1}`}
+                      valueUnit="pt"
+                      variant="score_best"
+                      item={{
+                        player: { id: s.player_id, first_name: s.first_name||'—', last_name: s.last_name||'', jersey_number: undefined, role_code: undefined },
+                        value: Number(s.score0to100.toFixed(1)),
+                        meta: {
+                          pointsRaw: s.pointsRaw,
+                          opportunities: s.opportunities,
+                          noResponseRate: s.noResponseRate,
+                          matchPresenceRate: s.matchPresenceRate,
+                          matchLateRate: s.matchLateRate,
+                          T_P: (leaders?.trainingPresences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          T_L: (leaders?.trainingLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          T_A: (leaders?.trainingAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          T_NR: (leaders?.trainingNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          M_P: (leaders?.matchPresences||[]).find(r=>r.player_id===s.player_id)?.count || (leaders?.matchPresences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          M_L: (leaders?.matchLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          M_A: (leaders?.matchAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          M_NR: (leaders?.matchNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                        }
+                      }}
+                      distribution={[]}
+                    />
                   ))}
                   {scoreLeaders.worstTwo.map((s, idx)=> (
-                    <TopLeaderCard key={`worst-${idx}`} metricLabel={`Score peggiore #${idx+1}`} valueUnit="pt" variant="neutral" item={{ player: { id: s.player_id, first_name: s.first_name||'—', last_name: s.last_name||'', jersey_number: undefined, role_code: undefined }, value: Number(s.score0to100.toFixed(1)) }} distribution={[]} />
+                    <TopLeaderCard
+                      key={`worst-${idx}`}
+                      metricLabel={`Score peggiore #${idx+1}`}
+                      valueUnit="pt"
+                      variant="score_worst"
+                      item={{
+                        player: { id: s.player_id, first_name: s.first_name||'—', last_name: s.last_name||'', jersey_number: undefined, role_code: undefined },
+                        value: Number(s.score0to100.toFixed(1)),
+                        meta: {
+                          pointsRaw: s.pointsRaw,
+                          opportunities: s.opportunities,
+                          noResponseRate: s.noResponseRate,
+                          matchPresenceRate: s.matchPresenceRate,
+                          matchLateRate: s.matchLateRate,
+                          T_P: (leaders?.trainingPresences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          T_L: (leaders?.trainingLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          T_A: (leaders?.trainingAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          T_NR: (leaders?.trainingNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          M_P: (leaders?.matchPresences||[]).find(r=>r.player_id===s.player_id)?.count || (leaders?.matchPresences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          M_L: (leaders?.matchLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          M_A: (leaders?.matchAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          M_NR: (leaders?.matchNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                        }
+                      }}
+                      distribution={[]}
+                    />
                   ))}
                 </div>
               )
