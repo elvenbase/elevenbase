@@ -282,8 +282,9 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 </ol>
               </div>
             </div>
+            <div className="h-7 mb-2" />
           </div>
-          <button className="absolute bottom-2 right-2 text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-full border px-2.5 py-1" onClick={()=>setFlipped(false)} aria-label="Torna al fronte">
+          <button className="absolute bottom-2 right-2 text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-1" onClick={()=>setFlipped(false)} aria-label="Torna al fronte">
             <span>back</span>
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
