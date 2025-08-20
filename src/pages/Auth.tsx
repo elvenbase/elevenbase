@@ -72,8 +72,8 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md flex flex-col items-center">
         {/* Logo e Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-1">
+        <div className="text-center mb-[50px]">
+          <div className="flex items-center justify-center mb-0">
             <img
               src={`/assets/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
               alt="Logo"
@@ -81,7 +81,6 @@ const Auth = () => {
               onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
             />
           </div>
-          <p className="text-muted-foreground">E-sport Management System</p>
         </div>
 
         <Card className="shadow-card">
