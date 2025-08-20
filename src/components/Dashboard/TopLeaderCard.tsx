@@ -224,12 +224,11 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               </div>
               {/* Hero */}
               <div className="relative flex-1 px-4 py-2 pb-3">
-                {/* Gradient overlays: centered on mobile, anchored to avatar on >=lg */}
-                <div className="pointer-events-none absolute inset-0 min-[900px]:hidden" style={{ backgroundImage: `radial-gradient(60% 60% at 50% 40%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
-                <div className="pointer-events-none absolute inset-0 hidden min-[900px]:block" style={{ backgroundImage: `radial-gradient(60% 60% at 15% 50%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
+                {/* Gradient overlay: same centered style for all widths */}
+                <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: `radial-gradient(60% 60% at 50% 40%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
 
-                {/* Mobile (<=lg): centered stack with tighter vertical spacing */}
-                <div className="min-[900px]:hidden flex h-full flex-col items-center justify-center text-center">
+                {/* Unified layout: use the same centered stack for all widths */}
+                <div className="flex h-full flex-col items-center justify-center text-center">
                   <div className="relative -mt-5 lg:mt-0">
                     <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
                   </div>
@@ -250,29 +249,6 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                       <span className="font-bold tabular-nums text-[24px]" style={{ color: metricStyle.accent }}>{value}</span>
                       <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
                     </div>
-                  </div>
-                </div>
-
-                {/* >=900px: stack avatar, name, jersey chip, role, value pill vertically and let height grow */}
-                <div className="hidden min-[900px]:flex flex-col items-start gap-2 text-left min-h-[260px]">
-                  <div className="relative lg:mt-5">
-                    <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
-                  </div>
-                  <div className="min-w-0 max-w-full">
-                    <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                  </div>
-                  {typeof (p as any).jersey_number !== 'undefined' && (p as any).jersey_number !== null && (
-                    <Badge variant="secondary" className="px-2 py-0.5 text-xs">#{(p as any).jersey_number}</Badge>
-                  )}
-                  {p.role_code && (
-                    <div className="text-xs text-muted-foreground">
-                      {roleLabelByCode.get(p.role_code) || p.role_code}
-                    </div>
-                  )}
-                  <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
-                    <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
-                    <span className="font-bold tabular-nums text-[22px]" style={{ color: metricStyle.accent }}>{value}</span>
-                    <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
                   </div>
                 </div>
               </div>
