@@ -66,14 +66,14 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and brand */}
-          <NavLink to="/" className="flex items-center space-x-3 group">
-            <div className="relative">
-              <img 
-                src="/assets/logo_elevenBase.png" 
-                alt="Ca De Rissi SG Esport" 
-                className="h-10 w-10 rounded-lg group-hover:shadow-accent-glow transition-smooth"
+          <NavLink to="/" className="flex items-center space-x-3">
+            <div>
+              <img
+                src="/IMG_0055.png"
+                alt="Logo"
+                className="h-10 w-auto"
+                onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
               />
-              <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 rounded-lg transition-smooth" />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-semibold bg-gradient-primary bg-clip-text text-transparent">
