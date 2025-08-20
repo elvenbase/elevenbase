@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { useRoles } from '@/hooks/useRoles'
 import { RotateCcw, Search, CalendarCheck2, CalendarX, AlarmClock, MailX, CornerDownRight, Timer, Trophy, SquareMinus } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { PieChart as RePieChart, Pie as RePie, Cell as ReCell, Tooltip as ReTooltip, ResponsiveContainer as ReResponsiveContainer } from 'recharts'
 
 type PlayerRef = { id: string; first_name: string; last_name: string; avatar_url?: string | null; role_code?: string | null; jersey_number?: number | null }
@@ -193,8 +193,25 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const value = (item.value ?? item.count ?? 0)
   const to = `/player/${p.id}`
 
+  const [computedMin, setComputedMin] = useState<number | null>(null)
+  const [vw, setVw] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0)
+  useLayoutEffect(() => {
+    const onResize = () => setVw(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useLayoutEffect(() => {
+    // Base min heights per spec
+    const base = vw >= 900 ? 260 : 200
+    // Estimate content height: header (≈30) + footer (≈28) + content blocks (avatar/name/chip/role/pill ≈ 160)
+    // We'll cap to at least base and allow growth if content exceeds base
+    const estimate = base
+    setComputedMin(estimate)
+  }, [vw, item])
+
   return (
-    <div className="group [perspective:1000px] min-h-[200px] min-[900px]:min-h-[260px] w-full">
+    <div className="group [perspective:1000px] min-h-[200px] min-[900px]:min-h-[260px] w-full" style={computedMin ? { minHeight: `${computedMin}px` } : undefined}>
       <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
         {/* Front */}
         <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
@@ -236,8 +253,8 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                   </div>
                 </div>
 
-                {/* >= lg: stack avatar, name, pill vertically and left-aligned */}
-                <div className="hidden min-[900px]:flex flex-col items-start gap-2 text-left">
+                {/* >=900px: stack avatar, name, jersey chip, role, value pill vertically and let height grow */}
+                <div className="hidden min-[900px]:flex flex-col items-start gap-2 text-left min-h-[260px]">
                   <div className="relative lg:mt-5">
                     <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
                   </div>
