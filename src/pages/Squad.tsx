@@ -337,7 +337,7 @@ const Squad = () => {
   const { data: players = [], isLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
   const { data: roles = [] } = useRoles();
   const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
-  const { defaultBackground } = useAvatarBackgrounds()
+  const { defaultAvatarImageUrl } = useAvatarBackgrounds()
 
   // Role -> sector mapping for card background theme
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
@@ -472,7 +472,7 @@ const Squad = () => {
 
   const openImageModal = (player: Player) => {
     setSelectedPlayerImage({
-      src: player.avatar_url || '',
+      src: player.avatar_url || defaultAvatarImageUrl || '',
       name: `${player.first_name} ${player.last_name}`,
       fallback: `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`
     });
@@ -753,7 +753,7 @@ const Squad = () => {
               <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1000px]:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {filteredAndSortedPlayers.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || ''];
-                  const imageSrc = p.avatar_url || (defaultBackground && defaultBackground.type === 'image' ? defaultBackground.value : '');
+                  const imageSrc = p.avatar_url || defaultAvatarImageUrl || '';
                   const age = computeAge(p.birth_date);
                   const pres = p.matchPresences ?? 0; // keep zeros visible
                   const numero = p.jersey_number ?? null;
@@ -779,7 +779,7 @@ const Squad = () => {
                               onError={(e) => {
                                 const img = e.currentTarget as HTMLImageElement
                                 // Prevent infinite loop by applying fallback only once
-                                const fallback = (defaultBackground && defaultBackground.type === 'image') ? defaultBackground.value : ''
+                                const fallback = defaultAvatarImageUrl || ''
                                 const already = (img as any).dataset.fallbackApplied === '1'
                                 if (!already && fallback && img.src !== fallback) {
                                   ;(img as any).dataset.fallbackApplied = '1'
@@ -793,7 +793,7 @@ const Squad = () => {
                           </div>
                         ) : (
                           <div className="absolute top-4 left-0 md:top-6 md:left-0">
-                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
+                            <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url} size="lg" />
                           </div>
                         )}
 
