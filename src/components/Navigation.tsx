@@ -75,12 +75,6 @@ const Navigation = () => {
                 onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
               />
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-semibold bg-gradient-primary bg-clip-text text-transparent">
-                ElevenBase
-              </h1>
-              <p className="text-xs text-muted-foreground">E-Sport Management</p>
-            </div>
           </NavLink>
 
           {/* Desktop Navigation */}
