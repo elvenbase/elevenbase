@@ -41,8 +41,8 @@ const AdminDashboard = () => {
         badge: 'Maglie'
       },
     {
-      title: 'Gestione Sfondi Avatar',
-      description: 'Personalizza gli sfondi degli avatar dei giocatori',
+      title: 'Gestione Avatar',
+      description: 'Carica avatar di default e personalizza sfondi avatar',
       icon: Image,
       href: '/admin/avatar-backgrounds',
       color: 'bg-orange-500',

@@ -27,7 +27,7 @@ export const AvatarManager: React.FC = () => {
   const [uploading, setUploading] = useState(false)
   const { toast } = useToast()
 
-
+  const [defaultAvatarUrl, setDefaultAvatarUrl] = useState('')
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -47,6 +47,28 @@ export const AvatarManager: React.FC = () => {
         description: "Impossibile caricare l'immagine",
         variant: "destructive"
       })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDefaultAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setUploading(true)
+      const url = await uploadImage(file)
+      setDefaultAvatarUrl(url)
+      toast({ title: 'Avatar di default caricato', description: 'Salvato come background "default-avatar".' })
+      // Salviamo come background speciale per compatibilità (nome convenzionale)
+      const existing = backgrounds.find(b => b.type==='image' && (b.name||'').toLowerCase()==='default-avatar')
+      if (existing) {
+        await updateBackground(existing.id, { value: url, type: 'image' })
+      } else {
+        await createBackground({ name: 'default-avatar', type: 'image', value: url, is_default: false, text_color: '#ffffff', text_shadow: '2px 2px 4px rgba(0,0,0,0.8)', text_size: '14px', text_weight: '600', text_family: 'Inter, system-ui, sans-serif' })
+      }
+    } catch (err) {
+      toast({ title: 'Errore', description: 'Impossibile caricare', variant: 'destructive' })
     } finally {
       setUploading(false)
     }
@@ -175,7 +197,7 @@ export const AvatarManager: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            {editingBackground ? 'Modifica Sfondo Avatar' : 'Nuovo Sfondo Avatar'}
+            {editingBackground ? 'Modifica Sfondo Avatar' : 'Nuovo Elemento Avatar'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -371,14 +393,25 @@ export const AvatarManager: React.FC = () => {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Gestione Sfondi Avatar</CardTitle>
+          <CardTitle>Gestione Avatar</CardTitle>
           <Button onClick={() => setIsCreating(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Nuovo Sfondo
+            Nuovo Elemento
           </Button>
         </div>
       </CardHeader>
       <CardContent>
+        <div className="mb-6 p-4 border rounded-lg">
+          <h3 className="font-semibold mb-2">Avatar di Default</h3>
+          <p className="text-sm text-muted-foreground mb-3">Carica l'immagine usata quando un giocatore non ha un avatar proprio.</p>
+          <div className="flex items-center gap-3">
+            <Avatar className="w-12 h-12">
+              <AvatarImage src={defaultAvatarUrl} />
+              <AvatarFallback>DF</AvatarFallback>
+            </Avatar>
+            <Input type="file" accept="image/*" onChange={handleDefaultAvatarUpload} disabled={uploading} />
+          </div>
+        </div>
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
@@ -391,8 +424,8 @@ export const AvatarManager: React.FC = () => {
         ) : backgrounds.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Nessuno sfondo avatar configurato</p>
-            <p className="text-sm">Crea il tuo primo sfondo personalizzato</p>
+            <p>Nessun elemento avatar configurato</p>
+            <p className="text-sm">Crea il tuo primo sfondo o avatar di default</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -448,9 +481,9 @@ export const AvatarManager: React.FC = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Elimina Sfondo</AlertDialogTitle>
+                            <AlertDialogTitle>Elimina Elemento</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Sei sicuro di voler eliminare lo sfondo "{background.name}"?
+                              Sei sicuro di voler eliminare "{background.name}"?
                               Questa azione non può essere annullata.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
