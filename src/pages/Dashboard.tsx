@@ -162,10 +162,10 @@ const Dashboard = () => {
                       <ChartContainer config={{
                         points: { label: 'Punti', color: 'hsl(var(--primary))' },
                       }} className="h-full">
-                        <ReLineChart data={trend.series} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
+                        <ReLineChart data={trend.series} margin={{ left: -4, right: 4, top: 6, bottom: 6 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} />
                         </ReLineChart>
@@ -188,10 +188,10 @@ const Dashboard = () => {
                   <div className="h-64">
                     {trainingSeries?.curr ? (
                       <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
-                        <ReLineChart data={trainingSeries.curr} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
+                        <ReLineChart data={trainingSeries.curr} margin={{ left: -4, right: 4, top: 6, bottom: 6 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
                         </ReLineChart>
@@ -214,10 +214,10 @@ const Dashboard = () => {
                   <div className="h-64">
                     {matchSeries?.curr ? (
                       <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
-                        <ReLineChart data={matchSeries.curr} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
+                        <ReLineChart data={matchSeries.curr} margin={{ left: -4, right: 4, top: 6, bottom: 6 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
                         </ReLineChart>
@@ -246,10 +246,10 @@ const Dashboard = () => {
                         pending: { label: 'In attesa', color: '#94a3b8' },
                         no_response: { label: 'No response', color: '#a3a3a3' },
                       }} className="h-full">
-                        <ReBarChart data={[{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }]} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
+                        <ReBarChart data={[{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }]} margin={{ left: -4, right: 4, top: 6, bottom: 6 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <ChartLegend content={<ChartLegendContent className="text-[9px] sm:text-xs" />} />
                           <Bar dataKey="present" fill="var(--color-present)" />
