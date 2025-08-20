@@ -46,6 +46,7 @@ const JerseyManagement = lazy(() => import("@/pages/admin/JerseyManagement"));
 const AvatarBackgroundManagement = lazy(() => import("@/pages/admin/AvatarBackgroundManagement"));
 const PngSettingsManagement = lazy(() => import("@/pages/admin/PngSettingsManagement"));
 const OpponentsManagement = lazy(() => import("@/pages/admin/OpponentsManagement"));
+const AttendanceScoreManagement = lazy(() => import("@/pages/admin/AttendanceScoreManagement"));
 
 const queryClient = new QueryClient();
 
@@ -320,6 +321,14 @@ function App() {
                           <Navigation />
                           <main className="ml-0 transition-all duration-200">
                             <OpponentsManagement />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      <Route path="/admin/attendance-score" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <AttendanceScoreManagement />
                           </main>
                         </AdminRoute>
                       } />

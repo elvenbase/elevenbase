@@ -25,6 +25,14 @@ const AdminDashboard = () => {
       badge: 'Utenti'
     },
     {
+      title: 'Attendance Score',
+      description: 'Configura pesi algoritmo e aggiorna punteggi',
+      icon: Settings,
+      href: '/admin/attendance-score',
+      color: 'bg-teal-600',
+      badge: 'Score'
+    },
+    {
       title: 'Gestione Formazioni',
       description: 'Crea e personalizza formazioni per le tue squadre',
       icon: Layout,

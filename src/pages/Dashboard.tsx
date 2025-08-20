@@ -34,6 +34,7 @@ import { TrainingForm } from "@/components/forms/TrainingForm";
 import { MatchForm } from "@/components/forms/MatchForm";
 import { TrialistForm } from "@/components/forms/TrialistForm";
 import { useAuth } from "@/contexts/AuthContext";
+import { computeAttendanceScore, tieBreakComparator } from '@/lib/attendanceScore'
 
 const Dashboard = () => {
   const { data: players = [], isLoading: playersLoading } = usePlayers();
@@ -85,6 +86,36 @@ const Dashboard = () => {
     const worst = withVal.slice().sort((a,b)=>a.value-b.value)[0] || null
     return { best, worst }
   }
+
+  const scoreLeaders = (() => {
+    const ids = new Set<string>([...(leaders?.totalPresences||[]), ...(leaders?.totalAbsences||[]), ...(leaders?.lates||[]), ...(leaders?.noResponses||[])].map(x=>x.player_id))
+    const toCount = (mapArr: any[]|undefined, pid: string) => {
+      const r = (mapArr||[]).find((x:any)=>x.player_id===pid)
+      return Number(r?.value ?? r?.count ?? 0)
+    }
+    const inputs = Array.from(ids).map(pid => ({
+      player_id: pid,
+      first_name: (leaders?.totalPresences||[]).find((x:any)=>x.player_id===pid)?.first_name,
+      last_name: (leaders?.totalPresences||[]).find((x:any)=>x.player_id===pid)?.last_name,
+      counters: {
+        T_P: toCount(leaders?.trainingPresences, pid),
+        T_L: toCount(leaders?.trainingLates, pid),
+        T_A: toCount(leaders?.trainingAbsences, pid),
+        T_NR: toCount(leaders?.trainingNoResponses, pid),
+        M_P: toCount(leaders?.matchPresences, pid),
+        M_L: toCount(leaders?.matchLates, pid),
+        M_A: toCount(leaders?.matchAbsences, pid),
+        M_NR: toCount(leaders?.matchNoResponses, pid),
+      }
+    }))
+    const scores = inputs.map(it => ({ ...computeAttendanceScore(it.counters), player_id: it.player_id, first_name: it.first_name, last_name: it.last_name }))
+    const eligible = scores.filter(s => s.opportunities >= 10)
+    const sorted = eligible.sort((a,b)=> tieBreakComparator({ ...a, eligible: true, player_id: a.player_id }, { ...b, eligible: true, player_id: b.player_id }))
+    return {
+      bestTwo: sorted.slice(0,2),
+      worstTwo: sorted.slice(-2).reverse(),
+    }
+  })()
   
   // Debug logging
   console.log('Dashboard Debug:', {
@@ -348,6 +379,21 @@ const Dashboard = () => {
                     <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.lates).best} distribution={leaders?.lates} />
                     <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.noResponses).best} distribution={leaders?.noResponses} />
                   </div>
+                </div>
+              )
+            },
+            {
+              id: 'attendance-score-leaders',
+              title: 'Attendance Score — Migliori e Peggiori',
+              gridClassName: 'col-span-1',
+              render: () => (
+                <div className="grid grid-cols-1 min-[800px]:grid-cols-4 gap-4 justify-items-center">
+                  {scoreLeaders.bestTwo.map((s, idx)=> (
+                    <TopLeaderCard key={`best-${idx}`} metricLabel={`Score migliore #${idx+1}`} valueUnit="pt" variant="neutral" item={{ player: { id: s.player_id, first_name: s.first_name||'—', last_name: s.last_name||'', jersey_number: undefined, role_code: undefined }, value: Number(s.score0to100.toFixed(1)) }} distribution={[]} />
+                  ))}
+                  {scoreLeaders.worstTwo.map((s, idx)=> (
+                    <TopLeaderCard key={`worst-${idx}`} metricLabel={`Score peggiore #${idx+1}`} valueUnit="pt" variant="neutral" item={{ player: { id: s.player_id, first_name: s.first_name||'—', last_name: s.last_name||'', jersey_number: undefined, role_code: undefined }, value: Number(s.score0to100.toFixed(1)) }} distribution={[]} />
+                  ))}
                 </div>
               )
             },

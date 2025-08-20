@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useLeaders, usePlayers } from '@/hooks/useSupabaseData'
+import { computeAttendanceScore } from '@/lib/attendanceScore'
 
 type PlayerRow = {
   id: string
   first_name: string
   last_name: string
+  score: number
   // Training
   t_pres: number
   t_abs: number
@@ -41,7 +43,7 @@ export default function PlayersStatsTable() {
   const { data: leaders } = useLeaders({ startDate, endDate })
 
   const [nameFilter, setNameFilter] = useState('')
-  const [sortKey, setSortKey] = useState<keyof PlayerRow>('tot_pres')
+  const [sortKey, setSortKey] = useState<keyof PlayerRow>('score')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
 
   const activePlayers = useMemo(() => players.filter((p: any) => p.status === 'active'), [players])
@@ -70,10 +72,22 @@ export default function PlayersStatsTable() {
       const red = safeCount(byId(leaders?.redCards, pid))
       const saves = safeCount(byId(leaders?.saves, pid))
 
+      const scoreData = computeAttendanceScore({
+        T_P: tPres,
+        T_L: tLate,
+        T_A: tAbs,
+        T_NR: tNr,
+        M_P: mPres,
+        M_L: mLate,
+        M_A: mAbs,
+        M_NR: mNr,
+      })
+
       return {
         id: pid,
         first_name: fn,
         last_name: ln,
+        score: scoreData.score0to100,
         t_pres: tPres,
         t_abs: tAbs,
         t_late: tLate,
@@ -141,6 +155,7 @@ export default function PlayersStatsTable() {
           <thead className="bg-muted/50">
             <tr>
               <Th label="Giocatore" onClick={()=>onHeaderClick('last_name')} />
+              <Th label="Score" onClick={()=>onHeaderClick('score')} />
               <Th label="All. Pres." onClick={()=>onHeaderClick('t_pres')} />
               <Th label="All. Ass." onClick={()=>onHeaderClick('t_abs')} />
               <Th label="All. Rit." onClick={()=>onHeaderClick('t_late')} />
@@ -165,6 +180,7 @@ export default function PlayersStatsTable() {
             {rows.map(r => (
               <tr key={r.id} className="border-t hover:bg-muted/30">
                 <td className="px-2 py-2 whitespace-nowrap font-medium">{r.last_name} {r.first_name}</td>
+                <td className="px-2 py-2 text-center tabular-nums font-semibold">{r.score.toFixed(1)}</td>
                 <td className="px-2 py-2 text-center tabular-nums">{r.t_pres}</td>
                 <td className="px-2 py-2 text-center tabular-nums">{r.t_abs}</td>
                 <td className="px-2 py-2 text-center tabular-nums">{r.t_late}</td>
