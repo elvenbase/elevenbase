@@ -131,6 +131,16 @@
     @apply bg-background text-foreground;
   }
 
+  /* Tipografia base per migliorare la distinzione tra titoli, paragrafi e liste */
+  h1 {@apply text-3xl font-bold leading-tight;}
+  h2 {@apply text-2xl font-semibold mt-4 mb-2;}
+  h3 {@apply text-xl font-semibold mt-3 mb-1.5;}
+  h4 {@apply text-lg font-semibold mt-2.5 mb-1;}
+  p {@apply leading-relaxed;}
+  ul {@apply list-disc pl-6;}
+  ol {@apply list-decimal pl-6;}
+  li {@apply my-1;}
+
   /* Remove default mobile tap highlight to prevent blue overlay */
   a, button {
     -webkit-tap-highlight-color: transparent;
