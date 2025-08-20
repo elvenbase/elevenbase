@@ -287,13 +287,11 @@ const PlayerDetail = () => {
               <div className="text-xl sm:text-2xl font-extrabold leading-tight">{shortName}</div>
               <div className="mt-1 text-sm text-muted-foreground space-y-1">
                 <div className="flex items-center justify-end gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white/70 px-2 py-0.5">{roleAbbr}</span>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white/70 px-2 py-0.5"><Hash className="h-3.5 w-3.5" />#{player?.jersey_number ?? '—'}</span>
-                  {player?.is_captain && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2 py-0.5">(C)</span>
-                  )}
+                  <User className="h-3.5 w-3.5" />
+                  <span className="truncate">
+                    {roleFull} ({roleAbbr}) {typeof player?.jersey_number === 'number' ? `#${player?.jersey_number}` : ''}{player?.is_captain ? ' (C)' : ''}
+                  </span>
                 </div>
-                <div className="flex items-center justify-end gap-2"><User className="h-3.5 w-3.5" />{roleFull}</div>
                 <div className="flex items-center justify-end gap-2"><CalendarDays className="h-3.5 w-3.5" />{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}</div>
                 <div className="flex items-center justify-end gap-2">
                   <Phone className="h-3.5 w-3.5" />
