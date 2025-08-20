@@ -164,7 +164,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 2xl:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 min-[800px]:grid-cols-4 gap-6 mb-8">
           <StatsCard
             title="Giocatori Attivi"
             value={activePlayers.length}
