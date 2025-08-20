@@ -165,7 +165,7 @@ export const useAvatarBackgrounds = () => {
   const defaultAvatarCandidate = backgrounds.find(bg =>
     bg.type === 'image' && ['default-avatar', 'default_avatar', 'default avatar'].includes((bg.name || '').toLowerCase())
   )
-  const defaultAvatarImageUrl = (import.meta as any)?.env?.VITE_DEFAULT_AVATAR_URL || defaultAvatarCandidate?.value || null
+  const defaultAvatarImageUrl = defaultAvatarCandidate?.value || (import.meta as any)?.env?.VITE_DEFAULT_AVATAR_URL || null
 
   return {
     backgrounds,
