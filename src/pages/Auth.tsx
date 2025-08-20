@@ -73,18 +73,15 @@ const Auth = () => {
       <div className="w-full max-w-md">
         {/* Logo e Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
+          <div className="flex items-center justify-center mb-4">
             <img
               src={`/assets/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
-              alt="Ca De Rissi SG Esport"
-              className="h-16 w-auto"
+              alt="Logo"
+              className="h-32 w-auto"
               onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
             />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Ca De Rissi SG
-          </h1>
-          <p className="text-muted-foreground">E-Sport Management System</p>
+          <p className="text-muted-foreground">E-sport Management System</p>
         </div>
 
         <Card className="shadow-card">
