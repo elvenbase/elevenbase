@@ -194,7 +194,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const to = `/player/${p.id}`
 
   return (
-    <div className="group [perspective:1000px] min-h-[200px] md:min-h-[260px] w-full">
+    <div className="group [perspective:1000px] min-h-[200px] min-[900px]:min-h-[260px] w-full">
       <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
         {/* Front */}
         <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
@@ -208,11 +208,11 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               {/* Hero */}
               <div className="relative flex-1 px-4 py-2 pb-3">
                 {/* Gradient overlays: centered on mobile, anchored to avatar on >=lg */}
-                <div className="pointer-events-none absolute inset-0 lg:hidden" style={{ backgroundImage: `radial-gradient(60% 60% at 50% 40%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
-                <div className="pointer-events-none absolute inset-0 hidden lg:block" style={{ backgroundImage: `radial-gradient(60% 60% at 15% 50%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
+                <div className="pointer-events-none absolute inset-0 min-[900px]:hidden" style={{ backgroundImage: `radial-gradient(60% 60% at 50% 40%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
+                <div className="pointer-events-none absolute inset-0 hidden min-[900px]:block" style={{ backgroundImage: `radial-gradient(60% 60% at 15% 50%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
 
                 {/* Mobile (<=lg): centered stack with tighter vertical spacing */}
-                <div className="lg:hidden flex h-full flex-col items-center justify-center text-center">
+                <div className="min-[900px]:hidden flex h-full flex-col items-center justify-center text-center">
                   <div className="relative -mt-5 lg:mt-0">
                     <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
                   </div>
@@ -237,7 +237,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 </div>
 
                 {/* >= lg: stack avatar, name, pill vertically and left-aligned */}
-                <div className="hidden lg:flex flex-col items-start gap-2 text-left">
+                <div className="hidden min-[900px]:flex flex-col items-start gap-2 text-left">
                   <div className="relative lg:mt-5">
                     <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
                   </div>
