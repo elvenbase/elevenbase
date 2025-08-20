@@ -9,7 +9,7 @@ import { useRoles } from '@/hooks/useRoles'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import EditPlayerForm from '@/components/forms/EditPlayerForm'
-import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy, X } from 'lucide-react'
+import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy, X, MessageCircle } from 'lucide-react'
 import { Clock3, Shield, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
@@ -130,6 +130,7 @@ const PlayerDetail = () => {
   const roleMap = Object.fromEntries((rolesList as any).map((r:any)=>[r.code, r]))
   const roleLabel = player?.role_code ? `${roleMap[player.role_code]?.label || player.role_code} (${roleMap[player.role_code]?.abbreviation || player.role_code})` : '-'
   const roleAbbr = player?.role_code ? (roleMap[player.role_code]?.abbreviation || player.role_code) : '—'
+  const roleFull = player?.role_code ? (roleMap[player.role_code]?.label || player.role_code) : '—'
   const shortName = player ? `${(player.first_name || '').trim().charAt(0).toUpperCase()}. ${(player.last_name || '').trim()}`.trim() : 'Giocatore'
 
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
@@ -159,6 +160,7 @@ const PlayerDetail = () => {
     return m ? { prefix: m.l, number: phone.slice(m.p.length) } : { prefix: '+39 (Italia)', number: phone }
   }
   const phoneView = parsePhone(player?.phone || '')
+  const waNumber = (player?.phone || '').replace(/[^0-9]/g, '')
 
   const handleAvatarUpload = async (ev: React.ChangeEvent<HTMLInputElement>) => {
     const file = ev.target.files?.[0]
@@ -283,10 +285,32 @@ const PlayerDetail = () => {
           <div className="relative z-10 p-4 sm:p-6 flex items-center justify-end gap-3">
             <div className="ml-auto min-w-0 text-right">
               <div className="text-xl sm:text-2xl font-extrabold leading-tight">{shortName}</div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                <div>{roleAbbr} · #{player?.jersey_number ?? '—'}{player?.is_captain ? ' · (C)' : ''}</div>
-                <div>{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}</div>
-                <div>{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : '—'}</div>
+              <div className="mt-1 text-sm text-muted-foreground space-y-1">
+                <div className="flex items-center justify-end gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white/70 px-2 py-0.5">{roleAbbr}</span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white/70 px-2 py-0.5"><Hash className="h-3.5 w-3.5" />#{player?.jersey_number ?? '—'}</span>
+                  {player?.is_captain && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2 py-0.5">(C)</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-end gap-2"><User className="h-3.5 w-3.5" />{roleFull}</div>
+                <div className="flex items-center justify-end gap-2"><CalendarDays className="h-3.5 w-3.5" />{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}</div>
+                <div className="flex items-center justify-end gap-2">
+                  <Phone className="h-3.5 w-3.5" />
+                  <span>{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : '—'}</span>
+                  {waNumber && waNumber.length > 5 && (
+                    <a
+                      href={`https://wa.me/${waNumber}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Apri WhatsApp"
+                      className="inline-flex items-center text-green-600 hover:text-green-700"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
