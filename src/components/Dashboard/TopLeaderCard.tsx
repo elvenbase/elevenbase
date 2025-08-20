@@ -206,7 +206,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 {/* Mobile: centered stack */}
                 <div className="sm:hidden flex h-full flex-col items-center justify-center text-center">
                   <div className="relative">
-                    <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
+                    <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
                   </div>
                   <div className="mt-2 max-w-[85%] line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
                   <div className="mt-3 flex items-center justify-center mb-2.5">
@@ -222,7 +222,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 <div className="hidden sm:flex items-start gap-3">
                   <div className="relative flex items-center">
                     <div className="relative">
-                      <PlayerAvatar firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
+                      <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16 rounded-[12px]" />
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">

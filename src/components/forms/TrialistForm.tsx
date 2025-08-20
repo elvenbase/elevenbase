@@ -97,11 +97,11 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `temp-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const fileName = `trialist-temp-${Date.now()}.${fileExt}`;
+      const filePath = `trialist-temp/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('player-avatars')
+        .from('user-avatars')
         .upload(filePath, file, {
           upsert: true
         });
@@ -109,7 +109,7 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('player-avatars')
+        .from('user-avatars')
         .getPublicUrl(filePath);
 
       setAvatarUrl(publicUrl);
@@ -131,13 +131,16 @@ export const TrialistForm = ({ children }: TrialistFormProps) => {
   };
 
   const removeAvatar = async () => {
-    if (avatarUrl && avatarUrl.includes('player-avatars')) {
+    if (avatarUrl && avatarUrl.includes('user-avatars')) {
       try {
-        const fileName = avatarUrl.split('/').pop();
-        if (fileName) {
+        const url = new URL(avatarUrl);
+        const pathParts = url.pathname.split('/');
+        const idx = pathParts.findIndex(p => p === 'object') + 1;
+        const storagePath = pathParts.slice(idx).join('/');
+        if (storagePath) {
           await supabase.storage
-            .from('player-avatars')
-            .remove([`avatars/${fileName}`]);
+            .from('user-avatars')
+            .remove([storagePath]);
         }
       } catch (error) {
         console.error('Error removing avatar:', error);

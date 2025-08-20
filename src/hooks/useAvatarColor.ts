@@ -2,7 +2,7 @@
 import { useAvatarBackgrounds } from './useAvatarBackgrounds'
 
 export const useAvatarColor = () => {
-  const { defaultBackground } = useAvatarBackgrounds()
+  const { defaultBackground, defaultAvatarImageUrl } = useAvatarBackgrounds()
 
   // Preferiremo un id stabile se fornito via name (formato "id:DISPLAY")
   const getAvatarColor = (name: string): string => {
@@ -84,6 +84,7 @@ export const useAvatarColor = () => {
     getAvatarColor,
     getAvatarBackground,
     getAvatarFallbackStyle,
-    defaultBackground
+    defaultBackground,
+    defaultAvatarImageUrl
   }
 }

@@ -615,6 +615,7 @@ const PublicSession = () => {
                       className="flex flex-col items-center p-2 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
                     >
                       <PlayerAvatar
+                        entityId={`player:${person.id || ''}`}
                         firstName={firstName}
                         lastName={lastName}
                         avatarUrl={avatarUrl}
@@ -719,6 +720,7 @@ const PublicSession = () => {
                           {person ? (
                             <div className="relative">
                               <PlayerAvatar
+                                entityId={`player:${person?.id || ''}`}
                                 firstName={firstName}
                                 lastName={lastName}
                                 avatarUrl={avatarUrl}

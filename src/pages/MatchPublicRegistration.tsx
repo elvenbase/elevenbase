@@ -275,7 +275,7 @@ const MatchPublicRegistration = () => {
                       return (
                         <SelectItem key={p.id} value={`player:${p.id}` as SelectEntity} disabled={!!registration} className="py-3">
                           <div className="flex items-center gap-3 w-full">
-                            <PlayerAvatar firstName={p.first_name} lastName={p.last_name} size="sm" />
+                            <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} size="sm" />
                             <span className="font-medium">{p.first_name} {p.last_name}</span>
                             {p.jersey_number && (<Badge variant="outline">#{p.jersey_number}</Badge>)}
                           </div>
@@ -291,7 +291,7 @@ const MatchPublicRegistration = () => {
                       return (
                         <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!registration} className="py-3">
                           <div className="flex items-center gap-3 w-full">
-                            <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
+                            <PlayerAvatar entityId={`trialist:${t.id}`} firstName={t.first_name} lastName={t.last_name} size="sm" />
                             <span className="font-medium">{t.first_name} {t.last_name}</span>
                             {registration && (
                               <Badge variant={registration.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">

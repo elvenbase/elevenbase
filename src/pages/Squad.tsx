@@ -85,6 +85,7 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <PlayerAvatar
+            entityId={`player:${player.id}`}
             firstName={player.first_name}
             lastName={player.last_name}
             avatarUrl={player.avatar_url}

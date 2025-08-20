@@ -158,10 +158,20 @@ export const useAvatarBackgrounds = () => {
   // Calcola il background predefinito
   const defaultBackground = backgrounds.find(bg => bg.is_default) || null
 
+  // Default avatar image chain:
+  // 1) env var VITE_DEFAULT_AVATAR_URL
+  // 2) background con name "default-avatar"/"default_avatar"/"Default Avatar" e type image
+  // 3) altrimenti null (verrà usato il fallback con iniziali)
+  const defaultAvatarCandidate = backgrounds.find(bg =>
+    bg.type === 'image' && ['default-avatar', 'default_avatar', 'default avatar'].includes((bg.name || '').toLowerCase())
+  )
+  const defaultAvatarImageUrl = (import.meta as any)?.env?.VITE_DEFAULT_AVATAR_URL || defaultAvatarCandidate?.value || null
+
   return {
     backgrounds,
     loading,
     defaultBackground,
+    defaultAvatarImageUrl,
     createBackground,
     updateBackground,
     deleteBackground,

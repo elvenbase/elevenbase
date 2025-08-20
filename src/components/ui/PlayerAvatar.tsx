@@ -7,6 +7,7 @@ interface PlayerAvatarProps {
   firstName: string;
   lastName: string;
   avatarUrl?: string | null;
+  entityId?: string;
   
   // Avatar styling
   className?: string;
@@ -30,18 +31,20 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   firstName,
   lastName,
   avatarUrl,
+  entityId,
   className = '',
   size = 'lg',
   onClick,
   style
 }) => {
-  const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor();
+  const { getAvatarBackground, getAvatarFallbackStyle, defaultAvatarImageUrl } = useAvatarColor();
   
   const safeFirst = firstName || '';
   const safeLast = lastName || '';
-  // Usare un prefisso id: quando disponibile per stabilizzare il colore.
-  const fullName = (style && (style as any).__id) ? `${(style as any).__id}:${safeFirst}${safeLast}` : (safeFirst + safeLast);
-  const hasAvatar = !!avatarUrl;
+  // Chiave stabile per il colore: entityId se presente
+  const fullName = entityId ? `${entityId}:${safeFirst}${safeLast}` : ((style && (style as any).__id) ? `${(style as any).__id}:${safeFirst}${safeLast}` : (safeFirst + safeLast));
+  const resolvedAvatarUrl = avatarUrl || defaultAvatarImageUrl || undefined;
+  const hasAvatar = !!resolvedAvatarUrl;
   const initials = (safeFirst.charAt(0) || '?') + (safeLast.charAt(0) || '');
   
   // Combina le classi di dimensione con quelle personalizzate
@@ -58,7 +61,7 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
       style={avatarStyle}
     >
       <AvatarImage 
-        src={avatarUrl || undefined} 
+        src={resolvedAvatarUrl} 
         alt={`${safeFirst} ${safeLast}`} 
       />
       <AvatarFallback 
