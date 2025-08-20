@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,18 @@ const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { pathname } = useLocation();
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isMobileMenuOpen) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [isMobileMenuOpen]);
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: BarChart3 },
@@ -213,7 +225,7 @@ const Navigation = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="nav:hidden py-4 border-t border-border animate-slide-in">
+          <div className="nav:hidden fixed inset-x-0 top-16 bottom-0 bg-card border-t border-border overflow-y-auto overscroll-contain animate-slide-in z-50">
             <div className="space-y-2">
               {/* Dashboard first */}
               <NavLink
