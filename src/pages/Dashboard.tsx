@@ -33,6 +33,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { LineChart as ReLineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as ReBarChart, Bar } from 'recharts'
 import { PlayerForm } from "@/components/forms/PlayerForm";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { data: players = [], isLoading: playersLoading } = usePlayers();
@@ -46,6 +47,7 @@ const Dashboard = () => {
   const { data: attendanceDist } = useAttendanceDistribution({ startDate: start, endDate: end })
   const { data: trainingSeries } = useTrainingPresenceSeries(30)
   const { data: matchSeries } = useMatchPresenceSeries(10)
+  const navigate = useNavigate();
 
   // Helpers to compose best/worst from leaders arrays using players list for avatar/role
   const playerById = new Map<string, any>(players.map((p:any)=>[p.id, p]))
@@ -91,10 +93,10 @@ const Dashboard = () => {
         {/* Chip actions bar */}
         <div className="mb-6">
           <StatChipBar chips={[
-            { label: 'Nuovo allenamento', icon: <Calendar className="h-4 w-4" />, color: 'accent' },
-            { label: 'Registra partita', icon: <Trophy className="h-4 w-4" />, color: 'primary' },
-            { label: 'Aggiungi giocatore', icon: <Users className="h-4 w-4" />, color: 'success' },
-            { label: 'Valuta candidato', icon: <Target className="h-4 w-4" />, color: 'secondary' },
+            { label: 'Nuovo allenamento', icon: <Calendar className="h-4 w-4" />, color: 'accent', onClick: ()=>navigate('/training') },
+            { label: 'Registra partita', icon: <Trophy className="h-4 w-4" />, color: 'primary', onClick: ()=>navigate('/matches') },
+            { label: 'Aggiungi giocatore', icon: <Users className="h-4 w-4" />, color: 'success', onClick: ()=>navigate('/squad') },
+            { label: 'Valuta candidato', icon: <Target className="h-4 w-4" />, color: 'secondary', onClick: ()=>navigate('/trials') },
           ]} />
         </div>
 
@@ -143,7 +145,7 @@ const Dashboard = () => {
                       <ChartContainer config={{
                         points: { label: 'Punti', color: 'hsl(var(--primary))' },
                       }} className="h-full">
-                        <ReLineChart data={trend.series} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                        <ReLineChart data={trend.series} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
                           <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -169,7 +171,7 @@ const Dashboard = () => {
                   <div className="h-64">
                     {trainingSeries?.curr ? (
                       <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
-                        <ReLineChart data={trainingSeries.curr} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                        <ReLineChart data={trainingSeries.curr} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
                           <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -195,7 +197,7 @@ const Dashboard = () => {
                   <div className="h-64">
                     {matchSeries?.curr ? (
                       <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
-                        <ReLineChart data={matchSeries.curr} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                        <ReLineChart data={matchSeries.curr} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
                           <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -227,7 +229,7 @@ const Dashboard = () => {
                         pending: { label: 'In attesa', color: '#94a3b8' },
                         no_response: { label: 'No response', color: '#a3a3a3' },
                       }} className="h-full">
-                        <ReBarChart data={[{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }]} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                        <ReBarChart data={[{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }]} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                           <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
                           <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -244,7 +246,7 @@ const Dashboard = () => {
                       <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                     )}
                   </div>
-                  <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: mese corrente</div>
+                  <div className="mt-3 text-xs text-muted-foreground">Periodo: mese corrente</div>
                 </div>
               )
             },
@@ -253,7 +255,7 @@ const Dashboard = () => {
               title: 'Presenze Allenamenti',
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} distribution={leaders?.trainingPresences} />
                   <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" item={pickBestWorst(leaders?.trainingAbsences).best} distribution={leaders?.trainingAbsences} />
                   <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.trainingLates).best} distribution={leaders?.trainingLates} />
@@ -266,7 +268,7 @@ const Dashboard = () => {
               title: 'Presenze Partite',
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} distribution={leaders?.matchPresences} />
                   <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" item={pickBestWorst(leaders?.matchAbsences).best} distribution={leaders?.matchAbsences} />
                   <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.matchLates).best} distribution={leaders?.matchLates} />
@@ -280,7 +282,7 @@ const Dashboard = () => {
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
                 <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
                     <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} distribution={leaders?.totalPresences} />
                     <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" item={pickBestWorst(leaders?.totalAbsences).best} distribution={leaders?.totalAbsences} />
                     <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.lates).best} distribution={leaders?.lates} />
@@ -302,7 +304,7 @@ const Dashboard = () => {
               title: 'Performance Partite',
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-5 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Gol" valueUnit="gol" variant="goals" item={pickBestWorst(leaders?.goals).best} distribution={leaders?.goals} />
                   <TopLeaderCard metricLabel="Assist" valueUnit="assist" variant="assists" item={pickBestWorst(leaders?.assists).best} distribution={leaders?.assists} />
                   <TopLeaderCard metricLabel="Minuti giocati" valueUnit="min" variant="minutes" item={pickBestWorst(leaders?.minutesAvg).best} distribution={leaders?.minutesAvg} />
