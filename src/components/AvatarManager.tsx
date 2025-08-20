@@ -59,7 +59,7 @@ export const AvatarManager: React.FC = () => {
       setUploading(true)
       const url = await uploadImage(file)
       setDefaultAvatarUrl(url)
-      toast({ title: 'Avatar di default caricato', description: 'Salvato come background "default-avatar".' })
+      toast({ title: 'Avatar di default caricato', description: 'Salvato come elemento "default-avatar".' })
       // Salviamo come background speciale per compatibilità (nome convenzionale)
       const existing = backgrounds.find(b => b.type==='image' && (b.name||'').toLowerCase()==='default-avatar')
       if (existing) {

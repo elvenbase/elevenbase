@@ -26,7 +26,7 @@ export const useAvatarBackgrounds = () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('avatar_backgrounds')
+        .from('avatar_assets')
         .select('*')
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: true })
@@ -54,7 +54,7 @@ export const useAvatarBackgrounds = () => {
       if (!user.user) throw new Error('User not authenticated')
 
       const { error } = await supabase
-        .from('avatar_backgrounds')
+        .from('avatar_assets')
         .insert({
           ...background,
           created_by: user.user.id
@@ -73,7 +73,7 @@ export const useAvatarBackgrounds = () => {
   const updateBackground = async (id: string, updates: Partial<Pick<AvatarBackground, 'name' | 'type' | 'value' | 'text_color' | 'text_shadow' | 'text_size' | 'text_weight' | 'text_family'>>) => {
     try {
       const { error } = await supabase
-        .from('avatar_backgrounds')
+        .from('avatar_assets')
         .update(updates)
         .eq('id', id)
 
@@ -90,7 +90,7 @@ export const useAvatarBackgrounds = () => {
   const deleteBackground = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('avatar_backgrounds')
+        .from('avatar_assets')
         .delete()
         .eq('id', id)
 
@@ -108,13 +108,13 @@ export const useAvatarBackgrounds = () => {
     try {
       // Reset all to non-default
       await supabase
-        .from('avatar_backgrounds')
+        .from('avatar_assets')
         .update({ is_default: false })
         .neq('id', id)
 
       // Set selected as default
       const { error } = await supabase
-        .from('avatar_backgrounds')
+        .from('avatar_assets')
         .update({ is_default: true })
         .eq('id', id)
 
