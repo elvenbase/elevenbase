@@ -372,7 +372,7 @@ const PlayerDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <div>
                         <div className="text-[11px] uppercase text-neutral-500">Nome</div>
@@ -394,7 +394,7 @@ const PlayerDetail = () => {
                       </div>
                     </div>
 
-                    <div className="col-span-2 grid grid-cols-2 gap-3 mt-1">
+                    <div className="sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
                       <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
                         <Phone className="h-4 w-4 text-neutral-500" />
                         <span className="text-[11px] uppercase text-neutral-500">Telefono</span>
