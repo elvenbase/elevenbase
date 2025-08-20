@@ -194,11 +194,11 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const to = `/player/${p.id}`
 
   return (
-    <div className="group [perspective:1000px] min-h-[200px] lg:min-h-[260px] w-full">
+    <div className="group [perspective:1000px] min-h-[200px] md:min-h-[260px] w-full">
       <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
         {/* Front */}
         <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
-          <Card className="p-0 bg-card/80 border border-border rounded-2xl shadow-card hover:shadow-glow transition-smooth h-full overflow-hidden" onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}>
+          <Card className="p-0 bg-card/80 border border-border rounded-2xl shadow-card hover:shadow-glow transition-smooth h-full overflow-hidden" style={{ minHeight: 'inherit' }} onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}>
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center gap-2 px-3 py-1 min-h-[30px]" style={{ backgroundColor: metricStyle.headerBg }}>
@@ -268,7 +268,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
           </Card>
         </Link>
         {/* Back */}
-        <Card className="p-4 bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-hidden relative">
+        <Card className="p-4 bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-hidden relative h-full" style={{ minHeight: 'inherit' }}>
           <div className="flex flex-col h-full pb-3">
             <div className="flex items-start justify-between">
               <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
