@@ -1,11 +1,13 @@
 import { Card } from '@/components/ui/card'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
+import { Badge } from '@/components/ui/badge'
+import { useRoles } from '@/hooks/useRoles'
 import { RotateCcw, Search, CalendarCheck2, CalendarX, AlarmClock, MailX, CornerDownRight, Timer, Trophy, SquareMinus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { PieChart as RePieChart, Pie as RePie, Cell as ReCell, Tooltip as ReTooltip, ResponsiveContainer as ReResponsiveContainer } from 'recharts'
 
-type PlayerRef = { id: string; first_name: string; last_name: string; avatar_url?: string | null; role_code?: string | null }
+type PlayerRef = { id: string; first_name: string; last_name: string; avatar_url?: string | null; role_code?: string | null; jersey_number?: number | null }
 
 type Props = {
   metricLabel: string
@@ -17,6 +19,12 @@ type Props = {
 }
 
 export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', item, distribution = [], onSegmentOpen }: Props) => {
+  const { data: roles = [] } = useRoles()
+  const roleLabelByCode = useMemo(() => {
+    const m = new Map<string, string>()
+    roles.forEach(r => m.set(r.code, r.label))
+    return m
+  }, [roles])
   const AnimatedNumber = ({ value }: { value: number }) => {
     const [display, setDisplay] = useState(0)
     const [bump, setBump] = useState(false)
@@ -209,6 +217,16 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                     <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
                   </div>
                   <div className="mt-2 max-w-[85%] line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
+                  {typeof (p as any).jersey_number !== 'undefined' && (p as any).jersey_number !== null && (
+                    <div className="mt-1">
+                      <Badge variant="secondary" className="px-2 py-0.5 text-xs">#{(p as any).jersey_number}</Badge>
+                    </div>
+                  )}
+                  {p.role_code && (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {roleLabelByCode.get(p.role_code) || p.role_code}
+                    </div>
+                  )}
                   <div className="mt-3 flex items-center justify-center -mb-5 lg:mb-2.5">
                     <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
                       <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
@@ -226,6 +244,14 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                   <div className="min-w-0 max-w-full">
                     <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
                   </div>
+                  {typeof (p as any).jersey_number !== 'undefined' && (p as any).jersey_number !== null && (
+                    <Badge variant="secondary" className="px-2 py-0.5 text-xs">#{(p as any).jersey_number}</Badge>
+                  )}
+                  {p.role_code && (
+                    <div className="text-xs text-muted-foreground">
+                      {roleLabelByCode.get(p.role_code) || p.role_code}
+                    </div>
+                  )}
                   <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
                     <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
                     <span className="font-bold tabular-nums text-[22px]" style={{ color: metricStyle.accent }}>{value}</span>
