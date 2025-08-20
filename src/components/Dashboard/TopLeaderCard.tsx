@@ -194,7 +194,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const to = `/player/${p.id}`
 
   return (
-    <div className="group [perspective:1000px] min-h-[216px] lg:min-h-[240px] w-full">
+    <div className="group [perspective:1000px] min-h-[200px] lg:min-h-[260px] w-full">
       <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
         {/* Front */}
         <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
