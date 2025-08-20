@@ -372,18 +372,7 @@ const PlayerDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white px-2 py-0.5">#{player?.jersey_number ?? '—'}</span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white px-2 py-0.5">{roleLabel}</span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white px-2 py-0.5">
-                      <CalendarDays className="h-3.5 w-3.5" />{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-white px-2 py-0.5">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" />{player?.status || 'Attivo'}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <div>
                         <div className="text-[11px] uppercase text-neutral-500">Nome</div>
@@ -394,38 +383,18 @@ const PlayerDetail = () => {
                         <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{player?.last_name || '—'}</div>
                       </div>
                       <div>
-                        <div className="text-[11px] uppercase text-neutral-500">Data di nascita</div>
-                        <div className="flex items-center gap-2 text-sm"><CalendarDays className="h-4 w-4 text-neutral-500" />{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}</div>
-                      </div>
-                      <div>
                         <div className="text-[11px] uppercase text-neutral-500">Esperienza sportiva</div>
                         <div className="flex items-start gap-2 text-sm whitespace-pre-wrap min-h-[20px]"><StickyNote className="mt-0.5 h-4 w-4 text-neutral-500" />{player?.esperienza ? player.esperienza : '—'}</div>
                       </div>
                     </div>
                     <div className="space-y-3">
                       <div>
-                        <div className="text-[11px] uppercase text-neutral-500">Numero maglia</div>
-                        <div className="flex items-center gap-2 text-sm"><Hash className="h-4 w-4 text-neutral-500" />{player?.jersey_number ?? '—'}</div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] uppercase text-neutral-500">Ruolo</div>
-                        <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{roleLabel || '—'}</div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] uppercase text-neutral-500">Stato</div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-2 py-0.5 text-xs">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{player?.status || 'Attivo'}
-                          </span>
-                        </div>
-                      </div>
-                      <div>
                         <div className="text-[11px] uppercase text-neutral-500">Note</div>
                         <div className="flex items-start gap-2 text-sm whitespace-pre-wrap min-h-[20px]"><StickyNote className="mt-0.5 h-4 w-4 text-neutral-500" />{player?.notes ? player.notes : '—'}</div>
                       </div>
                     </div>
 
-                    <div className="sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+                    <div className="col-span-2 grid grid-cols-2 gap-3 mt-1">
                       <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
                         <Phone className="h-4 w-4 text-neutral-500" />
                         <span className="text-[11px] uppercase text-neutral-500">Telefono</span>
