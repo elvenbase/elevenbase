@@ -39,7 +39,8 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   
   const safeFirst = firstName || '';
   const safeLast = lastName || '';
-  const fullName = safeFirst + safeLast;
+  // Usare un prefisso id: quando disponibile per stabilizzare il colore.
+  const fullName = (style && (style as any).__id) ? `${(style as any).__id}:${safeFirst}${safeLast}` : (safeFirst + safeLast);
   const hasAvatar = !!avatarUrl;
   const initials = (safeFirst.charAt(0) || '?') + (safeLast.charAt(0) || '');
   

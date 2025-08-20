@@ -4,6 +4,7 @@ import { useAvatarBackgrounds } from './useAvatarBackgrounds'
 export const useAvatarColor = () => {
   const { defaultBackground } = useAvatarBackgrounds()
 
+  // Preferiremo un id stabile se fornito via name (formato "id:DISPLAY")
   const getAvatarColor = (name: string): string => {
     // Se c'è uno sfondo predefinito impostato, usalo
     if (defaultBackground) {
@@ -30,7 +31,8 @@ export const useAvatarColor = () => {
       'hsl(285, 75%, 60%)',  // Viola-magenta
       'hsl(160, 70%, 50%)'   // Verde acqua
     ]
-    const hash = name.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
+    const key = name.includes(':') ? name.split(':', 1)[0] : name
+    const hash = key.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
     return colors[hash % colors.length]
   }
 
@@ -38,7 +40,7 @@ export const useAvatarColor = () => {
     backgroundColor?: string; 
     backgroundImage?: string;
   } => {
-    // Se c'è uno sfondo predefinito configurato, usalo SEMPRE
+    // Se c'è uno sfondo predefinito configurato, usalo SEMPRE (anche con immagine, come da richiesta)
     if (defaultBackground) {
       if (defaultBackground.type === 'color') {
         return { backgroundColor: defaultBackground.value }
