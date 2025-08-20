@@ -198,7 +198,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 <div className="relative top-[2px] sm:top-0 line-clamp-2 font-semibold text-[14px] leading-tight" style={{ color: '#2B2B2B' }}>{metricLabel}</div>
               </div>
               {/* Hero */}
-              <div className="relative flex-1 px-4 py-2 pb-5">
+              <div className="relative flex-1 px-4 py-2 pb-3">
                 {/* Gradient overlays: centered on mobile, anchored to avatar on >=sm */}
                 <div className="pointer-events-none absolute inset-0 sm:hidden" style={{ backgroundImage: `radial-gradient(60% 60% at 50% 40%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
                 <div className="pointer-events-none absolute inset-0 hidden sm:block" style={{ backgroundImage: `radial-gradient(60% 60% at 15% 50%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
