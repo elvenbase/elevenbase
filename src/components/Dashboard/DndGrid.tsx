@@ -135,7 +135,7 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
             <span className="text-xs">Reset layout</span>
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {currentOrder.map(id => (
             <SortableModule key={id} id={id} />
           ))}
