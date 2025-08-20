@@ -322,24 +322,14 @@ const Navigation = () => {
               </div>
               
               <div className="pt-4 border-t border-border mt-4">
-                <div className="flex items-center justify-between px-4 py-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
-                      {user?.email?.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{user?.email}</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleSignOut}
-                    className="text-muted-foreground"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </div>
+                <button
+                  onClick={() => { handleSignOut(); setIsMobileMenuOpen(false); }}
+                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50"
+                  title="Esci"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="font-medium">Esci</span>
+                </button>
               </div>
             </div>
           </div>
