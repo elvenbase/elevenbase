@@ -255,8 +255,8 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
             <div className="flex items-start justify-between">
               <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
             </div>
-            <div className="mt-2 flex-1 min-h-[8.5rem] flex items-stretch gap-3">
-              <div className="w-[48%] h-[120px] sm:h-[140px]">
+            <div className="mt-2 flex-1 min-h-[8.5rem] flex flex-col lg:flex-row items-stretch gap-3">
+              <div className="w-full lg:w-[48%] h-[120px] sm:h-[140px]">
                 <ReResponsiveContainer width="100%" height="100%">
                   <RePieChart>
                     <RePie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>

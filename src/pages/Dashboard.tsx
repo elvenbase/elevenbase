@@ -266,7 +266,7 @@ const Dashboard = () => {
             {
               id: 'leaders-training-presences',
               title: 'Presenze Allenamenti',
-              gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
+              gridClassName: 'col-span-1',
               render: () => (
                 <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} distribution={leaders?.trainingPresences} />
@@ -279,7 +279,7 @@ const Dashboard = () => {
             {
               id: 'leaders-match-presences',
               title: 'Presenze Partite',
-              gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
+              gridClassName: 'col-span-1',
               render: () => (
                 <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} distribution={leaders?.matchPresences} />
@@ -292,7 +292,7 @@ const Dashboard = () => {
             {
               id: 'leaders-total-presences',
               title: 'Presenze Totali',
-              gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
+              gridClassName: 'col-span-1',
               render: () => (
                 <div>
                   <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4 justify-items-center">
@@ -307,7 +307,7 @@ const Dashboard = () => {
             {
               id: 'players-stats-table',
               title: 'Statistiche Giocatori (tabella completa)',
-              gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-4 2xl:col-span-4',
+              gridClassName: 'col-span-1',
               render: () => (
                 <PlayersStatsTable />
               )
@@ -315,7 +315,7 @@ const Dashboard = () => {
             {
               id: 'leaders-match-performance',
               title: 'Performance Partite',
-              gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
+              gridClassName: 'col-span-1',
               render: () => (
                 <div className="grid grid-cols-1 2xl:grid-cols-5 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Gol" valueUnit="gol" variant="goals" item={pickBestWorst(leaders?.goals).best} distribution={leaders?.goals} />
