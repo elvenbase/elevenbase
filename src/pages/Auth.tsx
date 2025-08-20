@@ -70,14 +70,14 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md flex flex-col items-center">
         {/* Logo e Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-center mb-1">
             <img
               src={`/assets/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
               alt="Logo"
-              className="h-32 w-auto"
+              className="h-40 md:h-48 w-auto"
               onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
             />
           </div>
