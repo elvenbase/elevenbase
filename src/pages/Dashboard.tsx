@@ -117,34 +117,30 @@ const Dashboard = () => {
           ]} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
           <StatsCard
             title="Giocatori Attivi"
-            value={totalPlayers}
-            description="Rosa principale"
+            value={activePlayers}
             icon={Users}
-            className="border-l-4 border-l-primary"
+            description="Giocatori attualmente attivi"
           />
           <StatsCard
             title="Allenamenti"
             value={stats?.trainingSessions || 0}
-            description="Programmati"
             icon={Calendar}
-            className="border-l-4 border-l-secondary"
+            description="Eventi di allenamento nel periodo"
           />
           <StatsCard
-            title="Competizioni"
+            title="Partite"
             value={stats?.activeCompetitions || 0}
-            description="In corso"
             icon={Trophy}
-            className="border-l-4 border-l-accent"
+            description="Eventi partita nel periodo"
           />
           <StatsCard
-            title="Provini"
+            title="Allenatori"
             value={stats?.activeTrials || 0}
-            description="Programmate"
-            icon={Target}
-            className="border-l-4 border-l-success"
+            icon={Shield}
+            description="Coach registrati"
           />
         </div>
 
@@ -272,7 +268,7 @@ const Dashboard = () => {
               title: 'Presenze Allenamenti',
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
-                <div className="grid grid-cols-1 lg:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 xl:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} distribution={leaders?.trainingPresences} />
                   <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" item={pickBestWorst(leaders?.trainingAbsences).best} distribution={leaders?.trainingAbsences} />
                   <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.trainingLates).best} distribution={leaders?.trainingLates} />
@@ -285,7 +281,7 @@ const Dashboard = () => {
               title: 'Presenze Partite',
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
-                <div className="grid grid-cols-1 lg:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 xl:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} distribution={leaders?.matchPresences} />
                   <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" item={pickBestWorst(leaders?.matchAbsences).best} distribution={leaders?.matchAbsences} />
                   <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.matchLates).best} distribution={leaders?.matchLates} />
@@ -299,11 +295,11 @@ const Dashboard = () => {
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
                 <div>
-                  <div className="grid grid-cols-1 lg:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
+                  <div className="grid grid-cols-1 xl:grid-cols-4 2xl:grid-cols-4 gap-4 justify-items-center">
                     <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} distribution={leaders?.totalPresences} />
                     <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" item={pickBestWorst(leaders?.totalAbsences).best} distribution={leaders?.totalAbsences} />
-                    <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.lates).best} distribution={leaders?.lates} />
-                    <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.noResponses).best} distribution={leaders?.noResponses} />
+                    <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.totalLates).best} distribution={leaders?.totalLates} />
+                    <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.totalNoResponses).best} distribution={leaders?.totalNoResponses} />
                   </div>
                 </div>
               )
@@ -321,7 +317,7 @@ const Dashboard = () => {
               title: 'Performance Partite',
               gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-3 2xl:col-span-4',
               render: () => (
-                <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-5 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 xl:grid-cols-3 2xl:grid-cols-5 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Gol" valueUnit="gol" variant="goals" item={pickBestWorst(leaders?.goals).best} distribution={leaders?.goals} />
                   <TopLeaderCard metricLabel="Assist" valueUnit="assist" variant="assists" item={pickBestWorst(leaders?.assists).best} distribution={leaders?.assists} />
                   <TopLeaderCard metricLabel="Minuti giocati" valueUnit="min" variant="minutes" item={pickBestWorst(leaders?.minutesAvg).best} distribution={leaders?.minutesAvg} />
