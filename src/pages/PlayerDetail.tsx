@@ -329,20 +329,6 @@ const PlayerDetail = () => {
 
           <TabsContent value="performance">
             <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">KPI</CardTitle>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {(() => {
-                    const p = totals.matches
-                    const m = totals.minutes
-                    const g = totals.goals
-                    const a = totals.assists
-                    const y = totals.yellows
-                    const r = totals.reds
-                    return `${p} partite, ${m}′, ${g} gol / ${a} assist · ${y} gialli${r ? `, ${r} rossi` : ''}.`
-                  })()}
-                </div>
-              </CardHeader>
               <CardContent className="pt-0">
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
                   {[
@@ -351,7 +337,7 @@ const PlayerDetail = () => {
                     { key: 'Titolare', v: totals.started, icon: <CheckCircle2 className="h-5 w-5" />, color: 'text-emerald-700', tint: 'bg-emerald-100', circle: 'bg-emerald-50', semantic: false },
                     { key: 'Gol', v: totals.goals, icon: <span className="text-sky-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M12 7a5 5 0 110 10 5 5 0 010-10z"/></svg></span>, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
                     { key: 'Assist', v: totals.assists, icon: <span className="text-cyan-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M7 12h10"/></svg></span>, color: 'text-cyan-700', tint: 'bg-cyan-100', circle: 'bg-cyan-50', semantic: false },
-                    { key: 'Parate', v: totals.saves, icon: <Shield className="h-5 w-5" />, color: 'text-blue-700', tint: 'bg-blue-100', circle: 'bg-blue-50', semantic: false },
+                    ...(sector === 'P' ? [{ key: 'Parate', v: totals.saves, icon: <Shield className="h-5 w-5" />, color: 'text-blue-700', tint: 'bg-blue-100', circle: 'bg-blue-50', semantic: false }] : []),
                     { key: 'Gialli', v: totals.yellows, icon: <span className="inline-block w-3.5 h-4 rounded-[2px] bg-yellow-400" />, color: 'text-yellow-700', tint: 'bg-yellow-100', circle: 'bg-yellow-50', semantic: true },
                     { key: 'Rossi', v: totals.reds, icon: <span className="inline-block w-3.5 h-4 rounded-[2px] bg-rose-500" />, color: 'text-rose-700', tint: 'bg-rose-100', circle: 'bg-rose-50', semantic: true },
                   ].map((k) => {
