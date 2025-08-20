@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useLeaders, usePlayers } from '@/hooks/useSupabaseData'
+import { useLeaders, usePlayers, useAttendanceScoreSettings } from '@/hooks/useSupabaseData'
 import { computeAttendanceScore } from '@/lib/attendanceScore'
 
 type PlayerRow = {
@@ -41,6 +41,7 @@ export default function PlayersStatsTable() {
   const [startDate, setStartDate] = useState<Date>(new Date(now.getFullYear(), now.getMonth(), 1))
   const [endDate, setEndDate] = useState<Date>(new Date(now.getFullYear(), now.getMonth() + 1, 0))
   const { data: leaders } = useLeaders({ startDate, endDate })
+  const { data: scoreSettings } = useAttendanceScoreSettings()
 
   const [nameFilter, setNameFilter] = useState('')
   const [sortKey, setSortKey] = useState<keyof PlayerRow>('score')
@@ -87,7 +88,7 @@ export default function PlayersStatsTable() {
         id: pid,
         first_name: fn,
         last_name: ln,
-        score: scoreData.score0to100,
+        score: (scoreSettings && (tPres + tAbs + tNr + mPres + mAbs + mNr) >= (scoreSettings.min_events || 10)) ? scoreData.score0to100 : 0,
         t_pres: tPres,
         t_abs: tAbs,
         t_late: tLate,

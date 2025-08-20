@@ -26,7 +26,7 @@ import {
   SquareMinus,
   SquarePlus
 } from "lucide-react";
-import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries } from "@/hooks/useSupabaseData";
+import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries, useAttendanceScoreSettings } from "@/hooks/useSupabaseData";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart as ReLineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as ReBarChart, Bar } from 'recharts'
 import { PlayerForm } from "@/components/forms/PlayerForm";
@@ -48,6 +48,7 @@ const Dashboard = () => {
   const { data: attendanceDist } = useAttendanceDistribution({ startDate: start, endDate: end })
   const { data: trainingSeries } = useTrainingPresenceSeries(30)
   const { data: matchSeries } = useMatchPresenceSeries(10)
+  const { data: scoreSettings } = useAttendanceScoreSettings()
 
   const formatDayMonth = (value: any) => {
     try {
@@ -109,7 +110,8 @@ const Dashboard = () => {
       }
     }))
     const scores = inputs.map(it => ({ ...computeAttendanceScore(it.counters), player_id: it.player_id, first_name: it.first_name, last_name: it.last_name }))
-    const eligible = scores.filter(s => s.opportunities >= 10)
+    const minEv = (scoreSettings?.min_events || 10)
+    const eligible = scores.filter(s => s.opportunities >= minEv)
     const sorted = eligible.sort((a,b)=> tieBreakComparator({ ...a, eligible: true, player_id: a.player_id }, { ...b, eligible: true, player_id: b.player_id }))
     return {
       bestTwo: sorted.slice(0,2),

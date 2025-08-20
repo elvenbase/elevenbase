@@ -3,6 +3,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { startOfDay, endOfDay, subMonths } from 'date-fns';
 
+// Attendance Score settings
+export const useAttendanceScoreSettings = () => {
+  return useQuery({
+    queryKey: ['attendance-score-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('attendance_score_settings')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+      if (error) throw error
+      return (data && data[0]) || { min_events: 10 }
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
 // Players hooks
 export const usePlayers = () => {
   return useQuery({
