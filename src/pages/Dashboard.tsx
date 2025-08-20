@@ -315,7 +315,7 @@ const Dashboard = () => {
               title: 'Presenze Allenamenti',
               gridClassName: 'col-span-1',
               render: () => (
-                <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 min-[900px]:grid-cols-2 min-[1200px]:grid-cols-3 min-[1500px]:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} distribution={leaders?.trainingPresences} />
                   <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" item={pickBestWorst(leaders?.trainingAbsences).best} distribution={leaders?.trainingAbsences} />
                   <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.trainingLates).best} distribution={leaders?.trainingLates} />
@@ -328,7 +328,7 @@ const Dashboard = () => {
               title: 'Presenze Partite',
               gridClassName: 'col-span-1',
               render: () => (
-                <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 min-[900px]:grid-cols-2 min-[1200px]:grid-cols-3 min-[1500px]:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} distribution={leaders?.matchPresences} />
                   <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" item={pickBestWorst(leaders?.matchAbsences).best} distribution={leaders?.matchAbsences} />
                   <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.matchLates).best} distribution={leaders?.matchLates} />
@@ -342,7 +342,7 @@ const Dashboard = () => {
               gridClassName: 'col-span-1',
               render: () => (
                 <div>
-                  <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4 justify-items-center">
+                  <div className="grid grid-cols-1 min-[900px]:grid-cols-2 min-[1200px]:grid-cols-3 min-[1500px]:grid-cols-4 gap-4 justify-items-center">
                     <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} distribution={leaders?.totalPresences} />
                     <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" item={pickBestWorst(leaders?.totalAbsences).best} distribution={leaders?.totalAbsences} />
                     <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.totalLates).best} distribution={leaders?.totalLates} />
