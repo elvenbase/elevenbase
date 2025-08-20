@@ -129,6 +129,7 @@ const PlayerDetail = () => {
   const { data: rolesList = [] } = { data: roles } as any
   const roleMap = Object.fromEntries((rolesList as any).map((r:any)=>[r.code, r]))
   const roleLabel = player?.role_code ? `${roleMap[player.role_code]?.label || player.role_code} (${roleMap[player.role_code]?.abbreviation || player.role_code})` : '-'
+  const roleAbbr = player?.role_code ? (roleMap[player.role_code]?.abbreviation || player.role_code) : '—'
   const shortName = player ? `${(player.first_name || '').trim().charAt(0).toUpperCase()}. ${(player.last_name || '').trim()}`.trim() : 'Giocatore'
 
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
@@ -282,65 +283,76 @@ const PlayerDetail = () => {
           <div className="relative z-10 p-4 sm:p-6 flex items-center justify-end gap-3">
             <div className="ml-auto min-w-0 text-right">
               <div className="text-xl sm:text-2xl font-extrabold leading-tight">{shortName}</div>
-              <div className="mt-2 flex flex-wrap items-center gap-2 justify-end">
-                <Badge variant="secondary">#{player?.jersey_number ?? '-'}</Badge>
-                <Badge className={`${sectorTheme.chip} font-semibold`}>{roleLabel}</Badge>
-                {player?.is_captain && (
-                  <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">(C)</Badge>
-                )}
-              </div>
-              <div className="mt-3 ml-auto w-full sm:w-auto">
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 justify-end">
-                  {[
-                    { key: 'gol', label: 'Gol', value: (stats.length>0 ? totals.goals : undefined), svg: <span className="text-sky-600" dangerouslySetInnerHTML={{ __html: GOAL_SVG }} />, color: 'text-sky-700', tint: 'bg-sky-50 border-sky-200', iconColor: 'text-sky-500' },
-                    { key: 'ast', label: 'Assist', value: (stats.length>0 ? totals.assists : undefined), svg: <span className="text-cyan-600" dangerouslySetInnerHTML={{ __html: ASSIST_SVG }} />, color: 'text-cyan-700', tint: 'bg-cyan-50 border-cyan-200', iconColor: 'text-cyan-500' },
-                    { key: 'gialli', label: 'Gialli', value: (stats.length>0 ? totals.yellows : undefined), icon: '', color: 'text-yellow-700', tint: 'bg-yellow-50 border-yellow-200', iconColor: 'text-yellow-500', card: 'yellow' },
-                    { key: 'rossi', label: 'Rossi', value: (stats.length>0 ? totals.reds : undefined), icon: '', color: 'text-rose-700', tint: 'bg-rose-50 border-rose-200', iconColor: 'text-rose-500', card: 'red' },
-                    { key: 'mvp', label: 'MVP', value: (stats.length>0 ? totals.mvp : undefined), icon: '', color: 'text-yellow-700', tint: 'bg-yellow-50 border-yellow-200', iconColor: 'text-yellow-500', trophy: true },
-                    { key: 'pres', label: 'Presenze', value: (stats.length>0 ? presenceCount : undefined), total: endedMatchesForPlayer, icon: '👟', color: 'text-neutral-700', tint: 'bg-neutral-50 border-neutral-200', iconColor: 'text-neutral-500', composite: true },
-                  ].map((t) => {
-                    const isZero = t.composite ? (t.value === 0) : (t.value === 0)
-                    const isNA = t.composite ? (t.total === undefined || t.total === null) : (t.value === undefined)
-                    const activeCls = isZero || isNA ? 'bg-transparent border-border/40 text-muted-foreground' : `${t.tint} ${t.color}`
-                    return (
-                      <div key={t.key} className={`rounded-lg border px-2 py-2 ${activeCls}`}>
-                        <div className="flex items-center gap-2">
-                          {t.card ? (
-                            <span aria-hidden className={`inline-block w-4 h-5 rounded-sm ${t.card==='yellow'?'bg-yellow-400':'bg-red-500'}`} />
-                          ) : t.svg ? (
-                            <span aria-hidden className="text-base leading-none">{t.svg}</span>
-                          ) : t.trophy ? (
-                            <span aria-hidden className="text-base leading-none"><Trophy className="h-4 w-4 text-yellow-500" /></span>
-                          ) : (
-                            <span aria-hidden className={`${t.iconColor} text-base leading-none`}>{t.icon || '•'}</span>
-                          )}
-                          <div className="flex flex-col items-end -mt-0.5">
-                            <span className="tabular-nums font-semibold text-sm sm:text-base">{isNA ? '—' : (t.composite ? `${t.value}/${t.total}` : t.value)}</span>
-                            <span className="hidden sm:block text-[10px] text-muted-foreground">{t.label}</span>
-                            <span className="sr-only">{t.label}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+              <div className="mt-1 text-sm text-muted-foreground">
+                <div>{roleAbbr} · #{player?.jersey_number ?? '—'}{player?.is_captain ? ' · (C)' : ''}</div>
+                <div>{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}</div>
+                <div>{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : '—'}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <Tabs defaultValue="profilo" className="w-full">
+        <Tabs defaultValue="performance" className="w-full">
           <TabsList className="sticky top-2 z-10 bg-transparent p-0">
             <div className="flex items-center justify-between">
               <div className="inline-flex rounded-full border border-border/40 bg-white/70 backdrop-blur px-1 py-1 shadow-sm">
-                <TabsTrigger value="profilo" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Profilo</TabsTrigger>
                 <TabsTrigger value="performance" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Performance</TabsTrigger>
+                <TabsTrigger value="profilo" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Profilo</TabsTrigger>
                 <TabsTrigger value="presenze" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Presenze</TabsTrigger>
                 <TabsTrigger value="partite" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Partite</TabsTrigger>
                 {formerTrialist && (<TabsTrigger value="prova" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Prova</TabsTrigger>)}
               </div>
             </div>
           </TabsList>
+
+          <TabsContent value="performance">
+            <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">KPI</CardTitle>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {(() => {
+                    const p = totals.matches
+                    const m = totals.minutes
+                    const g = totals.goals
+                    const a = totals.assists
+                    const y = totals.yellows
+                    const r = totals.reds
+                    return `${p} partite, ${m}′, ${g} gol / ${a} assist · ${y} gialli${r ? `, ${r} rossi` : ''}.`
+                  })()}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                  {[
+                    { key: 'Minuti', v: totals.minutes, icon: <Clock3 className="h-5 w-5" />, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
+                    { key: 'Partite', v: totals.matches, icon: <CalendarDays className="h-5 w-5" />, color: 'text-neutral-700', tint: 'bg-neutral-100', circle: 'bg-neutral-50', semantic: false },
+                    { key: 'Titolare', v: totals.started, icon: <CheckCircle2 className="h-5 w-5" />, color: 'text-emerald-700', tint: 'bg-emerald-100', circle: 'bg-emerald-50', semantic: false },
+                    { key: 'Gol', v: totals.goals, icon: <span className="text-sky-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M12 7a5 5 0 110 10 5 5 0 010-10z"/></svg></span>, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
+                    { key: 'Assist', v: totals.assists, icon: <span className="text-cyan-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M7 12h10"/></svg></span>, color: 'text-cyan-700', tint: 'bg-cyan-100', circle: 'bg-cyan-50', semantic: false },
+                    { key: 'Parate', v: totals.saves, icon: <Shield className="h-5 w-5" />, color: 'text-blue-700', tint: 'bg-blue-100', circle: 'bg-blue-50', semantic: false },
+                    { key: 'Gialli', v: totals.yellows, icon: <span className="inline-block w-3.5 h-4 rounded-[2px] bg-yellow-400" />, color: 'text-yellow-700', tint: 'bg-yellow-100', circle: 'bg-yellow-50', semantic: true },
+                    { key: 'Rossi', v: totals.reds, icon: <span className="inline-block w-3.5 h-4 rounded-[2px] bg-rose-500" />, color: 'text-rose-700', tint: 'bg-rose-100', circle: 'bg-rose-50', semantic: true },
+                  ].map((k) => {
+                    const isZero = !k.v
+                    const zeroCls = isZero ? 'opacity-60 border-dashed' : ''
+                    return (
+                      <div key={k.key} className={`group rounded-2xl border border-border/40 bg-white/70 backdrop-blur p-3 shadow-sm hover:shadow-md transition ${zeroCls}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center ${k.circle} ${k.semantic ? 'ring-0' : ''}`}>
+                            <span className={k.color}>{k.icon}</span>
+                          </div>
+                          <div className="min-w-0">
+                            <div className={`text-base sm:text-lg font-semibold tabular-nums ${k.color}`}>{k.v}</div>
+                            <div className="text-[11px] text-muted-foreground">{k.key}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="profilo">
             <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] lg:grid-cols-[2fr_1fr] gap-4 animate-slide-in">
@@ -452,55 +464,6 @@ const PlayerDetail = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          <TabsContent value="performance">
-            <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">KPI</CardTitle>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {(() => {
-                    const p = totals.matches
-                    const m = totals.minutes
-                    const g = totals.goals
-                    const a = totals.assists
-                    const y = totals.yellows
-                    const r = totals.reds
-                    return `${p} partite, ${m}′, ${g} gol / ${a} assist · ${y} gialli${r ? `, ${r} rossi` : ''}.`
-                  })()}
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-                  {[
-                    { key: 'Minuti', v: totals.minutes, icon: <Clock3 className="h-5 w-5" />, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
-                    { key: 'Partite', v: totals.matches, icon: <CalendarDays className="h-5 w-5" />, color: 'text-neutral-700', tint: 'bg-neutral-100', circle: 'bg-neutral-50', semantic: false },
-                    { key: 'Titolare', v: totals.started, icon: <CheckCircle2 className="h-5 w-5" />, color: 'text-emerald-700', tint: 'bg-emerald-100', circle: 'bg-emerald-50', semantic: false },
-                    { key: 'Gol', v: totals.goals, icon: <span className="text-sky-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M12 7a5 5 0 110 10 5 5 0 010-10z"/></svg></span>, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
-                    { key: 'Assist', v: totals.assists, icon: <span className="text-cyan-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M7 12h10"/></svg></span>, color: 'text-cyan-700', tint: 'bg-cyan-100', circle: 'bg-cyan-50', semantic: false },
-                    { key: 'Parate', v: totals.saves, icon: <Shield className="h-5 w-5" />, color: 'text-blue-700', tint: 'bg-blue-100', circle: 'bg-blue-50', semantic: false },
-                    { key: 'Gialli', v: totals.yellows, icon: <span className="inline-block w-3.5 h-4 rounded-[2px] bg-yellow-400" />, color: 'text-yellow-700', tint: 'bg-yellow-100', circle: 'bg-yellow-50', semantic: true },
-                    { key: 'Rossi', v: totals.reds, icon: <span className="inline-block w-3.5 h-4 rounded-[2px] bg-rose-500" />, color: 'text-rose-700', tint: 'bg-rose-100', circle: 'bg-rose-50', semantic: true },
-                  ].map((k) => {
-                    const isZero = !k.v
-                    const zeroCls = isZero ? 'opacity-60 border-dashed' : ''
-                    return (
-                      <div key={k.key} className={`group rounded-2xl border border-border/40 bg-white/70 backdrop-blur p-3 shadow-sm hover:shadow-md transition ${zeroCls}`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`h-8 w-8 rounded-full flex items-center justify-center ${k.circle} ${k.semantic ? 'ring-0' : ''}`}>
-                            <span className={k.color}>{k.icon}</span>
-                          </div>
-                          <div className="min-w-0">
-                            <div className={`text-base sm:text-lg font-semibold tabular-nums ${k.color}`}>{k.v}</div>
-                            <div className="text-[11px] text-muted-foreground">{k.key}</div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="presenze">
