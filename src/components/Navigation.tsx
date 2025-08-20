@@ -67,7 +67,7 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo and brand */}
           <NavLink to="/" className="flex items-center space-x-3">
-            <div>
+            <div className="ml-[-12px]">
               <img
                 src={`/assets/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
                 alt="Logo"
