@@ -13,7 +13,3 @@
   X-Content-Type-Options: nosniff
 
 # Ensure fresh logo after updates
-/IMG_0055.png
-  Cache-Control: no-cache, no-store, must-revalidate
-  Pragma: no-cache
-  Expires: 0
