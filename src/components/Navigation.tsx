@@ -61,6 +61,7 @@ const Navigation = () => {
     { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
     { name: "Avversari", path: "/admin/opponents", icon: Users },
     { name: "Opzioni Giocatori", path: "/field-options", icon: UserCog },
+    { name: "Attendance Score", path: "/admin/attendance-score", icon: BarChart3 },
   ];
 
   const squadItems = [

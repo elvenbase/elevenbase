@@ -79,23 +79,44 @@ export default function AttendanceScoreManagement() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-border/80 shadow-sm hover:shadow-glow transition-smooth">
           <CardHeader>
-            <CardTitle>Attendance Score</CardTitle>
-            <CardDescription>Configura pesi e imposta un ricalcolo manuale</CardDescription>
+            <CardTitle>Gestione algoritmo di affidabilità</CardTitle>
+            <CardDescription>Imposta i pesi degli eventi e avvia il ricalcolo</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.entries(weights).map(([k,v]) => (
-                <label key={k} className="text-sm space-y-1">
-                  <span className="block font-medium text-foreground/90">{k.replace(/[A-Z]/g, m=>' '+m).trim()}</span>
-                  <Input type="number" step="0.1" value={v as any} onChange={(e)=>setWeights(w=>({ ...w, [k]: Number(e.target.value) }))} />
+              {([
+                ['trainingPresentOnTime', 'Allenamenti — Presente puntuale'],
+                ['trainingPresentLate', 'Allenamenti — Presente in ritardo'],
+                ['trainingAbsent', 'Allenamenti — Assente'],
+                ['trainingNoResponse', 'Allenamenti — No response'],
+                ['matchPresentOnTime', 'Partite — Presente puntuale'],
+                ['matchPresentLate', 'Partite — Presente in ritardo'],
+                ['matchAbsent', 'Partite — Assente'],
+                ['matchNoResponse', 'Partite — No response'],
+                ['minEvents', 'Minimo eventi per entrare in classifica'],
+              ] as const).map(([key, label]) => (
+                <label key={key} className="text-sm space-y-1">
+                  <span className="block font-medium text-foreground/90">{label}</span>
+                  <Input
+                    type="number"
+                    step={key === 'minEvents' ? 1 : 0.1}
+                    inputMode="decimal"
+                    lang="it"
+                    value={(weights as any)[key] as any}
+                    onChange={(e)=>{
+                      const raw = e.target.value.replace(',', '.')
+                      const num = key === 'minEvents' ? parseInt(raw || '0', 10) : parseFloat(raw || '0')
+                      setWeights(w => ({ ...(w as any), [key]: isNaN(num) ? 0 : num } as any))
+                    }}
+                  />
                 </label>
               ))}
             </div>
             <Separator />
             <div className="flex flex-wrap gap-2">
-              <Button onClick={load} variant="outline">Carica</Button>
-              <Button onClick={save} disabled={loading}>{loading?'Salvataggio...':'Salva'}</Button>
-              <Button onClick={runNow} variant="secondary" disabled={loading}>{loading?'Esecuzione...':'Esegui ora'}</Button>
+              <Button onClick={load} variant="outline">Carica impostazioni</Button>
+              <Button onClick={save} disabled={loading}>{loading?'Salvataggio...':'Salva impostazioni'}</Button>
+              <Button onClick={runNow} variant="secondary" disabled={loading}>{loading?'Esecuzione...':'Esegui calcolo ora'}</Button>
             </div>
           </CardContent>
         </Card>
