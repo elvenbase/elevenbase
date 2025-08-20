@@ -286,7 +286,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                   <div className="flex-1 grid grid-cols-2 gap-3 text-[12px]">
                     <div className="space-y-2">
                       <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">Opportunità</div>
+                        <div className="text-muted-foreground">Opportunità totali</div>
                         <div className="font-semibold">{meta.opportunities ?? '—'}</div>
                       </div>
                       <div className="rounded-lg border p-2">
@@ -294,28 +294,34 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                         <div className="font-semibold">{typeof meta.pointsRaw === 'number' ? meta.pointsRaw.toFixed(2) : '—'}</div>
                       </div>
                       <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">No response rate</div>
+                        <div className="text-muted-foreground">Tasso no response complessivo</div>
                         <div className="font-semibold">{pct(meta.noResponseRate || 0)}</div>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">Presenze partite</div>
+                        <div className="text-muted-foreground">Percentuale presenze alle partite</div>
                         <div className="font-semibold">{pct(meta.matchPresenceRate || 0)}</div>
                       </div>
                       <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">Ritardi partite</div>
+                        <div className="text-muted-foreground">Tasso ritardi alle partite</div>
                         <div className="font-semibold">{pct(meta.matchLateRate || 0)}</div>
                       </div>
                     </div>
                     <div className="col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
-                      {[
-                        ['T_P', meta.T_P], ['T_L', meta.T_L], ['T_A', meta.T_A], ['T_NR', meta.T_NR],
-                        ['M_P', meta.M_P], ['M_L', meta.M_L], ['M_A', meta.M_A], ['M_NR', meta.M_NR],
-                      ].map(([k,v]: any, i: number) => (
+                      {([
+                        ['Allenamenti presenti', meta.T_P],
+                        ['Allenamenti in ritardo', meta.T_L],
+                        ['Allenamenti assenti', meta.T_A],
+                        ['Allenamenti no response', meta.T_NR],
+                        ['Partite presenti', meta.M_P],
+                        ['Partite in ritardo', meta.M_L],
+                        ['Partite assenti', meta.M_A],
+                        ['Partite no response', meta.M_NR],
+                      ] as Array<[string, number]>).map(([label, value], i: number) => (
                         <div key={i} className="rounded-full px-3 py-1 text-center border bg-muted/40">
-                          <span className="text-muted-foreground mr-1">{k}</span>
-                          <span className="font-semibold">{v ?? 0}</span>
+                          <span className="text-muted-foreground mr-1">{label}</span>
+                          <span className="font-semibold">{value ?? 0}</span>
                         </div>
                       ))}
                     </div>
