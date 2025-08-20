@@ -7,6 +7,7 @@ import StatChipBar from "@/components/Dashboard/StatChipBar";
 // removed BestWorstCard
 import TopLeaderCard from "@/components/Dashboard/TopLeaderCard";
 import QuickActions from "@/components/QuickActions";
+import PlayersStatsTable from "@/components/Dashboard/PlayersStatsTable";
 import { 
   Users, 
   Trophy, 
@@ -296,6 +297,14 @@ const Dashboard = () => {
                     <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.noResponses).best} distribution={leaders?.noResponses} />
                   </div>
                 </div>
+              )
+            },
+            {
+              id: 'players-stats-table',
+              title: 'Statistiche Giocatori (tabella completa)',
+              gridClassName: 'col-span-1 sm:col-span-2 xl:col-span-4 2xl:col-span-4',
+              render: () => (
+                <PlayersStatsTable />
               )
             },
             {
