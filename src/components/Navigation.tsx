@@ -71,7 +71,7 @@ const Navigation = () => {
               <img
                 src={`/assets/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
                 alt="Logo"
-                className="h-10 w-auto"
+                className="h-10 w-auto scale-[3] origin-left"
                 onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
               />
             </div>
