@@ -185,6 +185,26 @@ const PlayerDetail = () => {
   const presenceCount = stats.filter((r:any) => (r.minutes || 0) > 0).length
   const endedMatchesForPlayer = stats.length
 
+  // Traduzioni e stile per stati registro presenze
+  const statusToItalian = (s?: string) => {
+    if (!s) return '—'
+    if (s === 'present') return 'presente'
+    if (s === 'late') return 'ritardo'
+    if (s === 'absent') return 'assente'
+    if (s === 'no_response') return 'nessuna risposta'
+    if (s === 'pending') return 'in attesa'
+    return s
+  }
+  const statusClass = (s?: string) => {
+    if (s === 'present') return 'border-emerald-200 bg-emerald-50 text-emerald-700'
+    if (s === 'late') return 'border-amber-200 bg-amber-50 text-amber-700'
+    if (s === 'absent') return 'border-rose-200 bg-rose-50 text-rose-700'
+    if (s === 'no_response') return 'border-neutral-200 bg-neutral-100 text-neutral-700'
+    if (s === 'pending') return 'border-neutral-200 bg-neutral-50 text-neutral-600'
+    return 'border-neutral-200 bg-neutral-50 text-neutral-700'
+  }
+  const eventTypeLabel = (t?: string) => t==='training' ? 'Allenamento' : t==='match' ? 'Partita' : 'Evento'
+
   const Radial = ({ pct, label }: { pct: number; label: string }) => {
     const p = Math.max(0, Math.min(100, Math.round(pct)))
     const color = sector === 'P' ? '#38bdf8' : sector === 'DIF' ? '#34d399' : sector === 'CEN' ? '#f59e0b' : sector === 'ATT' ? '#f43f5e' : '#6b7280'
@@ -521,22 +541,22 @@ const PlayerDetail = () => {
                     </div>
                   </div>
                   <div className="px-3 pt-2 text-[11px] text-muted-foreground">
-                    {(() => { const last = eventsFiltered.slice(-10); const tot = last.length; const pres = last.filter((e:any)=> e.present).length; const late = last.filter((e:any)=> e.late).length; const abs = last.filter((e:any)=> !e.present && e.auto!=='no_response').length; return `Ultimi 10 eventi: ${pres} presenti, ${abs} assenze, ${late} ritardo${late===1?'':'i'}.` })()}
+                    {(() => { const last = eventsFiltered.slice(-10); const pres = last.filter((e:any)=> e.present).length; const late = last.filter((e:any)=> e.late).length; const abs = last.filter((e:any)=> !e.present && e.auto!=='no_response').length; return `Ultimi 10 eventi: ${pres} presenti, ${abs} assenze, ${late} ${late===1?'ritardo':'ritardi'}.` })()}
                   </div>
                   <div className="divide-y max-h-80 overflow-auto">
                     {eventsFiltered.slice().reverse().map((e:any, i:number)=>{
                       const diverge = (e.coach && e.coach!=='pending') && e.auto && (e.coach !== e.auto)
                       return (
-                        <div key={i} className={`p-3 text-sm flex items-center gap-3 ${diverge?'border-l-2 border-amber-300 bg-amber-50/30':''}`}>
-                          <div className="shrink-0 w-8 text-center">
-                            <span className={`inline-block w-3 h-3 rounded-full ${e.type==='training'?'bg-sky-500':'bg-violet-500'}`} />
+                        <div key={i} className={`p-3 text-sm flex items-start gap-3 ${diverge?'border-l-2 border-amber-300 bg-amber-50/30':''}`}>
+                          <div className="shrink-0 w-8 text-center mt-1">
+                            <span className={`inline-block w-3 h-3 rounded-full ${e.type==='training'?'bg-sky-500':'bg-violet-500'}`} title={eventTypeLabel(e.type)} />
                           </div>
-                          <div className="min-w-0">
-                            <div className="text-xs text-muted-foreground">{e.date || '—'} {e.time || ''} · {e.type==='training'?'A':'P'}</div>
-                            <div className="mt-1 flex items-center gap-2">
-                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${e.coach==='present' || e.coach==='late' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : e.coach==='absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-neutral-200 bg-neutral-50 text-neutral-700'}`}>Coach: {e.coach || '—'}</span>
-                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${e.auto==='present' || e.auto==='late' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : e.auto==='absent' ? 'border-rose-200 bg-rose-50 text-rose-700' : e.auto==='no_response' ? 'border-neutral-200 bg-neutral-500/10 text-neutral-700' : 'border-neutral-200 bg-neutral-50 text-neutral-700'}`}>Auto: {e.auto || '—'}</span>
-                              {e.arrival_time && (<span className="text-xs text-amber-600">+min</span>)}
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs text-muted-foreground">{e.date || '—'} {e.time || ''} · {eventTypeLabel(e.type)}</div>
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${statusClass(e.coach)}`}>Allenatore: {statusToItalian(e.coach)}</span>
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${statusClass(e.auto)}`}>Automatico: {statusToItalian(e.auto)}</span>
+                              {e.late && (<span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2 py-0.5 text-[11px]">Ritardo</span>)}
                               {diverge && (<span className="text-[10px] text-amber-700 bg-amber-100 border border-amber-200 px-1 rounded">Divergenza</span>)}
                             </div>
                           </div>
