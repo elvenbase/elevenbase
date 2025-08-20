@@ -76,6 +76,7 @@ const Dashboard = () => {
         last_name: playerById.get(r.player_id)?.last_name || r.last_name || '-',
         avatar_url: playerById.get(r.player_id)?.avatar_url || null,
         role_code: playerById.get(r.player_id)?.role_code || null,
+        jersey_number: playerById.get(r.player_id)?.jersey_number ?? null,
       },
         value: (typeof r.value === 'number' ? r.value : (typeof r.count === 'number' ? r.count : 0)),
       percent: (typeof (r as any).percent === 'number' ? (r as any).percent : undefined)
