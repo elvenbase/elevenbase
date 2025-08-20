@@ -242,7 +242,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 </div>
               </div>
               {/* Footer */}
-              <div className="flex items-center justify-between h-7 text-[12px] px-4" style={{ color: '#5A5A5A' }}>
+              <div className="flex items-center justify-between h-7 text-[12px] px-4 mb-2" style={{ color: '#5A5A5A' }}>
                 <span className="truncate">Tocca per vedere il confronto squadra.</span>
                 <button onClick={(e)=>{ e.preventDefault(); setFlipped(true) }} className="hover:opacity-80" aria-label="Apri confronto squadra con flip">↻ Flip</button>
               </div>
@@ -250,11 +250,10 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
           </Card>
         </Link>
         {/* Back */}
-        <Card className="p-4 bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-hidden">
+        <Card className="p-4 bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-hidden relative">
           <div className="flex flex-col h-full">
             <div className="flex items-start justify-between">
               <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
-              <button className="text-xs text-muted-foreground hover:text-foreground" onClick={()=>setFlipped(false)} aria-label="Torna al fronte"><RotateCcw className="h-4 w-4"/></button>
             </div>
             <div className="mt-2 h-[7.5rem] flex items-start gap-3">
               <div className="w-[48%] h-full">
@@ -284,6 +283,10 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               </div>
             </div>
           </div>
+          <button className="absolute bottom-2 right-2 text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-full border px-2.5 py-1" onClick={()=>setFlipped(false)} aria-label="Torna al fronte">
+            <span>back</span>
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
         </Card>
       </div>
     </div>
