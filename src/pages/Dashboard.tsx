@@ -364,10 +364,9 @@ const Dashboard = () => {
               title: 'Performance Partite',
               gridClassName: 'col-span-1',
               render: () => (
-                <div className="grid grid-cols-1 min-[800px]:grid-cols-3 min-[1200px]:grid-cols-4 min-[1500px]:grid-cols-5 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 min-[800px]:grid-cols-3 min-[1200px]:grid-cols-4 gap-4 justify-items-center">
                   <TopLeaderCard metricLabel="Gol" valueUnit="gol" variant="goals" item={pickBestWorst(leaders?.goals).best} distribution={leaders?.goals} />
                   <TopLeaderCard metricLabel="Assist" valueUnit="assist" variant="assists" item={pickBestWorst(leaders?.assists).best} distribution={leaders?.assists} />
-                  <TopLeaderCard metricLabel="Minuti giocati" valueUnit="min" variant="minutes" item={pickBestWorst(leaders?.minutesAvg).best} distribution={leaders?.minutesAvg} />
                   <TopLeaderCard metricLabel="Ammonizioni" valueUnit="gialli" variant="yellow" item={pickBestWorst(leaders?.yellowCards).best} distribution={leaders?.yellowCards} />
                   <TopLeaderCard metricLabel="Espulsioni" valueUnit="rossi" variant="red" item={pickBestWorst(leaders?.redCards).best} distribution={leaders?.redCards} />
                 </div>
