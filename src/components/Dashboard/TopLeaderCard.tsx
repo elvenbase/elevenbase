@@ -218,26 +218,18 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                   </div>
                 </div>
 
-                {/* >= lg: avatar left, text + pill right */}
-                <div className="hidden lg:flex items-start gap-3">
-                  <div className="relative flex items-center">
-                    <div className="relative">
-                      <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
-                    </div>
+                {/* >= lg: stack avatar, name, pill vertically and left-aligned */}
+                <div className="hidden lg:flex flex-col items-start gap-2 text-left">
+                  <div className="relative">
+                    <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 max-w-full">
-                        <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                      </div>
-                      <div className="hidden lg:flex items-center">
-                        <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
-                          <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
-                          <span className="font-bold tabular-nums text-[22px]" style={{ color: metricStyle.accent }}>{value}</span>
-                          <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="min-w-0 max-w-full">
+                    <div className="line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
+                    <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />
+                    <span className="font-bold tabular-nums text-[22px]" style={{ color: metricStyle.accent }}>{value}</span>
+                    <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
                   </div>
                 </div>
               </div>

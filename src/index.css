@@ -135,4 +135,9 @@
   a, button {
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* Evita lo zoom su iOS quando si focussano input/textarea con font-size < 16px */
+  input, textarea, select {
+    font-size: 16px; /* iOS Safari non applica zoom con font-size >= 16px */
+  }
 }

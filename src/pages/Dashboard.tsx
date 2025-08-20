@@ -3,10 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import StatsCard from "@/components/StatsCard";
 import DndGrid from "@/components/Dashboard/DndGrid";
-import StatChipBar from "@/components/Dashboard/StatChipBar";
 // removed BestWorstCard
 import TopLeaderCard from "@/components/Dashboard/TopLeaderCard";
-import QuickActions from "@/components/QuickActions";
 import PlayersStatsTable from "@/components/Dashboard/PlayersStatsTable";
 import { 
   Users, 
@@ -32,8 +30,10 @@ import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useA
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart as ReLineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as ReBarChart, Bar } from 'recharts'
 import { PlayerForm } from "@/components/forms/PlayerForm";
+import { TrainingForm } from "@/components/forms/TrainingForm";
+import { MatchForm } from "@/components/forms/MatchForm";
+import { TrialistForm } from "@/components/forms/TrialistForm";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { data: players = [], isLoading: playersLoading } = usePlayers();
@@ -47,7 +47,6 @@ const Dashboard = () => {
   const { data: attendanceDist } = useAttendanceDistribution({ startDate: start, endDate: end })
   const { data: trainingSeries } = useTrainingPresenceSeries(30)
   const { data: matchSeries } = useMatchPresenceSeries(10)
-  const navigate = useNavigate();
 
   const formatDayMonth = (value: any) => {
     try {
@@ -107,14 +106,61 @@ const Dashboard = () => {
           <h1 className="text-4xl font-bold text-primary mb-2">Dashboard</h1>
           <p className="text-muted-foreground">Panoramica generale del tuo club</p>
         </div>
-        {/* Chip actions bar */}
-        <div className="mb-6">
-          <StatChipBar chips={[
-            { label: 'Nuovo allenamento', icon: <Calendar className="h-4 w-4" />, color: 'accent', onClick: ()=>navigate('/training') },
-            { label: 'Registra partita', icon: <Trophy className="h-4 w-4" />, color: 'primary', onClick: ()=>navigate('/matches') },
-            { label: 'Aggiungi giocatore', icon: <Users className="h-4 w-4" />, color: 'success', onClick: ()=>navigate('/squad') },
-            { label: 'Valuta candidato', icon: <Target className="h-4 w-4" />, color: 'secondary', onClick: ()=>navigate('/trials') },
-          ]} />
+        {/* Chip actions bar (apre direttamente i moduli) */}
+        <div className="mb-6 -mx-2 sm:mx-0">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 px-2 sm:px-0">
+            <TrainingForm>
+              <Button
+                variant="ghost"
+                className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md transition-bounce border bg-accent text-accent-foreground hover:scale-105 active:scale-95"
+                title="Nuovo allenamento"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">Nuovo allenamento</span>
+                </span>
+              </Button>
+            </TrainingForm>
+
+            <MatchForm>
+              <Button
+                variant="ghost"
+                className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md transition-bounce border bg-primary text-primary-foreground hover:scale-105 active:scale-95"
+                title="Registra partita"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">Registra partita</span>
+                </span>
+              </Button>
+            </MatchForm>
+
+            <PlayerForm>
+              <Button
+                variant="ghost"
+                className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md transition-bounce border bg-success text-success-foreground hover:scale-105 active:scale-95"
+                title="Aggiungi giocatore"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">Aggiungi giocatore</span>
+                </span>
+              </Button>
+            </PlayerForm>
+
+            <TrialistForm>
+              <Button
+                variant="ghost"
+                className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md transition-bounce border bg-secondary text-secondary-foreground hover:scale-105 active:scale-95"
+                title="Valuta candidato"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">Valuta candidato</span>
+                </span>
+              </Button>
+            </TrialistForm>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 2xl:grid-cols-4 gap-6 mb-8">

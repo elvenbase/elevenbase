@@ -69,32 +69,32 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md flex flex-col items-center">
+    <div className="min-h-screen flex items-center justify-center bg-background p-2">
+      <div className="w-full max-w-sm flex flex-col items-center">
         {/* Logo e Header */}
-        <div className="text-center mb-[50px]">
-          <div className="flex items-center justify-center mb-0">
+        <div className="text-center mb-4">
+          <div className="flex items-center justify-center">
             <img
               src={`/assets/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
               alt="Logo"
-              className="h-40 md:h-48 w-auto"
+              className="h-24 md:h-28 w-auto"
               onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
             />
           </div>
         </div>
 
-        <Card className="shadow-card">
-          <CardHeader className="text-center">
-            <CardTitle>{isSignUp ? "Registrazione" : "Accesso"}</CardTitle>
-            <CardDescription>
+        <Card className="shadow-card w-full">
+          <CardHeader className="text-center py-2">
+            <CardTitle className="text-lg">{isSignUp ? "Registrazione" : "Accesso"}</CardTitle>
+            <CardDescription className="text-xs">
               {isSignUp ? "Crea il tuo account amministratore" : "Accedi al sistema di gestione e-sport"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2 pb-3">
             <div className="w-full">
               {isSignUp ? (
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
+                <form onSubmit={handleSignUp} className="space-y-3">
+                  <div className="space-y-1">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -104,11 +104,11 @@ const Auth = () => {
                         type="email"
                         placeholder="admin@example.com"
                         required
-                        className="pl-10"
+                        className="pl-10 h-9"
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="username">Username</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -118,11 +118,11 @@ const Auth = () => {
                         type="text"
                         placeholder="admin"
                         required
-                        className="pl-10"
+                        className="pl-10 h-9"
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -132,17 +132,17 @@ const Auth = () => {
                         type="password"
                         placeholder="Password"
                         required
-                        className="pl-10"
+                        className="pl-10 h-9"
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full h-9" disabled={isLoading}>
                     {isLoading ? "Registrazione in corso..." : "Registrati"}
                   </Button>
                 </form>
               ) : (
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
+                <form onSubmit={handleSignIn} className="space-y-3">
+                  <div className="space-y-1">
                     <Label htmlFor="username">Username</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -152,11 +152,11 @@ const Auth = () => {
                         type="text"
                         placeholder="admin"
                         required
-                        className="pl-10"
+                        className="pl-10 h-9"
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -166,21 +166,21 @@ const Auth = () => {
                         type="password"
                         placeholder="Password"
                         required
-                        className="pl-10"
+                        className="pl-10 h-9"
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full h-9" disabled={isLoading}>
                     {isLoading ? "Accesso in corso..." : "Accedi"}
                   </Button>
                 </form>
               )}
               
-              <div className="mt-4 text-center">
+              <div className="mt-3 text-center">
                 <button
                   type="button"
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-sm text-primary hover:underline"
+                  className="text-xs text-primary hover:underline"
                 >
                   {isSignUp ? "Hai già un account? Accedi" : "Non hai un account? Registrati"}
                 </button>
