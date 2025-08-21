@@ -29,5 +29,20 @@ describe('computeAttendanceScore', () => {
     expect(res.opportunities).toBe(0)
     expect(res.score0to100).toBe(0)
   })
+
+  it('applies MVP bonus once when mvpAwards > 0', () => {
+    const base = computeAttendanceScore({
+      T_P: 5, T_L: 0, T_A: 3, T_NR: 2,
+      M_P: 2, M_L: 0, M_A: 1, M_NR: 1,
+      mvpAwards: 0,
+    }, SIMPLE_WEIGHTS)
+    const withMvp = computeAttendanceScore({
+      T_P: 5, T_L: 0, T_A: 3, T_NR: 2,
+      M_P: 2, M_L: 0, M_A: 1, M_NR: 1,
+      mvpAwards: 2,
+    }, SIMPLE_WEIGHTS)
+    expect(withMvp.pointsRaw).toBeGreaterThan(base.pointsRaw)
+    expect(withMvp.score0to100).toBeGreaterThan(base.score0to100)
+  })
 })
 

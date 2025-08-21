@@ -7,6 +7,7 @@ export type AttendanceCounters = {
   M_L: number
   M_A: number
   M_NR: number
+  mvpAwards?: number
 }
 
 export type AttendanceWeights = {
@@ -18,6 +19,7 @@ export type AttendanceWeights = {
   matchPresentLate: number
   matchAbsent: number
   matchNoResponse: number
+  mvpBonusOnce: number
 }
 
 export const SIMPLE_WEIGHTS: AttendanceWeights = {
@@ -29,6 +31,7 @@ export const SIMPLE_WEIGHTS: AttendanceWeights = {
   matchPresentLate: 1.5,
   matchAbsent: -2.0,
   matchNoResponse: -2.5,
+  mvpBonusOnce: 5.0,
 }
 
 export type ScoreOutput = AttendanceCounters & {
@@ -62,6 +65,8 @@ export function computeAttendanceScore(
     weights.matchAbsent * c.M_A +
     weights.matchNoResponse * c.M_NR
   )
+  const hasMvp = (c.mvpAwards || 0) > 0
+  const POINTS_WITH_BONUS = POINTS + (hasMvp ? weights.mvpBonusOnce : 0)
 
   const MAX = (weights.trainingPresentOnTime * 1.0) * T_total + (weights.matchPresentOnTime * 1.5 / 1.5) * 2.5 / 2.5 * M_total
   // Above line ensures use of 1.0 and 2.5 explicitly; rewrite for clarity
@@ -71,7 +76,7 @@ export function computeAttendanceScore(
   const range = MAX_clean - MIN_clean
   let score = 0
   if (range !== 0) {
-    score = 100 * (POINTS - MIN_clean) / range
+    score = 100 * (POINTS_WITH_BONUS - MIN_clean) / range
     if (!Number.isFinite(score)) score = 0
   }
   // Clip and round to 1 decimal
@@ -85,7 +90,7 @@ export function computeAttendanceScore(
 
   return {
     ...c,
-    pointsRaw: POINTS,
+    pointsRaw: POINTS_WITH_BONUS,
     opportunities,
     score0to100: opportunities === 0 ? 0 : score0to100,
     noResponseRate,

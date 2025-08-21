@@ -32,6 +32,7 @@ serve(async (req) => {
       matchPresentLate: ws?.match_present_late ?? 1.5,
       matchAbsent: ws?.match_absent ?? -2.0,
       matchNoResponse: ws?.match_no_response ?? -2.5,
+      mvpBonusOnce: ws?.mvp_bonus_once ?? 5.0,
     }
     const minEvents = ws?.min_events ?? 10
 
@@ -64,9 +65,9 @@ serve(async (req) => {
     const matchAtt = (mtRes.data || []) as any[]
 
     // Aggregate counters per player
-    type C = { T_P:number; T_L:number; T_A:number; T_NR:number; M_P:number; M_L:number; M_A:number; M_NR:number }
+    type C = { T_P:number; T_L:number; T_A:number; T_NR:number; M_P:number; M_L:number; M_A:number; M_NR:number; mvpAwards:number }
     const map = new Map<string, C>()
-    const ensure = (id: string) => { let x = map.get(id); if (!x) { x = { T_P:0, T_L:0, T_A:0, T_NR:0, M_P:0, M_L:0, M_A:0, M_NR:0 }; map.set(id, x) } return x }
+    const ensure = (id: string) => { let x = map.get(id); if (!x) { x = { T_P:0, T_L:0, T_A:0, T_NR:0, M_P:0, M_L:0, M_A:0, M_NR:0, mvpAwards:0 }; map.set(id, x) } return x }
     const tTotals = new Map<string, number>()
     for (const r of trainingConv) { if (r.player_id) tTotals.set(r.player_id, (tTotals.get(r.player_id) || 0) + 1) }
     for (const r of training) {
@@ -94,6 +95,19 @@ serve(async (req) => {
       if (auto === 'absent') c.M_A += 1
     }
 
+    // MVP awards within period
+    let mSel: any = supabase
+      .from('matches')
+      .select('id, mvp_player_id, mvp_trialist_id, match_date, live_state')
+      .eq('live_state', 'ended')
+    if (applyFilters) mSel = mSel.gte('match_date', startStr).lte('match_date', endStr)
+    const mRes = await mSel
+    if (mRes.error) throw mRes.error
+    for (const m of (mRes.data || []) as any[]) {
+      const pid = m.mvp_player_id as string | null
+      if (pid) { const c = ensure(pid); c.mvpAwards += 1 }
+    }
+
     // Compute score per player
     function calc(c: C) {
       const T_onTime = Math.max(0, c.T_P - c.T_L)
@@ -111,18 +125,19 @@ serve(async (req) => {
         weights.matchAbsent * c.M_A +
         weights.matchNoResponse * c.M_NR
       )
+      const withBonus = POINTS + ((c.mvpAwards || 0) > 0 ? (weights.mvpBonusOnce || 0) : 0)
       const MAX = 1.0 * T_total + 2.5 * M_total
       const MIN = -1.0 * T_total - 2.5 * M_total
       const range = MAX - MIN
       let score = 0
-      if (range !== 0) score = 100 * (POINTS - MIN) / range
+      if (range !== 0) score = 100 * (withBonus - MIN) / range
       const score0to100 = Math.max(0, Math.min(100, Math.round(score * 10) / 10))
       const denomEvents = Math.max(1, opportunities)
       const noResponseRate = (c.T_NR + c.M_NR) / denomEvents
       const matchDen = Math.max(1, c.M_P + c.M_A + c.M_NR)
       const matchPresenceRate = c.M_P / matchDen
       const matchLateRate = c.M_P > 0 ? c.M_L / c.M_P : 0
-      return { POINTS, score0to100, opportunities, noResponseRate, matchPresenceRate, matchLateRate }
+      return { POINTS: withBonus, score0to100, opportunities, noResponseRate, matchPresenceRate, matchLateRate }
     }
 
     const rows: any[] = []
@@ -144,6 +159,7 @@ serve(async (req) => {
         m_l: c.M_L,
         m_a: c.M_A,
         m_nr: c.M_NR,
+        mvp_awards: c.mvpAwards || 0,
         no_response_rate: s.noResponseRate,
         match_presence_rate: s.matchPresenceRate,
         match_late_rate: s.matchLateRate,
