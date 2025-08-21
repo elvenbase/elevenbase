@@ -160,7 +160,7 @@ const Matches = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-2">Partite Ufficiali</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Gestisci e registra eventi live delle partite ufficiali</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Gestisci le partite ufficiali</p>
           </div>
           <MatchForm>
             <Button className="w-full sm:w-auto space-x-2">
