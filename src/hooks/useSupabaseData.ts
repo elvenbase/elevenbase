@@ -1835,7 +1835,7 @@ export const useEnsureMatchPublicSettings = () => {
       if (!match.public_link_token) updates.public_link_token = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('')
       if (!match.allow_responses_until && match.match_date && match.match_time) {
         const start = new Date(`${match.match_date}T${match.match_time}`)
-        start.setHours(start.getHours() - 2)
+        start.setHours(start.getHours() - 4)
         updates.allow_responses_until = start.toISOString()
       }
       if (Object.keys(updates).length === 0) return match

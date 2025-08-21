@@ -120,7 +120,17 @@ const MatchPublicLinkSharing = ({ match, attendanceStats, onRefresh }: MatchPubl
                 </div>
               </div>
             ) : (
-              <Badge variant={isExpired ? 'destructive' : 'secondary'} className="text-sm">{timeLeft || 'Non impostato'}</Badge>
+              <div className="flex flex-col items-center gap-1">
+                <Badge variant={isExpired ? 'destructive' : 'secondary'} className="text-sm">{timeLeft || 'Non impostato'}</Badge>
+                <div className="text-[11px] text-muted-foreground">
+                  {(() => {
+                    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+                    const nowStr = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' })
+                    const dlStr = match.allow_responses_until ? new Date(match.allow_responses_until).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }) : ''
+                    return dlStr ? `Ora attuale: ${nowStr} • Scadenza: ${dlStr} (${tz})` : `Ora attuale: ${nowStr} (${tz})`
+                  })()}
+                </div>
+              </div>
             )}
           </div>
           <div className="text-center">
