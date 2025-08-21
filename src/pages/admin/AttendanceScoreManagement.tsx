@@ -24,7 +24,12 @@ export default function AttendanceScoreManagement() {
   const [loading, setLoading] = useState(false)
 
   const load = async () => {
-    const { data, error } = await supabase.from('attendance_score_settings').select('*').eq('is_active', true).limit(1)
+    const { data, error } = await supabase
+      .from('attendance_score_settings')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
     if (error) return
     const s = data && data[0]
     if (s) setWeights({
@@ -43,6 +48,12 @@ export default function AttendanceScoreManagement() {
 
   const save = async () => {
     setLoading(true)
+    // Deactivate previous active presets to ensure we always load the latest
+    await supabase
+      .from('attendance_score_settings')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('is_active', true)
+
     const { error } = await supabase.from('attendance_score_settings').insert({
       preset: 'simple',
       training_present_on_time: weights.trainingPresentOnTime,
@@ -68,10 +79,13 @@ export default function AttendanceScoreManagement() {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/attendance-scores`
       // Call without auth header; function uses service role on server if configured
       const res = await fetch(url, { method: 'POST' })
-      const j = await res.json()
-      if (!res.ok) throw new Error(j.error || 'Errore')
-      toast({ title: 'Eseguito', description: `Calcolati ${j.inserted} punteggi` })
+      let j: any = {}
+      try { j = await res.json() } catch { j = {} }
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`)
+      console.debug('attendance-scores run:', { status: res.status, body: j })
+      toast({ title: 'Eseguito', description: `Calcolati ${j.inserted ?? 0} punteggi` })
     } catch (e: any) {
+      console.error('attendance-scores error:', e)
       toast({ title: 'Errore', description: String(e.message || e), variant: 'destructive' })
     } finally {
       setLoading(false)

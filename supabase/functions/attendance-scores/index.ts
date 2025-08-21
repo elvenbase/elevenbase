@@ -15,12 +15,15 @@ serve(async (req) => {
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2')
-    // Prefer service role on server to bypass RLS for scheduled/manual runs
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY)
+    const reqAuth = req.headers.get('Authorization') || ''
+    // Prefer service role on server; otherwise propagate caller JWT to satisfy RLS
+    const supabase = SUPABASE_SERVICE_ROLE_KEY
+      ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+      : createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { global: { headers: { Authorization: reqAuth } } })
 
     // Load players
     const { data: players, error: playersErr } = await supabase.from('players').select('id, first_name, last_name, status')
-    if (playersErr) throw playersErr
+    if (playersErr) throw new Error(`players: ${playersErr.message}`)
 
     // Load settings (first active)
     const { data: settings } = await supabase.from('attendance_score_settings').select('*').eq('is_active', true).order('created_at', { ascending: false })
@@ -51,19 +54,19 @@ serve(async (req) => {
     let trSel: any = supabase.from('training_attendance').select('player_id, status, coach_confirmation_status, arrival_time, training_sessions!inner(session_date)')
     trSel = trSel.gte('training_sessions.session_date', startStr).lte('training_sessions.session_date', endStr)
     const trRes = await trSel
-    if (trRes.error) throw trRes.error
+    if (trRes.error) throw new Error(`training_attendance: ${trRes.error.message}`)
     const training = (trRes.data || []) as any[]
     let tcSel: any = supabase.from('training_convocati').select('player_id, training_sessions!inner(session_date)')
     tcSel = tcSel.gte('training_sessions.session_date', startStr).lte('training_sessions.session_date', endStr)
     const tcRes = await tcSel
-    if (tcRes.error) throw tcRes.error
+    if (tcRes.error) throw new Error(`training_convocati: ${tcRes.error.message}`)
     const trainingConv = (tcRes.data || []) as any[]
 
     // Matches (ended)
     let mtSel: any = supabase.from('match_attendance').select('player_id, status, coach_confirmation_status, arrival_time, matches!inner(match_date, live_state)').eq('matches.live_state', 'ended')
     mtSel = mtSel.gte('matches.match_date', startStr).lte('matches.match_date', endStr)
     const mtRes = await mtSel
-    if (mtRes.error) throw mtRes.error
+    if (mtRes.error) throw new Error(`match_attendance: ${mtRes.error.message}`)
     const matchAtt = (mtRes.data || []) as any[]
 
     // Aggregate counters per player
@@ -102,9 +105,9 @@ serve(async (req) => {
       .from('matches')
       .select('id, mvp_player_id, mvp_trialist_id, match_date, live_state')
       .eq('live_state', 'ended')
-    if (applyFilters) mSel = mSel.gte('match_date', startStr).lte('match_date', endStr)
-    const mRes = await mSel
-    if (mRes.error) throw mRes.error
+    // monthly window only in this simple version
+    const mRes = await mSel.gte('match_date', startStr).lte('match_date', endStr)
+    if (mRes.error) throw new Error(`matches (mvp): ${mRes.error.message}`)
     for (const m of (mRes.data || []) as any[]) {
       const pid = m.mvp_player_id as string | null
       if (pid) { const c = ensure(pid); c.mvpAwards += 1 }
@@ -118,14 +121,14 @@ serve(async (req) => {
       const M_total = c.M_P + c.M_A + c.M_NR
       const opportunities = T_total + M_total
       const POINTS = (
-        weights.trainingPresentOnTime * T_onTime +
-        weights.trainingPresentLate * c.T_L +
-        weights.trainingAbsent * c.T_A +
-        weights.trainingNoResponse * c.T_NR +
-        weights.matchPresentOnTime * M_onTime +
-        weights.matchPresentLate * c.M_L +
-        weights.matchAbsent * c.M_A +
-        weights.matchNoResponse * c.M_NR
+        1.0 * T_onTime +
+        0.6 * c.T_L +
+        -0.8 * c.T_A +
+        -1.0 * c.T_NR +
+        2.5 * M_onTime +
+        1.5 * c.M_L +
+        -2.0 * c.M_A +
+        -2.5 * c.M_NR
       )
       const withBonus = POINTS + ((c.mvpAwards || 0) > 0 ? (weights.mvpBonusOnce || 0) : 0)
       const MAX = 1.0 * T_total + 2.5 * M_total
@@ -145,7 +148,7 @@ serve(async (req) => {
     const rows: any[] = []
     for (const p of players || []) {
       if (p.status !== 'active') continue
-      const c = map.get(p.id) || { T_P:0,T_L:0,T_A:0,T_NR:0,M_P:0,M_L:0,M_A:0,M_NR:0 }
+      const c = map.get(p.id) || { T_P:0,T_L:0,T_A:0,T_NR:0,M_P:0,M_L:0,M_A:0,M_NR:0, mvpAwards: 0 }
       const s = calc(c)
       rows.push({
         player_id: p.id,
@@ -170,14 +173,12 @@ serve(async (req) => {
       })
     }
 
-    // Upsert into table
-    // Supabase upsert requires 'onConflict' option via REST not available in Edge yet, use RPC or batch delete+insert
-    // Simpler approach: delete existing for date, then insert
+    // Replace same-date results
     const { error: delErr } = await supabase.from('attendance_scores').delete().eq('score_date', scoreDate)
-    if (delErr) throw delErr
+    if (delErr) throw new Error(`delete attendance_scores: ${delErr.message}`)
     if (rows.length > 0) {
       const { error: insErr } = await supabase.from('attendance_scores').insert(rows)
-      if (insErr) throw insErr
+      if (insErr) throw new Error(`insert attendance_scores: ${insErr.message}`)
     }
 
     return new Response(JSON.stringify({ ok: true, date: scoreDate, inserted: rows.length }), { headers: { 'content-type': 'application/json' } })
@@ -186,4 +187,3 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: String(e?.message || e) }), { status: 500, headers: { 'content-type': 'application/json' } })
   }
 })
-
