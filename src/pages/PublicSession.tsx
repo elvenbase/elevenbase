@@ -148,8 +148,15 @@ const PublicSession = () => {
         setConvocati(data.convocati)
       }
       
-      const sessionDateTime = new Date(`${data.session.session_date}T${data.session.start_time}`)
-      const registrationDeadline = new Date(sessionDateTime.getTime() - (4 * 60 * 60 * 1000))
+      // Usare la stessa logica dell'admin: se allow_responses_until è impostato, usarla.
+      // Altrimenti fallback a 2 ore prima dell'inizio.
+      let registrationDeadline: Date
+      if (data.session.allow_responses_until) {
+        registrationDeadline = new Date(data.session.allow_responses_until)
+      } else {
+        const sessionDateTime = new Date(`${data.session.session_date}T${data.session.start_time}`)
+        registrationDeadline = new Date(sessionDateTime.getTime() - (2 * 60 * 60 * 1000))
+      }
       setDeadline(registrationDeadline)
 
       if (data.session?.id) {
