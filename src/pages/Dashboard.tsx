@@ -443,6 +443,7 @@ const Dashboard = () => {
                           M_L: (leaders?.matchLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
                           M_A: (leaders?.matchAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
                           M_NR: (leaders?.matchNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          mvpAwards: (leaders?.mvpAwards||[]).find(r=>r.player_id===s.player_id)?.value || 0,
                         }
                       }}
                       distribution={[]}
@@ -471,6 +472,7 @@ const Dashboard = () => {
                           M_L: (leaders?.matchLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
                           M_A: (leaders?.matchAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
                           M_NR: (leaders?.matchNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
+                          mvpAwards: (leaders?.mvpAwards||[]).find(r=>r.player_id===s.player_id)?.value || 0,
                         }
                       }}
                       distribution={[]}

@@ -308,7 +308,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                         <div className="font-semibold">{pct(meta.matchLateRate || 0)}</div>
                       </div>
                     </div>
-                    <div className="col-span-2 mt-1 -mx-4">
+                    <div className="col-span-2 mt-1 -mx-4 pr-2 sm:pr-3">
                       <ul className="space-y-1 text-[12px] m-0">
                         {([
                           ['Presenze allenamenti', meta.T_P],
