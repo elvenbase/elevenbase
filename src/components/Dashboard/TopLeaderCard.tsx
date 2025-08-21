@@ -310,21 +310,37 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                     </div>
                     <div className="col-span-2 mt-1 -mx-4 pr-2 sm:pr-3">
                       <ul className="space-y-1 text-[12px] m-0 p-0 pl-[10px] list-none">
-                        {([
-                          ['Presenze allenamenti', meta.T_P],
-                          ['Ritardi allenamenti', meta.T_L],
-                          ['Assenze allenamenti', meta.T_A],
-                          ['No response allenamenti', meta.T_NR],
-                          ['Presenze partite', meta.M_P],
-                          ['Ritardi partite', meta.M_L],
-                          ['Assenze partite', meta.M_A],
-                          ['No response partite', meta.M_NR],
-                        ] as Array<[string, number]>).map(([label, value], i: number) => (
-                          <li key={i} className="flex items-center justify-between border-b border-border/30 py-0.5">
-                            <span className="text-muted-foreground">{label}</span>
-                            <span className="font-semibold tabular-nums">{value ?? 0}</span>
-                          </li>
-                        ))}
+                        {(() => {
+                          const EXCLUDE = new Set(['pointsRaw', 'opportunities', 'noResponseRate', 'matchPresenceRate', 'matchLateRate'])
+                          const LABELS: Record<string, string> = {
+                            T_P: 'Presenze allenamenti',
+                            T_L: 'Ritardi allenamenti',
+                            T_A: 'Assenze allenamenti',
+                            T_NR: 'No response allenamenti',
+                            M_P: 'Presenze partite',
+                            M_L: 'Ritardi partite',
+                            M_A: 'Assenze partite',
+                            M_NR: 'No response partite',
+                            mvpAwards: 'MVP',
+                          }
+                          const ORDER = ['T_P','T_L','T_A','T_NR','M_P','M_L','M_A','M_NR','mvpAwards']
+                          const items: Array<{ label: string; value: number; key: string }> = []
+                          ORDER.forEach(k => {
+                            if (typeof meta[k] === 'number') items.push({ key: k, label: LABELS[k] || k, value: Number(meta[k]) })
+                          })
+                          for (const [k, v] of Object.entries(meta)) {
+                            if (EXCLUDE.has(k) || ORDER.includes(k)) continue
+                            if (typeof v !== 'number') continue
+                            const friendly = LABELS[k] || k.replace(/_/g, ' ')
+                            items.push({ key: k, label: friendly, value: Number(v) })
+                          }
+                          return items.map((it, i) => (
+                            <li key={it.key || i} className="flex items-center justify-between border-b border-border/30 py-0.5">
+                              <span className="text-muted-foreground">{it.label}</span>
+                              <span className="font-semibold tabular-nums">{isNaN(it.value) ? 0 : it.value}</span>
+                            </li>
+                          ))
+                        })()}
                       </ul>
                     </div>
                   </div>
