@@ -13,8 +13,10 @@ serve(async (req) => {
     // Supabase client (Edge)
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2')
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { global: { headers: { Authorization: req.headers.get('Authorization') || '' } } })
+    // Prefer service role on server to bypass RLS for scheduled/manual runs
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY)
 
     // Load players
     const { data: players, error: playersErr } = await supabase.from('players').select('id, first_name, last_name, status')

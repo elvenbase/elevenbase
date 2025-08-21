@@ -66,7 +66,8 @@ export default function AttendanceScoreManagement() {
     setLoading(true)
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/attendance-scores`
-      const res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` } })
+      // Call without auth header; function uses service role on server if configured
+      const res = await fetch(url, { method: 'POST' })
       const j = await res.json()
       if (!res.ok) throw new Error(j.error || 'Errore')
       toast({ title: 'Eseguito', description: `Calcolati ${j.inserted} punteggi` })
