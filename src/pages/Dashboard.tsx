@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import StatsCard from "@/components/StatsCard";
@@ -27,28 +26,38 @@ import {
   SquarePlus
 } from "lucide-react";
 import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries, useAttendanceScoreSettings } from "@/hooks/useSupabaseData";
+
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+
 import { LineChart as ReLineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as ReBarChart, Bar } from 'recharts'
+
 import { PlayerForm } from "@/components/forms/PlayerForm";
 import { TrainingForm } from "@/components/forms/TrainingForm";
 import { MatchForm } from "@/components/forms/MatchForm";
 import { TrialistForm } from "@/components/forms/TrialistForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { computeAttendanceScore, tieBreakComparator } from '@/lib/attendanceScore'
+import { useEffect, useRef } from 'react'
+
 
 const Dashboard = () => {
   const { data: players = [], isLoading: playersLoading } = usePlayers();
   const { data: stats, isLoading: statsLoading } = useStats();
   const { data: recentActivity = [], isLoading: activityLoading } = useRecentActivity();
+
   const now = new Date()
   const start = new Date(now.getFullYear(), now.getMonth(), 1)
   const end = new Date(now.getFullYear(), now.getMonth()+1, 0)
   const { data: leaders } = useLeaders({ startDate: start, endDate: end })
   const { data: trend } = useTeamTrend({ limit: 10 })
   const { data: attendanceDist } = useAttendanceDistribution({ startDate: start, endDate: end })
+
   const { data: trainingSeries } = useTrainingPresenceSeries(30)
   const { data: matchSeries } = useMatchPresenceSeries(10)
   const { data: scoreSettings } = useAttendanceScoreSettings()
+
+  const animateOnceRef = useRef(true)
+  useEffect(()=>{ animateOnceRef.current = false }, [])
 
   const formatDayMonth = (value: any) => {
     try {
@@ -57,6 +66,7 @@ const Dashboard = () => {
       const d = new Date(typeof value === 'string' ? value : String(value))
       if (!isNaN(d.getTime())) {
         return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })
+
       }
       // Fallback: try to parse YYYY-MM-DD manually
       const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
@@ -68,20 +78,25 @@ const Dashboard = () => {
   }
 
   // Helpers to compose best/worst from leaders arrays using players list for avatar/role
+
   const playerById = new Map<string, any>(players.map((p:any)=>[p.id, p]))
   const pickBestWorst = (arr?: Array<{ player_id: string; value?: number; count?: number; percent?: number; first_name?: string; last_name?: string }>) => {
+
     if (!arr || arr.length===0) return { best: null, worst: null }
     const withVal = arr.map(r=>({
       player: {
         id: r.player_id,
         first_name: playerById.get(r.player_id)?.first_name || r.first_name || '-',
+
         last_name: playerById.get(r.player_id)?.last_name || r.last_name || '-',
         avatar_url: playerById.get(r.player_id)?.avatar_url || null,
         role_code: playerById.get(r.player_id)?.role_code || null,
         jersey_number: playerById.get(r.player_id)?.jersey_number ?? null,
       },
         value: (typeof r.value === 'number' ? r.value : (typeof r.count === 'number' ? r.count : 0)),
+
       percent: (typeof (r as any).percent === 'number' ? (r as any).percent : undefined)
+
     }))
     const best = withVal.slice().sort((a,b)=>b.value-a.value)[0] || null
     const worst = withVal.slice().sort((a,b)=>a.value-b.value)[0] || null
@@ -90,6 +105,7 @@ const Dashboard = () => {
 
   const scoreLeaders = (() => {
     const ids = new Set<string>([...(leaders?.totalPresences||[]), ...(leaders?.totalAbsences||[]), ...(leaders?.lates||[]), ...(leaders?.noResponses||[])].map(x=>x.player_id))
+
     const toCount = (mapArr: any[]|undefined, pid: string) => {
       const r = (mapArr||[]).find((x:any)=>x.player_id===pid)
       return Number(r?.value ?? r?.count ?? 0)
@@ -97,7 +113,9 @@ const Dashboard = () => {
     const inputs = Array.from(ids).map(pid => ({
       player_id: pid,
       first_name: (leaders?.totalPresences||[]).find((x:any)=>x.player_id===pid)?.first_name,
+
       last_name: (leaders?.totalPresences||[]).find((x:any)=>x.player_id===pid)?.last_name,
+
       counters: {
         T_P: toCount(leaders?.trainingPresences, pid),
         T_L: toCount(leaders?.trainingLates, pid),
@@ -255,7 +273,7 @@ const Dashboard = () => {
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
                           <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
                         </ReLineChart>
                       </ChartContainer>
                     ) : (
@@ -281,7 +299,7 @@ const Dashboard = () => {
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
                           <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
                         </ReLineChart>
                       </ChartContainer>
                     ) : (
@@ -307,7 +325,7 @@ const Dashboard = () => {
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
                           <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
                         </ReLineChart>
                       </ChartContainer>
                     ) : (
@@ -340,11 +358,11 @@ const Dashboard = () => {
                           <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <ChartLegend content={<ChartLegendContent className="text-[9px] sm:text-xs" />} />
-                          <Bar dataKey="present" fill="var(--color-present)" />
-                          <Bar dataKey="late" fill="var(--color-late)" />
-                          <Bar dataKey="absent" fill="var(--color-absent)" />
-                          <Bar dataKey="pending" fill="var(--color-pending)" />
-                          <Bar dataKey="no_response" fill="var(--color-no_response)" />
+                          <Bar dataKey="present" fill="var(--color-present)" isAnimationActive={animateOnceRef.current} />
+                          <Bar dataKey="late" fill="var(--color-late)" isAnimationActive={animateOnceRef.current} />
+                          <Bar dataKey="absent" fill="var(--color-absent)" isAnimationActive={animateOnceRef.current} />
+                          <Bar dataKey="pending" fill="var(--color-pending)" isAnimationActive={animateOnceRef.current} />
+                          <Bar dataKey="no_response" fill="var(--color-no_response)" isAnimationActive={animateOnceRef.current} />
                         </ReBarChart>
                       </ChartContainer>
                     ) : (
