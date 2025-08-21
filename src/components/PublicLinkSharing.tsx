@@ -102,9 +102,9 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
       const formatted = deadline.toISOString().slice(0, 16)
       setNewDeadline(formatted)
     } else {
-      // Default: 2 ore prima dell'allenamento
+      // Default: 4 ore prima dell'allenamento
       const sessionStart = new Date(session.session_date + 'T' + session.start_time)
-      sessionStart.setHours(sessionStart.getHours() - 2)
+      sessionStart.setHours(sessionStart.getHours() - 4)
       const formatted = sessionStart.toISOString().slice(0, 16)
       setNewDeadline(formatted)
     }

@@ -68,7 +68,7 @@ const MatchPublicLinkSharing = ({ match, attendanceStats, onRefresh }: MatchPubl
       setNewDeadline(d.toISOString().slice(0, 16))
     } else {
       const start = new Date(match.match_date + 'T' + match.match_time)
-      start.setHours(start.getHours() - 2)
+      start.setHours(start.getHours() - 4)
       setNewDeadline(start.toISOString().slice(0, 16))
     }
     setIsEditingDeadline(true)
