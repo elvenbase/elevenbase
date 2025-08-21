@@ -10,7 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Edit, Trash2, BarChart3, MessageCircle, ChevronDown, ChevronUp, ArrowUpDown, Filter, Settings } from 'lucide-react';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
-import { usePlayersWithAttendance, useDeletePlayer, useUpdatePlayer } from '@/hooks/useSupabaseData';
+import { usePlayersWithAttendance, useDeletePlayer, useUpdatePlayer, useLeaders, useAttendanceScoreSettings } from '@/hooks/useSupabaseData';
+import { computeAttendanceScore } from '@/lib/attendanceScore'
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { subMonths } from 'date-fns';
@@ -373,30 +374,58 @@ const Squad = () => {
   const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
   const { defaultAvatarImageUrl } = useAvatarBackgrounds()
 
-  // Load Squad Score (current month) per player
-  const [squadScoreByPlayer, setSquadScoreByPlayer] = useState<Record<string, number>>({})
-  React.useEffect(() => {
-    const loadScores = async () => {
-      try {
-        const now = new Date()
-        const y = now.getFullYear()
-        const m = String(now.getMonth() + 1).padStart(2, '0')
-        const period_key = `${y}-${m}`
-        const { data, error } = await supabase
-          .from('attendance_scores')
-          .select('player_id, score_0_100')
-          .eq('period_type', 'month')
-          .eq('period_key', period_key)
-        if (error) throw error
-        const map: Record<string, number> = {}
-        ;(data || []).forEach((r: any) => { if (r.player_id) map[r.player_id] = Number(r.score_0_100 ?? 0) })
-        setSquadScoreByPlayer(map)
-      } catch (e) {
-        console.warn('loadScores failed', e)
+  // Squad Score computed like Dashboard using leaders + settings within the selected dateRange
+  const { data: scoreSettings } = useAttendanceScoreSettings()
+  const { data: leaders } = useLeaders({ startDate: dateRange?.from, endDate: dateRange?.to })
+  const squadScoreByPlayer = React.useMemo(() => {
+    if (!leaders) return {}
+    const toCount = (arr: any[] | undefined, pid: string) => {
+      const r = (arr || []).find((x: any) => x.player_id === pid)
+      return Number(r?.value ?? r?.count ?? 0)
+    }
+    const weights = scoreSettings ? {
+      trainingPresentOnTime: scoreSettings.training_present_on_time ?? 1.0,
+      trainingPresentLate: scoreSettings.training_present_late ?? 0.6,
+      trainingAbsent: scoreSettings.training_absent ?? -0.8,
+      trainingNoResponse: scoreSettings.training_no_response ?? -1.0,
+      matchPresentOnTime: scoreSettings.match_present_on_time ?? 2.5,
+      matchPresentLate: scoreSettings.match_present_late ?? 1.5,
+      matchAbsent: scoreSettings.match_absent ?? -2.0,
+      matchNoResponse: scoreSettings.match_no_response ?? -2.5,
+      mvpBonusOnce: scoreSettings.mvp_bonus_once ?? 5.0,
+    } : undefined
+    const minEvents = scoreSettings?.min_events || 10
+    const ids = new Set<string>([
+      ...(leaders.trainingPresences || []).map((x: any) => x.player_id),
+      ...(leaders.trainingAbsences || []).map((x: any) => x.player_id),
+      ...(leaders.trainingLates || []).map((x: any) => x.player_id),
+      ...(leaders.trainingNoResponses || []).map((x: any) => x.player_id),
+      ...(leaders.matchPresences || []).map((x: any) => x.player_id),
+      ...(leaders.matchAbsences || []).map((x: any) => x.player_id),
+      ...(leaders.matchLates || []).map((x: any) => x.player_id),
+      ...(leaders.matchNoResponses || []).map((x: any) => x.player_id),
+      ...(leaders.mvpAwards || []).map((x: any) => x.player_id),
+    ])
+    const map: Record<string, number> = {}
+    for (const pid of ids) {
+      const counters = {
+        T_P: toCount(leaders.trainingPresences as any[], pid),
+        T_L: toCount(leaders.trainingLates as any[], pid),
+        T_A: toCount(leaders.trainingAbsences as any[], pid),
+        T_NR: toCount(leaders.trainingNoResponses as any[], pid),
+        M_P: toCount(leaders.matchPresences as any[], pid),
+        M_L: toCount(leaders.matchLates as any[], pid),
+        M_A: toCount(leaders.matchAbsences as any[], pid),
+        M_NR: toCount(leaders.matchNoResponses as any[], pid),
+        mvpAwards: toCount(leaders.mvpAwards as any[], pid),
+      }
+      const s = computeAttendanceScore(counters as any, weights as any, minEvents)
+      if (s.opportunities >= minEvents) {
+        map[pid] = Math.max(0, Math.min(100, Number(s.score0to100 || 0)))
       }
     }
-    loadScores()
-  }, [])
+    return map
+  }, [leaders, scoreSettings])
 
   // Role -> sector mapping for card background theme
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
