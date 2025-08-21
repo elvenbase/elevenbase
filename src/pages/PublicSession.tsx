@@ -838,17 +838,13 @@ const PublicSession = () => {
               {(() => {
                 const playerPresent = existingAttendance.filter(a => a.status === 'present').length
                 const playerAbsent = existingAttendance.filter(a => a.status === 'absent').length
-                const playerResponded = existingAttendance.length
-                const playerNoResponse = Math.max(0, players.length - playerResponded)
+                const playerNoResponse = existingAttendance.filter(a => a.status === 'no_response').length
                 const trialistPresent = trialistsInvited.filter(t => t.status === 'present').length
                 const trialistAbsent = trialistsInvited.filter(t => t.status === 'absent').length
-                const trialistResponded = trialistPresent + trialistAbsent
-                const trialistNoResponse = Math.max(0, trialistsInvited.length - trialistResponded)
+                const trialistNoResponse = trialistsInvited.filter(t => (t.status || '') === 'no_response').length
                 const presentTotal = playerPresent + trialistPresent
                 const absentTotal = playerAbsent + trialistAbsent
-                const totalEntities = players.length + trialistsInvited.length
-                const totalResponded = playerResponded + trialistResponded
-                const totalNoResponse = totalEntities - totalResponded
+                const totalNoResponse = playerNoResponse + trialistNoResponse
                 return (
                   <>
                     <div className="grid grid-cols-3 gap-4 text-center">
