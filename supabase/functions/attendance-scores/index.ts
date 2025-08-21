@@ -2,8 +2,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 serve(async (req) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, content-type',
+  }
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Only POST' }), { status: 405, headers: { 'content-type': 'application/json' } })
+    return new Response(JSON.stringify({ error: 'Only POST' }), { status: 405, headers: { 'content-type': 'application/json', ...corsHeaders } })
   }
   try {
     const url = new URL(req.url)
@@ -181,9 +189,9 @@ serve(async (req) => {
       if (insErr) throw new Error(`insert attendance_scores: ${insErr.message}`)
     }
 
-    return new Response(JSON.stringify({ ok: true, date: scoreDate, inserted: rows.length }), { headers: { 'content-type': 'application/json' } })
+    return new Response(JSON.stringify({ ok: true, date: scoreDate, inserted: rows.length }), { headers: { 'content-type': 'application/json', ...corsHeaders } })
   } catch (e: any) {
     console.error(e)
-    return new Response(JSON.stringify({ error: String(e?.message || e) }), { status: 500, headers: { 'content-type': 'application/json' } })
+    return new Response(JSON.stringify({ error: String(e?.message || e) }), { status: 500, headers: { 'content-type': 'application/json', ...corsHeaders } })
   }
 })

@@ -81,8 +81,13 @@ export default function AttendanceScoreManagement() {
     setLoading(true)
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/attendance-scores`
-      // Call without auth header; function uses service role on server if configured
-      const res = await fetch(url, { method: 'POST' })
+      // Pass Authorization to satisfy RLS when service role is not set
+      const { data: sess } = await supabase.auth.getSession()
+      const jwt = sess.session?.access_token
+      const headers: Record<string, string> = { }
+      if (jwt) headers['Authorization'] = `Bearer ${jwt}`
+      headers['Content-Type'] = 'application/json'
+      const res = await fetch(url, { method: 'POST', headers })
       const text = await res.text()
       let j: any = {}
       try { j = JSON.parse(text) } catch { j = {} }
