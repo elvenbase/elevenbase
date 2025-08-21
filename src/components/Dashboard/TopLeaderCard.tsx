@@ -308,22 +308,24 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                         <div className="font-semibold">{pct(meta.matchLateRate || 0)}</div>
                       </div>
                     </div>
-                    <div className="col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
-                      {([
-                        ['Allenamenti presenti', meta.T_P],
-                        ['Allenamenti in ritardo', meta.T_L],
-                        ['Allenamenti assenti', meta.T_A],
-                        ['Allenamenti no response', meta.T_NR],
-                        ['Partite presenti', meta.M_P],
-                        ['Partite in ritardo', meta.M_L],
-                        ['Partite assenti', meta.M_A],
-                        ['Partite no response', meta.M_NR],
-                      ] as Array<[string, number]>).map(([label, value], i: number) => (
-                        <div key={i} className="rounded-full px-3 py-1 text-center border bg-muted/40">
-                          <span className="text-muted-foreground mr-1">{label}</span>
-                          <span className="font-semibold">{value ?? 0}</span>
-                        </div>
-                      ))}
+                    <div className="col-span-2 mt-1">
+                      <ul className="space-y-1 text-[12px]">
+                        {([
+                          ['Presenze allenamenti', meta.T_P],
+                          ['Ritardi allenamenti', meta.T_L],
+                          ['Assenze allenamenti', meta.T_A],
+                          ['No response allenamenti', meta.T_NR],
+                          ['Presenze partite', meta.M_P],
+                          ['Ritardi partite', meta.M_L],
+                          ['Assenze partite', meta.M_A],
+                          ['No response partite', meta.M_NR],
+                        ] as Array<[string, number]>).map(([label, value], i: number) => (
+                          <li key={i} className="flex items-center justify-between border-b border-border/30 py-0.5">
+                            <span className="text-muted-foreground">{label}</span>
+                            <span className="font-semibold tabular-nums">{value ?? 0}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 )
