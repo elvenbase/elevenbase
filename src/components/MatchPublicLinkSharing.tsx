@@ -65,18 +65,21 @@ const MatchPublicLinkSharing = ({ match, attendanceStats, onRefresh }: MatchPubl
     if (match.is_closed) { toast.error('Partita chiusa'); return }
     if (match.allow_responses_until) {
       const d = new Date(match.allow_responses_until)
-      setNewDeadline(d.toISOString().slice(0, 16))
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+      setNewDeadline(local.toISOString().slice(0, 16))
     } else {
       const start = new Date(match.match_date + 'T' + match.match_time)
       start.setHours(start.getHours() - 4)
-      setNewDeadline(start.toISOString().slice(0, 16))
+      const local = new Date(start.getTime() - start.getTimezoneOffset() * 60000)
+      setNewDeadline(local.toISOString().slice(0, 16))
     }
     setIsEditingDeadline(true)
   }
 
   const saveDeadline = async () => {
     if (!newDeadline) { toast.error('Seleziona data/ora'); return }
-    await updateMatch.mutateAsync({ id: match.id, data: { allow_responses_until: newDeadline } })
+    const iso = new Date(newDeadline).toISOString()
+    await updateMatch.mutateAsync({ id: match.id, data: { allow_responses_until: iso } })
     toast.success('Scadenza aggiornata')
     setIsEditingDeadline(false)
     onRefresh?.()

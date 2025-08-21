@@ -97,15 +97,17 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
     
     // Imposta il valore attuale come default
     if (session.allow_responses_until) {
-      const deadline = new Date(session.allow_responses_until)
-      // Formato per datetime-local input: YYYY-MM-DDTHH:mm
-      const formatted = deadline.toISOString().slice(0, 16)
+      const d = new Date(session.allow_responses_until)
+      // Convert to local for datetime-local input
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+      const formatted = local.toISOString().slice(0, 16)
       setNewDeadline(formatted)
     } else {
       // Default: 4 ore prima dell'allenamento
       const sessionStart = new Date(session.session_date + 'T' + session.start_time)
       sessionStart.setHours(sessionStart.getHours() - 4)
-      const formatted = sessionStart.toISOString().slice(0, 16)
+      const local = new Date(sessionStart.getTime() - sessionStart.getTimezoneOffset() * 60000)
+      const formatted = local.toISOString().slice(0, 16)
       setNewDeadline(formatted)
     }
     setIsEditingDeadline(true)
@@ -118,9 +120,11 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
     }
 
     try {
+      // Persist as ISO UTC to avoid timezone ambiguity
+      const iso = new Date(newDeadline).toISOString()
       await updateSession.mutateAsync({
         id: session.id,
-        data: { allow_responses_until: newDeadline }
+        data: { allow_responses_until: iso }
       })
       
       toast.success('Scadenza autoregistrazione aggiornata')
@@ -167,8 +171,8 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Status e timing */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="text-center p-3 rounded-lg bg-muted/30 border border-muted/40 space-y-2">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Clock className="h-4 w-4" />
               <span className="text-sm font-medium">Scadenza registrazioni</span>
@@ -189,7 +193,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
                   type="datetime-local"
                   value={newDeadline}
                   onChange={(e) => setNewDeadline(e.target.value)}
-                  className="text-xs"
+                  className="text-sm h-10"
                 />
                 <div className="flex gap-1 justify-center">
                   <Button
@@ -197,7 +201,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
                     size="sm"
                     onClick={saveDeadline}
                     disabled={updateSession.isPending}
-                    className="h-7 px-2"
+                    className="h-8 px-3"
                   >
                     <Save className="h-3 w-3" />
                   </Button>
@@ -205,7 +209,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
                     variant="ghost"
                     size="sm"
                     onClick={cancelEditingDeadline}
-                    className="h-7 px-2"
+                    className="h-8 px-3"
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -224,6 +228,9 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
                     return dlStr ? `Ora attuale: ${nowStr} • Scadenza: ${dlStr} (${tz})` : `Ora attuale: ${nowStr} (${tz})`
                   })()}
                 </div>
+                {session.allow_responses_until && (
+                  <div className="text-xs text-muted-foreground">Chiusura alle: {new Date(session.allow_responses_until).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}</div>
+                )}
               </div>
             )}
           </div>
