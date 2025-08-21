@@ -84,6 +84,7 @@ export default function PlayersStatsTable() {
         M_L: mLate,
         M_A: mAbs,
         M_NR: mNr,
+        mvpAwards: mvp,
       }, scoreSettings ? {
         trainingPresentOnTime: scoreSettings.training_present_on_time ?? 1.0,
         trainingPresentLate: scoreSettings.training_present_late ?? 0.6,

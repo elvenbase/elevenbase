@@ -107,6 +107,7 @@ const Dashboard = () => {
         M_L: toCount(leaders?.matchLates, pid),
         M_A: toCount(leaders?.matchAbsences, pid),
         M_NR: toCount(leaders?.matchNoResponses, pid),
+        mvpAwards: toCount(leaders?.mvpAwards, pid),
       }
     }))
     const weights = scoreSettings ? {
