@@ -309,7 +309,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                       </div>
                     </div>
                     <div className="col-span-2 mt-1 -mx-4 pr-2 sm:pr-3">
-                      <ul className="space-y-1 text-[12px] m-0 p-0 list-none">
+                      <ul className="space-y-1 text-[12px] m-0 p-0 pl-[10px] list-none">
                         {([
                           ['Presenze allenamenti', meta.T_P],
                           ['Ritardi allenamenti', meta.T_L],
