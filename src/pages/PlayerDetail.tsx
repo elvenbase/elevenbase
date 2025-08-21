@@ -9,7 +9,7 @@ import { useRoles } from '@/hooks/useRoles'
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import EditPlayerForm from '@/components/forms/EditPlayerForm'
-import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy, X, MessageCircle } from 'lucide-react'
+import { Upload, ArrowLeft, User, Gamepad2, Phone, Mail, Hash, CalendarDays, StickyNote, Trophy, X, MessageCircle, Target } from 'lucide-react'
 import { Clock3, Shield, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUpdatePlayer } from '@/hooks/useSupabaseData'
@@ -59,6 +59,26 @@ const PlayerDetail = () => {
   }, [periodSel, customStart, customEnd])
   const { data: attendance } = usePlayerAttendanceSummary(id || '', startDate, endDate)
   const { data: roles = [] } = useRoles()
+  const [squadScore, setSquadScore] = useState<number | null>(null)
+  useEffect(() => {
+    (async () => {
+      if (!id) return
+      try {
+        const now = new Date()
+        const pad = (n: number) => String(n).padStart(2, '0')
+        const period_key = `${now.getFullYear()}-${pad(now.getMonth()+1)}`
+        const { data, error } = await supabase
+          .from('attendance_scores')
+          .select('score_0_100')
+          .eq('player_id', id)
+          .eq('period_type', 'month')
+          .eq('period_key', period_key)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+        if (!error && data && data[0]) setSquadScore(Number(data[0].score_0_100))
+      } catch { /* ignore */ }
+    })()
+  }, [id])
 
   // Filtri eventi (vista/divergenze)
   const eventsFiltered = useMemo(()=> {
@@ -350,9 +370,14 @@ const PlayerDetail = () => {
           <TabsContent value="performance">
             <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
               <CardContent className="pt-0">
+                <div className="py-3">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2 py-0.5 text-[11px]">
+                    <Trophy className="h-3.5 w-3.5" /> MVP {totals.mvp}
+                  </span>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
                   {[
-                    { key: 'Minuti', v: totals.minutes, icon: <Clock3 className="h-5 w-5" />, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
+                    { key: 'Squad Score', v: Math.round(((squadScore ?? 0) as number) * 10) / 10, icon: <Target className="h-5 w-5" />, color: 'text-primary', tint: 'bg-primary/10', circle: 'bg-primary/5', semantic: false },
                     { key: 'Partite', v: totals.matches, icon: <CalendarDays className="h-5 w-5" />, color: 'text-neutral-700', tint: 'bg-neutral-100', circle: 'bg-neutral-50', semantic: false },
                     { key: 'Titolare', v: totals.started, icon: <CheckCircle2 className="h-5 w-5" />, color: 'text-emerald-700', tint: 'bg-emerald-100', circle: 'bg-emerald-50', semantic: false },
                     { key: 'Gol', v: totals.goals, icon: <span className="text-sky-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity=".1"/><path d="M12 7a5 5 0 110 10 5 5 0 010-10z"/></svg></span>, color: 'text-sky-700', tint: 'bg-sky-100', circle: 'bg-sky-50', semantic: false },
@@ -584,7 +609,7 @@ const PlayerDetail = () => {
                         <th className="py-2 pr-2">Avversario</th>
                         <th className="py-2 pr-2">Risultato</th>
                         <th className="py-2 pr-2">Titolare</th>
-                        <th className="py-2 pr-2">Min</th>
+                        
                         <th className="py-2 pr-2">Gol</th>
                         <th className="py-2 pr-2">Ast</th>
                         <th className="py-2 pr-2">G</th>
@@ -607,7 +632,7 @@ const PlayerDetail = () => {
                             <td className="py-2 pr-2 whitespace-nowrap">{opp}</td>
                             <td className="py-2 pr-2">{res}</td>
                             <td className="py-2 pr-2">{r.started ? 'Sì' : 'No'}</td>
-                            <td className="py-2 pr-2">{r.minutes}</td>
+                            
                             <td className="py-2 pr-2">{r.goals}</td>
                             <td className="py-2 pr-2">{r.assists}</td>
                             <td className="py-2 pr-2">{r.yellow_cards}</td>
