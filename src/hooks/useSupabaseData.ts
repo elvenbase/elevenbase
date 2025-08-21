@@ -2204,6 +2204,21 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       const mpsRes = await mpsSel
       if (mpsRes.error) throw mpsRes.error
       const statsRows = (mpsRes.data || []) as any[]
+      // MVP awards (ended matches only)
+      let mvpSel = supabase
+        .from('matches')
+        .select('mvp_player_id, match_date, live_state')
+        .eq('live_state', 'ended')
+      if (startStr) mvpSel = mvpSel.gte('match_date', startStr) as any
+      if (endStr) mvpSel = mvpSel.lte('match_date', endStr) as any
+      const mvpRes = await mvpSel
+      if (mvpRes.error) throw mvpRes.error
+      const mvpCounts = new Map<string, number>()
+      for (const r of (mvpRes.data || []) as any[]) {
+        const pid = r.mvp_player_id as string | null
+        if (!pid) continue
+        mvpCounts.set(pid, (mvpCounts.get(pid) || 0) + 1)
+      }
 
       // Helpers
       const isPresentTraining = (r: any) => {
@@ -2401,6 +2416,12 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
         trainingAbsences: toArrayFromMapTraining(trainingAbsencesByPlayer),
         matchPresences,
         matchAbsences: toArrayFromMapMatch(matchAbsencesByPlayer),
+        mvpAwards: Array.from(mvpCounts.entries()).map(([player_id, value]) => ({
+          player_id,
+          value,
+          first_name: playersById.get(player_id)?.first_name || '—',
+          last_name: playersById.get(player_id)?.last_name || ''
+        })),
         goals: toArray('goals'),
         assists: toArray('assists'),
         minutes: toArray('minutes'),
