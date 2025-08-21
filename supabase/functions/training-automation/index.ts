@@ -39,7 +39,7 @@ serve(async (req) => {
     }
 
     // Validate action type
-    const validActions = ['register_attendance', 'update_status'];
+    const validActions = ['register_attendance', 'update_status', 'expire_pending'];
     if (!validActions.includes(action)) {
       return new Response(
         JSON.stringify({ error: 'Invalid action type' }),
@@ -91,6 +91,16 @@ serve(async (req) => {
       }
 
       result = data;
+    } else if (action === 'expire_pending') {
+      // Force-expire pending records for a specific session
+      const { error } = await supabase.rpc('expire_pending_responses')
+      if (error) {
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      result = { ok: true }
     } else {
       return new Response(
         JSON.stringify({ error: 'Invalid or incomplete request' }),
