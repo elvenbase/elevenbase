@@ -36,6 +36,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
   const absentCount = playerAbsentCount + trialistAbsentCount;
   const selfRegisteredCount = existingAttendance.filter(a => a.self_registered).length + trialistInvites.filter((t: any) => t.self_registered).length;
   const coachConfirmedCount = existingAttendance.filter(a => a.coach_confirmation_status && a.coach_confirmation_status !== 'pending').length;
+  const totalEntities = allPlayers.length + trialistInvites.length;
   const playerNoResponseCount = existingAttendance.filter(a => a.status === 'no_response').length;
   const trialistNoResponseCount = trialistInvites.filter((t: any) => (t.status || '') === 'no_response').length;
   const noResponseCount = playerNoResponseCount + trialistNoResponseCount;
