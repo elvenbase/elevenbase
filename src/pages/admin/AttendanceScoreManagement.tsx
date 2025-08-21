@@ -18,6 +18,7 @@ export default function AttendanceScoreManagement() {
     matchPresentLate: 1.5,
     matchAbsent: -2.0,
     matchNoResponse: -2.5,
+    mvpBonusOnce: 5.0,
     minEvents: 10,
   })
   const [loading, setLoading] = useState(false)
@@ -35,6 +36,7 @@ export default function AttendanceScoreManagement() {
       matchPresentLate: s.match_present_late,
       matchAbsent: s.match_absent,
       matchNoResponse: s.match_no_response,
+      mvpBonusOnce: s.mvp_bonus_once ?? 5.0,
       minEvents: s.min_events,
     })
   }
@@ -51,6 +53,7 @@ export default function AttendanceScoreManagement() {
       match_present_late: weights.matchPresentLate,
       match_absent: weights.matchAbsent,
       match_no_response: weights.matchNoResponse,
+      mvp_bonus_once: weights.mvpBonusOnce,
       min_events: weights.minEvents,
       is_active: true,
     })
@@ -94,6 +97,7 @@ export default function AttendanceScoreManagement() {
                 ['matchAbsent', 'Partite — Assente'],
                 ['matchNoResponse', 'Partite — No response'],
                 ['minEvents', 'Minimo eventi per entrare in classifica'],
+                ['mvpBonusOnce', 'Bonus MVP (una sola volta)'],
               ] as const).map(([key, label]) => (
                 <label key={key} className="text-sm space-y-1">
                   <span className="block font-medium text-foreground/90">{label}</span>
