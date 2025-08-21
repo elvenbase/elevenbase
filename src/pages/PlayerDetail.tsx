@@ -370,7 +370,7 @@ const PlayerDetail = () => {
           <TabsContent value="performance">
             <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
               <CardContent className="pt-0">
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 py-4 sm:py-6">
                   {[
                     { key: 'Squad Score', v: Math.round(((squadScore ?? 0) as number) * 10) / 10, icon: <Target className="h-5 w-5" />, color: 'text-primary', tint: 'bg-primary/10', circle: 'bg-primary/5', semantic: false },
                     { key: 'Partite', v: totals.matches, icon: <CalendarDays className="h-5 w-5" />, color: 'text-neutral-700', tint: 'bg-neutral-100', circle: 'bg-neutral-50', semantic: false },
