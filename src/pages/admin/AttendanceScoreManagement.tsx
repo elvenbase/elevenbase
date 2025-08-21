@@ -209,6 +209,26 @@ export default function AttendanceScoreManagement() {
                 </ol>
               </section>
 
+              <section id="bonus-mvp">
+                <h3>Bonus MVP</h3>
+                <p>
+                  Se il giocatore ha ottenuto almeno una volta il riconoscimento <strong>MVP</strong>
+                  nel periodo considerato, si applica un <strong>bonus una tantum</strong> pari a
+                  <code>Bonus MVP (una sola volta)</code> ai punti grezzi prima della normalizzazione.
+                </p>
+                <ul>
+                  <li>Il bonus di default è <strong>+5,0</strong> e può essere modificato nei campi sopra.</li>
+                  <li>Il bonus si applica <strong>almeno una volta</strong>, non aumenta con più MVP nello stesso periodo.</li>
+                  <li>Il bonus incide proporzionalmente sullo <strong>score 0–100</strong> perché viene aggiunto
+                    ai punti grezzi prima di calcolare la percentuale nell’intervallo [min, max].</li>
+                </ul>
+                <p className="mt-2">
+                  In sintesi: <em>Score</em> = Normalizza( PuntiEvento + <strong>BonusMVP</strong> ).
+                  A parità di opportunità, un MVP può spostare lo score verso 100 in misura maggiore
+                  quanto più ampio è l’intervallo tra minimo e massimo teorico del giocatore.
+                </p>
+              </section>
+
               <section id="eleggibilita-e-classifiche">
                 <h3>Elegibilità e classifiche</h3>
                 <ul>
