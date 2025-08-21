@@ -94,6 +94,10 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
       toast.error('Non è possibile modificare una sessione chiusa')
       return
     }
+    if (isExpired) {
+      toast.error('Scadenza superata: non modificabile')
+      return
+    }
     
     // Imposta il valore attuale come default
     if (session.allow_responses_until) {
@@ -116,6 +120,10 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
   const saveDeadline = async () => {
     if (!newDeadline) {
       toast.error('Seleziona una data e ora valida')
+      return
+    }
+    if (isExpired) {
+      toast.error('Scadenza superata: non modificabile')
       return
     }
 
@@ -176,7 +184,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
             <div className="flex items-center justify-center gap-2 mb-2">
               <Clock className="h-4 w-4" />
               <span className="text-sm font-medium">Scadenza registrazioni</span>
-              {!session.is_closed && !isEditingDeadline && (
+              {!session.is_closed && !isEditingDeadline && !isExpired && (
                 <Button
                   variant="ghost"
                   size="sm"

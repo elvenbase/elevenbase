@@ -63,6 +63,7 @@ const MatchPublicLinkSharing = ({ match, attendanceStats, onRefresh }: MatchPubl
 
   const startEditingDeadline = () => {
     if (match.is_closed) { toast.error('Partita chiusa'); return }
+    if (isExpired) { toast.error('Scadenza superata: non modificabile'); return }
     if (match.allow_responses_until) {
       const d = new Date(match.allow_responses_until)
       const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
@@ -78,6 +79,7 @@ const MatchPublicLinkSharing = ({ match, attendanceStats, onRefresh }: MatchPubl
 
   const saveDeadline = async () => {
     if (!newDeadline) { toast.error('Seleziona data/ora'); return }
+    if (isExpired) { toast.error('Scadenza superata: non modificabile'); return }
     const iso = new Date(newDeadline).toISOString()
     await updateMatch.mutateAsync({ id: match.id, data: { allow_responses_until: iso } })
     toast.success('Scadenza aggiornata')
@@ -110,7 +112,7 @@ const MatchPublicLinkSharing = ({ match, attendanceStats, onRefresh }: MatchPubl
             <div className="flex items-center justify-center gap-2 mb-2">
               <Clock className="h-4 w-4" />
               <span className="text-sm font-medium">Scadenza registrazioni</span>
-              {!match.is_closed && !isEditingDeadline && (
+              {!match.is_closed && !isEditingDeadline && !isExpired && (
                 <Button variant="ghost" size="sm" onClick={startEditingDeadline} className="h-6 w-6 p-0 ml-1"><Edit3 className="h-3 w-3" /></Button>
               )}
             </div>
