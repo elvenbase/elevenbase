@@ -125,13 +125,14 @@ const SessionManagement = () => {
   const attendanceStats = (() => {
     const playerPresent = attendance?.filter(a => a.status === 'present').length || 0
     const playerAbsent = attendance?.filter(a => a.status === 'absent').length || 0
+    const playerNoResponse = attendance?.filter(a => a.status === 'no_response').length || 0
     const trialistPresent = trialistInvites.filter((t: any) => t.status === 'present').length
     const trialistAbsent = trialistInvites.filter((t: any) => t.status === 'absent').length
+    const trialistNoResponse = trialistInvites.filter((t: any) => (t.status || '') === 'no_response').length
     const present = playerPresent + trialistPresent
     const absent = playerAbsent + trialistAbsent
     const totalEntities = (players?.length || 0) + trialistInvites.length
-    const responded = (attendance?.length || 0) + trialistPresent + trialistAbsent
-    const noResponse = Math.max(0, totalEntities - responded)
+    const noResponse = playerNoResponse + trialistNoResponse
     return { present, absent, noResponse, totalPlayers: totalEntities }
   })()
 
