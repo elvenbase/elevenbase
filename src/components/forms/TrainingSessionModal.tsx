@@ -73,13 +73,14 @@ export const TrainingSessionModal = ({
   const attendanceStats = (() => {
     const playerPresent = attendance.filter(a => a.status === 'present').length;
     const playerAbsent = attendance.filter(a => a.status === 'absent').length;
+    const playerNoResponse = attendance.filter(a => a.status === 'no_response').length;
     const trialistPresent = trialistInvites.filter((t: any) => t.status === 'present').length;
     const trialistAbsent = trialistInvites.filter((t: any) => t.status === 'absent').length;
+    const trialistNoResponse = trialistInvites.filter((t: any) => (t.status || '') === 'no_response').length;
     const present = playerPresent + trialistPresent;
     const absent = playerAbsent + trialistAbsent;
     const totalEntities = players.length + trialistInvites.length;
-    const responded = attendance.length + trialistPresent + trialistAbsent;
-    const noResponse = Math.max(0, totalEntities - responded);
+    const noResponse = playerNoResponse + trialistNoResponse;
     return { 
       present, 
       absent, 
