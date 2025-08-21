@@ -84,7 +84,17 @@ export default function PlayersStatsTable() {
         M_L: mLate,
         M_A: mAbs,
         M_NR: mNr,
-      })
+      }, scoreSettings ? {
+        trainingPresentOnTime: scoreSettings.training_present_on_time ?? 1.0,
+        trainingPresentLate: scoreSettings.training_present_late ?? 0.6,
+        trainingAbsent: scoreSettings.training_absent ?? -0.8,
+        trainingNoResponse: scoreSettings.training_no_response ?? -1.0,
+        matchPresentOnTime: scoreSettings.match_present_on_time ?? 2.5,
+        matchPresentLate: scoreSettings.match_present_late ?? 1.5,
+        matchAbsent: scoreSettings.match_absent ?? -2.0,
+        matchNoResponse: scoreSettings.match_no_response ?? -2.5,
+        mvpBonusOnce: scoreSettings.mvp_bonus_once ?? 5.0,
+      } : undefined, scoreSettings?.min_events || 10)
 
       return {
         id: pid,
@@ -129,7 +139,7 @@ export default function PlayersStatsTable() {
       return sortDir === 'asc' ? as.localeCompare(bs) : bs.localeCompare(as)
     })
     return sorted
-  }, [activePlayers, leaders, nameFilter, sortKey, sortDir])
+  }, [activePlayers, leaders, nameFilter, sortKey, sortDir, scoreSettings])
 
   const onHeaderClick = (key: keyof PlayerRow) => {
     if (sortKey === key) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))

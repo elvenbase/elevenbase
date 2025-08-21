@@ -109,7 +109,18 @@ const Dashboard = () => {
         M_NR: toCount(leaders?.matchNoResponses, pid),
       }
     }))
-    const scores = inputs.map(it => ({ ...computeAttendanceScore(it.counters), player_id: it.player_id, first_name: it.first_name, last_name: it.last_name }))
+    const weights = scoreSettings ? {
+      trainingPresentOnTime: scoreSettings.training_present_on_time ?? 1.0,
+      trainingPresentLate: scoreSettings.training_present_late ?? 0.6,
+      trainingAbsent: scoreSettings.training_absent ?? -0.8,
+      trainingNoResponse: scoreSettings.training_no_response ?? -1.0,
+      matchPresentOnTime: scoreSettings.match_present_on_time ?? 2.5,
+      matchPresentLate: scoreSettings.match_present_late ?? 1.5,
+      matchAbsent: scoreSettings.match_absent ?? -2.0,
+      matchNoResponse: scoreSettings.match_no_response ?? -2.5,
+      mvpBonusOnce: scoreSettings.mvp_bonus_once ?? 5.0,
+    } : undefined
+    const scores = inputs.map(it => ({ ...computeAttendanceScore(it.counters, weights as any, scoreSettings?.min_events || 10), player_id: it.player_id, first_name: it.first_name, last_name: it.last_name }))
     const minEv = (scoreSettings?.min_events || 10)
     const eligible = scores.filter(s => s.opportunities >= minEv)
     const sorted = eligible.sort((a,b)=> tieBreakComparator({ ...a, eligible: true, player_id: a.player_id }, { ...b, eligible: true, player_id: b.player_id }))
