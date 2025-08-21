@@ -83,7 +83,17 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
   }
 
   const currentOrder = useMemo(() => {
-    const base = order.length ? order : ids
+    // Default base order ensures 'recent-activity' is last when no saved layout
+    const defaultBase = (() => {
+      const arr = [...ids]
+      const idx = arr.indexOf('recent-activity')
+      if (idx >= 0 && idx !== arr.length - 1) {
+        arr.splice(idx, 1)
+        arr.push('recent-activity')
+      }
+      return arr
+    })()
+    const base = order.length ? order : defaultBase
     const missing = ids.filter(id => !base.includes(id))
     return [...base, ...missing]
   }, [order, ids])
