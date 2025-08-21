@@ -309,6 +309,40 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
   );
 };
 
+// Squad Score progress bar with on-scroll animation
+const ScoreBar: React.FC<{ value?: number }> = ({ value }) => {
+  const [widthPct, setWidthPct] = React.useState(0)
+  const barRef = React.useRef<HTMLDivElement | null>(null)
+  React.useEffect(() => {
+    const el = barRef.current
+    if (!el) return
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const v = Math.max(0, Math.min(100, Number.isFinite(value as number) ? (value as number) : 0))
+          setWidthPct(v)
+          obs.disconnect()
+        }
+      })
+    }, { threshold: 0.2 })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [value])
+  const pctText = (Number.isFinite(value as number) ? Math.round((value as number)) + '%' : '—')
+  return (
+    <div className="space-y-1.5">
+      <div className="text-[10px] text-muted-foreground">Squad Score</div>
+      <div ref={barRef} className="h-2 w-full rounded-full bg-neutral-200/70 overflow-hidden">
+        <div
+          className="h-full transition-[width] duration-700 ease-out"
+          style={{ width: `${widthPct}%`, background: 'linear-gradient(135deg, #FFF1E5 0%, #E39D2E 100%)' }}
+        />
+      </div>
+      <div className="text-xs font-medium tabular-nums">{pctText}</div>
+    </div>
+  )
+}
+
 const Squad = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -338,6 +372,31 @@ const Squad = () => {
   const { data: roles = [] } = useRoles();
   const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
   const { defaultAvatarImageUrl } = useAvatarBackgrounds()
+
+  // Load Squad Score (current month) per player
+  const [squadScoreByPlayer, setSquadScoreByPlayer] = useState<Record<string, number>>({})
+  React.useEffect(() => {
+    const loadScores = async () => {
+      try {
+        const now = new Date()
+        const y = now.getFullYear()
+        const m = String(now.getMonth() + 1).padStart(2, '0')
+        const period_key = `${y}-${m}`
+        const { data, error } = await supabase
+          .from('attendance_scores')
+          .select('player_id, score_0_100')
+          .eq('period_type', 'month')
+          .eq('period_key', period_key)
+        if (error) throw error
+        const map: Record<string, number> = {}
+        ;(data || []).forEach((r: any) => { if (r.player_id) map[r.player_id] = Number(r.score_0_100 ?? 0) })
+        setSquadScoreByPlayer(map)
+      } catch (e) {
+        console.warn('loadScores failed', e)
+      }
+    }
+    loadScores()
+  }, [])
 
   // Role -> sector mapping for card background theme
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
@@ -799,7 +858,7 @@ const Squad = () => {
 
                         {/* Riga 1: solo titolo e sottotitolo accanto all'immagine */}
                         <div className="pl-[109.6px] md:pl-[146.4px] min-h-[144px] md:min-h-[180px]">
-                          <div className="space-y-0.5 pr-2">
+                          <div className="space-y-2 pr-2">
                             <div className="font-semibold text-lg md:text-xl leading-tight truncate">{p.first_name} {p.last_name}</div>
                             <div className="flex items-center gap-2 min-w-0">
                               <div className="text-xs md:text-sm text-muted-foreground truncate" title={role?.label || ''}>{role?.label || '—'}</div>
@@ -807,6 +866,7 @@ const Squad = () => {
                                 <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">(C)</Badge>
                               )}
                             </div>
+                            <ScoreBar value={squadScoreByPlayer[p.id]} />
                           </div>
                         </div>
 
