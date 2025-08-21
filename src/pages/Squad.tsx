@@ -311,11 +311,16 @@ const MobilePlayerCard: React.FC<MobilePlayerCardProps> = ({
 };
 
 // Squad Score progress bar with on-scroll animation
-const ScoreBar: React.FC<{ value?: number }> = ({ value }) => {
+const NeonPillProgress: React.FC<{
+  value?: number
+  indeterminate?: boolean
+  showLabel?: boolean
+  ariaLabel?: string
+}> = ({ value, indeterminate = false, showLabel = true, ariaLabel = 'Squad Score' }) => {
   const [widthPct, setWidthPct] = React.useState(0)
-  const barRef = React.useRef<HTMLDivElement | null>(null)
+  const trackRef = React.useRef<HTMLDivElement | null>(null)
   React.useEffect(() => {
-    const el = barRef.current
+    const el = trackRef.current
     if (!el) return
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -329,17 +334,66 @@ const ScoreBar: React.FC<{ value?: number }> = ({ value }) => {
     obs.observe(el)
     return () => obs.disconnect()
   }, [value])
-  const pctText = (Number.isFinite(value as number) ? Math.round((value as number)) + '%' : '—')
+
+  const pctText = Number.isFinite(value as number) ? `${Math.round(value as number)}%` : '—'
+  const ariaProps = indeterminate
+    ? { role: 'progressbar', 'aria-label': ariaLabel, 'aria-valuemin': 0, 'aria-valuemax': 100 } as any
+    : { role: 'progressbar', 'aria-label': ariaLabel, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.max(0, Math.min(100, value || 0)) } as any
+
   return (
     <div className="space-y-1.5">
+      <style>{`
+        @keyframes stripes-move { 0% { background-position: 0 0; } 100% { background-position: 24px 0; } }
+        @keyframes indet-move { 0% { transform: translateX(-60%); } 100% { transform: translateX(160%); } }
+        @media (max-width: 640px) {
+          .stripe-size { background-size: 16px 16px !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-stripes { animation: none !important; }
+          .animate-indet { animation: none !important; }
+        }
+      `}</style>
       <div className="text-[10px] text-muted-foreground">Squad Score</div>
-      <div ref={barRef} className="h-2 w-full rounded-full bg-neutral-200/70 overflow-hidden">
-        <div
-          className="h-full transition-[width] duration-700 ease-out"
-          style={{ width: `${widthPct}%`, background: 'linear-gradient(135deg, #FFF1E5 0%, #E39D2E 100%)' }}
-        />
+      <div
+        ref={trackRef}
+        className="relative w-full h-7 sm:h-10 rounded-full p-[2px]"
+        style={{
+          border: '2px solid #2D77FF',
+          boxShadow: '0 0 16px rgba(45,119,255,0.20)',
+          background: '#081026',
+        }}
+        {...ariaProps}
+      >
+        {/* Determinate fill */}
+        {!indeterminate && (
+          <div className="relative h-full rounded-full overflow-hidden transition-[width] duration-300 ease-out" style={{ width: `${widthPct}%`, background: '#1E4ED8' }}>
+            {/* Stripes overlay */}
+            <div className="absolute inset-0 opacity-35 animate-stripes stripe-size" style={{
+              backgroundImage: 'repeating-linear-gradient(45deg, #2D77FF 0, #2D77FF 12px, transparent 12px, transparent 24px)',
+              animation: 'stripes-move 2.5s linear infinite'
+            }} />
+            {/* Center label */}
+            {showLabel && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-[12px] sm:text-sm font-semibold text-white tabular-nums" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{pctText}</div>
+              </div>
+            )}
+          </div>
+        )}
+        {/* Indeterminate segment */}
+        {indeterminate && (
+          <div className="relative h-full rounded-full overflow-hidden" style={{ background: '#1E4ED8' }}>
+            <div className="absolute inset-y-0 left-0 w-3/5 rounded-full animate-indet" style={{
+              background: '#1E4ED8',
+              animation: 'indet-move 2.5s linear infinite'
+            }} />
+            <div className="absolute inset-0 opacity-35 animate-stripes stripe-size" style={{
+              backgroundImage: 'repeating-linear-gradient(45deg, #2D77FF 0, #2D77FF 12px, transparent 12px, transparent 24px)',
+              animation: 'stripes-move 2.5s linear infinite'
+            }} />
+          </div>
+        )}
       </div>
-      <div className="text-xs font-medium tabular-nums">{pctText}</div>
     </div>
   )
 }
@@ -895,7 +949,7 @@ const Squad = () => {
                                 <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">(C)</Badge>
                               )}
                             </div>
-                            <ScoreBar value={squadScoreByPlayer[p.id]} />
+                            <NeonPillProgress value={squadScoreByPlayer[p.id]} />
                           </div>
                         </div>
 
