@@ -16,7 +16,7 @@ serve(async (req) => {
   try {
     const url = new URL(req.url)
     const dateParam = url.searchParams.get('date')
-    const scoreDate = dateParam || new Date().toISOString().slice(0, 10)
+    const targetDate = dateParam ? new Date(dateParam) : new Date()
 
     // Supabase client (Edge)
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
@@ -49,14 +49,16 @@ serve(async (req) => {
     }
     const minEvents = ws?.min_events ?? 10
 
-    // Get attendance within same month of scoreDate
-    const d = new Date(scoreDate)
+    // Monthly window from targetDate
+    const d = new Date(targetDate)
     const start = new Date(d.getFullYear(), d.getMonth(), 1)
     const end = new Date(d.getFullYear(), d.getMonth() + 1, 0)
     const pad = (n: number) => String(n).padStart(2, '0')
     const fmt = (x: Date) => `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`
     const startStr = fmt(start)
     const endStr = fmt(end)
+    const period_type = 'month'
+    const period_key = `${d.getFullYear()}-${pad(d.getMonth()+1)}`
 
     // Training
     let trSel: any = supabase.from('training_attendance').select('player_id, status, coach_confirmation_status, arrival_time, training_sessions!inner(session_date)')
@@ -160,7 +162,10 @@ serve(async (req) => {
       const s = calc(c)
       rows.push({
         player_id: p.id,
-        score_date: scoreDate,
+        period_type,
+        period_key,
+        period_start: startStr,
+        period_end: endStr,
         points_raw: s.POINTS,
         score_0_100: s.score0to100,
         opportunities: s.opportunities,
@@ -181,15 +186,19 @@ serve(async (req) => {
       })
     }
 
-    // Replace same-date results
-    const { error: delErr } = await supabase.from('attendance_scores').delete().eq('score_date', scoreDate)
+    // Replace current period results
+    const { error: delErr } = await supabase
+      .from('attendance_scores')
+      .delete()
+      .eq('period_type', period_type)
+      .eq('period_key', period_key)
     if (delErr) throw new Error(`delete attendance_scores: ${delErr.message}`)
     if (rows.length > 0) {
       const { error: insErr } = await supabase.from('attendance_scores').insert(rows)
       if (insErr) throw new Error(`insert attendance_scores: ${insErr.message}`)
     }
 
-    return new Response(JSON.stringify({ ok: true, date: scoreDate, inserted: rows.length }), { headers: { 'content-type': 'application/json', ...corsHeaders } })
+    return new Response(JSON.stringify({ ok: true, period_type, period_key, inserted: rows.length }), { headers: { 'content-type': 'application/json', ...corsHeaders } })
   } catch (e: any) {
     console.error(e)
     return new Response(JSON.stringify({ error: String(e?.message || e) }), { status: 500, headers: { 'content-type': 'application/json', ...corsHeaders } })
