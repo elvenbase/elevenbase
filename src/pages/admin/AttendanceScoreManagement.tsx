@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -70,7 +70,11 @@ export default function AttendanceScoreManagement() {
     })
     setLoading(false)
     if (error) toast({ title: 'Errore', description: String(error.message), variant: 'destructive' })
-    else toast({ title: 'Salvato', description: 'Impostazioni aggiornate' })
+    else {
+      toast({ title: 'Salvato', description: 'Impostazioni aggiornate' })
+      // Reload to reflect persisted values
+      await load()
+    }
   }
 
   const runNow = async () => {
@@ -79,10 +83,11 @@ export default function AttendanceScoreManagement() {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/attendance-scores`
       // Call without auth header; function uses service role on server if configured
       const res = await fetch(url, { method: 'POST' })
+      const text = await res.text()
       let j: any = {}
-      try { j = await res.json() } catch { j = {} }
-      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`)
-      console.debug('attendance-scores run:', { status: res.status, body: j })
+      try { j = JSON.parse(text) } catch { j = {} }
+      if (!res.ok) throw new Error(j?.error || `HTTP ${res.status}: ${text || 'unknown error'}`)
+      console.error('attendance-scores run:', { status: res.status, body: j })
       toast({ title: 'Eseguito', description: `Calcolati ${j.inserted ?? 0} punteggi` })
     } catch (e: any) {
       console.error('attendance-scores error:', e)
@@ -91,6 +96,12 @@ export default function AttendanceScoreManagement() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    // Auto-load latest active settings on mount
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 max-w-6xl">
