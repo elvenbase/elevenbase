@@ -318,22 +318,48 @@ const NeonPillProgress: React.FC<{
   ariaLabel?: string
 }> = ({ value, indeterminate = false, showLabel = true, ariaLabel = 'Squad Score' }) => {
   const [widthPct, setWidthPct] = React.useState(0)
+  const [trackWidth, setTrackWidth] = React.useState(0)
   const trackRef = React.useRef<HTMLDivElement | null>(null)
+
+  // Measure track width to quantize stripes to whole steps
+  React.useLayoutEffect(() => {
+    const el = trackRef.current
+    if (!el) return
+    const measure = () => {
+      const rect = el.getBoundingClientRect()
+      setTrackWidth(Math.max(0, Math.floor(rect.width)))
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    window.addEventListener('resize', measure)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [])
+
+  // When the bar enters viewport, compute a quantized width so that stripes appear one-by-one
   React.useEffect(() => {
     const el = trackRef.current
     if (!el) return
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const v = Math.max(0, Math.min(100, Number.isFinite(value as number) ? (value as number) : 0))
-          setWidthPct(v)
+          const raw = Math.max(0, Math.min(100, Number.isFinite(value as number) ? (value as number) : 0))
+          // Each stripe occupies 24px (12px color + 12px gap) along the axis
+          const STRIPE_PERIOD_PX = 24
+          const totalStripes = Math.max(1, Math.floor(trackWidth / STRIPE_PERIOD_PX))
+          const visibleStripes = Math.round((raw / 100) * totalStripes)
+          const quantized = (visibleStripes / totalStripes) * 100
+          setWidthPct(quantized)
           obs.disconnect()
         }
       })
-    }, { threshold: 0.2 })
+    }, { threshold: 0.15 })
     obs.observe(el)
     return () => obs.disconnect()
-  }, [value])
+  }, [value, trackWidth])
 
   const pctText = Number.isFinite(value as number) ? `${Math.round(value as number)}%` : '—'
   const ariaProps = indeterminate
@@ -343,14 +369,10 @@ const NeonPillProgress: React.FC<{
   return (
     <div className="space-y-1.5">
       <style>{`
-        @keyframes stripes-move { 0% { background-position: 0 0; } 100% { background-position: 32px 0; } }
-        @keyframes indet-move { 0% { transform: translateX(-60%); } 100% { transform: translateX(160%); } }
+        /* Crisp diagonal stripes at 45deg: 12px solid, 12px gap */
+        .stripes-45 { background-image: repeating-linear-gradient(45deg, #00BFFF 0 12px, transparent 12px 24px); }
         @media (max-width: 640px) {
-          .stripe-size { background-size: 16px 16px !important; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .animate-stripes { animation: none !important; }
-          .animate-indet { animation: none !important; }
+          .stripes-45 { background-image: repeating-linear-gradient(45deg, #00BFFF 0 10px, transparent 10px 20px); }
         }
       `}</style>
       <div className="text-[10px] text-muted-foreground">Squad Score</div>
@@ -371,26 +393,13 @@ const NeonPillProgress: React.FC<{
           {!indeterminate && (
             <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
               <div className="absolute inset-y-0 left-0" style={{ width: `${widthPct}%` }}>
-                <div
-                  className="h-full stripe-size animate-stripes"
-                  style={{
-                    backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,191,255,0.55) 0, rgba(0,191,255,0.55) 10px, transparent 10px, transparent 20px)',
-                    animation: 'stripes-move 2.5s linear infinite'
-                  }}
-                />
+                <div className="h-full stripes-45" />
               </div>
             </div>
           )}
           {indeterminate && (
-            <div className="relative h-full rounded-full overflow-hidden">
-              <div className="absolute inset-0 stripe-size animate-stripes" style={{
-                backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,191,255,0.55) 0, rgba(0,191,255,0.55) 10px, transparent 10px, transparent 20px)',
-                animation: 'stripes-move 2.5s linear infinite'
-              }} />
-              <div className="absolute inset-y-0 left-0 w-3/5 rounded-full animate-indet" style={{
-                backgroundColor: 'transparent',
-                animation: 'indet-move 2.5s linear infinite'
-              }} />
+            <div className="absolute inset-0 rounded-full overflow-hidden">
+              <div className="absolute inset-0 stripes-45" />
             </div>
           )}
         </div>
