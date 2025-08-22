@@ -386,7 +386,7 @@ const NeonPillProgress: React.FC<{
         if (prev > targetVisibleStripes) return prev - 1
         return prev
       })
-    }, 120)
+    }, 100)
     return () => window.clearInterval(timer)
   }, [inView, targetVisibleStripes, visibleStripes])
 
@@ -436,7 +436,8 @@ const NeonPillProgress: React.FC<{
                   style={{
                     background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
                     ...stripeMaskStyle,
-                    clipPath: clipPathPolygon
+                    clipPath: clipPathPolygon,
+                    transition: 'clip-path 180ms ease-out'
                   }}
                 />
               </div>
