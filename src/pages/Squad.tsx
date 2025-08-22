@@ -386,7 +386,7 @@ const NeonPillProgress: React.FC<{
         if (prev > targetVisibleStripes) return prev - 1
         return prev
       })
-    }, 250)
+    }, 120)
     return () => window.clearInterval(timer)
   }, [inView, targetVisibleStripes, visibleStripes])
 
