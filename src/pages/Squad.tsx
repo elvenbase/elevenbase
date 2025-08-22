@@ -324,14 +324,30 @@ const NeonPillProgress: React.FC<{
   const trackRef = React.useRef<HTMLDivElement | null>(null)
   const [trackHeight, setTrackHeight] = React.useState(0)
   const INNER_MARGIN_PX = 3
-
-  // Stripe geometry: thin bars (≈1/3 of before), reversed angle
   const STRIPE_THICKNESS_PX = 4
   const STRIPE_GAP_PX = 8
   const STRIPE_PERIOD_PX = STRIPE_THICKNESS_PX + STRIPE_GAP_PX // 12px
   const COS45 = Math.SQRT1_2
   const THICKNESS_PROJ_X = STRIPE_THICKNESS_PX / COS45
   const HORIZONTAL_PERIOD_X = STRIPE_PERIOD_PX / COS45
+  const [flareRunId, setFlareRunId] = React.useState(0)
+
+  // Randomized flare pass roughly every 8-12 seconds
+  React.useEffect(() => {
+    let alive = true as boolean
+    let timer: number | undefined
+    const loop = () => {
+      const delay = 8000 + Math.random() * 4000
+      timer = window.setTimeout(() => {
+        if (!alive) return
+        setFlareRunId((v) => v + 1)
+        loop()
+      }, delay)
+    }
+    loop()
+    return () => { alive = false; if (timer) window.clearTimeout(timer) }
+  }, [])
+
 
   // Measure content width (exclude border and padding ≈ 8px total)
   React.useLayoutEffect(() => {
@@ -412,10 +428,42 @@ const NeonPillProgress: React.FC<{
 
   return (
     <div className="space-y-1.5">
+      <style>{`
+        @keyframes flare-pass { 
+          0% { transform: translateX(-125%); opacity: 0; }
+          10% { opacity: 0.55; }
+          90% { opacity: 0.55; }
+          100% { transform: translateX(125%); opacity: 0; }
+        }
+      `}</style>
       <div className="text-[10px] text-muted-foreground">Squad Score</div>
       <div className="flex items-center gap-2">
         {showLabel && (
-          <div className="w-10 text-[10px] text-muted-foreground tabular-nums text-right">{pctText}</div>
+          <div className="relative w-20 sm:w-24 text-right isolate">
+            <div
+              className="tabular-nums font-extrabold leading-none select-none"
+              style={{
+                fontSize: '20px',
+                background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+                filter: 'drop-shadow(0 1px 0 rgba(0,0,0,0.25))'
+              }}
+            >
+              {pctText}
+            </div>
+            {/* Flare overlay */}
+            <div
+              key={flareRunId}
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0) 100%)',
+                mixBlendMode: 'screen',
+                animation: 'flare-pass 900ms linear 1'
+              }}
+            />
+          </div>
         )}
         <div
           ref={trackRef}
