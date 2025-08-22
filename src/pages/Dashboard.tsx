@@ -163,6 +163,14 @@ const Dashboard = () => {
   const activePlayers = players.filter(player => player.status === 'active');
   const totalPlayers = activePlayers.length;
 
+  const placeholderDates = Array.from({ length: 10 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (9 - i));
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+  })
+  const placeholderLine = placeholderDates.map(date => ({ date, value: 0, points: 0 }))
+  const placeholderBars = [{ name: 'Allen.', present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }, { name: 'Partite', present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }]
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -264,19 +272,18 @@ const Dashboard = () => {
               render: () => (
                 <div>
                   <div className="h-64">
-                    {trend?.series && trend.series.length > 0 ? (
-                      <ChartContainer config={{
-                        points: { label: 'Punti', color: 'hsl(var(--primary))' },
-                      }} className="h-full">
-                        <ReLineChart data={trend.series} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
-                        </ReLineChart>
-                      </ChartContainer>
-                    ) : (
+                    <ChartContainer config={{
+                      points: { label: 'Punti', color: 'hsl(var(--primary))' },
+                    }} className="h-full">
+                      <ReLineChart data={(trend?.series as any) || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                      </ReLineChart>
+                    </ChartContainer>
+                    {(!trend?.series || trend.series.length === 0) && (
                       <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                     )}
                   </div>
@@ -292,17 +299,16 @@ const Dashboard = () => {
               render: () => (
                 <div>
                   <div className="h-64">
-                    {trainingSeries?.curr ? (
-                      <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
-                        <ReLineChart data={trainingSeries.curr} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
-                        </ReLineChart>
-                      </ChartContainer>
-                    ) : (
+                    <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
+                      <ReLineChart data={trainingSeries?.curr || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                      </ReLineChart>
+                    </ChartContainer>
+                    {(!trainingSeries?.curr || trainingSeries.curr.length === 0) && (
                       <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                     )}
                   </div>
@@ -318,17 +324,16 @@ const Dashboard = () => {
               render: () => (
                 <div>
                   <div className="h-64">
-                    {matchSeries?.curr ? (
-                      <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
-                        <ReLineChart data={matchSeries.curr} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
-                        </ReLineChart>
-                      </ChartContainer>
-                    ) : (
+                    <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
+                      <ReLineChart data={matchSeries?.curr || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                      </ReLineChart>
+                    </ChartContainer>
+                    {(!matchSeries?.curr || matchSeries.curr.length === 0) && (
                       <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                     )}
                   </div>
@@ -344,28 +349,27 @@ const Dashboard = () => {
               render: () => (
                 <div>
                   <div className="h-64">
-                    {attendanceDist ? (
-                      <ChartContainer config={{
-                        present: { label: 'Presenti', color: 'hsl(var(--success))' },
-                        late: { label: 'Ritardi', color: '#f59e0b' },
-                        absent: { label: 'Assenti', color: 'hsl(var(--destructive))' },
-                        pending: { label: 'In attesa', color: '#94a3b8' },
-                        no_response: { label: 'No response', color: '#a3a3a3' },
-                      }} className="h-full">
-                        <ReBarChart data={[{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }]} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <ChartLegend content={<ChartLegendContent className="text-[9px] sm:text-xs" />} />
-                          <Bar dataKey="present" fill="var(--color-present)" isAnimationActive={animateOnceRef.current} />
-                          <Bar dataKey="late" fill="var(--color-late)" isAnimationActive={animateOnceRef.current} />
-                          <Bar dataKey="absent" fill="var(--color-absent)" isAnimationActive={animateOnceRef.current} />
-                          <Bar dataKey="pending" fill="var(--color-pending)" isAnimationActive={animateOnceRef.current} />
-                          <Bar dataKey="no_response" fill="var(--color-no_response)" isAnimationActive={animateOnceRef.current} />
-                        </ReBarChart>
-                      </ChartContainer>
-                    ) : (
+                    <ChartContainer config={{
+                      present: { label: 'Presenti', color: 'hsl(var(--success))' },
+                      late: { label: 'Ritardi', color: '#f59e0b' },
+                      absent: { label: 'Assenti', color: 'hsl(var(--destructive))' },
+                      pending: { label: 'In attesa', color: '#94a3b8' },
+                      no_response: { label: 'No response', color: '#a3a3a3' },
+                    }} className="h-full">
+                      <ReBarChart data={attendanceDist ? [{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }] : placeholderBars} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartLegend content={<ChartLegendContent className="text-[9px] sm:text-xs" />} />
+                        <Bar dataKey="present" fill="var(--color-present)" isAnimationActive={animateOnceRef.current} />
+                        <Bar dataKey="late" fill="var(--color-late)" isAnimationActive={animateOnceRef.current} />
+                        <Bar dataKey="absent" fill="var(--color-absent)" isAnimationActive={animateOnceRef.current} />
+                        <Bar dataKey="pending" fill="var(--color-pending)" isAnimationActive={animateOnceRef.current} />
+                        <Bar dataKey="no_response" fill="var(--color-no_response)" isAnimationActive={animateOnceRef.current} />
+                      </ReBarChart>
+                    </ChartContainer>
+                    {!attendanceDist && (
                       <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                     )}
                   </div>
@@ -378,7 +382,7 @@ const Dashboard = () => {
               title: 'Presenze Allenamenti',
               gridClassName: 'col-span-1',
               render: () => (
-                <div className="grid grid-cols-1 min-[800px]:grid-cols-4 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
                   <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} distribution={leaders?.trainingPresences} />
                   <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" item={pickBestWorst(leaders?.trainingAbsences).best} distribution={leaders?.trainingAbsences} />
                   <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.trainingLates).best} distribution={leaders?.trainingLates} />
@@ -391,7 +395,7 @@ const Dashboard = () => {
               title: 'Presenze Partite',
               gridClassName: 'col-span-1',
               render: () => (
-                <div className="grid grid-cols-1 min-[800px]:grid-cols-4 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
                   <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} distribution={leaders?.matchPresences} />
                   <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" item={pickBestWorst(leaders?.matchAbsences).best} distribution={leaders?.matchAbsences} />
                   <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.matchLates).best} distribution={leaders?.matchLates} />
@@ -404,80 +408,11 @@ const Dashboard = () => {
               title: 'Presenze Totali',
               gridClassName: 'col-span-1',
               render: () => (
-                <div>
-                  <div className="grid grid-cols-1 min-[800px]:grid-cols-4 gap-4 justify-items-center">
-                    <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} distribution={leaders?.totalPresences} />
-                    <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" item={pickBestWorst(leaders?.totalAbsences).best} distribution={leaders?.totalAbsences} />
-                    <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.lates).best} distribution={leaders?.lates} />
-                    <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.noResponses).best} distribution={leaders?.noResponses} />
-                  </div>
-                </div>
-              )
-            },
-            {
-              id: 'attendance-score-leaders',
-              title: 'Attendance Score — Migliori e Peggiori',
-              gridClassName: 'col-span-1',
-              render: () => (
-                <div className="grid grid-cols-1 min-[800px]:grid-cols-4 gap-4 justify-items-center">
-                  {scoreLeaders.bestTwo.map((s, idx)=> (
-                    <TopLeaderCard
-                      key={`best-${idx}`}
-                      metricLabel={`Score migliore #${idx+1}`}
-                      valueUnit="pt"
-                      variant="score_best"
-                      item={{
-                        player: { id: s.player_id, first_name: s.first_name||'—', last_name: s.last_name||'', jersey_number: undefined, role_code: undefined },
-                        value: Number(s.score0to100.toFixed(1)),
-                        meta: {
-                          pointsRaw: s.pointsRaw,
-                          opportunities: s.opportunities,
-                          noResponseRate: s.noResponseRate,
-                          matchPresenceRate: s.matchPresenceRate,
-                          matchLateRate: s.matchLateRate,
-                          T_P: (leaders?.trainingPresences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          T_L: (leaders?.trainingLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          T_A: (leaders?.trainingAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          T_NR: (leaders?.trainingNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          M_P: (leaders?.matchPresences||[]).find(r=>r.player_id===s.player_id)?.count || (leaders?.matchPresences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          M_L: (leaders?.matchLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          M_A: (leaders?.matchAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          M_NR: (leaders?.matchNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          mvpAwards: (leaders?.mvpAwards||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                        }
-                      }}
-                      distribution={[]}
-                    />
-                  ))}
-                  {scoreLeaders.worstTwo.map((s, idx)=> (
-                    <TopLeaderCard
-                      key={`worst-${idx}`}
-                      metricLabel={`Score peggiore #${idx+1}`}
-                      valueUnit="pt"
-                      variant="score_worst"
-                      item={{
-                        player: { id: s.player_id, first_name: s.first_name||'—', last_name: s.last_name||'', jersey_number: undefined, role_code: undefined },
-                        value: Number(s.score0to100.toFixed(1)),
-                        meta: {
-                          pointsRaw: s.pointsRaw,
-                          opportunities: s.opportunities,
-                          noResponseRate: s.noResponseRate,
-                          matchPresenceRate: s.matchPresenceRate,
-                          matchLateRate: s.matchLateRate,
-                          T_P: (leaders?.trainingPresences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          T_L: (leaders?.trainingLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          T_A: (leaders?.trainingAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          T_NR: (leaders?.trainingNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          M_P: (leaders?.matchPresences||[]).find(r=>r.player_id===s.player_id)?.count || (leaders?.matchPresences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          M_L: (leaders?.matchLates||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          M_A: (leaders?.matchAbsences||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          M_NR: (leaders?.matchNoResponses||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                          mvpAwards: (leaders?.mvpAwards||[]).find(r=>r.player_id===s.player_id)?.value || 0,
-                        }
-                      }}
-                      distribution={[]}
-                    />
-                  ))}
+                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
+                  <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} distribution={leaders?.totalPresences} />
+                  <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" item={pickBestWorst(leaders?.totalAbsences).best} distribution={leaders?.totalAbsences} />
+                  <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.lates).best} distribution={leaders?.lates} />
+                  <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.noResponses).best} distribution={leaders?.noResponses} />
                 </div>
               )
             },
@@ -486,7 +421,7 @@ const Dashboard = () => {
               title: 'Performance Partite',
               gridClassName: 'col-span-1',
               render: () => (
-                <div className="grid grid-cols-1 min-[800px]:grid-cols-4 gap-4 justify-items-center">
+                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
                   <TopLeaderCard metricLabel="Gol" valueUnit="gol" variant="goals" item={pickBestWorst(leaders?.goals).best} distribution={leaders?.goals} />
                   <TopLeaderCard metricLabel="Assist" valueUnit="assist" variant="assists" item={pickBestWorst(leaders?.assists).best} distribution={leaders?.assists} />
                   <TopLeaderCard metricLabel="Ammonizioni" valueUnit="gialli" variant="yellow" item={pickBestWorst(leaders?.yellowCards).best} distribution={leaders?.yellowCards} />
@@ -503,34 +438,45 @@ const Dashboard = () => {
               )
             },
             {
-              id: 'recent-activity',
-              title: 'Attività recenti',
+              id: 'attendance-score-leaders',
+              title: 'Squad Score — Migliori e Peggiori',
+              gridClassName: 'col-span-1',
               render: () => (
-                <div className="space-y-3">
-                  {activityLoading ? (
-                    <div className="space-y-2">
-                      <div className="h-4 bg-muted rounded animate-pulse" />
-                      <div className="h-4 bg-muted rounded animate-pulse" />
-                      <div className="h-4 bg-muted rounded animate-pulse" />
-                    </div>
-                  ) : recentActivity.length > 0 ? (
-                    recentActivity.map((activity, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <div className={`w-2 h-2 rounded-full ${
-                          activity.type === 'player' ? 'bg-success' :
-                          activity.type === 'training' ? 'bg-primary' :
-                          activity.type === 'competition' ? 'bg-accent' :
-                          'bg-secondary'
-                        }`} />
-                        <span className="text-sm text-foreground">{activity.message}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-muted rounded-full" />
-                      <span className="text-sm text-muted-foreground">Nessuna attività recente</span>
-                    </div>
-                  )}
+                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
+                  {scoreLeaders.bestTwo.slice(0,1).map((s)=> (
+                    <TopLeaderCard
+                      key={`best-1`}
+                      metricLabel={`Score migliore`}
+                      valueUnit="pt"
+                      variant="score_best"
+                      item={{ player: {
+                        id: (leaders?.bestScorePlayer?.id || s.player_id) as any,
+                        first_name: s.first_name || '-',
+                        last_name: s.last_name || '-',
+                        avatar_url: playerById.get((leaders?.bestScorePlayer?.id || s.player_id) as any)?.avatar_url || null,
+                        role_code: playerById.get((leaders?.bestScorePlayer?.id || s.player_id) as any)?.role_code || null,
+                        jersey_number: playerById.get((leaders?.bestScorePlayer?.id || s.player_id) as any)?.jersey_number ?? null,
+                      }, value: Number(s.score0to100 || s.value || 0) }}
+                      distribution={[]}
+                    />
+                  ))}
+                  {scoreLeaders.worstTwo.slice(0,1).map((s)=> (
+                    <TopLeaderCard
+                      key={`worst-1`}
+                      metricLabel={`Score peggiore`}
+                      valueUnit="pt"
+                      variant="score_worst"
+                      item={{ player: {
+                        id: (leaders?.worstScorePlayer?.id || s.player_id) as any,
+                        first_name: s.first_name || '-',
+                        last_name: s.last_name || '-',
+                        avatar_url: playerById.get((leaders?.worstScorePlayer?.id || s.player_id) as any)?.avatar_url || null,
+                        role_code: playerById.get((leaders?.worstScorePlayer?.id || s.player_id) as any)?.role_code || null,
+                        jersey_number: playerById.get((leaders?.worstScorePlayer?.id || s.player_id) as any)?.jersey_number ?? null,
+                      }, value: Number(s.score0to100 || s.value || 0) }}
+                      distribution={[]}
+                    />
+                  ))}
                 </div>
               )
             },

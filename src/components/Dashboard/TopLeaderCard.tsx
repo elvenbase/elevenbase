@@ -6,6 +6,7 @@ import { RotateCcw, Search, CalendarCheck2, CalendarX, AlarmClock, MailX, Corner
 import { Link } from 'react-router-dom'
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { PieChart as RePieChart, Pie as RePie, Cell as ReCell, Tooltip as ReTooltip, ResponsiveContainer as ReResponsiveContainer } from 'recharts'
+import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 
 type PlayerRef = { id: string; first_name: string; last_name: string; avatar_url?: string | null; role_code?: string | null; jersey_number?: number | null }
 
@@ -25,6 +26,23 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
     roles.forEach(r => m.set(r.code, r.label))
     return m
   }, [roles])
+  // Role → sector mapping for card background theme (aligned to /squad)
+  const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
+    if (!code) return 'NA'
+    const c = code.toUpperCase()
+    if (c === 'P') return 'P'
+    if (['TD','DC','DCD','DCS','TS'].includes(c)) return 'DIF'
+    if (['MC','MED','REG','MD','MS','ED','ES','QD','QS'].includes(c)) return 'CEN'
+    if (['PU','ATT','AD','AS'].includes(c)) return 'ATT'
+    return 'NA'
+  }
+  const sectorHeroBgClass: Record<'P'|'DIF'|'CEN'|'ATT'|'NA', string> = {
+    P: 'from-sky-500/20 to-sky-500/5',
+    DIF: 'from-emerald-500/20 to-emerald-500/5',
+    CEN: 'from-amber-500/25 to-amber-500/5',
+    ATT: 'from-rose-500/25 to-rose-500/5',
+    NA: 'from-neutral-500/20 to-neutral-500/5'
+  }
   const AnimatedNumber = ({ value }: { value: number }) => {
     const [display, setDisplay] = useState(0)
     const [bump, setBump] = useState(false)
@@ -197,10 +215,12 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
 
   const p = item.player
   const value = (item.value ?? item.count ?? 0)
-  const to = `/player/${p.id}`
+  const to = `/player/${p.id}?ref=/dashboard`
 
   const [computedMin, setComputedMin] = useState<number | null>(null)
   const [vw, setVw] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0)
+  const { defaultAvatarImageUrl } = useAvatarBackgrounds()
+  const imageSrc = (p.avatar_url || defaultAvatarImageUrl || '') as string
   useLayoutEffect(() => {
     const onResize = () => setVw(window.innerWidth)
     window.addEventListener('resize', onResize)
@@ -217,178 +237,144 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   }, [vw, item])
 
   return (
-    <div className="group [perspective:1000px] min-h-[230px] min-[900px]:min-h-[290px] w-full" style={computedMin ? { minHeight: `${computedMin}px` } : undefined}>
-      <div className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
-        {/* Front */}
-        <Link to={to} className="block absolute inset-0 [backface-visibility:hidden]">
-          <Card className="p-0 bg-card/80 border border-border rounded-2xl shadow-card hover:shadow-glow transition-smooth h-full overflow-hidden" style={{ minHeight: 'inherit' }} onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}>
-            <div className="flex flex-col h-full">
-              {/* Header */}
-              <div className="flex items-center gap-2 px-3 py-1 min-h-[30px]" style={{ backgroundColor: metricStyle.headerBg }}>
-                {!!SectionIcon && <SectionIcon className="h-5 w-5 flex-shrink-0" style={{ color: metricStyle.accent }} aria-hidden />}
-                <div className="relative top-[2px] sm:top-0 line-clamp-2 font-semibold text-[14px] leading-tight" style={{ color: '#2B2B2B' }}>{metricLabel}</div>
+    <div className="w-full">
+      {/* Front, aligned to /squad card */}
+      <Link to={to} className="block">
+        <Card className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${sectorHeroBgClass[sectorFromRoleCode(p.role_code || '')]}`}>
+          <div className="relative p-4 md:p-5">
+            {/* Avatar overflowing left (identico a /squad) */}
+            {imageSrc ? (
+              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm border-0 ring-0">
+                <img
+                  src={imageSrc}
+                  alt={`${p.first_name} ${p.last_name}`}
+                  className="w-full h-full object-cover object-center select-none border-0 ring-0 outline-none"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement
+                    // Prevent infinite loop by applying fallback only once
+                    const fallback = defaultAvatarImageUrl || ''
+                    const already = (img as any).dataset.fallbackApplied === '1'
+                    if (!already && fallback && img.src !== fallback) {
+                      ;(img as any).dataset.fallbackApplied = '1'
+                      img.src = fallback
+                    } else {
+                      img.style.display = 'none'
+                    }
+                  }}
+                  draggable={false}
+                />
               </div>
-              {/* Hero */}
-              <div className="relative flex-1 px-4 py-2 pb-3">
-                {/* Gradient overlay: same centered style for all widths */}
-                <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: `radial-gradient(60% 60% at 50% 40%, ${metricStyle.accent}22 0%, transparent 70%)` }} />
-
-                {/* Unified layout: use the same centered stack for all widths */}
-                <div className="flex h-full flex-col items-center justify-center text-center">
-                  <div className="relative -mt-5 lg:mt-0">
-                    <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="xl" className="h-16 w-16" />
-                  </div>
-                  <div className="mt-2 max-w-[85%] line-clamp-2 break-words font-semibold text-[20px]">{p.first_name} {p.last_name}</div>
-                  {typeof (p as any).jersey_number !== 'undefined' && (p as any).jersey_number !== null && (
-                    <div className="mt-1">
-                      <Badge variant="secondary" className="px-2 py-0.5 text-xs">#{(p as any).jersey_number}</Badge>
-                    </div>
+            ) : (
+              <div className="absolute top-4 left-0 md:top-6 md:left-0">
+                <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="lg" />
+              </div>
+            )}
+            {/* Right content padding to accommodate avatar */}
+            <div className="pl-[109.6px] md:pl-[146.4px] min-h-[144px] md:min-h-[180px] pr-2">
+              <div className="space-y-2">
+                <div className="font-semibold text-lg md:text-xl leading-tight line-clamp-2">{p.first_name} {p.last_name}</div>
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="text-xs md:text-sm text-muted-foreground truncate">{roleLabelByCode.get(p.role_code || '') || (p.role_code || '—')}</div>
+                  {typeof (p as any).jersey_number === 'number' && (
+                    <Badge variant="outline" className="text-[10px]">#{(p as any).jersey_number}</Badge>
                   )}
-                  {p.role_code && (
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {roleLabelByCode.get(p.role_code) || p.role_code}
-                    </div>
-                  )}
-                  <div className="mt-3 flex items-center justify-center -mb-5 lg:mb-2.5">
-                    <div className="inline-flex items-center gap-1.5 rounded-full h-9 px-4" style={{ backgroundColor: metricStyle.headerBg }}>
-                      {!!SectionIcon && <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />}
-                      <span className="font-bold tabular-nums text-[24px]" style={{ color: metricStyle.accent }}>{value}</span>
-                      <span className="text-[14px] lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
-                    </div>
+                </div>
+                {/* Metric pill: icon + animated number + unit */}
+                <div className="mt-1">
+                  <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm bg-white/85 border shadow-sm">
+                    {!!SectionIcon && <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />}
+                    <span className="font-extrabold tabular-nums text-[18px] md:text-[20px]" style={{ color: metricStyle.accent }}>
+                      <AnimatedNumber value={Math.max(0, Math.round(Number(value) || 0))} />
+                    </span>
+                    <span className="lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
                   </div>
                 </div>
               </div>
-              {/* Footer */}
-              <div className="flex items-center justify-center h-7 text-[12px] px-4 mb-2" style={{ color: '#5A5A5A' }}>
-                <button
-                  onClick={(e)=>{ e.preventDefault(); setFlipped(true) }}
-                  className="underline underline-offset-2 hover:no-underline"
-                  aria-label={isScoreVariant ? 'Vedi dettagli' : 'Apri confronto squadra'}
-                >
-                  {isScoreVariant ? 'vedi dettagli' : 'confronto squadra'}
-                </button>
-              </div>
             </div>
-          </Card>
-        </Link>
-        {/* Back */}
-        <Card className="p-4 bg-card/80 border-border hover:shadow-glow transition-smooth absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-hidden relative h-full" style={{ minHeight: 'inherit' }}>
-          {isScoreVariant ? (
-            <div className="flex flex-col h-full pb-3">
-              <div className="mb-2">
-                <div className="text-sm font-semibold">Dettagli punteggio</div>
-                <div className="text-xs text-muted-foreground">Parametri che hanno contribuito allo score</div>
-              </div>
-              {(() => {
-                const meta = (item as any)?.meta || {}
-                const pct = (n: number) => `${Math.round((n || 0) * 100)}%`
-                return (
-                  <div className="flex-1 grid grid-cols-2 gap-3 text-[12px]">
-                    <div className="space-y-2">
-                      <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">Opportunità totali</div>
-                        <div className="font-semibold">{meta.opportunities ?? '—'}</div>
-                      </div>
-                      <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">Punti grezzi</div>
-                        <div className="font-semibold">{typeof meta.pointsRaw === 'number' ? meta.pointsRaw.toFixed(2) : '—'}</div>
-                      </div>
-                      <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">Tasso no response complessivo</div>
-                        <div className="font-semibold">{pct(meta.noResponseRate || 0)}</div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">Percentuale presenze alle partite</div>
-                        <div className="font-semibold">{pct(meta.matchPresenceRate || 0)}</div>
-                      </div>
-                      <div className="rounded-lg border p-2">
-                        <div className="text-muted-foreground">Tasso ritardi alle partite</div>
-                        <div className="font-semibold">{pct(meta.matchLateRate || 0)}</div>
-                      </div>
-                    </div>
-                    <div className="col-span-2 mt-1 -mx-4 pr-2 sm:pr-3">
-                      <ul className="space-y-1 text-[12px] m-0 p-0 pl-[10px] list-none">
-                        {(() => {
-                          const EXCLUDE = new Set(['pointsRaw', 'opportunities', 'noResponseRate', 'matchPresenceRate', 'matchLateRate'])
-                          const LABELS: Record<string, string> = {
-                            T_P: 'Presenze allenamenti',
-                            T_L: 'Ritardi allenamenti',
-                            T_A: 'Assenze allenamenti',
-                            T_NR: 'No response allenamenti',
-                            M_P: 'Presenze partite',
-                            M_L: 'Ritardi partite',
-                            M_A: 'Assenze partite',
-                            M_NR: 'No response partite',
-                            mvpAwards: 'MVP',
-                          }
-                          const ORDER = ['T_P','T_L','T_A','T_NR','M_P','M_L','M_A','M_NR','mvpAwards']
-                          const items: Array<{ label: string; value: number; key: string }> = []
-                          ORDER.forEach(k => {
-                            if (typeof meta[k] === 'number') items.push({ key: k, label: LABELS[k] || k, value: Number(meta[k]) })
-                          })
-                          for (const [k, v] of Object.entries(meta)) {
-                            if (EXCLUDE.has(k) || ORDER.includes(k)) continue
-                            if (typeof v !== 'number') continue
-                            const friendly = LABELS[k] || k.replace(/_/g, ' ')
-                            items.push({ key: k, label: friendly, value: Number(v) })
-                          }
-                          return items.map((it, i) => (
-                            <li key={it.key || i} className="flex items-center justify-between border-b border-border/30 py-0.5">
-                              <span className="text-muted-foreground">{it.label}</span>
-                              <span className="font-semibold tabular-nums">{isNaN(it.value) ? 0 : it.value}</span>
-                            </li>
-                          ))
-                        })()}
-                      </ul>
-                    </div>
-                  </div>
-                )
-              })()}
-              <div className="h-7 mb-2" />
-            </div>
-          ) : (
-            <div className="flex flex-col h-full pb-3">
-              <div className="flex items-start justify-between">
-                <div className="text-xs text-muted-foreground">{baseCaption}: {baseN}</div>
-              </div>
-              <div className="mt-2 flex-1 min-h-[8.5rem] flex flex-col lg:flex-row items-stretch gap-3">
-                <div className="w-full lg:w-[48%] h-[120px] sm:h-[140px]">
-                  <ReResponsiveContainer width="100%" height="100%">
-                    <RePieChart>
-                      <RePie data={pieData} dataKey="value" nameKey="name" innerRadius={28} outerRadius={54} isAnimationActive>
-                        {pieData?.map((entry, index) => (
-                          <ReCell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </RePie>
-                      <ReTooltip formatter={(value:any, name:any)=>{
-                        const n = Number(value || 0)
-                        const pct = baseN ? Math.round((n / baseN) * 100) : 0
-                        return [`${pct}% (${n} giocatori)`, name]
-                      }} />
-                    </RePieChart>
-                  </ReResponsiveContainer>
-                </div>
-                <div className="flex-1 h-full overflow-auto">
-                  <ol className="text-[11px] leading-5 text-muted-foreground">
-                    {topFive?.map((t: any) => (
-                      <li key={t.id} className="truncate">
-                        {t.rank}) {(t.first_name?.[0] || '?')}. {t.last_name || ''} | {t.value}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              </div>
-              <div className="h-7 mb-2" />
-            </div>
-          )}
-          <button className="absolute bottom-2 right-2 text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-1" onClick={()=>setFlipped(false)} aria-label="Torna al fronte">
-            <span>back</span>
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
+          </div>
         </Card>
-      </div>
+      </Link>
+      {/* Back */}
+      <Card className="hidden">
+        {isScoreVariant ? (
+          <div className="flex flex-col h-full pb-3">
+            <div className="mb-2">
+              <div className="text-sm font-semibold">Dettagli punteggio</div>
+              <div className="text-xs text-muted-foreground">Parametri che hanno contribuito allo score</div>
+            </div>
+            {(() => {
+              const meta = (item as any)?.meta || {}
+              const pct = (n: number) => `${Math.round((n || 0) * 100)}%`
+              return (
+                <div className="flex-1 grid grid-cols-2 gap-3 text-[12px]">
+                  <div className="space-y-2">
+                    <div className="rounded-lg border p-2">
+                      <div className="text-muted-foreground">Opportunità totali</div>
+                      <div className="font-semibold">{meta.opportunities ?? '—'}</div>
+                    </div>
+                    <div className="rounded-lg border p-2">
+                      <div className="text-muted-foreground">Punti grezzi</div>
+                      <div className="font-semibold">{typeof meta.pointsRaw === 'number' ? meta.pointsRaw.toFixed(2) : '—'}</div>
+                    </div>
+                    <div className="rounded-lg border p-2">
+                      <div className="text-muted-foreground">Tasso no response complessivo</div>
+                      <div className="font-semibold">{pct(meta.noResponseRate || 0)}</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="rounded-lg border p-2">
+                      <div className="text-muted-foreground">Percentuale presenze alle partite</div>
+                      <div className="font-semibold">{pct(meta.matchPresenceRate || 0)}</div>
+                    </div>
+                    <div className="rounded-lg border p-2">
+                      <div className="text-muted-foreground">Tasso ritardi alle partite</div>
+                      <div className="font-semibold">{pct(meta.matchLateRate || 0)}</div>
+                    </div>
+                  </div>
+                  <div className="col-span-2 mt-1 -mx-4 pr-2 sm:pr-3">
+                    <ul className="space-y-1 text-[12px] m-0 p-0 pl-[10px] list-none">
+                      {(() => {
+                        const EXCLUDE = new Set(['pointsRaw', 'opportunities', 'noResponseRate', 'matchPresenceRate', 'matchLateRate'])
+                        const LABELS: Record<string, string> = {
+                          T_P: 'Presenze allenamenti',
+                          T_L: 'Ritardi allenamenti',
+                          T_A: 'Assenze allenamenti',
+                          T_NR: 'No response allenamenti',
+                          M_P: 'Presenze partite',
+                          M_L: 'Ritardi partite',
+                          M_A: 'Assenze partite',
+                          M_NR: 'No response partite',
+                          mvpAwards: 'MVP',
+                        }
+                        const ORDER = ['T_P','T_L','T_A','T_NR','M_P','M_L','M_A','M_NR','mvpAwards']
+                        const items: Array<{ label: string; value: number; key: string }> = []
+                        ORDER.forEach(k => {
+                          if (typeof meta[k] === 'number') items.push({ key: k, label: LABELS[k] || k, value: Number(meta[k]) })
+                        })
+                        for (const [k, v] of Object.entries(meta)) {
+                          if (EXCLUDE.has(k) || ORDER.includes(k)) continue
+                          if (typeof v !== 'number') continue
+                          const friendly = LABELS[k] || k.replace(/_/g, ' ')
+                          items.push({ key: k, label: friendly, value: Number(v) })
+                        }
+                        return items.map((it, i) => (
+                          <li key={it.key || i} className="flex items-center justify-between border-b border-border/30 py-0.5">
+                            <span className="text-muted-foreground">{it.label}</span>
+                            <span className="font-semibold tabular-nums">{isNaN(it.value) ? 0 : it.value}</span>
+                          </li>
+                        ))
+                      })()}
+                    </ul>
+                  </div>
+                </div>
+              )
+            })()}
+            <div className="h-7 mb-2" />
+          </div>
+        ) : (
+          <div className="hidden" />
+        )}
+      </Card>
     </div>
   )
 }

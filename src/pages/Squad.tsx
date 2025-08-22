@@ -24,7 +24,8 @@ import { useRoles } from '@/hooks/useRoles';
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X, Eye } from 'lucide-react'
+import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X, Eye, Info } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { useQueryClient } from '@tanstack/react-query'
@@ -331,6 +332,7 @@ const NeonPillProgress: React.FC<{
   const THICKNESS_PROJ_X = STRIPE_THICKNESS_PX / COS45
   const HORIZONTAL_PERIOD_X = STRIPE_PERIOD_PX / COS45
   const [labelValue, setLabelValue] = React.useState(0)
+  const [infoOpen, setInfoOpen] = React.useState(false)
 
   // Fast count-up label (independent from stripe steps)
   React.useEffect(() => {
@@ -426,10 +428,65 @@ const NeonPillProgress: React.FC<{
 
   return (
     <div className="space-y-1.5">
-      <div className="text-[10px] text-muted-foreground">Squad Score</div>
-      <div className="flex items-center gap-2">
+      <div className="text-xs md:text-sm font-bold flex items-center">
+        <span
+          style={{
+            background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            color: 'transparent',
+            filter: 'drop-shadow(0 1px 0 rgba(0,0,0,0.25))'
+          }}
+        >
+          Squad Score
+        </span>
+        <span className="ml-2 text-[10px] font-normal align-middle text-muted-foreground">(mese corrente)</span>
+        <Popover open={infoOpen} onOpenChange={setInfoOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="ml-2 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+              style={{ width: 24, height: 24 }}
+              onClick={(e)=>{ e.stopPropagation(); setInfoOpen((v)=> !v) }}
+              onMouseDown={(e)=>{ e.stopPropagation() }}
+              onTouchStart={(e)=>{ e.stopPropagation() }}
+            >
+              <Info className="h-3.5 w-3.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="start" alignOffset={-8 as any} sideOffset={8} className="w-72 text-xs relative translate-x-[-6px]">
+            <button
+              onClick={(e)=>{ e.stopPropagation(); setInfoOpen(false) }}
+              className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+              aria-label="Chiudi"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+            <div className="pr-6">
+              Punteggio 0–100 basato su presenze/assenze/ritardi (allenamenti e partite) del mese corrente.
+              {' '}Gestisci le regole in
+              {' '}
+              <a
+                href="/admin/attendance-score"
+                className="underline text-primary"
+                onClick={(e)=>{ e.stopPropagation(); setInfoOpen(false) }}
+              >
+                Squad Score
+              </a>.
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+      {infoOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={(e)=>{ e.stopPropagation(); setInfoOpen(false) }}
+          onTouchStart={(e)=>{ e.stopPropagation(); setInfoOpen(false) }}
+        />
+      )}
+      <div className="flex items-center gap-3">
         {showLabel && (
-          <div className="relative w-20 sm:w-24 text-right isolate">
+          <div className="relative isolate shrink-0">
             <div
               className="tabular-nums font-extrabold leading-none select-none"
               style={{
@@ -495,9 +552,12 @@ const Squad = () => {
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const __now = new Date()
+  const __defaultFrom = new Date(__now.getFullYear(), __now.getMonth(), 1)
+  const __defaultTo = new Date(__now.getFullYear(), __now.getMonth() + 1, 0)
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: subMonths(new Date(), 1),
-    to: new Date()
+    from: __defaultFrom,
+    to: __defaultTo
   });
   const [selectedCaptain, setSelectedCaptain] = useState<string>('none');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -645,42 +705,48 @@ const Squad = () => {
 
   const updateCaptain = async (newCaptainId: string) => {
     try {
-      // Rimuovi is_captain da tutti i giocatori
-      await supabase
-        .from('players')
-        .update({ is_captain: false })
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Update tutti
-
-      // Se selezionato un capitano (non "none"), impostalo
-      if (newCaptainId && newCaptainId !== 'none') {
-        const { error } = await supabase
+      const paramId = (!newCaptainId || newCaptainId === 'none') ? null : newCaptainId
+      // Try RPC first (atomic)
+      const rpcRes = await supabase.rpc('set_captain', { new_captain_id: paramId as any })
+      if (rpcRes.error) {
+        // If RPC is missing, fallback to direct updates
+        const notFound = (rpcRes.error.message || '').toLowerCase().includes('could not find the function')
+        if (!notFound) throw rpcRes.error
+        // Fallback: unset previous captain(s)
+        const { error: unsetErr } = await supabase
           .from('players')
-          .update({ is_captain: true })
-          .eq('id', newCaptainId);
+          .update({ is_captain: false })
+          .eq('is_captain', true)
+        if (unsetErr) throw unsetErr
+        // Set new captain if provided
+        if (paramId) {
+          const { error: setErr } = await supabase
+            .from('players')
+            .update({ is_captain: true })
+            .eq('id', paramId)
+          if (setErr) throw setErr
+        }
+      }
 
-        if (error) throw error;
-        
-        const captain = players.find(p => p.id === newCaptainId);
+      if (paramId) {
+        const captain = players.find(p => p.id === paramId);
         toast.success(`${captain?.first_name} ${captain?.last_name} è ora il capitano`);
-        // Refresh immediato
-        queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] })
-        queryClient.invalidateQueries({ queryKey: ['players'] })
-        setCaptainDialogOpen(false)
       } else {
         toast.success('Nessun capitano selezionato');
-        queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] })
-        queryClient.invalidateQueries({ queryKey: ['players'] })
-        setCaptainDialogOpen(false)
       }
+      // Refresh immediato
+      queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] })
+      queryClient.invalidateQueries({ queryKey: ['players'] })
+      setCaptainDialogOpen(false)
     } catch (error) {
       console.error('🔥 ERRORE DETTAGLIATO CAPITANO:', {
         error,
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint
+        message: (error as any)?.message,
+        code: (error as any)?.code,
+        details: (error as any)?.details,
+        hint: (error as any)?.hint
       });
-      toast.error(`Errore nell'aggiornamento del capitano: ${error?.message || error}`);
+      toast.error(`Errore nell'aggiornamento del capitano: ${(error as any)?.message || error}`);
       // Revert UI state
       const currentCaptain = players.find(p => p.is_captain);
       setSelectedCaptain(currentCaptain?.id || 'none');
@@ -968,7 +1034,7 @@ const Squad = () => {
       {viewMode === 'card' && (
         <div className="">
                       {isLoading ? (
-            <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1000px]:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 min-[1000px]:grid-cols-2 min-[1440px]:grid-cols-3 min-[1800px]:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_,i)=> (
                 <div key={i} className="rounded-2xl border p-4">
                   <div className="flex items-center gap-3">
@@ -983,7 +1049,7 @@ const Squad = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1000px]:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 min-[1000px]:grid-cols-2 min-[1440px]:grid-cols-3 min-[1800px]:grid-cols-4 gap-4">
                 {filteredAndSortedPlayers.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || ''];
                   const imageSrc = p.avatar_url || defaultAvatarImageUrl || '';
@@ -997,7 +1063,7 @@ const Squad = () => {
                       key={p.id}
                       role="link"
                       tabIndex={0}
-                      onClick={() => (window.location.href = `/player/${p.id}`)}
+                      onClick={() => (window.location.href = `/player/${p.id}?ref=/squad`)}
                       onKeyDown={(e) => { if (e.key === 'Enter') (window.location.href = `/player/${p.id}`) }}
                       className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${sectorHeroBgClass[sectorFromRoleCode((p as any).role_code)]}`}
                     >
@@ -1064,7 +1130,7 @@ const Squad = () => {
                         <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
                           <Badge variant="outline" className={`text-xs ${statoCls}`}>{statoLabel}</Badge>
                           <a
-                            href={`/player/${p.id}`}
+                            href={`/player/${p.id}?ref=/squad`}
                             onClick={(e) => e.stopPropagation()}
                             className="text-sm text-primary inline-flex items-center gap-1 hover:underline"
                           >
@@ -1119,7 +1185,7 @@ const Squad = () => {
                             
                             <div>
                               <div className="flex items-center gap-2">
-                                <a href={`/player/${player.id}`} className="hover:underline">{player.first_name} {player.last_name}</a>
+                                <a href={`/player/${player.id}?ref=/squad`} className="hover:underline">{player.first_name} {player.last_name}</a>
                                 {player.is_captain && (
                                   <Badge variant="default" className="text-xs bg-yellow-600 hover:bg-yellow-700">(C)</Badge>
                                 )}
@@ -1175,7 +1241,7 @@ const Squad = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <a href={`/player/${player.id}`} className="text-sm text-primary hover:underline">Visualizza dettagli</a>
+                            <a href={`/player/${player.id}?ref=/squad`} className="text-sm text-primary hover:underline">Visualizza dettagli</a>
 
                             <AlertDialog>
                               <AlertDialogTrigger asChild>

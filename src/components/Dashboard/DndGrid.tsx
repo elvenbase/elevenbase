@@ -19,19 +19,32 @@ type GridProps = {
 import { supabase } from '@/integrations/supabase/client'
 
 export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, preferenceKey = 'dashboard_layout' }: GridProps) => {
-  const [order, setOrder] = useState<string[]>([])
+  const [order, setOrder] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem(storageKey)
+      if (raw) {
+        const parsed = JSON.parse(raw) as string[]
+        const idsInit = modules.map(m => m.id)
+        if (Array.isArray(parsed) && parsed.every(id => idsInit.includes(id))) return parsed
+      }
+    } catch {}
+    return []
+  })
   const [locked, setLocked] = useState<boolean>(false)
   const ids = useMemo(() => modules.map(m => m.id), [modules])
 
   // Load and persist order (localStorage + user preference if available)
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey)
-      if (raw) {
-        const parsed = JSON.parse(raw) as string[]
-        if (Array.isArray(parsed) && parsed.every(id => ids.includes(id))) setOrder(parsed)
-      }
-    } catch {}
+    // if state was empty at mount and localStorage has valid data, ensure it's applied
+    if (order.length === 0) {
+      try {
+        const raw = localStorage.getItem(storageKey)
+        if (raw) {
+          const parsed = JSON.parse(raw) as string[]
+          if (Array.isArray(parsed) && parsed.every(id => ids.includes(id))) setOrder(parsed)
+        }
+      } catch {}
+    }
   }, [storageKey, ids])
 
   useEffect(() => {

@@ -30,6 +30,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
   const { user, signOut } = useAuth();
   const { pathname } = useLocation();
 
@@ -61,7 +62,7 @@ const Navigation = () => {
     { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
     { name: "Avversari", path: "/admin/opponents", icon: Users },
     { name: "Opzioni Giocatori", path: "/field-options", icon: UserCog },
-    { name: "Attendance Score", path: "/admin/attendance-score", icon: BarChart3 },
+    { name: "Squad Score", path: "/admin/attendance-score", icon: BarChart3 },
   ];
 
   const squadItems = [
@@ -218,15 +219,22 @@ const Navigation = () => {
             variant="ghost"
             size="icon"
             className="nav:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={() => {
+              if (isMobileMenuOpen) {
+                setIsExiting(true)
+                setTimeout(() => { setIsMobileMenuOpen(false); setIsExiting(false) }, 350)
+              } else {
+                setIsMobileMenuOpen(true)
+              }
+            }}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
 
         {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="nav:hidden fixed inset-x-0 top-16 bottom-0 bg-card border-t border-border overflow-y-auto overscroll-contain animate-slide-in z-50">
+        {(isMobileMenuOpen || isExiting) && (
+          <div className={`nav:hidden fixed inset-x-0 top-16 bottom-0 bg-card border-t border-border overflow-y-auto overscroll-contain z-50 ${isExiting ? 'animate-slide-out' : 'animate-slide-in'}`}>
             <div className="space-y-2">
               {/* Dashboard first */}
               <NavLink
@@ -238,7 +246,7 @@ const Navigation = () => {
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`
                 }
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => { setIsExiting(true); setTimeout(() => { setIsMobileMenuOpen(false); setIsExiting(false) }, 300) }}
               >
                 <BarChart3 className="h-5 w-5" />
                 <span className="font-medium">Dashboard</span>
@@ -258,7 +266,7 @@ const Navigation = () => {
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`
                     }
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => { setIsExiting(true); setTimeout(() => { setIsMobileMenuOpen(false); setIsExiting(false) }, 300) }}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="font-medium">{item.name}</span>
@@ -281,7 +289,7 @@ const Navigation = () => {
                             : "text-muted-foreground hover:text-foreground hover:bg-muted"
                         }`
                       }
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={() => { setIsExiting(true); setTimeout(() => { setIsMobileMenuOpen(false); setIsExiting(false) }, 300) }}
                     >
                       <Icon className="h-5 w-5" />
                       <span className="font-medium">{item.name}</span>
@@ -299,7 +307,7 @@ const Navigation = () => {
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`
                     }
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => { setIsExiting(true); setTimeout(() => { setIsMobileMenuOpen(false); setIsExiting(false) }, 300) }}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="font-medium">{item.name}</span>
@@ -325,7 +333,7 @@ const Navigation = () => {
                             : "text-muted-foreground hover:text-foreground hover:bg-muted"
                         }`
                       }
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={() => { setIsExiting(true); setTimeout(() => { setIsMobileMenuOpen(false); setIsExiting(false) }, 300) }}
                     >
                       <Icon className="h-5 w-5" />
                       <span className="font-medium">{item.name}</span>
@@ -336,7 +344,7 @@ const Navigation = () => {
               
               <div className="pt-4 border-t border-border mt-4">
                 <button
-                  onClick={() => { handleSignOut(); setIsMobileMenuOpen(false); }}
+                  onClick={() => { handleSignOut(); setIsExiting(true); setTimeout(() => { setIsMobileMenuOpen(false); setIsExiting(false) }, 300) }}
                   className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50"
                   title="Esci"
                 >

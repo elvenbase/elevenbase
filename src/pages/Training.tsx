@@ -12,8 +12,9 @@ import { it } from 'date-fns/locale';
 import { TrainingForm } from '@/components/forms/TrainingForm';
 import { TrainingSessionModal } from '@/components/forms/TrainingSessionModal';
 import { DuplicateTrainingForm } from '@/components/forms/DuplicateTrainingForm';
+import { ReactivateTrainingForm } from '@/components/forms/ReactivateTrainingForm';
 import StatsCard from '@/components/StatsCard';
-import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSession } from '@/hooks/useSupabaseData';
+import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSession, useArchiveTrainingSession } from '@/hooks/useSupabaseData';
 
 interface TrainingSession {
   id: string;
@@ -22,6 +23,7 @@ interface TrainingSession {
   start_time: string;
   end_time: string;
   is_closed: boolean;
+  archived_at?: string | null;
   description?: string;
   location?: string;
   max_participants?: number;
@@ -37,6 +39,7 @@ const Training = () => {
   const { data: stats } = useTrainingStats();
   const { data: players } = usePlayers();
   const deleteSession = useDeleteTrainingSession();
+  const archiveSession = useArchiveTrainingSession();
 
   const handleSessionClosed = () => {
     refetchSessions();
@@ -61,16 +64,14 @@ const Training = () => {
     await deleteSession.mutateAsync(sessionId);
   };
 
-  // Funzione per determinare se una sessione è archiviata
+  // Funzione per determinare se una sessione è archiviata (nuova regola):
+  // deve essere chiusa e devono essere passate >48h dalla fine
   const isSessionArchived = (session: TrainingSession) => {
-    if (session.is_closed) return true;
-    
-    const sessionDateTime = new Date(session.session_date + 'T' + session.end_time);
-    const now = new Date();
-    const hoursSinceEnd = (now.getTime() - sessionDateTime.getTime()) / (1000 * 60 * 60);
-    
-    // Archivia automaticamente dopo 48 ore dalla fine
-    return hoursSinceEnd > 48;
+    if (session.archived_at) return true
+    const end = new Date(session.session_date + 'T' + session.end_time)
+    const now = new Date()
+    const hoursSinceEnd = (now.getTime() - end.getTime()) / (1000 * 60 * 60)
+    return session.is_closed && hoursSinceEnd > 48
   };
 
   const getStatusBadge = (session: TrainingSession) => {
@@ -90,32 +91,34 @@ const Training = () => {
     }
   };
 
-  // Separa e ordina le sessioni
-  const separatedSessions = trainingSessions ? {
-    active: trainingSessions
-      .filter(session => !isSessionArchived(session))
+  // Separa e ordina le sessioni: Attive, Chiuse (intermedio recuperabile), Archiviate
+  const separatedSessions = trainingSessions ? (() => {
+    const now = new Date();
+    const toTime = (s: TrainingSession) => new Date(s.session_date + 'T' + s.start_time).getTime();
+    const olderThan48h = (s: TrainingSession) => {
+      const end = new Date(s.session_date + 'T' + s.end_time)
+      const hours = (now.getTime() - end.getTime()) / (1000 * 60 * 60)
+      return hours > 48
+    }
+    const active = trainingSessions
+      .filter(s => !s.is_closed && !olderThan48h(s) && !s.archived_at)
       .sort((a, b) => {
-        const dateA = new Date(a.session_date + 'T' + a.start_time);
-        const dateB = new Date(b.session_date + 'T' + b.start_time);
-        const now = new Date();
-        
-        // Prima le future (più vicine prima), poi le passate (più recenti prima)
-        if (dateA >= now && dateB >= now) {
-          return dateA.getTime() - dateB.getTime(); // Future: più vicine prima
-        } else if (dateA < now && dateB < now) {
-          return dateB.getTime() - dateA.getTime(); // Passate: più recenti prima
-        } else {
-          return dateA >= now ? -1 : 1; // Future prima delle passate
-        }
-      }),
-    archived: trainingSessions
-      .filter(session => isSessionArchived(session))
-      .sort((a, b) => {
-        const dateA = new Date(a.session_date + 'T' + a.start_time);
-        const dateB = new Date(b.session_date + 'T' + b.start_time);
-        return dateB.getTime() - dateA.getTime(); // Più recenti prima
-      })
-  } : { active: [], archived: [] };
+        const ta = toTime(a), tb = toTime(b);
+        const fa = ta >= now.getTime();
+        const fb = tb >= now.getTime();
+        if (fa && fb) return ta - tb; // future closer first
+        if (!fa && !fb) return tb - ta; // past recent first
+        return fa ? -1 : 1;
+      });
+    const closed = trainingSessions
+      // Chiuse: (is_closed e non ancora >48h) OPPURE (non chiuse ma già >48h → richiedono chiusura) e non già archiviata
+      .filter(s => !s.archived_at && ((s.is_closed && !olderThan48h(s)) || (!s.is_closed && olderThan48h(s))))
+      .sort((a, b) => toTime(b) - toTime(a));
+    const archived = trainingSessions
+      .filter(s => isSessionArchived(s))
+      .sort((a, b) => toTime(b) - toTime(a));
+    return { active, closed, archived };
+  })() : { active: [], closed: [], archived: [] };
 
   // Mobile card component for training sessions
   const TrainingSessionCard = ({ session }: { session: TrainingSession }) => {
@@ -184,6 +187,32 @@ const Training = () => {
               <div className="grid grid-cols-1 gap-2">
                 {/* Duplicate session */}
                 <DuplicateTrainingForm session={session} />
+                {/* Reactivate as new */}
+                <ReactivateTrainingForm session={session} />
+                {/* Archive now */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      Archivia ora
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Archiviare questa sessione?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Verrà contrassegnata come chiusa e spostata nelle archiviate.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annulla</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => archiveSession.mutate(session.id)}>Conferma</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 
                 {/* Delete session */}
                 <AlertDialog>
@@ -304,7 +333,7 @@ const Training = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                     <p className="mt-2 text-muted-foreground">Caricamento sessioni...</p>
                   </div>
-                ) : separatedSessions.active.length > 0 || separatedSessions.archived.length > 0 ? (
+                ) : (separatedSessions.active.length > 0 || separatedSessions.closed.length > 0 || separatedSessions.archived.length > 0) ? (
                   <div className="space-y-6">
                     {/* Sessioni Attive */}
                     {separatedSessions.active.length > 0 && (
@@ -356,6 +385,8 @@ const Training = () => {
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
+                                {/* Reactivate from Active list usually not shown, but keep option for Closed */}
+                                <ReactivateTrainingForm session={session} />
                                 <DuplicateTrainingForm session={session} />
                                 <DropdownMenuSeparator />
                                 <AlertDialog>
@@ -383,9 +414,140 @@ const Training = () => {
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <button className="w-full text-left flex items-center">
+                                        Archivia ora
+                                      </button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Archiviare questa sessione?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Verrà contrassegnata come chiusa e spostata nelle archiviate.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => archiveSession.mutate(session.id)}>Conferma</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+
+                    {/* Sessioni Chiuse */}
+                    {separatedSessions.closed.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4 text-muted-foreground">
+                          Chiuse ({separatedSessions.closed.length})
+                        </h3>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Titolo</TableHead>
+                              <TableHead>Data</TableHead>
+                              <TableHead>Orario</TableHead>
+                              <TableHead>Stato</TableHead>
+                              <TableHead>Azioni</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {separatedSessions.closed.map((session) => (
+                              <TableRow key={session.id} className="opacity-75">
+                                <TableCell className="font-medium">
+                                  <div>
+                                    <div>{session.title}</div>
+                                    {session.description && (
+                                      <div className="text-sm text-muted-foreground">{session.description}</div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {format(new Date(session.session_date), 'EEEE d MMMM yyyy', { locale: it })}
+                                </TableCell>
+                                <TableCell>
+                                  {session.start_time} - {session.end_time}
+                                </TableCell>
+                                <TableCell>
+                                  {getStatusBadge(session)}
+                                </TableCell>
+                                <TableCell>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" className="h-8 w-8 p-0 text-foreground">
+                                        <span className="sr-only">Apri menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem asChild>
+                                        <Link to={`/training/session/${session.id}`} className="flex items-center">
+                                          <Eye className="mr-2 h-4 w-4" />
+                                          Visualizza Sessione
+                                        </Link>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      {/* Reactivate as new */}
+                                      <ReactivateTrainingForm session={session} />
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Elimina Sessione
+                                          </DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              Questa azione non può essere annullata. Verranno eliminati anche tutti i dati delle presenze e delle formazioni collegati a questa sessione.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                            <AlertDialogAction
+                                              onClick={() => handleDelete(session.id)}
+                                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            >
+                                              Elimina
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                        <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <button className="w-full text-left flex items-center">
+                                              Archivia ora
+                                            </button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle>Archiviare questa sessione?</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                Verrà contrassegnata come chiusa e spostata nelle archiviate.
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                              <AlertDialogAction onClick={() => archiveSession.mutate(session.id)}>Conferma</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
@@ -513,7 +675,7 @@ const Training = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 <p className="mt-2 text-muted-foreground">Caricamento sessioni...</p>
               </div>
-            ) : separatedSessions.active.length > 0 || separatedSessions.archived.length > 0 ? (
+            ) : (separatedSessions.active.length > 0 || separatedSessions.closed.length > 0 || separatedSessions.archived.length > 0) ? (
               <div className="space-y-6">
                 {/* Sessioni Attive Mobile */}
                 {separatedSessions.active.length > 0 && (
@@ -524,6 +686,25 @@ const Training = () => {
                   </div>
                 )}
 
+                {/* Sessioni Chiuse Mobile */}
+                {separatedSessions.closed.length > 0 && (
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-base font-semibold text-muted-foreground">
+                        Chiuse ({separatedSessions.closed.length})
+                      </h3>
+                      <p className="text-xs text-muted-foreground">Stato intermedio recuperabile</p>
+                    </div>
+                    <div className="space-y-4">
+                      {separatedSessions.closed.map((session) => (
+                        <div key={session.id} className="opacity-85">
+                          <TrainingSessionCard session={session} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Sessioni Archiviate Mobile */}
                 {separatedSessions.archived.length > 0 && (
                   <div>
@@ -531,9 +712,7 @@ const Training = () => {
                       <h3 className="text-base font-semibold text-muted-foreground">
                         Archiviate ({separatedSessions.archived.length})
                       </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Sessioni chiuse o terminate da più di 48 ore
-                      </p>
+                      <p className="text-xs text-muted-foreground">Sessioni chiuse da più di 48 ore</p>
                     </div>
                     <div className="space-y-4">
                       {separatedSessions.archived.map((session) => (

@@ -25,7 +25,7 @@ const AdminDashboard = () => {
       badge: 'Utenti'
     },
     {
-      title: 'Attendance Score',
+      title: 'Squad Score',
       description: 'Configura pesi algoritmo e aggiorna punteggi',
       icon: Settings,
       href: '/admin/attendance-score',

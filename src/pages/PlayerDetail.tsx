@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { usePlayerMatchStats } from '@/hooks/useSupabaseData'
@@ -60,6 +60,22 @@ const PlayerDetail = () => {
   const { data: attendance } = usePlayerAttendanceSummary(id || '', startDate, endDate)
   const { data: roles = [] } = useRoles()
   const [squadScore, setSquadScore] = useState<number | null>(null)
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const backRef = searchParams.get('ref') || ''
+  const handleBack = () => {
+    const isInternal = backRef.startsWith('/')
+    if (isInternal) {
+      navigate(backRef)
+      return
+    }
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+    navigate('/squad')
+  }
+  const backLabel = /session|match|formation/i.test(backRef) ? 'Torna alla formazione' : 'Torna alla rosa'
   useEffect(() => {
     (async () => {
       if (!id) return
@@ -306,71 +322,60 @@ const PlayerDetail = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
         <div className="flex items-center justify-between">
-          <Link to="/squad" className="inline-flex items-center gap-1 text-xs sm:text-sm text-neutral-400 hover:text-neutral-600 transition-colors underline-offset-4 hover:underline">
+          <button onClick={handleBack} className="inline-flex items-center gap-1 text-xs sm:text-sm text-neutral-400 hover:text-neutral-600 transition-colors underline-offset-4 hover:underline">
             <ArrowLeft className="h-4 w-4" />
-            Torna alla rosa
-          </Link>
+            {backLabel}
+          </button>
           {player && (
             <EditPlayerForm player={player as any} triggerAs="link" triggerLabel="Modifica" triggerClassName="text-[12px] text-neutral-500 hover:text-neutral-800 underline underline-offset-2" />
           )}
         </div>
-        <div className={`relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-r ${sectorTheme.from} ${sectorTheme.to} min-h-[140px] sm:min-h-[180px]`}>
-          {heroAvatarUrl && (
-            <img
-              src={heroAvatarUrl}
-              alt=""
-              className="absolute left-[-5%] top-1/2 -translate-y-1/2 h-[98%] w-auto object-cover pointer-events-none"
-            />
-          )}
-          <div className="relative z-10 p-4 sm:p-6 flex items-center justify-end gap-3">
-            <div className="ml-auto min-w-0 text-right">
-              <div className="text-xl sm:text-2xl font-extrabold leading-tight">{shortName}</div>
-              <div className="mt-1 text-sm text-muted-foreground space-y-1">
-                <div className="flex items-center justify-end gap-2">
-                  <User className="h-3.5 w-3.5" />
-                  <span className="truncate">
-                    {roleFull} ({roleAbbr}) {typeof player?.jersey_number === 'number' ? `#${player?.jersey_number}` : ''}{player?.is_captain ? ' (C)' : ''}
-                  </span>
-                </div>
-                <div className="flex items-center justify-end gap-2"><CalendarDays className="h-3.5 w-3.5" />{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}</div>
-                <div className="flex items-center justify-end gap-2">
-                  <Phone className="h-3.5 w-3.5" />
-                  <span>{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : '—'}</span>
-                  {waNumber && waNumber.length > 5 && (
-                    <a
-                      href={`https://wa.me/${waNumber}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Apri WhatsApp"
-                      className="inline-flex items-center text-green-600 hover:text-green-700"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                    </a>
-                  )}
+        <div className="grid grid-cols-1 min-[900px]:grid-cols-2 gap-4 items-stretch">
+          {/* Hero left (unchanged content) */}
+          <div className={`relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-r ${sectorTheme.from} ${sectorTheme.to} min-h-[180px] min-[900px]:min-h-[320px]`}>
+            {heroAvatarUrl && (
+              <img
+                src={heroAvatarUrl}
+                alt=""
+                className="absolute left-[-5%] top-1/2 -translate-y-1/2 h-[98%] w-auto object-cover pointer-events-none"
+              />
+            )}
+            <div className="relative z-10 p-4 sm:p-6 flex items-center justify-end gap-3">
+              <div className="ml-auto min-w-0 text-right">
+                <div className="text-xl sm:text-2xl font-extrabold leading-tight">{shortName}</div>
+                <div className="mt-1 text-sm text-muted-foreground space-y-1">
+                  <div className="flex items-center justify-end gap-2">
+                    <User className="h-3.5 w-3.5" />
+                    <span className="truncate">
+                      {roleFull} ({roleAbbr}) {typeof player?.jersey_number === 'number' ? `#${player?.jersey_number}` : ''}{player?.is_captain ? ' (C)' : ''}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-end gap-2"><CalendarDays className="h-3.5 w-3.5" />{player?.birth_date ? new Date(player.birth_date).toLocaleDateString() : '—'}</div>
+                  <div className="flex items-center justify-end gap-2">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span>{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : '—'}</span>
+                    {waNumber && waNumber.length > 5 && (
+                      <a
+                        href={`https://wa.me/${waNumber}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Apri WhatsApp"
+                        className="inline-flex items-center text-green-600 hover:text-green-700"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <Tabs defaultValue="performance" className="w-full">
-          <TabsList className="sticky top-2 z-10 bg-transparent p-0">
-            <div className="flex items-center justify-between">
-              <div className="inline-flex rounded-full border border-border/40 bg-white/70 backdrop-blur px-1 py-1 shadow-sm">
-                <TabsTrigger value="performance" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Performance</TabsTrigger>
-                <TabsTrigger value="profilo" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Profilo</TabsTrigger>
-                <TabsTrigger value="presenze" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Presenze</TabsTrigger>
-                <TabsTrigger value="partite" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Partite</TabsTrigger>
-                {formerTrialist && (<TabsTrigger value="prova" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Prova</TabsTrigger>)}
-              </div>
-            </div>
-          </TabsList>
-
-          <TabsContent value="performance">
-            <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
+          {/* Performance right: always visible */}
+          <div>
+            <Card className="border border-border/40 rounded-2xl shadow-sm h-full">
               <CardContent className="pt-0">
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 py-4 sm:py-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 sm:py-6">
                   {[
                     { key: 'Squad Score', v: Math.round(((squadScore ?? 0) as number) * 10) / 10, icon: <Target className="h-5 w-5" />, color: 'text-primary', tint: 'bg-primary/10', circle: 'bg-primary/5', semantic: false },
                     { key: 'Partite', v: totals.matches, icon: <CalendarDays className="h-5 w-5" />, color: 'text-neutral-700', tint: 'bg-neutral-100', circle: 'bg-neutral-50', semantic: false },
@@ -401,88 +406,20 @@ const PlayerDetail = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
+        </div>
 
-          <TabsContent value="profilo">
-            <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] lg:grid-cols-[2fr_1fr] gap-4 animate-slide-in">
-              <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"><User className="h-4 w-4"/></span>
-                    Anagrafica
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <div>
-                        <div className="text-[11px] uppercase text-neutral-500">Nome</div>
-                        <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{player?.first_name || '—'}</div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] uppercase text-neutral-500">Cognome</div>
-                        <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{player?.last_name || '—'}</div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] uppercase text-neutral-500">Esperienza sportiva</div>
-                        <div className="flex items-start gap-2 text-sm whitespace-pre-wrap min-h-[20px]"><StickyNote className="mt-0.5 h-4 w-4 text-neutral-500" />{player?.esperienza ? player.esperienza : '—'}</div>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="text-[11px] uppercase text-neutral-500">Note</div>
-                        <div className="flex items-start gap-2 text-sm whitespace-pre-wrap min-h-[20px]"><StickyNote className="mt-0.5 h-4 w-4 text-neutral-500" />{player?.notes ? player.notes : '—'}</div>
-                      </div>
-                    </div>
-
-                    <div className="sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
-                      <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
-                        <Phone className="h-4 w-4 text-neutral-500" />
-                        <span className="text-[11px] uppercase text-neutral-500">Telefono</span>
-                        <span className="ml-auto text-sm text-neutral-700">{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : 'Non fornito'}</span>
-                      </div>
-                      <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
-                        <Mail className="h-4 w-4 text-neutral-500" />
-                        <span className="text-[11px] uppercase text-neutral-500">Email</span>
-                        <span className="ml-auto text-sm text-neutral-700">{player?.email || 'Non fornito'}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-border/40 rounded-2xl shadow-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"><Gamepad2 className="h-4 w-4"/></span>
-                    Informazioni Gaming <span className="ml-2 text-xs text-neutral-500">(Opzionale)</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="grid grid-cols-1 gap-3">
-                    {(() => {
-                      const ea = (player as any)?.ea_sport_id
-                      const plat = (player as any)?.gaming_platform
-                      const pid = (player as any)?.platform_id
-                      const chip = (label: string, value?: string) => (
-                        <div className="rounded-lg border border-border/40 bg-white px-3 py-2">
-                          <div className="text-[11px] uppercase text-neutral-500">{label}</div>
-                          <div className="text-sm text-neutral-800">{value && value.trim() ? value : 'Aggiungi'}</div>
-                        </div>
-                      )
-                      return (
-                        <>
-                          {chip('EA Sports ID', ea)}
-                          {chip('Piattaforma', plat)}
-                          {chip('Platform ID', pid)}
-                        </>
-                      )
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
+        <Tabs defaultValue="presenze" className="w-full">
+          <TabsList className="sticky top-2 z-10 bg-transparent p-0">
+            <div className="flex items-center justify-between">
+              <div className="inline-flex rounded-full border border-border/40 bg-white/70 backdrop-blur px-1 py-1 shadow-sm">
+                <TabsTrigger value="presenze" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Presenze</TabsTrigger>
+                <TabsTrigger value="partite" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Partite</TabsTrigger>
+                <TabsTrigger value="profilo" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Profilo</TabsTrigger>
+                {formerTrialist && (<TabsTrigger value="prova" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-3 py-1.5 text-sm">Prova</TabsTrigger>)}
+              </div>
             </div>
-          </TabsContent>
+          </TabsList>
 
           <TabsContent value="presenze">
             <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
@@ -645,6 +582,87 @@ const PlayerDetail = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="profilo">
+            <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] lg:grid-cols-[2fr_1fr] gap-4 animate-slide-in">
+              <Card className="border border-border/40 rounded-2xl shadow-sm animate-slide-in">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"><User className="h-4 w-4"/></span>
+                    Anagrafica
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Nome</div>
+                        <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{player?.first_name || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Cognome</div>
+                        <div className="flex items-center gap-2 text-sm"><User className="h-4 w-4 text-neutral-500" />{player?.last_name || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Esperienza sportiva</div>
+                        <div className="flex items-start gap-2 text-sm whitespace-pre-wrap min-h-[20px]"><StickyNote className="mt-0.5 h-4 w-4 text-neutral-500" />{player?.esperienza ? player.esperienza : '—'}</div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-[11px] uppercase text-neutral-500">Note</div>
+                        <div className="flex items-start gap-2 text-sm whitespace-pre-wrap min-h-[20px]"><StickyNote className="mt-0.5 h-4 w-4 text-neutral-500" />{player?.notes ? player.notes : '—'}</div>
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+                      <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
+                        <Phone className="h-4 w-4 text-neutral-500" />
+                        <span className="text-[11px] uppercase text-neutral-500">Telefono</span>
+                        <span className="ml-auto text-sm text-neutral-700">{phoneView.number ? `${phoneView.prefix} ${phoneView.number}` : 'Non fornito'}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-white px-3 py-2">
+                        <Mail className="h-4 w-4 text-neutral-500" />
+                        <span className="text-[11px] uppercase text-neutral-500">Email</span>
+                        <span className="ml-auto text-sm text-neutral-700">{player?.email || 'Non fornito'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-border/40 rounded-2xl shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary"><Gamepad2 className="h-4 w-4"/></span>
+                    Informazioni Gaming <span className="ml-2 text-xs text-neutral-500">(Opzionale)</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-1 gap-3">
+                    {(() => {
+                      const ea = (player as any)?.ea_sport_id
+                      const plat = (player as any)?.gaming_platform
+                      const pid = (player as any)?.platform_id
+                      const chip = (label: string, value?: string) => (
+                        <div className="rounded-lg border border-border/40 bg-white px-3 py-2">
+                          <div className="text-[11px] uppercase text-neutral-500">{label}</div>
+                          <div className="text-sm text-neutral-800">{value && value.trim() ? value : 'Aggiungi'}</div>
+                        </div>
+                      )
+                      return (
+                        <>
+                          {chip('EA Sports ID', ea)}
+                          {chip('Piattaforma', plat)}
+                          {chip('Platform ID', pid)}
+                        </>
+                      )
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {formerTrialist && (
