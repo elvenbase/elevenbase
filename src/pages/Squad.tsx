@@ -322,6 +322,7 @@ const NeonPillProgress: React.FC<{
   const [visibleStripes, setVisibleStripes] = React.useState(0)
   const [targetVisibleStripes, setTargetVisibleStripes] = React.useState(0)
   const trackRef = React.useRef<HTMLDivElement | null>(null)
+  const [trackHeight, setTrackHeight] = React.useState(0)
 
   // Stripe geometry: thin bars (≈1/3 of before), reversed angle
   const STRIPE_THICKNESS_PX = 4
@@ -338,6 +339,7 @@ const NeonPillProgress: React.FC<{
     const measure = () => {
       const rect = el.getBoundingClientRect()
       setTrackWidth(Math.max(0, Math.floor(rect.width - 8)))
+      setTrackHeight(Math.max(0, Math.floor(rect.height)))
     }
     measure()
     const ro = new ResizeObserver(measure)
@@ -390,6 +392,9 @@ const NeonPillProgress: React.FC<{
   const maxStripes = Math.max(1, Math.floor((trackWidth - THICKNESS_PROJ_X) / HORIZONTAL_PERIOD_X))
   const visibleWidthPx = Math.max(0, Math.min(maxStripes, visibleStripes)) * HORIZONTAL_PERIOD_X + THICKNESS_PROJ_X
   const visibleWidthPct = trackWidth > 0 ? (visibleWidthPx / trackWidth) * 100 : 0
+  const clipPathPolygon = trackWidth > 0 && trackHeight > 0
+    ? `polygon(0px 0px, ${visibleWidthPx.toFixed(2)}px 0px, ${Math.max(0, visibleWidthPx - trackHeight).toFixed(2)}px ${trackHeight}px, 0px ${trackHeight}px)`
+    : undefined
 
   const pctText = Number.isFinite(value as number) ? `${Math.round(value as number)}%` : '—'
   const ariaProps = indeterminate
@@ -423,13 +428,14 @@ const NeonPillProgress: React.FC<{
         >
           {!indeterminate && (
             <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
-              {/* Visible portion, masked with thin reversed diagonal stripes */}
-              <div className="absolute inset-y-0 left-0" style={{ width: `${visibleWidthPct}%` }}>
+              {/* Visible portion, masked with thin reversed diagonal stripes and diagonal end edge */}
+              <div className="absolute inset-0">
                 <div
                   className="h-full"
                   style={{
                     background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
-                    ...stripeMaskStyle
+                    ...stripeMaskStyle,
+                    clipPath: clipPathPolygon
                   }}
                 />
               </div>
