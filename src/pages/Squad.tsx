@@ -317,17 +317,24 @@ const NeonPillProgress: React.FC<{
   showLabel?: boolean
   ariaLabel?: string
 }> = ({ value, indeterminate = false, showLabel = true, ariaLabel = 'Squad Score' }) => {
-  const [widthPct, setWidthPct] = React.useState(0)
   const [trackWidth, setTrackWidth] = React.useState(0)
+  const [inView, setInView] = React.useState(false)
+  const [visibleStripes, setVisibleStripes] = React.useState(0)
+  const [targetVisibleStripes, setTargetVisibleStripes] = React.useState(0)
   const trackRef = React.useRef<HTMLDivElement | null>(null)
 
-  // Measure track width to quantize stripes to whole steps
+  // Stripe geometry: thin bars (≈1/3 of before), reversed angle
+  const STRIPE_THICKNESS_PX = 4
+  const STRIPE_GAP_PX = 8
+  const STRIPE_PERIOD_PX = STRIPE_THICKNESS_PX + STRIPE_GAP_PX // 12px
+
+  // Measure content width (exclude border and padding ≈ 8px total)
   React.useLayoutEffect(() => {
     const el = trackRef.current
     if (!el) return
     const measure = () => {
       const rect = el.getBoundingClientRect()
-      setTrackWidth(Math.max(0, Math.floor(rect.width)))
+      setTrackWidth(Math.max(0, Math.floor(rect.width - 8)))
     }
     measure()
     const ro = new ResizeObserver(measure)
@@ -339,42 +346,62 @@ const NeonPillProgress: React.FC<{
     }
   }, [])
 
-  // When the bar enters viewport, compute a quantized width so that stripes appear one-by-one
+  // Observe visibility to start the animation
   React.useEffect(() => {
     const el = trackRef.current
     if (!el) return
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const raw = Math.max(0, Math.min(100, Number.isFinite(value as number) ? (value as number) : 0))
-          // Each stripe occupies 24px (12px color + 12px gap) along the axis
-          const STRIPE_PERIOD_PX = 24
-          const totalStripes = Math.max(1, Math.floor(trackWidth / STRIPE_PERIOD_PX))
-          const visibleStripes = Math.round((raw / 100) * totalStripes)
-          const quantized = (visibleStripes / totalStripes) * 100
-          setWidthPct(quantized)
-          obs.disconnect()
+          setInView(true)
         }
       })
     }, { threshold: 0.15 })
     obs.observe(el)
     return () => obs.disconnect()
-  }, [value, trackWidth])
+  }, [])
+
+  // Compute target stripes (floor to avoid partial last stripe)
+  React.useEffect(() => {
+    if (!inView) return
+    const totalStripes = Math.max(1, Math.floor(trackWidth / STRIPE_PERIOD_PX))
+    const rawPct = Math.max(0, Math.min(100, Number.isFinite(value as number) ? (value as number) : 0))
+    const target = Math.floor((rawPct / 100) * totalStripes)
+    setTargetVisibleStripes(target)
+  }, [value, inView, trackWidth])
+
+  // Step-wise animation to reach target stripes
+  React.useEffect(() => {
+    if (!inView) return
+    if (visibleStripes === targetVisibleStripes) return
+    const timer = window.setInterval(() => {
+      setVisibleStripes((prev) => {
+        if (prev < targetVisibleStripes) return prev + 1
+        if (prev > targetVisibleStripes) return prev - 1
+        return prev
+      })
+    }, 30)
+    return () => window.clearInterval(timer)
+  }, [inView, targetVisibleStripes, visibleStripes])
+
+  const totalStripes = Math.max(1, Math.floor(trackWidth / STRIPE_PERIOD_PX))
+  const visibleWidthPct = totalStripes > 0 ? (visibleStripes / totalStripes) * 100 : 0
 
   const pctText = Number.isFinite(value as number) ? `${Math.round(value as number)}%` : '—'
   const ariaProps = indeterminate
     ? { role: 'progressbar', 'aria-label': ariaLabel, 'aria-valuemin': 0, 'aria-valuemax': 100 } as any
     : { role: 'progressbar', 'aria-label': ariaLabel, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.max(0, Math.min(100, value || 0)) } as any
 
+  // Mask styles for crisp reversed diagonal stripes
+  const stripeMaskStyle: React.CSSProperties = {
+    WebkitMaskImage: `repeating-linear-gradient(-45deg, #000 0px, #000 ${STRIPE_THICKNESS_PX}px, transparent ${STRIPE_THICKNESS_PX}px, transparent ${STRIPE_PERIOD_PX}px)`,
+    maskImage: `repeating-linear-gradient(-45deg, #000 0px, #000 ${STRIPE_THICKNESS_PX}px, transparent ${STRIPE_THICKNESS_PX}px, transparent ${STRIPE_PERIOD_PX}px)`,
+    WebkitMaskRepeat: 'repeat',
+    maskRepeat: 'repeat'
+  }
+
   return (
     <div className="space-y-1.5">
-      <style>{`
-        /* Crisp diagonal stripes at 45deg: 12px solid, 12px gap */
-        .stripes-45 { background-image: repeating-linear-gradient(45deg, #00BFFF 0 12px, transparent 12px 24px); }
-        @media (max-width: 640px) {
-          .stripes-45 { background-image: repeating-linear-gradient(45deg, #00BFFF 0 10px, transparent 10px 20px); }
-        }
-      `}</style>
       <div className="text-[10px] text-muted-foreground">Squad Score</div>
       <div className="flex items-center gap-2">
         {showLabel && (
@@ -392,14 +419,27 @@ const NeonPillProgress: React.FC<{
         >
           {!indeterminate && (
             <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
-              <div className="absolute inset-y-0 left-0" style={{ width: `${widthPct}%` }}>
-                <div className="h-full stripes-45" />
+              {/* Visible portion, masked with thin reversed diagonal stripes */}
+              <div className="absolute inset-y-0 left-0" style={{ width: `${visibleWidthPct}%` }}>
+                <div
+                  className="h-full"
+                  style={{
+                    background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+                    ...stripeMaskStyle
+                  }}
+                />
               </div>
             </div>
           )}
           {indeterminate && (
             <div className="absolute inset-0 rounded-full overflow-hidden">
-              <div className="absolute inset-0 stripes-45" />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+                  ...stripeMaskStyle
+                }}
+              />
             </div>
           )}
         </div>
