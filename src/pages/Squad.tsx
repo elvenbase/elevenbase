@@ -343,7 +343,7 @@ const NeonPillProgress: React.FC<{
   return (
     <div className="space-y-1.5">
       <style>{`
-        @keyframes stripes-move { 0% { background-position: 0 0; } 100% { background-position: 24px 0; } }
+        @keyframes stripes-move { 0% { background-position: 0 0; } 100% { background-position: 32px 0; } }
         @keyframes indet-move { 0% { transform: translateX(-60%); } 100% { transform: translateX(160%); } }
         @media (max-width: 640px) {
           .stripe-size { background-size: 16px 16px !important; }
@@ -356,39 +356,48 @@ const NeonPillProgress: React.FC<{
       <div className="text-[10px] text-muted-foreground">Squad Score</div>
       <div
         ref={trackRef}
-        className="relative w-full h-7 sm:h-10 rounded-full p-[2px]"
+        className="relative w-full h-8 sm:h-10 rounded-full p-[2px] transition-shadow"
         style={{
-          border: '2px solid #2D77FF',
-          boxShadow: '0 0 16px rgba(45,119,255,0.20)',
-          background: '#081026',
+          border: '2px solid #00BFFF',
+          boxShadow: '0 0 18px rgba(0,191,255,0.20)',
+          background: '#020617',
         }}
         {...ariaProps}
       >
         {/* Determinate fill */}
         {!indeterminate && (
-          <div className="relative h-full rounded-full overflow-hidden transition-[width] duration-300 ease-out" style={{ width: `${widthPct}%`, background: '#1E4ED8' }}>
+          <div
+            className="relative h-full rounded-full overflow-hidden transition-[width] duration-300 ease-out"
+            style={{
+              width: `${widthPct}%`,
+              background: 'linear-gradient(90deg, #00C6FF 0%, #0078FF 100%)'
+            }}
+          >
             {/* Stripes overlay */}
-            <div className="absolute inset-0 opacity-35 animate-stripes stripe-size" style={{
-              backgroundImage: 'repeating-linear-gradient(45deg, #2D77FF 0, #2D77FF 12px, transparent 12px, transparent 24px)',
-              animation: 'stripes-move 2.5s linear infinite'
-            }} />
-            {/* Center label */}
+            <div
+              className="absolute inset-0 opacity-40 animate-stripes stripe-size"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,191,255,0.35) 0, rgba(0,191,255,0.35) 10px, transparent 10px, transparent 20px)',
+                animation: 'stripes-move 2.5s linear infinite'
+              }}
+            />
+            {/* Left-aligned label */}
             {showLabel && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-[12px] sm:text-sm font-semibold text-white tabular-nums" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{pctText}</div>
+              <div className="absolute inset-y-0 left-3 flex items-center">
+                <div className="text-white font-semibold tabular-nums" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{pctText}</div>
               </div>
             )}
           </div>
         )}
         {/* Indeterminate segment */}
         {indeterminate && (
-          <div className="relative h-full rounded-full overflow-hidden" style={{ background: '#1E4ED8' }}>
+          <div className="relative h-full rounded-full overflow-hidden" style={{ background: 'linear-gradient(90deg, #00C6FF 0%, #0078FF 100%)' }}>
             <div className="absolute inset-y-0 left-0 w-3/5 rounded-full animate-indet" style={{
-              background: '#1E4ED8',
+              background: 'linear-gradient(90deg, #00C6FF 0%, #0078FF 100%)',
               animation: 'indet-move 2.5s linear infinite'
             }} />
-            <div className="absolute inset-0 opacity-35 animate-stripes stripe-size" style={{
-              backgroundImage: 'repeating-linear-gradient(45deg, #2D77FF 0, #2D77FF 12px, transparent 12px, transparent 24px)',
+            <div className="absolute inset-0 opacity-40 animate-stripes stripe-size" style={{
+              backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,191,255,0.35) 0, rgba(0,191,255,0.35) 10px, transparent 10px, transparent 20px)',
               animation: 'stripes-move 2.5s linear infinite'
             }} />
           </div>
