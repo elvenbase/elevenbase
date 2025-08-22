@@ -354,54 +354,46 @@ const NeonPillProgress: React.FC<{
         }
       `}</style>
       <div className="text-[10px] text-muted-foreground">Squad Score</div>
-      <div
-        ref={trackRef}
-        className="relative w-full h-8 sm:h-10 rounded-full p-[2px] transition-shadow"
-        style={{
-          border: '2px solid #00BFFF',
-          boxShadow: '0 0 18px rgba(0,191,255,0.20)',
-          background: '#020617',
-        }}
-        {...ariaProps}
-      >
-        {/* Determinate fill */}
-        {!indeterminate && (
-          <div
-            className="relative h-full rounded-full overflow-hidden transition-[width] duration-300 ease-out"
-            style={{
-              width: `${widthPct}%`,
-              background: 'linear-gradient(90deg, #00C6FF 0%, #0078FF 100%)'
-            }}
-          >
-            {/* Stripes overlay */}
-            <div
-              className="absolute inset-0 opacity-40 animate-stripes stripe-size"
-              style={{
-                backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,191,255,0.35) 0, rgba(0,191,255,0.35) 10px, transparent 10px, transparent 20px)',
-                animation: 'stripes-move 2.5s linear infinite'
-              }}
-            />
-            {/* Left-aligned label */}
-            {showLabel && (
-              <div className="absolute inset-y-0 left-3 flex items-center">
-                <div className="text-white font-semibold tabular-nums" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{pctText}</div>
+      <div className="flex items-center gap-2">
+        {showLabel && (
+          <div className="w-10 text-[10px] text-muted-foreground tabular-nums text-right">{pctText}</div>
+        )}
+        <div
+          ref={trackRef}
+          className="relative w-full h-8 sm:h-10 rounded-full p-[2px] transition-shadow overflow-hidden"
+          style={{
+            border: '2px solid #00BFFF',
+            boxShadow: '0 0 18px rgba(0,191,255,0.20)',
+            background: '#020617',
+          }}
+          {...ariaProps}
+        >
+          {!indeterminate && (
+            <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+              <div className="absolute inset-y-0 left-0" style={{ width: `${widthPct}%` }}>
+                <div
+                  className="h-full stripe-size animate-stripes"
+                  style={{
+                    backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,191,255,0.55) 0, rgba(0,191,255,0.55) 10px, transparent 10px, transparent 20px)',
+                    animation: 'stripes-move 2.5s linear infinite'
+                  }}
+                />
               </div>
-            )}
-          </div>
-        )}
-        {/* Indeterminate segment */}
-        {indeterminate && (
-          <div className="relative h-full rounded-full overflow-hidden" style={{ background: 'linear-gradient(90deg, #00C6FF 0%, #0078FF 100%)' }}>
-            <div className="absolute inset-y-0 left-0 w-3/5 rounded-full animate-indet" style={{
-              background: 'linear-gradient(90deg, #00C6FF 0%, #0078FF 100%)',
-              animation: 'indet-move 2.5s linear infinite'
-            }} />
-            <div className="absolute inset-0 opacity-40 animate-stripes stripe-size" style={{
-              backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,191,255,0.35) 0, rgba(0,191,255,0.35) 10px, transparent 10px, transparent 20px)',
-              animation: 'stripes-move 2.5s linear infinite'
-            }} />
-          </div>
-        )}
+            </div>
+          )}
+          {indeterminate && (
+            <div className="relative h-full rounded-full overflow-hidden">
+              <div className="absolute inset-0 stripe-size animate-stripes" style={{
+                backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,191,255,0.55) 0, rgba(0,191,255,0.55) 10px, transparent 10px, transparent 20px)',
+                animation: 'stripes-move 2.5s linear infinite'
+              }} />
+              <div className="absolute inset-y-0 left-0 w-3/5 rounded-full animate-indet" style={{
+                backgroundColor: 'transparent',
+                animation: 'indet-move 2.5s linear infinite'
+              }} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
