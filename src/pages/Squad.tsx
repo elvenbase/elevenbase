@@ -386,7 +386,7 @@ const NeonPillProgress: React.FC<{
         if (prev > targetVisibleStripes) return prev - 1
         return prev
       })
-    }, 60)
+    }, 500)
     return () => window.clearInterval(timer)
   }, [inView, targetVisibleStripes, visibleStripes])
 
@@ -419,7 +419,7 @@ const NeonPillProgress: React.FC<{
         )}
         <div
           ref={trackRef}
-          className="relative w-full h-8 sm:h-9 rounded-full p-[2px] transition-shadow overflow-hidden"
+          className="relative w-full h-8 sm:h-8 rounded-full p-[2px] transition-shadow overflow-hidden"
           style={{
             border: '2px solid #00BFFF',
             boxShadow: '0 0 18px rgba(0,191,255,0.20)',
