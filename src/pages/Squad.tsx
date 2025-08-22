@@ -323,6 +323,7 @@ const NeonPillProgress: React.FC<{
   const [targetVisibleStripes, setTargetVisibleStripes] = React.useState(0)
   const trackRef = React.useRef<HTMLDivElement | null>(null)
   const [trackHeight, setTrackHeight] = React.useState(0)
+  const INNER_MARGIN_PX = 3
 
   // Stripe geometry: thin bars (≈1/3 of before), reversed angle
   const STRIPE_THICKNESS_PX = 4
@@ -338,8 +339,8 @@ const NeonPillProgress: React.FC<{
     if (!el) return
     const measure = () => {
       const rect = el.getBoundingClientRect()
-      setTrackWidth(Math.max(0, Math.floor(rect.width - 8)))
-      setTrackHeight(Math.max(0, Math.floor(rect.height)))
+      setTrackWidth(Math.max(0, Math.floor(rect.width - (8 + INNER_MARGIN_PX * 2))))
+      setTrackHeight(Math.max(0, Math.floor(rect.height - (INNER_MARGIN_PX * 2))))
     }
     measure()
     const ro = new ResizeObserver(measure)
@@ -429,7 +430,7 @@ const NeonPillProgress: React.FC<{
           {!indeterminate && (
             <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
               {/* Visible portion, masked with thin reversed diagonal stripes and diagonal end edge */}
-              <div className="absolute inset-0">
+              <div className="absolute" style={{ inset: INNER_MARGIN_PX }}>
                 <div
                   className="h-full"
                   style={{
@@ -443,13 +444,14 @@ const NeonPillProgress: React.FC<{
           )}
           {indeterminate && (
             <div className="absolute inset-0 rounded-full overflow-hidden">
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
-                  ...stripeMaskStyle
-                }}
-              />
+                              <div
+                  className="absolute"
+                  style={{
+                    inset: INNER_MARGIN_PX,
+                    background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+                    ...stripeMaskStyle
+                  }}
+                />
             </div>
           )}
         </div>
