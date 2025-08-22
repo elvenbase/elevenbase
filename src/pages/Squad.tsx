@@ -413,7 +413,9 @@ const NeonPillProgress: React.FC<{
     ? `polygon(0px 0px, ${visibleWidthPx.toFixed(2)}px 0px, ${Math.max(0, visibleWidthPx - trackHeight).toFixed(2)}px ${trackHeight}px, 0px ${trackHeight}px)`
     : undefined
 
-  const pctText = Number.isFinite(value as number) ? `${Math.round(value as number)}%` : '—'
+  const targetPct = Number.isFinite(value as number) ? Math.round(Math.max(0, Math.min(100, value as number))) : 0
+  const pctFromStripes = maxStripes > 0 ? Math.round((Math.max(0, Math.min(maxStripes, visibleStripes)) / maxStripes) * targetPct) : 0
+  const pctText = `${inView ? pctFromStripes : 0}%`
   const ariaProps = indeterminate
     ? { role: 'progressbar', 'aria-label': ariaLabel, 'aria-valuemin': 0, 'aria-valuemax': 100 } as any
     : { role: 'progressbar', 'aria-label': ariaLabel, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.max(0, Math.min(100, value || 0)) } as any
