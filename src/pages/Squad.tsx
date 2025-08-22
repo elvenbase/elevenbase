@@ -330,23 +330,21 @@ const NeonPillProgress: React.FC<{
   const COS45 = Math.SQRT1_2
   const THICKNESS_PROJ_X = STRIPE_THICKNESS_PX / COS45
   const HORIZONTAL_PERIOD_X = STRIPE_PERIOD_PX / COS45
-  const [flareRunId, setFlareRunId] = React.useState(0)
+  const [labelValue, setLabelValue] = React.useState(0)
 
-  // Randomized flare pass roughly every 8-12 seconds
+  // Fast count-up label (independent from stripe steps)
   React.useEffect(() => {
-    let alive = true as boolean
-    let timer: number | undefined
-    const loop = () => {
-      const delay = 8000 + Math.random() * 4000
-      timer = window.setTimeout(() => {
-        if (!alive) return
-        setFlareRunId((v) => v + 1)
-        loop()
-      }, delay)
-    }
-    loop()
-    return () => { alive = false; if (timer) window.clearTimeout(timer) }
-  }, [])
+    if (!inView) return
+    const target = Number.isFinite(value as number) ? Math.round(Math.max(0, Math.min(100, value as number))) : 0
+    if (target <= labelValue) return
+    const interval = window.setInterval(() => {
+      setLabelValue((prev) => {
+        const next = prev + 1
+        return next >= target ? target : next
+      })
+    }, 10)
+    return () => window.clearInterval(interval)
+  }, [inView, value, labelValue])
 
 
   // Measure content width (exclude border and padding ≈ 8px total)
@@ -413,9 +411,7 @@ const NeonPillProgress: React.FC<{
     ? `polygon(0px 0px, ${visibleWidthPx.toFixed(2)}px 0px, ${Math.max(0, visibleWidthPx - trackHeight).toFixed(2)}px ${trackHeight}px, 0px ${trackHeight}px)`
     : undefined
 
-  const targetPct = Number.isFinite(value as number) ? Math.round(Math.max(0, Math.min(100, value as number))) : 0
-  const pctFromStripes = maxStripes > 0 ? Math.round((Math.max(0, Math.min(maxStripes, visibleStripes)) / maxStripes) * targetPct) : 0
-  const pctText = `${inView ? pctFromStripes : 0}%`
+  const pctText = `${inView ? labelValue : 0}%`
   const ariaProps = indeterminate
     ? { role: 'progressbar', 'aria-label': ariaLabel, 'aria-valuemin': 0, 'aria-valuemax': 100 } as any
     : { role: 'progressbar', 'aria-label': ariaLabel, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.max(0, Math.min(100, value || 0)) } as any
@@ -430,14 +426,6 @@ const NeonPillProgress: React.FC<{
 
   return (
     <div className="space-y-1.5">
-      <style>{`
-        @keyframes flare-pass { 
-          0% { transform: translateX(-125%); opacity: 0; }
-          10% { opacity: 0.55; }
-          90% { opacity: 0.55; }
-          100% { transform: translateX(125%); opacity: 0; }
-        }
-      `}</style>
       <div className="text-[10px] text-muted-foreground">Squad Score</div>
       <div className="flex items-center gap-2">
         {showLabel && (
@@ -455,16 +443,6 @@ const NeonPillProgress: React.FC<{
             >
               {pctText}
             </div>
-            {/* Flare overlay */}
-            <div
-              key={flareRunId}
-              className="pointer-events-none absolute inset-0"
-              style={{
-                background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0) 100%)',
-                mixBlendMode: 'screen',
-                animation: 'flare-pass 900ms linear 1'
-              }}
-            />
           </div>
         )}
         <div
