@@ -327,6 +327,9 @@ const NeonPillProgress: React.FC<{
   const STRIPE_THICKNESS_PX = 4
   const STRIPE_GAP_PX = 8
   const STRIPE_PERIOD_PX = STRIPE_THICKNESS_PX + STRIPE_GAP_PX // 12px
+  const COS45 = Math.SQRT1_2
+  const THICKNESS_PROJ_X = STRIPE_THICKNESS_PX / COS45
+  const HORIZONTAL_PERIOD_X = STRIPE_PERIOD_PX / COS45
 
   // Measure content width (exclude border and padding ≈ 8px total)
   React.useLayoutEffect(() => {
@@ -364,9 +367,9 @@ const NeonPillProgress: React.FC<{
   // Compute target stripes (floor to avoid partial last stripe)
   React.useEffect(() => {
     if (!inView) return
-    const totalStripes = Math.max(1, Math.floor(trackWidth / STRIPE_PERIOD_PX))
+    const maxStripes = Math.max(1, Math.floor((trackWidth - THICKNESS_PROJ_X) / HORIZONTAL_PERIOD_X))
     const rawPct = Math.max(0, Math.min(100, Number.isFinite(value as number) ? (value as number) : 0))
-    const target = Math.floor((rawPct / 100) * totalStripes)
+    const target = Math.min(maxStripes, Math.max(0, Math.round((rawPct / 100) * maxStripes)))
     setTargetVisibleStripes(target)
   }, [value, inView, trackWidth])
 
@@ -384,8 +387,9 @@ const NeonPillProgress: React.FC<{
     return () => window.clearInterval(timer)
   }, [inView, targetVisibleStripes, visibleStripes])
 
-  const totalStripes = Math.max(1, Math.floor(trackWidth / STRIPE_PERIOD_PX))
-  const visibleWidthPct = totalStripes > 0 ? (visibleStripes / totalStripes) * 100 : 0
+  const maxStripes = Math.max(1, Math.floor((trackWidth - THICKNESS_PROJ_X) / HORIZONTAL_PERIOD_X))
+  const visibleWidthPx = Math.max(0, Math.min(maxStripes, visibleStripes)) * HORIZONTAL_PERIOD_X + THICKNESS_PROJ_X
+  const visibleWidthPct = trackWidth > 0 ? (visibleWidthPx / trackWidth) * 100 : 0
 
   const pctText = Number.isFinite(value as number) ? `${Math.round(value as number)}%` : '—'
   const ariaProps = indeterminate
