@@ -751,7 +751,7 @@ const Squad = () => {
         <div className="flex items-center gap-2">
           <Dialog open={captainDialogOpen} onOpenChange={setCaptainDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">(C)</Button>
+              <Button variant="ghost" className="h-9 px-3 rounded-full text-xs">Seleziona Capitano</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
