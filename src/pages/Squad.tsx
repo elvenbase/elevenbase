@@ -1217,7 +1217,7 @@ const Squad = () => {
                         </div>
 
                         {/* Riga 2: 4 label che occupano tutta la larghezza */}
-                        <div className="mt-0.5 grid grid-cols-2 md:grid-cols-4 gap-2 w-full">
+                        <div className="mt-0.5 grid grid-cols-4 gap-2 w-full">
                           <div>
                             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
                             <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
