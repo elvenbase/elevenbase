@@ -1112,10 +1112,10 @@ const Squad = () => {
               ) : (
                 groupedPlayers.map((group) => (
                 <Card key={group.roleCode} className="mb-6">
-                  <CardHeader className="pb-4">
+                  <CardHeader className="pb-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <CardTitle className="text-lg leading-none mb-0">
+                        <CardTitle className="text-lg leading-none mb-0 mt-0">
                           {group.role?.label || group.roleCode}
                         </CardTitle>
                         <Badge variant="secondary" className="text-xs leading-none h-fit py-1">
