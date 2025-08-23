@@ -233,7 +233,7 @@ const Dashboard = () => {
 
   // Calculate Squad Score for specific period
   const calculateScoreLeaders = (periodLeaders: any) => {
-    if (!periodLeaders) return { bestTwo: [], worstTwo: [] }
+    if (!periodLeaders) return { bestTwo: [], worstTwo: [], hasInsufficientEvents: false, totalPlayersWithData: 0, minEventsRequired: 10 }
     
     const ids = new Set<string>([...(periodLeaders?.totalPresences||[]), ...(periodLeaders?.totalAbsences||[]), ...(periodLeaders?.lates||[]), ...(periodLeaders?.noResponses||[])].map(x=>x.player_id))
 
@@ -273,10 +273,15 @@ const Dashboard = () => {
     const scores = inputs.map(it => ({ ...computeAttendanceScore(it.counters, weights as any, scoreSettings?.min_events || 10), player_id: it.player_id, first_name: it.first_name, last_name: it.last_name }))
     const minEv = (scoreSettings?.min_events || 10)
     const eligible = scores.filter(s => s.opportunities >= minEv)
+    const ineligible = scores.filter(s => s.opportunities < minEv && s.opportunities > 0)
     const sorted = eligible.sort((a,b)=> tieBreakComparator({ ...a, eligible: true, player_id: a.player_id }, { ...b, eligible: true, player_id: b.player_id }))
+    
     return {
       bestTwo: sorted.slice(0,2),
       worstTwo: sorted.slice(-2).reverse(),
+      hasInsufficientEvents: ineligible.length > 0,
+      totalPlayersWithData: scores.length,
+      minEventsRequired: minEv
     }
   }
 
@@ -683,6 +688,20 @@ const Dashboard = () => {
                 const periodScoreLeaders = calculateScoreLeaders(periodLeaders)
                 
                 if (!periodScoreLeaders.bestTwo.length && !periodScoreLeaders.worstTwo.length) {
+                  // Check if we have data but insufficient events
+                  if (periodScoreLeaders.hasInsufficientEvents) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="text-muted-foreground text-sm mb-2">
+                          ⚠️ Eventi insufficienti
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          {periodScoreLeaders.totalPlayersWithData} giocatori con dati per {getPeriodLabel(period)}, ma servono almeno {periodScoreLeaders.minEventsRequired} eventi per calcolare lo Squad Score
+                        </div>
+                      </div>
+                    )
+                  }
+                  
                   return (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <div className="text-muted-foreground text-sm mb-2">
