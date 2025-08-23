@@ -36,6 +36,7 @@ import { MatchForm } from "@/components/forms/MatchForm";
 import { TrialistForm } from "@/components/forms/TrialistForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { computeAttendanceScore, tieBreakComparator } from '@/lib/attendanceScore'
+import { useMemo } from 'react';
 
 
 const Dashboard = () => {
@@ -43,37 +44,44 @@ const Dashboard = () => {
   const { data: stats, isLoading: statsLoading } = useStats();
   const { data: recentActivity = [], isLoading: activityLoading } = useRecentActivity();
 
-  // Create multiple queries for different periods - using UTC to avoid timezone issues
-  const now = new Date()
-  
-  // Current month (August 2025) - using UTC to avoid timezone shifts
-  const currentStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
-  const currentEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999))
-  const { data: leadersCurrentMonth } = useLeaders({ startDate: currentStart, endDate: currentEnd })
-  
-  // Previous month (July 2025) - using UTC to avoid timezone shifts
-  const previousStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth()-1, 1))
-  const previousEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999))
-  
+  // ✅ MEMOIZE DATE CALCULATIONS - This is the root cause of flickering!
+  // Creating new Date objects on every render causes all hooks to re-run
+  const dateRanges = useMemo(() => {
+    const now = new Date()
+    
+    // Current month (August 2025) - using UTC to avoid timezone shifts
+    const currentStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+    const currentEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999))
+    
+    // Previous month (July 2025) - using UTC to avoid timezone shifts
+    const previousStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth()-1, 1))
+    const previousEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999))
+    
+    return {
+      current: { start: currentStart, end: currentEnd },
+      previous: { start: previousStart, end: previousEnd }
+    }
+  }, []) // Empty dependency array - calculate once and never again!
 
-  
-  const { data: leadersPreviousMonth } = useLeaders({ startDate: previousStart, endDate: previousEnd })
+  // Now use stable date ranges
+  const { data: leadersCurrentMonth } = useLeaders({ startDate: dateRanges.current.start, endDate: dateRanges.current.end })
+  const { data: leadersPreviousMonth } = useLeaders({ startDate: dateRanges.previous.start, endDate: dateRanges.previous.end })
   
   // All time (no date filters)
   const { data: leadersAllTime } = useLeaders({})
   
   // Maintain compatibility with existing code that still references 'leaders'
   const leaders = leadersCurrentMonth // Default to current month for backward compatibility
-  const start = currentStart
-  const end = currentEnd
+  const start = dateRanges.current.start
+  const end = dateRanges.current.end
   
-  // Charts with period support - using the corrected UTC dates
-  const { data: trendCurrentMonth } = useTeamTrend({ limit: 10, startDate: currentStart, endDate: currentEnd })
-  const { data: trendPreviousMonth } = useTeamTrend({ limit: 10, startDate: previousStart, endDate: previousEnd })
+  // Charts with period support - using the STABLE dates
+  const { data: trendCurrentMonth } = useTeamTrend({ limit: 10, startDate: dateRanges.current.start, endDate: dateRanges.current.end })
+  const { data: trendPreviousMonth } = useTeamTrend({ limit: 10, startDate: dateRanges.previous.start, endDate: dateRanges.previous.end })
   const { data: trendAllTime } = useTeamTrend({ limit: 10 })
   
-  const { data: attendanceDistCurrentMonth } = useAttendanceDistribution({ startDate: currentStart, endDate: currentEnd })
-  const { data: attendanceDistPreviousMonth } = useAttendanceDistribution({ startDate: previousStart, endDate: previousEnd })
+  const { data: attendanceDistCurrentMonth } = useAttendanceDistribution({ startDate: dateRanges.current.start, endDate: dateRanges.current.end })
+  const { data: attendanceDistPreviousMonth } = useAttendanceDistribution({ startDate: dateRanges.previous.start, endDate: dateRanges.previous.end })
   const { data: attendanceDistAllTime } = useAttendanceDistribution({})
   
   // Legacy support
