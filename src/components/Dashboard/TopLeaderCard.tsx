@@ -268,7 +268,8 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
 
   // Use metric-specific background for presence cards, role-based for others
   const isPresenceCard = ['training', 'matches', 'lates', 'absences', 'no_response'].includes(variant)
-  const cardBgClass = isPresenceCard 
+  const isPerformanceCard = ['goals', 'assists', 'yellow', 'red'].includes(variant)
+  const cardBgClass = (isPresenceCard || isPerformanceCard)
     ? `from-transparent to-transparent` 
     : sectorHeroBgClass[sectorFromRoleCode(p.role_code || '')]
 
@@ -276,7 +277,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
     <div className="w-full">
       {/* Front, aligned to /squad card */}
       <Link to={to} className="block">
-        <Card className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${cardBgClass}`} style={isPresenceCard ? { background: metricStyle.headerBg } : {}}>
+        <Card className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${cardBgClass}`} style={(isPresenceCard || isPerformanceCard) ? { background: metricStyle.headerBg } : {}}>
           <div className="relative p-[0.9rem]">
             {/* Avatar overflowing left - Clean square with no background */}
             {imageSrc ? (
