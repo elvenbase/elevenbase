@@ -117,3 +117,7 @@ Se hai problemi:
 ---
 
 **Nota**: Questo setup ti permette di lavorare completamente in locale senza dipendere da servizi cloud per il build e il deploy.
+
+---
+
+🔄 **Deploy Ibrido Testato**: Sistema configurato e pronto per l'uso!
