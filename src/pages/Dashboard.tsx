@@ -45,23 +45,34 @@ const Dashboard = () => {
   const { data: stats, isLoading: statsLoading } = useStats();
   const { data: recentActivity = [], isLoading: activityLoading } = useRecentActivity();
 
-  // Create multiple queries for different periods
+  // Create multiple queries for different periods - using UTC to avoid timezone issues
   const now = new Date()
   
-  // Current month (August 2025)
-  const currentStart = new Date(now.getFullYear(), now.getMonth(), 1)
-  const currentEnd = new Date(now.getFullYear(), now.getMonth()+1, 0)
+  // Current month (August 2025) - using UTC to avoid timezone shifts
+  const currentStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+  const currentEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999))
   const { data: leadersCurrentMonth } = useLeaders({ startDate: currentStart, endDate: currentEnd })
   
-  // Previous month (July 2025)
-  const previousStart = new Date(now.getFullYear(), now.getMonth()-1, 1)
-  const previousEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+  // Previous month (July 2025) - using UTC to avoid timezone shifts
+  const previousStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth()-1, 1))
+  const previousEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999))
   
-  // Debug: Log date ranges
-  console.log('Date ranges debug:', {
+  // Debug: Log date ranges (FIXED with UTC)
+  console.log('Date ranges debug (FIXED):', {
     now: now.toISOString(),
-    currentMonth: { start: currentStart.toISOString(), end: currentEnd.toISOString() },
-    previousMonth: { start: previousStart.toISOString(), end: previousEnd.toISOString() }
+    nowUTC: { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1, day: now.getUTCDate() },
+    currentMonth: { 
+      start: currentStart.toISOString(), 
+      end: currentEnd.toISOString(),
+      startLocal: `${currentStart.getUTCFullYear()}-${String(currentStart.getUTCMonth()+1).padStart(2,'0')}-${String(currentStart.getUTCDate()).padStart(2,'0')}`,
+      endLocal: `${currentEnd.getUTCFullYear()}-${String(currentEnd.getUTCMonth()+1).padStart(2,'0')}-${String(currentEnd.getUTCDate()).padStart(2,'0')}`
+    },
+    previousMonth: { 
+      start: previousStart.toISOString(), 
+      end: previousEnd.toISOString(),
+      startLocal: `${previousStart.getUTCFullYear()}-${String(previousStart.getUTCMonth()+1).padStart(2,'0')}-${String(previousStart.getUTCDate()).padStart(2,'0')}`,
+      endLocal: `${previousEnd.getUTCFullYear()}-${String(previousEnd.getUTCMonth()+1).padStart(2,'0')}-${String(previousEnd.getUTCDate()).padStart(2,'0')}`
+    }
   })
   
   const { data: leadersPreviousMonth } = useLeaders({ startDate: previousStart, endDate: previousEnd })
@@ -74,7 +85,7 @@ const Dashboard = () => {
   const start = currentStart
   const end = currentEnd
   
-  // Charts with period support
+  // Charts with period support - using the corrected UTC dates
   const { data: trendCurrentMonth } = useTeamTrend({ limit: 10, startDate: currentStart, endDate: currentEnd })
   const { data: trendPreviousMonth } = useTeamTrend({ limit: 10, startDate: previousStart, endDate: previousEnd })
   const { data: trendAllTime } = useTeamTrend({ limit: 10 })
