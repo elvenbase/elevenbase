@@ -461,7 +461,12 @@ const Dashboard = () => {
                       { key: 'pending', label: 'In attesa', color: '#94a3b8' },
                       { key: 'no_response', label: 'No risp.', color: '#a3a3a3' },
                     ]}
-                    yAxisMax={30}
+                    yAxisMax={Math.max(
+                      // Find max value across all data categories
+                      ...Object.values(periodAttendanceDist.training || {}),
+                      ...Object.values(periodAttendanceDist.match || {}),
+                      30 // Minimum fallback
+                    ) * 1.1} // Add 10% padding
                   />
                   <div className="mt-3 text-xs text-muted-foreground">Periodo: {getPeriodLabel(period)}</div>
                 </div>
