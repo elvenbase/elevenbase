@@ -1193,7 +1193,15 @@ const Squad = () => {
                         {/* Riga 1: solo titolo e sottotitolo accanto all'immagine */}
                         <div className="pl-[109.6px] md:pl-[146.4px] min-h-[144px] md:min-h-[180px]">
                           <div className="space-y-2 pr-2">
-                            <div className="font-semibold text-lg md:text-xl leading-tight truncate">{p.first_name} {p.last_name}</div>
+                            <div className="font-semibold text-lg md:text-xl leading-tight">
+                              <span className="block sm:hidden">
+                                {p.first_name}<br />
+                                {p.last_name}
+                              </span>
+                              <span className="hidden sm:block truncate">
+                                {p.first_name} {p.last_name}
+                              </span>
+                            </div>
                             <div className="flex items-center gap-2 min-w-0">
                               <div className="text-xs md:text-sm text-muted-foreground truncate" title={role?.label || ''}>{role?.label || '—'}</div>
                               {p.is_captain && (
