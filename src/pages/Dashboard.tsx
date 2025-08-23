@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries, useAttendanceScoreSettings } from "@/hooks/useSupabaseData";
 
-import { FinalStableLineChart, FinalStableBarChart } from "@/components/ui/final-stable-chart";
+import { ChartJSStableLine, ChartJSStableBar } from "@/components/ui/chartjs-stable";
 
 import { PlayerForm } from "@/components/forms/PlayerForm";
 import { TrainingForm } from "@/components/forms/TrainingForm";
@@ -374,11 +374,11 @@ const Dashboard = () => {
               title: 'Trend ultime partite (ultime 10)',
               render: () => (
                 <div>
-                  <FinalStableLineChart 
+                  <ChartJSStableLine 
                     data={trend?.series as any}
                     dataKey="points"
                     xKey="date"
-                    color="hsl(var(--primary))"
+                    color="#3b82f6"
                     label="Punti"
                     yAxisMax={5}
                   />
@@ -393,11 +393,11 @@ const Dashboard = () => {
               title: 'Presenze allenamenti (ultimi 30 giorni)',
               render: () => (
                 <div>
-                  <FinalStableLineChart 
+                  <ChartJSStableLine 
                     data={trainingSeries?.curr}
                     dataKey="value"
                     xKey="date"
-                    color="hsl(var(--success))"
+                    color="#22c55e"
                     label="Presenze"
                     yAxisMax={25}
                   />
@@ -412,11 +412,11 @@ const Dashboard = () => {
               title: 'Presenze partite (ultime 10)',
               render: () => (
                 <div>
-                  <FinalStableLineChart 
+                  <ChartJSStableLine 
                     data={matchSeries?.curr}
                     dataKey="value"
                     xKey="date"
-                    color="hsl(var(--accent))"
+                    color="#8b5cf6"
                     label="Presenze"
                     yAxisMax={20}
                   />
@@ -448,16 +448,16 @@ const Dashboard = () => {
                 
                 return (
                 <div>
-                  <FinalStableBarChart 
+                  <ChartJSStableBar 
                     data={[
                       { name: 'Allen.', ...periodAttendanceDist.training }, 
                       { name: 'Partite', ...periodAttendanceDist.match }
                     ]}
                     categories={['Allen.', 'Partite']}
                     datasets={[
-                      { key: 'present', label: 'Presenti', color: 'hsl(var(--success))' },
+                      { key: 'present', label: 'Presenti', color: '#22c55e' },
                       { key: 'late', label: 'Ritardi', color: '#f59e0b' },
-                      { key: 'absent', label: 'Assenti', color: 'hsl(var(--destructive))' },
+                      { key: 'absent', label: 'Assenti', color: '#ef4444' },
                       { key: 'pending', label: 'In attesa', color: '#94a3b8' },
                       { key: 'no_response', label: 'No risp.', color: '#a3a3a3' },
                     ]}
