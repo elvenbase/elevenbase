@@ -65,6 +65,17 @@ const Dashboard = () => {
   const leaders = leadersCurrentMonth // Default to current month for backward compatibility
   const start = currentStart
   const end = currentEnd
+  
+  // Charts with period support
+  const { data: trendCurrentMonth } = useTeamTrend({ limit: 10, startDate: currentStart, endDate: currentEnd })
+  const { data: trendPreviousMonth } = useTeamTrend({ limit: 10, startDate: previousStart, endDate: previousEnd })
+  const { data: trendAllTime } = useTeamTrend({ limit: 10 })
+  
+  const { data: attendanceDistCurrentMonth } = useAttendanceDistribution({ startDate: currentStart, endDate: currentEnd })
+  const { data: attendanceDistPreviousMonth } = useAttendanceDistribution({ startDate: previousStart, endDate: previousEnd })
+  const { data: attendanceDistAllTime } = useAttendanceDistribution({})
+  
+  // Legacy support
   const { data: trend } = useTeamTrend({ limit: 10 })
   const { data: attendanceDist } = useAttendanceDistribution({ startDate: start, endDate: end })
 
@@ -159,6 +170,25 @@ const Dashboard = () => {
     }
   }
 
+  // Get chart data for specific period
+  const getTrendForPeriod = (period: string) => {
+    switch (period) {
+      case 'current': return trendCurrentMonth
+      case 'previous': return trendPreviousMonth
+      case 'beginning': return trendAllTime
+      default: return trendCurrentMonth
+    }
+  }
+
+  const getAttendanceDistForPeriod = (period: string) => {
+    switch (period) {
+      case 'current': return attendanceDistCurrentMonth
+      case 'previous': return attendanceDistPreviousMonth
+      case 'beginning': return attendanceDistAllTime
+      default: return attendanceDistCurrentMonth
+    }
+  }
+
   const pickBestWorst = (arr?: Array<{ player_id: string; value?: number; count?: number; percent?: number; first_name?: string; last_name?: string }>) => {
 
     if (!arr || arr.length===0) return { best: null, worst: null }
@@ -182,8 +212,11 @@ const Dashboard = () => {
     return { best, worst }
   }
 
-  const scoreLeaders = (() => {
-    const ids = new Set<string>([...(leaders?.totalPresences||[]), ...(leaders?.totalAbsences||[]), ...(leaders?.lates||[]), ...(leaders?.noResponses||[])].map(x=>x.player_id))
+  // Calculate Squad Score for specific period
+  const calculateScoreLeaders = (periodLeaders: any) => {
+    if (!periodLeaders) return { bestTwo: [], worstTwo: [] }
+    
+    const ids = new Set<string>([...(periodLeaders?.totalPresences||[]), ...(periodLeaders?.totalAbsences||[]), ...(periodLeaders?.lates||[]), ...(periodLeaders?.noResponses||[])].map(x=>x.player_id))
 
     const toCount = (mapArr: any[]|undefined, pid: string) => {
       const r = (mapArr||[]).find((x:any)=>x.player_id===pid)
@@ -191,20 +224,20 @@ const Dashboard = () => {
     }
     const inputs = Array.from(ids).map(pid => ({
       player_id: pid,
-      first_name: (leaders?.totalPresences||[]).find((x:any)=>x.player_id===pid)?.first_name,
+      first_name: (periodLeaders?.totalPresences||[]).find((x:any)=>x.player_id===pid)?.first_name,
 
-      last_name: (leaders?.totalPresences||[]).find((x:any)=>x.player_id===pid)?.last_name,
+      last_name: (periodLeaders?.totalPresences||[]).find((x:any)=>x.player_id===pid)?.last_name,
 
       counters: {
-        T_P: toCount(leaders?.trainingPresences, pid),
-        T_L: toCount(leaders?.trainingLates, pid),
-        T_A: toCount(leaders?.trainingAbsences, pid),
-        T_NR: toCount(leaders?.trainingNoResponses, pid),
-        M_P: toCount(leaders?.matchPresences, pid),
-        M_L: toCount(leaders?.matchLates, pid),
-        M_A: toCount(leaders?.matchAbsences, pid),
-        M_NR: toCount(leaders?.matchNoResponses, pid),
-        mvpAwards: toCount(leaders?.mvpAwards, pid),
+        T_P: toCount(periodLeaders?.trainingPresences, pid),
+        T_L: toCount(periodLeaders?.trainingLates, pid),
+        T_A: toCount(periodLeaders?.trainingAbsences, pid),
+        T_NR: toCount(periodLeaders?.trainingNoResponses, pid),
+        M_P: toCount(periodLeaders?.matchPresences, pid),
+        M_L: toCount(periodLeaders?.matchLates, pid),
+        M_A: toCount(periodLeaders?.matchAbsences, pid),
+        M_NR: toCount(periodLeaders?.matchNoResponses, pid),
+        mvpAwards: toCount(periodLeaders?.mvpAwards, pid),
       }
     }))
     const weights = scoreSettings ? {
@@ -226,7 +259,10 @@ const Dashboard = () => {
       bestTwo: sorted.slice(0,2),
       worstTwo: sorted.slice(-2).reverse(),
     }
-  })()
+  }
+
+  // Legacy scoreLeaders for backward compatibility
+  const scoreLeaders = calculateScoreLeaders(leaders)
   
   // Debug logging
   console.log('Dashboard Debug:', {
@@ -348,13 +384,30 @@ const Dashboard = () => {
             {
               id: 'trend-matches',
               title: 'Trend ultime partite (ultime 10)',
-              render: () => (
+              hasPeriodSelector: true,
+              render: (period = 'current') => {
+                const periodTrend = getTrendForPeriod(period)
+                
+                if (!periodTrend?.series || periodTrend.series.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="text-muted-foreground text-sm mb-2">
+                        📈 Nessun dato disponibile
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        Non ci sono dati di trend per {getPeriodLabel(period)}
+                      </div>
+                    </div>
+                  )
+                }
+                
+                return (
                 <div>
                   <div className="h-64">
                     <ChartContainer config={{
                       points: { label: 'Punti', color: 'hsl(var(--primary))' },
                     }} className="h-full">
-                      <ReLineChart data={(trend?.series as any) || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                      <ReLineChart data={(periodTrend?.series as any) || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
                         <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
@@ -362,15 +415,13 @@ const Dashboard = () => {
                         <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
                       </ReLineChart>
                     </ChartContainer>
-                    {(!trend?.series || trend.series.length === 0) && (
-                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                    )}
                   </div>
-                  {trend && (
-                    <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite · Bilancio <span className="text-foreground font-medium">{trend.wdl.wins}V {trend.wdl.draws}N {trend.wdl.losses}P</span></div>
+                  {periodTrend && (
+                    <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite ({getPeriodLabel(period)}) · Bilancio <span className="text-foreground font-medium">{periodTrend.wdl.wins}V {periodTrend.wdl.draws}N {periodTrend.wdl.losses}P</span></div>
                   )}
                 </div>
-              )
+                )
+              }
             },
             {
               id: 'training-series',
@@ -425,7 +476,24 @@ const Dashboard = () => {
             {
               id: 'attendance-month',
               title: 'Distribuzione presenze mese',
-              render: () => (
+              hasPeriodSelector: true,
+              render: (period = 'current') => {
+                const periodAttendanceDist = getAttendanceDistForPeriod(period)
+                
+                if (!periodAttendanceDist || periodAttendanceDist.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="text-muted-foreground text-sm mb-2">
+                        📊 Nessun dato disponibile
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        Non ci sono dati di distribuzione per {getPeriodLabel(period)}
+                      </div>
+                    </div>
+                  )
+                }
+                
+                return (
                 <div>
                   <div className="h-64">
                     <ChartContainer config={{
@@ -435,7 +503,7 @@ const Dashboard = () => {
                       pending: { label: 'In attesa', color: '#94a3b8' },
                       no_response: { label: 'No response', color: '#a3a3a3' },
                     }} className="h-full">
-                      <ReBarChart data={attendanceDist ? [{ name: 'Allen.', ...attendanceDist.training }, { name: 'Partite', ...attendanceDist.match }] : placeholderBars} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                      <ReBarChart data={periodAttendanceDist ? [{ name: 'Allen.', ...periodAttendanceDist.training }, { name: 'Partite', ...periodAttendanceDist.match }] : placeholderBars} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                         <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
@@ -448,13 +516,11 @@ const Dashboard = () => {
                         <Bar dataKey="no_response" fill="var(--color-no_response)" isAnimationActive={animateOnceRef.current} />
                       </ReBarChart>
                     </ChartContainer>
-                    {!attendanceDist && (
-                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                    )}
                   </div>
-                  <div className="mt-3 text-xs text-muted-foreground">Periodo: mese corrente</div>
+                  <div className="mt-3 text-xs text-muted-foreground">Periodo: {getPeriodLabel(period)}</div>
                 </div>
-              )
+                )
+              }
             },
             {
               id: 'leaders-training-presences',
@@ -596,9 +662,27 @@ const Dashboard = () => {
               id: 'attendance-score-leaders',
               title: 'Squad Score — Migliori e Peggiori',
               gridClassName: 'col-span-1',
-              render: () => (
+              hasPeriodSelector: true,
+              render: (period = 'current') => {
+                const periodLeaders = getLeadersForPeriod(period)
+                const periodScoreLeaders = calculateScoreLeaders(periodLeaders)
+                
+                if (!periodScoreLeaders.bestTwo.length && !periodScoreLeaders.worstTwo.length) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="text-muted-foreground text-sm mb-2">
+                        🏆 Nessun dato disponibile
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        Non ci sono dati Squad Score per {getPeriodLabel(period)}
+                      </div>
+                    </div>
+                  )
+                }
+                
+                return (
                 <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
-                  {scoreLeaders.bestTwo.slice(0,1).map((s)=> (
+                  {periodScoreLeaders.bestTwo.slice(0,1).map((s)=> (
                     <TopLeaderCard
                       key={`best-1`}
                       metricLabel={`Score migliore`}
@@ -615,7 +699,7 @@ const Dashboard = () => {
                       distribution={[]}
                     />
                   ))}
-                  {scoreLeaders.worstTwo.slice(0,1).map((s)=> (
+                  {periodScoreLeaders.worstTwo.slice(0,1).map((s)=> (
                     <TopLeaderCard
                       key={`worst-1`}
                       metricLabel={`Score peggiore`}
@@ -633,7 +717,8 @@ const Dashboard = () => {
                     />
                   ))}
                 </div>
-              )
+                )
+              }
             },
           ]}
         />
