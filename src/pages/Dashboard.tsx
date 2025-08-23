@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries, useAttendanceScoreSettings } from "@/hooks/useSupabaseData";
 
-import { SmartLineChart, SmartBarChart } from "@/components/ui/smart-chart";
+import { UltrastableLineChart, UltrastableBarChart } from "@/components/ui/stable-chart-v2";
 
 import { PlayerForm } from "@/components/forms/PlayerForm";
 import { TrainingForm } from "@/components/forms/TrainingForm";
@@ -366,7 +366,7 @@ const Dashboard = () => {
               title: 'Trend ultime partite (ultime 10)',
               render: () => (
                 <div>
-                  <SmartLineChart 
+                  <UltrastableLineChart 
                     data={trend?.series as any}
                     dataKey="points"
                     xKey="date"
@@ -386,7 +386,7 @@ const Dashboard = () => {
               title: 'Presenze allenamenti (ultimi 30 giorni)',
               render: () => (
                 <div>
-                  <SmartLineChart 
+                  <UltrastableLineChart 
                     data={trainingSeries?.curr}
                     dataKey="value"
                     xKey="date"
@@ -406,7 +406,7 @@ const Dashboard = () => {
               title: 'Presenze partite (ultime 10)',
               render: () => (
                 <div>
-                  <SmartLineChart 
+                  <UltrastableLineChart 
                     data={matchSeries?.curr}
                     dataKey="value"
                     xKey="date"
@@ -443,7 +443,7 @@ const Dashboard = () => {
                 
                 return (
                 <div>
-                  <SmartBarChart 
+                  <UltrastableBarChart 
                     data={[
                       { name: 'Allen.', ...periodAttendanceDist.training }, 
                       { name: 'Partite', ...periodAttendanceDist.match }
