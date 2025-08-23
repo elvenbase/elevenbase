@@ -38,7 +38,6 @@ import { MatchForm } from "@/components/forms/MatchForm";
 import { TrialistForm } from "@/components/forms/TrialistForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { computeAttendanceScore, tieBreakComparator } from '@/lib/attendanceScore'
-import { useEffect, useRef } from 'react'
 
 
 const Dashboard = () => {
@@ -86,9 +85,6 @@ const Dashboard = () => {
   const { data: trainingSeries } = useTrainingPresenceSeries(30)
   const { data: matchSeries } = useMatchPresenceSeries(10)
   const { data: scoreSettings } = useAttendanceScoreSettings()
-
-  const animateOnceRef = useRef(true)
-  useEffect(()=>{ animateOnceRef.current = false }, [])
 
   const formatDayMonth = (value: any) => {
     try {
@@ -393,12 +389,15 @@ const Dashboard = () => {
                       <ChartContainer config={{
                         points: { label: 'Punti', color: 'hsl(var(--primary))' },
                       }} className="h-full">
-                        <ReLineChart data={trend.series as any} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                        <ReLineChart 
+                          key={`trend-${trend.series?.length || 0}`}
+                          data={trend.series as any} 
+                          margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 1']} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 5]} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                          <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} />
                         </ReLineChart>
                       </ChartContainer>
                     ) : (
@@ -424,12 +423,15 @@ const Dashboard = () => {
                   <div className="h-64">
                     {trainingSeries?.curr ? (
                       <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
-                        <ReLineChart data={trainingSeries.curr} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                        <ReLineChart 
+                          key={`training-${trainingSeries.curr?.length || 0}`}
+                          data={trainingSeries.curr} 
+                          margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 25]} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
                         </ReLineChart>
                       </ChartContainer>
                     ) : (
@@ -455,12 +457,15 @@ const Dashboard = () => {
                   <div className="h-64">
                     {matchSeries?.curr ? (
                       <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
-                        <ReLineChart data={matchSeries.curr} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                        <ReLineChart 
+                          key={`matches-${matchSeries.curr?.length || 0}`}
+                          data={matchSeries.curr} 
+                          margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 20]} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
                         </ReLineChart>
                       </ChartContainer>
                     ) : (
@@ -508,17 +513,20 @@ const Dashboard = () => {
                       pending: { label: 'In attesa', color: '#94a3b8' },
                       no_response: { label: 'No response', color: '#a3a3a3' },
                     }} className="h-full">
-                      <ReBarChart data={[{ name: 'Allen.', ...periodAttendanceDist.training }, { name: 'Partite', ...periodAttendanceDist.match }]} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                      <ReBarChart 
+                        key={`attendance-${period}-${periodAttendanceDist.training?.present || 0}`}
+                        data={[{ name: 'Allen.', ...periodAttendanceDist.training }, { name: 'Partite', ...periodAttendanceDist.match }]} 
+                        margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 30]} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <ChartLegend content={<ChartLegendContent className="text-[9px] sm:text-xs" />} />
-                        <Bar dataKey="present" fill="var(--color-present)" isAnimationActive={animateOnceRef.current} />
-                        <Bar dataKey="late" fill="var(--color-late)" isAnimationActive={animateOnceRef.current} />
-                        <Bar dataKey="absent" fill="var(--color-absent)" isAnimationActive={animateOnceRef.current} />
-                        <Bar dataKey="pending" fill="var(--color-pending)" isAnimationActive={animateOnceRef.current} />
-                        <Bar dataKey="no_response" fill="var(--color-no_response)" isAnimationActive={animateOnceRef.current} />
+                        <Bar dataKey="present" fill="var(--color-present)" />
+                        <Bar dataKey="late" fill="var(--color-late)" />
+                        <Bar dataKey="absent" fill="var(--color-absent)" />
+                        <Bar dataKey="pending" fill="var(--color-pending)" />
+                        <Bar dataKey="no_response" fill="var(--color-no_response)" />
                       </ReBarChart>
                     </ChartContainer>
                   </div>
