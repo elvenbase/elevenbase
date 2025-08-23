@@ -1223,7 +1223,7 @@ const Squad = () => {
                             <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
                           </div>
                           <div>
-                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">ALLENAMENTI</div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">ALLEN.</div>
                             <div className={`mt-1 text-xs tabular-nums ${(p.presences ?? 0) === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{p.presences ?? 0}</div>
                           </div>
                           <div>
@@ -1231,7 +1231,7 @@ const Squad = () => {
                             <div className="mt-1 text-xs tabular-nums">{age ?? '—'}</div>
                           </div>
                           <div>
-                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">NUMERO</div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">N.</div>
                             <div className="mt-1 text-xs tabular-nums">{numero ?? '—'}</div>
                           </div>
                         </div>
