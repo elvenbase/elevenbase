@@ -6,3 +6,4 @@ CREATE INDEX IF NOT EXISTS idx_training_lineups_created_by ON training_lineups(c
 
 -- Add comment for documentation
 COMMENT ON COLUMN training_lineups.created_by IS 'User who created the lineup';
+

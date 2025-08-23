@@ -23,3 +23,4 @@ INSERT INTO field_options (field_name, option_value, option_label, sort_order, c
 ('player_role', 'seconda_punta', 'Seconda punta', 13, NULL),
 ('player_role', 'falso_nove', 'Falso nove', 14, NULL),
 ('player_role', 'centravanti', 'Centravanti', 15, NULL);
+

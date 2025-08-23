@@ -32,3 +32,4 @@ CREATE TRIGGER trigger_training_session_public_token
 
 -- Add comment for documentation
 COMMENT ON COLUMN training_sessions.public_link_token IS 'Unique token for public access to training session';
+

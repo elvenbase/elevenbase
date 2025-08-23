@@ -23,3 +23,4 @@ UPDATE field_options SET abbreviation = 'AS' WHERE field_name = 'player_role' AN
 UPDATE field_options SET abbreviation = 'SP' WHERE field_name = 'player_role' AND option_value = 'seconda_punta';
 UPDATE field_options SET abbreviation = 'FN' WHERE field_name = 'player_role' AND option_value = 'falso_nove';
 UPDATE field_options SET abbreviation = 'CV' WHERE field_name = 'player_role' AND option_value = 'centravanti';
+

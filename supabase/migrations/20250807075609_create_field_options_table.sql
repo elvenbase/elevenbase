@@ -51,3 +51,4 @@ INSERT INTO field_options (field_name, option_value, option_label, sort_order, c
 ('status', 'inactive', 'Inattivo', 2, NULL),
 ('status', 'injured', 'Ferito', 3, NULL),
 ('status', 'suspended', 'Squalificato', 4, NULL);
+

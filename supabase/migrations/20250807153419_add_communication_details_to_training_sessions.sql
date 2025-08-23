@@ -6,3 +6,4 @@ CREATE INDEX IF NOT EXISTS idx_training_sessions_communication_details ON traini
 
 -- Add comment for documentation
 COMMENT ON COLUMN training_sessions.communication_details IS 'Additional communication details for the training session';
+

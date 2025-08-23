@@ -176,7 +176,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-4">
           <h1 className="text-4xl font-bold text-primary mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Panoramica generale del tuo club</p>
+          <p className="text-muted-foreground">Panoramica generale del club</p>
         </div>
         {/* Chip actions bar (apre direttamente i moduli) */}
         <div className="mb-6 -mx-2 sm:mx-0">

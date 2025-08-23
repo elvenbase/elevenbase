@@ -61,3 +61,4 @@ COMMENT ON TABLE public.training_lineups IS 'Lineups for training sessions';
 COMMENT ON COLUMN training_lineups.players_data IS 'JSON object with position_id -> player_id mappings';
 COMMENT ON COLUMN training_lineups.formation_data IS 'JSON object with formation customization settings';
 COMMENT ON COLUMN training_lineups.created_by IS 'User who created the lineup';
+

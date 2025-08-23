@@ -24,3 +24,4 @@ UPDATE avatar_backgrounds SET
   text_weight = '600',
   text_family = 'Inter, system-ui, sans-serif'
 WHERE text_color IS NULL;
+

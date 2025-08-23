@@ -44,3 +44,4 @@ CREATE TRIGGER trigger_training_session_deadline
 -- Add comments for documentation
 COMMENT ON COLUMN training_sessions.is_closed IS 'Whether the training session is manually closed';
 COMMENT ON COLUMN training_sessions.allow_responses_until IS 'Deadline for player responses (4 hours before session start)';
+

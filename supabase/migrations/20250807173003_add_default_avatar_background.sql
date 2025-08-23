@@ -32,3 +32,4 @@ WHERE id NOT IN (
   ORDER BY created_at ASC 
   LIMIT 1
 );
+

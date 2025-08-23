@@ -50,3 +50,4 @@ BEGIN
   
   RAISE NOTICE 'All required columns exist in training_lineups table';
 END $$;
+

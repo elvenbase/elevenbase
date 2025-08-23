@@ -6,3 +6,4 @@ CREATE INDEX IF NOT EXISTS idx_training_sessions_communication_type ON training_
 
 -- Add comment for documentation
 COMMENT ON COLUMN training_sessions.communication_type IS 'Type of communication for the training session (e.g., email, whatsapp, sms)';
+

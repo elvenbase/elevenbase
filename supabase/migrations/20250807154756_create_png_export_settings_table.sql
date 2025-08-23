@@ -58,3 +58,4 @@ CREATE POLICY "Users can delete their own png export settings" ON public.png_exp
 
 -- Add comment for documentation
 COMMENT ON TABLE public.png_export_settings IS 'Settings for PNG export of formations';
+
