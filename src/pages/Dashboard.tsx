@@ -45,10 +45,26 @@ const Dashboard = () => {
   const { data: stats, isLoading: statsLoading } = useStats();
   const { data: recentActivity = [], isLoading: activityLoading } = useRecentActivity();
 
+  // Create multiple queries for different periods
   const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), 1)
-  const end = new Date(now.getFullYear(), now.getMonth()+1, 0)
-  const { data: leaders } = useLeaders({ startDate: start, endDate: end })
+  
+  // Current month (August 2025)
+  const currentStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const currentEnd = new Date(now.getFullYear(), now.getMonth()+1, 0)
+  const { data: leadersCurrentMonth } = useLeaders({ startDate: currentStart, endDate: currentEnd })
+  
+  // Previous month (July 2025)
+  const previousStart = new Date(now.getFullYear(), now.getMonth()-1, 1)
+  const previousEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+  const { data: leadersPreviousMonth } = useLeaders({ startDate: previousStart, endDate: previousEnd })
+  
+  // All time (no date filters)
+  const { data: leadersAllTime } = useLeaders({})
+  
+  // Maintain compatibility with existing code that still references 'leaders'
+  const leaders = leadersCurrentMonth // Default to current month for backward compatibility
+  const start = currentStart
+  const end = currentEnd
   const { data: trend } = useTeamTrend({ limit: 10 })
   const { data: attendanceDist } = useAttendanceDistribution({ startDate: start, endDate: end })
 
@@ -80,6 +96,69 @@ const Dashboard = () => {
   // Helpers to compose best/worst from leaders arrays using players list for avatar/role
 
   const playerById = new Map<string, any>(players.map((p:any)=>[p.id, p]))
+  
+
+
+    // Get leaders data for the specified period
+  const getLeadersForPeriod = (period: string) => {
+    switch (period) {
+      case 'current':
+        return leadersCurrentMonth
+      case 'previous':
+        return leadersPreviousMonth
+      case 'beginning':
+        return leadersAllTime
+      default:
+        return leadersCurrentMonth
+    }
+  }
+
+  // Get real data for specific metric and period
+  const getDataForPeriodAndMetric = (metricName: string, period = 'current') => {
+    const periodLeaders = getLeadersForPeriod(period)
+    if (!periodLeaders) return []
+    
+    // Map metric names to leader fields
+    const metricMap: Record<string, any> = {
+      'trainingPresences': periodLeaders.trainingPresences,
+      'trainingAbsences': periodLeaders.trainingAbsences,
+      'trainingLates': periodLeaders.trainingLates,
+      'trainingNoResponses': periodLeaders.trainingNoResponses,
+      'matchPresences': periodLeaders.matchPresences,
+      'matchAbsences': periodLeaders.matchAbsences,
+      'matchLates': periodLeaders.matchLates,
+      'matchNoResponses': periodLeaders.matchNoResponses,
+      'totalPresences': periodLeaders.totalPresences,
+      'totalAbsences': periodLeaders.totalAbsences,
+      'lates': periodLeaders.lates,
+      'noResponses': periodLeaders.noResponses,
+      'goals': periodLeaders.goals,
+      'assists': periodLeaders.assists,
+      'yellowCards': periodLeaders.yellowCards,
+      'redCards': periodLeaders.redCards
+    }
+    
+    return metricMap[metricName] || []
+  }
+
+  // Check if a section has data for the given period
+  const hasDataForPeriod = (sectionMetrics: string[], period: string) => {
+    return sectionMetrics.some(metric => {
+      const data = getDataForPeriodAndMetric(metric, period)
+      return data && data.length > 0
+    })
+  }
+
+  // Get period label for display
+  const getPeriodLabel = (period: string) => {
+    switch (period) {
+      case 'current': return 'il mese corrente'
+      case 'previous': return 'il mese precedente'
+      case 'beginning': return 'tutto il periodo'
+      default: return 'il periodo selezionato'
+    }
+  }
+
   const pickBestWorst = (arr?: Array<{ player_id: string; value?: number; count?: number; percent?: number; first_name?: string; last_name?: string }>) => {
 
     if (!arr || arr.length===0) return { best: null, worst: null }
@@ -381,53 +460,129 @@ const Dashboard = () => {
               id: 'leaders-training-presences',
               title: 'Presenze Allenamenti',
               gridClassName: 'col-span-1',
-              render: () => (
-                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
-                  <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.trainingPresences).best} distribution={leaders?.trainingPresences} />
-                  <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" item={pickBestWorst(leaders?.trainingAbsences).best} distribution={leaders?.trainingAbsences} />
-                  <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.trainingLates).best} distribution={leaders?.trainingLates} />
-                  <TopLeaderCard metricLabel="No response (allenamenti)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.trainingNoResponses).best} distribution={leaders?.trainingNoResponses} />
-                </div>
-              )
+              hasPeriodSelector: true,
+              render: (period = 'current') => {
+                const sectionMetrics = ['trainingPresences', 'trainingAbsences', 'trainingLates', 'trainingNoResponses']
+                const hasData = hasDataForPeriod(sectionMetrics, period)
+                
+                if (!hasData) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="text-muted-foreground text-sm mb-2">
+                        📊 Nessun dato disponibile
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        Non ci sono dati sugli allenamenti per {getPeriodLabel(period)}
+                      </div>
+                    </div>
+                  )
+                }
+                
+                return (
+                  <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
+                    <TopLeaderCard metricLabel="Presenze allenamenti" valueUnit="presenze" variant="training" item={pickBestWorst(getDataForPeriodAndMetric('trainingPresences', period)).best} distribution={getDataForPeriodAndMetric('trainingPresences', period)} />
+                    <TopLeaderCard metricLabel="Assenze allenamenti" valueUnit="assenze" variant="absences" item={pickBestWorst(getDataForPeriodAndMetric('trainingAbsences', period)).best} distribution={getDataForPeriodAndMetric('trainingAbsences', period)} />
+                    <TopLeaderCard metricLabel="Ritardi allenamenti" valueUnit="ritardi" variant="lates" item={pickBestWorst(getDataForPeriodAndMetric('trainingLates', period)).best} distribution={getDataForPeriodAndMetric('trainingLates', period)} />
+                    <TopLeaderCard metricLabel="No response (allenamenti)" valueUnit="no risp." variant="no_response" item={pickBestWorst(getDataForPeriodAndMetric('trainingNoResponses', period)).best} distribution={getDataForPeriodAndMetric('trainingNoResponses', period)} />
+                  </div>
+                )
+              }
             },
             {
               id: 'leaders-match-presences',
               title: 'Presenze Partite',
               gridClassName: 'col-span-1',
-              render: () => (
-                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
-                  <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(leaders?.matchPresences).best} distribution={leaders?.matchPresences} />
-                  <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" item={pickBestWorst(leaders?.matchAbsences).best} distribution={leaders?.matchAbsences} />
-                  <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.matchLates).best} distribution={leaders?.matchLates} />
-                  <TopLeaderCard metricLabel="No response (partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.matchNoResponses).best} distribution={leaders?.matchNoResponses} />
-                </div>
-              )
+              hasPeriodSelector: true,
+              render: (period = 'current') => {
+                const sectionMetrics = ['matchPresences', 'matchAbsences', 'matchLates', 'matchNoResponses']
+                const hasData = hasDataForPeriod(sectionMetrics, period)
+                
+                if (!hasData) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="text-muted-foreground text-sm mb-2">
+                        ⚽ Nessun dato disponibile
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        Non ci sono dati sulle partite per {getPeriodLabel(period)}
+                      </div>
+                    </div>
+                  )
+                }
+                
+                return (
+                  <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
+                    <TopLeaderCard metricLabel="Presenze partite" valueUnit="presenze" variant="matches" item={pickBestWorst(getDataForPeriodAndMetric('matchPresences', period)).best} distribution={getDataForPeriodAndMetric('matchPresences', period)} />
+                    <TopLeaderCard metricLabel="Assenze partite" valueUnit="assenze" variant="absences" item={pickBestWorst(getDataForPeriodAndMetric('matchAbsences', period)).best} distribution={getDataForPeriodAndMetric('matchAbsences', period)} />
+                    <TopLeaderCard metricLabel="Ritardi partite" valueUnit="ritardi" variant="lates" item={pickBestWorst(getDataForPeriodAndMetric('matchLates', period)).best} distribution={getDataForPeriodAndMetric('matchLates', period)} />
+                    <TopLeaderCard metricLabel="No response (partite)" valueUnit="no risp." variant="no_response" item={pickBestWorst(getDataForPeriodAndMetric('matchNoResponses', period)).best} distribution={getDataForPeriodAndMetric('matchNoResponses', period)} />
+                  </div>
+                )
+              }
             },
             {
               id: 'leaders-total-presences',
               title: 'Presenze Totali',
               gridClassName: 'col-span-1',
-              render: () => (
-                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
-                  <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(leaders?.totalPresences).best} distribution={leaders?.totalPresences} />
-                  <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" item={pickBestWorst(leaders?.totalAbsences).best} distribution={leaders?.totalAbsences} />
-                  <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(leaders?.lates).best} distribution={leaders?.lates} />
-                  <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no resp." variant="no_response" item={pickBestWorst(leaders?.noResponses).best} distribution={leaders?.noResponses} />
-                </div>
-              )
+              hasPeriodSelector: true,
+              render: (period = 'current') => {
+                const sectionMetrics = ['totalPresences', 'totalAbsences', 'lates', 'noResponses']
+                const hasData = hasDataForPeriod(sectionMetrics, period)
+                
+                if (!hasData) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="text-muted-foreground text-sm mb-2">
+                        📈 Nessun dato disponibile
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        Non ci sono dati complessivi per {getPeriodLabel(period)}
+                      </div>
+                    </div>
+                  )
+                }
+                
+                return (
+                  <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
+                    <TopLeaderCard metricLabel="Presenze (all. + partite)" valueUnit="presenze" variant="training" item={pickBestWorst(getDataForPeriodAndMetric('totalPresences', period)).best} distribution={getDataForPeriodAndMetric('totalPresences', period)} />
+                    <TopLeaderCard metricLabel="Assenze (all. + partite)" valueUnit="assenze" variant="absences" item={pickBestWorst(getDataForPeriodAndMetric('totalAbsences', period)).best} distribution={getDataForPeriodAndMetric('totalAbsences', period)} />
+                    <TopLeaderCard metricLabel="Ritardi (all. + partite)" valueUnit="ritardi" variant="lates" item={pickBestWorst(getDataForPeriodAndMetric('lates', period)).best} distribution={getDataForPeriodAndMetric('lates', period)} />
+                    <TopLeaderCard metricLabel="No response (all. + partite)" valueUnit="no risp." variant="no_response" item={pickBestWorst(getDataForPeriodAndMetric('noResponses', period)).best} distribution={getDataForPeriodAndMetric('noResponses', period)} />
+                  </div>
+                )
+              }
             },
             {
               id: 'leaders-match-performance',
               title: 'Performance Partite',
               gridClassName: 'col-span-1',
-              render: () => (
-                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
-                  <TopLeaderCard metricLabel="Gol" valueUnit="gol" variant="goals" item={pickBestWorst(leaders?.goals).best} distribution={leaders?.goals} />
-                  <TopLeaderCard metricLabel="Assist" valueUnit="assist" variant="assists" item={pickBestWorst(leaders?.assists).best} distribution={leaders?.assists} />
-                  <TopLeaderCard metricLabel="Ammonizioni" valueUnit="gialli" variant="yellow" item={pickBestWorst(leaders?.yellowCards).best} distribution={leaders?.yellowCards} />
-                  <TopLeaderCard metricLabel="Espulsioni" valueUnit="rossi" variant="red" item={pickBestWorst(leaders?.redCards).best} distribution={leaders?.redCards} />
-                </div>
-              )
+              hasPeriodSelector: true,
+              render: (period = 'current') => {
+                const sectionMetrics = ['goals', 'assists', 'yellowCards', 'redCards']
+                const hasData = hasDataForPeriod(sectionMetrics, period)
+                
+                if (!hasData) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="text-muted-foreground text-sm mb-2">
+                        🏆 Nessun dato disponibile
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        Non ci sono statistiche di gioco per {getPeriodLabel(period)}
+                      </div>
+                    </div>
+                  )
+                }
+                
+                return (
+                  <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
+                    <TopLeaderCard metricLabel="Gol" valueUnit="gol" variant="goals" item={pickBestWorst(getDataForPeriodAndMetric('goals', period)).best} distribution={getDataForPeriodAndMetric('goals', period)} />
+                    <TopLeaderCard metricLabel="Assist" valueUnit="assist" variant="assists" item={pickBestWorst(getDataForPeriodAndMetric('assists', period)).best} distribution={getDataForPeriodAndMetric('assists', period)} />
+                    <TopLeaderCard metricLabel="Ammonizioni" valueUnit="gialli" variant="yellow" item={pickBestWorst(getDataForPeriodAndMetric('yellowCards', period)).best} distribution={getDataForPeriodAndMetric('yellowCards', period)} />
+                    <TopLeaderCard metricLabel="Espulsioni" valueUnit="rossi" variant="red" item={pickBestWorst(getDataForPeriodAndMetric('redCards', period)).best} distribution={getDataForPeriodAndMetric('redCards', period)} />
+                  </div>
+                )
+              }
             },
             {
               id: 'players-stats-table',

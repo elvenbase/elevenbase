@@ -4,16 +4,17 @@ import { Badge } from '@/components/ui/badge'
 import { useRoles } from '@/hooks/useRoles'
 import { RotateCcw, Search, CalendarCheck2, CalendarX, AlarmClock, MailX, CornerDownRight, Timer, Trophy, SquareMinus } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react'
 import { PieChart as RePieChart, Pie as RePie, Cell as ReCell, Tooltip as ReTooltip, ResponsiveContainer as ReResponsiveContainer } from 'recharts'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
+
 
 type PlayerRef = { id: string; first_name: string; last_name: string; avatar_url?: string | null; role_code?: string | null; jersey_number?: number | null }
 
 type Props = {
   metricLabel: string
   valueUnit: string
-  variant?: 'training' | 'lates' | 'matches' | 'no_response' | 'goals' | 'assists' | 'minutes' | 'saves' | 'yellow' | 'red' | 'neutral' | 'score_best' | 'score_worst'
+  variant?: 'training' | 'lates' | 'matches' | 'no_response' | 'absences' | 'goals' | 'assists' | 'minutes' | 'saves' | 'yellow' | 'red' | 'neutral' | 'score_best' | 'score_worst'
   item?: { player: PlayerRef; value?: number; percent?: number; count?: number; meta?: any } | null
   distribution?: Array<{ player_id: string; value?: number; count?: number; percent?: number; first_name?: string; last_name?: string }>
   onSegmentOpen?: (filter: { label: string; playerIds: string[] }) => void
@@ -26,6 +27,8 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
     roles.forEach(r => m.set(r.code, r.label))
     return m
   }, [roles])
+
+
   // Role → sector mapping for card background theme (aligned to /squad)
   const sectorFromRoleCode = (code?: string): 'P'|'DIF'|'CEN'|'ATT'|'NA' => {
     if (!code) return 'NA'
@@ -46,7 +49,29 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const AnimatedNumber = ({ value }: { value: number }) => {
     const [display, setDisplay] = useState(0)
     const [bump, setBump] = useState(false)
+    const [isVisible, setIsVisible] = useState(false)
+    const ref = useRef<HTMLSpanElement>(null)
+    
     useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !isVisible) {
+            setIsVisible(true)
+          }
+        },
+        { threshold: 0.1 }
+      )
+      
+      if (ref.current) {
+        observer.observe(ref.current)
+      }
+      
+      return () => observer.disconnect()
+    }, [isVisible])
+    
+    useEffect(() => {
+      if (!isVisible) return
+      
       let raf: number
       const start = performance.now()
       const duration = 600
@@ -67,8 +92,9 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
       }
       return () => cancelAnimationFrame(raf)
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value])
-    return <span className={`tabular-nums ${bump ? 'animate-pulse' : ''}`}>{display}</span>
+    }, [value, isVisible])
+    
+    return <span ref={ref} className={`tabular-nums ${bump ? 'animate-pulse' : ''}`}>{display}</span>
   }
 
   const [flipped, setFlipped] = useState(false)
@@ -77,13 +103,15 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const metricStyle = (() => {
     switch (variant) {
       case 'training':
-        return { headerBg: '#E8F6EE', accent: '#2EB872', icon: CalendarCheck2 }
+        return { headerBg: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', accent: '#22c55e', icon: CalendarCheck2 } // Verde morbido con sfumatura
       case 'matches':
-        return { headerBg: '#EAF3FF', accent: '#2D77FF', icon: CalendarCheck2 }
+        return { headerBg: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', accent: '#22c55e', icon: CalendarCheck2 } // Verde morbido con sfumatura
       case 'lates':
-        return { headerBg: '#FFF1E5', accent: '#E39D2E', icon: AlarmClock }
+        return { headerBg: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', accent: '#f59e0b', icon: AlarmClock } // Giallo morbido con sfumatura
       case 'no_response':
-        return { headerBg: '#ECF2F7', accent: '#5C7A99', icon: MailX }
+        return { headerBg: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)', accent: '#ef4444', icon: MailX } // Rosso morbido con sfumatura
+      case 'absences':
+        return { headerBg: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)', accent: '#f97316', icon: CalendarX } // Arancione morbido con sfumatura
       case 'goals':
         return { headerBg: '#EAF3FF', accent: '#2D77FF', icon: Trophy }
       case 'assists':
@@ -238,11 +266,17 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
   const to = `/player/${p.id}?ref=/dashboard`
   const imageSrc = (p.avatar_url || defaultAvatarImageUrl || '') as string
 
+  // Use metric-specific background for presence cards, role-based for others
+  const isPresenceCard = ['training', 'matches', 'lates', 'absences', 'no_response'].includes(variant)
+  const cardBgClass = isPresenceCard 
+    ? `from-transparent to-transparent` 
+    : sectorHeroBgClass[sectorFromRoleCode(p.role_code || '')]
+
   return (
     <div className="w-full">
       {/* Front, aligned to /squad card */}
       <Link to={to} className="block">
-        <Card className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${sectorHeroBgClass[sectorFromRoleCode(p.role_code || '')]}`}>
+        <Card className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${cardBgClass}`} style={isPresenceCard ? { background: metricStyle.headerBg } : {}}>
           <div className="relative p-4 md:p-5">
             {/* Avatar overflowing left (identico a /squad) */}
             {imageSrc ? (
@@ -272,26 +306,53 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               </div>
             )}
             {/* Right content padding to accommodate avatar */}
-            <div className="pl-[109.6px] md:pl-[115px] min-h-[144px] md:min-h-[180px] pr-2">
+            <div className="pl-[109.6px] md:pl-[115px] min-h-[120px] md:min-h-[150px] pr-2">
               <div className="space-y-2">
-                <div className="font-semibold text-lg md:text-xl leading-tight line-clamp-2">{p.first_name} {p.last_name}</div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="text-xs md:text-sm text-muted-foreground truncate">{roleLabelByCode.get(p.role_code || '') || (p.role_code || '—')}</div>
+                {/* Two-line name: Nome, a capo Cognome */}
+                <div className="font-semibold text-lg md:text-xl leading-tight">
+                  <div className="truncate">{p.first_name}</div>
+                  <div className="truncate">{p.last_name}</div>
+                </div>
+                {/* Role and jersey number on same line */}
+                <div className="text-xs md:text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="truncate">{p.role_code || '—'}</span>
                   {typeof (p as any).jersey_number === 'number' && (
-                    <Badge variant="outline" className="text-[10px]">#{(p as any).jersey_number}</Badge>
+                    <span>#{(p as any).jersey_number}</span>
                   )}
                 </div>
-                {/* Metric pill: icon + animated number + unit */}
-                <div className="mt-1">
-                  <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm bg-white/85 border shadow-sm">
-                    {!!SectionIcon && <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />}
-                    <span className="font-extrabold tabular-nums text-[18px] md:text-[20px]" style={{ color: metricStyle.accent }}>
-                      <AnimatedNumber value={Math.max(0, Math.round(Number(value) || 0))} />
-                    </span>
-                    <span className="lowercase" style={{ color: metricStyle.accent }}>{valueUnit}</span>
-                  </div>
+                {/* Simple metric: icon + number + unit (no chip/border/bg) */}
+                <div className="mt-1 inline-flex items-center gap-2 text-sm">
+                  {!!SectionIcon && <SectionIcon className="h-5 w-5" style={{ color: metricStyle.accent }} aria-hidden />}
+                  <span className="font-extrabold tabular-nums text-[18px] md:text-[20px]" style={{ color: metricStyle.accent }}>
+                    <AnimatedNumber value={Math.max(0, Math.round(Number(value) || 0))} />
+                  </span>
+                  <span className="lowercase text-[0.95em]" style={{ color: metricStyle.accent }}>{valueUnit}</span>
                 </div>
               </div>
+            </div>
+            
+            {/* Horizontal separator line */}
+            <div className="border-t border-border mt-2 mb-2"></div>
+            
+            {/* Top 5 leaderboard table */}
+            <div className="px-4 pb-4">
+              <div className="text-xs font-semibold text-muted-foreground mb-3">Top 5</div>
+              {distribution && distribution.length > 0 ? (
+                <div className="space-y-1.5">
+                  {distribution.slice(0, 5).map((entry, index) => (
+                    <div key={`${entry.player_id}-${index}`} className="flex items-center justify-between text-xs">
+                      <span className="text-foreground font-medium truncate flex-1 pr-2">
+                        {entry.first_name} {entry.last_name}
+                      </span>
+                      <span className="font-bold tabular-nums text-muted-foreground">
+                        {Math.round(Number(entry.value || entry.count || 0))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground">Nessun dato disponibile</div>
+              )}
             </div>
           </div>
         </Card>

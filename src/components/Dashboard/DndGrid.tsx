@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
@@ -6,8 +6,15 @@ import { CSS } from '@dnd-kit/utilities'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { GripVertical, RotateCcw } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-type GridModule = { id: string; title: string; render: () => JSX.Element; gridClassName?: string }
+type GridModule = { 
+  id: string; 
+  title: string; 
+  render: (period?: string) => JSX.Element; 
+  gridClassName?: string;
+  hasPeriodSelector?: boolean;
+}
 
 type GridProps = {
   modules: Array<GridModule>
@@ -19,6 +26,8 @@ type GridProps = {
 import { supabase } from '@/integrations/supabase/client'
 
 export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, preferenceKey = 'dashboard_layout' }: GridProps) => {
+  const [periods, setPeriods] = useState<Record<string, string>>({})
+  const scrollPositionRef = useRef<number>(0)
   const [order, setOrder] = useState<string[]>(() => {
     try {
       const raw = localStorage.getItem(storageKey)
@@ -34,6 +43,14 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
   })
   const [locked, setLocked] = useState<boolean>(false)
   const ids = useMemo(() => modules.map(m => m.id), [modules])
+
+  // Restore scroll position after period changes to prevent unwanted scrolling
+  useLayoutEffect(() => {
+    if (scrollPositionRef.current > 0) {
+      window.scrollTo(0, scrollPositionRef.current)
+      scrollPositionRef.current = 0
+    }
+  }, [periods])
 
   // Load and persist order (localStorage + user preference if available)
   useEffect(() => {
@@ -130,18 +147,46 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
         <Card className={`p-4 bg-card border-border transition-smooth ${isDragging ? 'shadow-lg ring-1 ring-primary/30' : 'hover:shadow-glow'}`}>
           <div className="mb-3 flex items-center justify-between gap-2">
             <h3 className="text-sm font-semibold text-foreground truncate">{mod.title}</h3>
-            <button
-              className="inline-flex items-center gap-2 rounded-md px-2 py-1 bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-grab active:cursor-grabbing transition-bounce"
-              aria-label="Trascina per spostare"
-              title="Sposta modulo"
-              {...(locked ? {} as any : { ...attributes, ...listeners })}
-              disabled={locked}
-            >
-              <GripVertical className="h-4 w-4" />
-              <span className="text-xs hidden sm:inline">Muovi</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {mod.hasPeriodSelector && (
+                <Select 
+                  value={periods[mod.id] || 'current'} 
+                  onValueChange={(value) => {
+                    // Save current scroll position
+                    scrollPositionRef.current = window.scrollY
+                    setPeriods(prev => ({ ...prev, [mod.id]: value }))
+                  }}
+                >
+                  <SelectTrigger className="w-[140px] h-8 text-xs border-border/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                                      <SelectContent 
+                      align="end" 
+                      side="bottom" 
+                      sideOffset={4}
+                      avoidCollisions={true}
+                      position="popper"
+                      onCloseAutoFocus={(e) => e.preventDefault()}
+                    >
+                      <SelectItem value="current" className="text-xs">Mese corrente</SelectItem>
+                      <SelectItem value="previous" className="text-xs">Mese precedente</SelectItem>
+                      <SelectItem value="beginning" className="text-xs">Dall'inizio</SelectItem>
+                    </SelectContent>
+                </Select>
+              )}
+              <button
+                className="inline-flex items-center gap-2 rounded-md px-2 py-1 bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-grab active:cursor-grabbing transition-bounce"
+                aria-label="Trascina per spostare"
+                title="Sposta modulo"
+                {...(locked ? {} as any : { ...attributes, ...listeners })}
+                disabled={locked}
+              >
+                <GripVertical className="h-4 w-4" />
+                <span className="text-xs hidden sm:inline">Muovi</span>
+              </button>
+            </div>
           </div>
-          <div>{mod.render()}</div>
+          <div>{mod.render(periods[mod.id] || 'current')}</div>
         </Card>
       </div>
     )

@@ -246,9 +246,15 @@ const PlayerDetail = () => {
     if (file.size > 5 * 1024 * 1024) { toast({ title: 'File troppo grande', description: 'Max 5MB', variant: 'destructive' }); return }
     const ext = file.name.split('.').pop()
     const fileName = `player-avatar-${player.id}-${Date.now()}.${ext}`
-    const { error: upErr } = await supabase.storage.from('avatars').upload(fileName, file, { cacheControl: '3600', upsert: false })
-    if (upErr) { toast({ title: 'Errore di caricamento', variant: 'destructive' }); return }
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName)
+    // Try preferred bucket, then fallback if missing
+    let selectedBucket = 'player-avatars'
+    let uploadRes = await supabase.storage.from(selectedBucket).upload(fileName, file, { cacheControl: '3600', upsert: false })
+    if (uploadRes.error && /Bucket not found/i.test(String(uploadRes.error?.message || uploadRes.error))) {
+      selectedBucket = 'avatars'
+      uploadRes = await supabase.storage.from(selectedBucket).upload(fileName, file, { cacheControl: '3600', upsert: false })
+    }
+    if (uploadRes.error) { toast({ title: 'Errore di caricamento', description: String(uploadRes.error?.message || uploadRes.error), variant: 'destructive' }); return }
+    const { data: { publicUrl } } = supabase.storage.from(selectedBucket).getPublicUrl(fileName)
     try {
       await updatePlayer.mutateAsync({ id: player.id, avatar_url: publicUrl })
       toast({ title: 'Avatar aggiornato' })
