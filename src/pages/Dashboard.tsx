@@ -380,7 +380,11 @@ const Dashboard = () => {
                     xKey="date"
                     color="#3b82f6"
                     label="Punti"
-                    yAxisMax={5}
+                    yAxisMax={Math.max(
+                      // Find max value in trend series data
+                      ...(trend?.series?.map(d => d.points) || []),
+                      5 // Minimum fallback (covers 0-3 points scale)
+                    ) * 1.1} // Add 10% padding
                   />
                   {trend && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite · Bilancio <span className="text-foreground font-medium">{trend.wdl.wins}V {trend.wdl.draws}N {trend.wdl.losses}P</span></div>
@@ -399,7 +403,11 @@ const Dashboard = () => {
                     xKey="date"
                     color="#22c55e"
                     label="Presenze"
-                    yAxisMax={25}
+                    yAxisMax={Math.max(
+                      // Find max value in training series data
+                      ...(trainingSeries?.curr?.map(d => d.value) || []),
+                      25 // Minimum fallback
+                    ) * 1.1} // Add 10% padding
                   />
                   {trainingSeries && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Ultimi 30 giorni · Variazione vs periodo precedente: <span className={trainingSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{trainingSeries.deltaPct >= 0 ? '+' : ''}{trainingSeries.deltaPct}%</span></div>
@@ -418,7 +426,11 @@ const Dashboard = () => {
                     xKey="date"
                     color="#8b5cf6"
                     label="Presenze"
-                    yAxisMax={20}
+                    yAxisMax={Math.max(
+                      // Find max value in match series data
+                      ...(matchSeries?.curr?.map(d => d.value) || []),
+                      20 // Minimum fallback
+                    ) * 1.1} // Add 10% padding
                   />
                   {matchSeries && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Ultime 10 partite · Variazione vs periodo precedente: <span className={matchSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{matchSeries.deltaPct >= 0 ? '+' : ''}{matchSeries.deltaPct}%</span></div>
