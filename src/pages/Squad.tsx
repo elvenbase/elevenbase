@@ -564,6 +564,7 @@ const Squad = () => {
     to: __defaultTo
   });
   const [selectedCaptain, setSelectedCaptain] = useState<string>('none');
+  const [captainInitialized, setCaptainInitialized] = useState(false); // 🔧 Flag per evitare loop
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'card'|'table'>('card')
   const [openPlayerId, setOpenPlayerId] = useState<string|null>(null)
@@ -702,6 +703,7 @@ const Squad = () => {
     } else {
       setSelectedCaptain('none');
     }
+    setCaptainInitialized(true); // 🔧 Marca come inizializzato
   }, [players]);
 
   // Funzione per aggiornare il capitano
@@ -759,6 +761,8 @@ const Squad = () => {
 
   // Salva quando cambia la selezione del capitano
   React.useEffect(() => {
+    if (!captainInitialized) return; // 🔧 Non agire se non inizializzato
+    
     const currentCaptain = players.find(p => p.is_captain);
     const currentCaptainId = currentCaptain?.id || 'none';
     
@@ -766,7 +770,7 @@ const Squad = () => {
     if (selectedCaptain !== currentCaptainId && players.length > 0) {
       updateCaptain(selectedCaptain);
     }
-  }, [selectedCaptain]);
+  }, [selectedCaptain, captainInitialized]);
 
   const formatWhatsAppLink = (phone: string, firstName: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
