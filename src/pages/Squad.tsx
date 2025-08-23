@@ -1115,10 +1115,10 @@ const Squad = () => {
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <CardTitle className="text-lg leading-none">
+                        <CardTitle className="text-lg leading-none mb-0">
                           {group.role?.label || group.roleCode}
                         </CardTitle>
-                        <Badge variant="secondary" className="text-xs leading-none">
+                        <Badge variant="secondary" className="text-xs leading-none h-fit py-1">
                           {group.players.length} {group.players.length === 1 ? 'giocatore' : 'giocatori'}
                         </Badge>
                       </div>
