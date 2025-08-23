@@ -862,6 +862,49 @@ const Squad = () => {
     }
   };
 
+  // Group players by role
+  const groupPlayersByRole = (players: Player[]) => {
+    const roleOrder = ['POR', 'DC', 'DD', 'DS', 'CC', 'CD', 'CS', 'MC', 'MD', 'MS', 'TQ', 'AD', 'AS', 'AT', 'PC'];
+    const groups: { [key: string]: Player[] } = {};
+    
+    // Initialize groups
+    roles?.forEach(role => {
+      groups[role.code] = [];
+    });
+    
+    // Group players
+    players.forEach(player => {
+      const roleCode = (player as any).role_code || 'SENZA_RUOLO';
+      if (!groups[roleCode]) {
+        groups[roleCode] = [];
+      }
+      groups[roleCode].push(player);
+    });
+    
+    // Sort groups by role order and return non-empty groups
+    return roleOrder
+      .filter(roleCode => groups[roleCode] && groups[roleCode].length > 0)
+      .map(roleCode => ({
+        roleCode,
+        role: rolesByCode[roleCode],
+        players: groups[roleCode]
+      }))
+      .concat(
+        // Add any remaining roles not in the predefined order
+        Object.keys(groups)
+          .filter(roleCode => !roleOrder.includes(roleCode) && groups[roleCode].length > 0)
+          .map(roleCode => ({
+            roleCode,
+            role: rolesByCode[roleCode],
+            players: groups[roleCode]
+          }))
+      );
+  };
+
+  const groupedPlayers = useMemo(() => {
+    return groupPlayersByRole(filteredAndSortedPlayers);
+  }, [filteredAndSortedPlayers, roles, rolesByCode]);
+
   // Helpers for the new card
   const computeAge = (birthDate?: string): number | null => {
     if (!birthDate) return null;
@@ -894,6 +937,15 @@ const Squad = () => {
       <div className="flex items-center justify-between mb-2">
         <div className="text-base sm:text-lg font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
         <div className="flex items-center gap-2">
+          {/* Add Player Button - Desktop only */}
+          <div className="hidden sm:block">
+            <PlayerForm>
+              <Button variant="default" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Aggiungi Giocatore
+              </Button>
+            </PlayerForm>
+          </div>
           <Dialog open={captainDialogOpen} onOpenChange={setCaptainDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" className="h-9 px-3 rounded-full text-xs">Seleziona Capitano</Button>
@@ -1046,8 +1098,38 @@ const Squad = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 min-[1000px]:grid-cols-2 min-[1440px]:grid-cols-3 min-[1800px]:grid-cols-4 gap-4">
-                {filteredAndSortedPlayers.map((p)=> {
+              {groupedPlayers.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-lg mb-2">Nessun giocatore trovato</div>
+                  <div className="text-sm">
+                    {searchTerm || statusFilter !== 'all' || roleFilter !== 'all' 
+                      ? 'Prova a modificare i filtri di ricerca.' 
+                      : 'Inizia aggiungendo il primo giocatore alla rosa!'}
+                  </div>
+                </div>
+              ) : (
+                groupedPlayers.map((group) => (
+                <div key={group.roleCode} className="mb-8">
+                  {/* Role Section Header */}
+                  <div className="mb-4 border-b border-border/40">
+                    <div className="flex items-center justify-between pb-2">
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-lg font-semibold text-foreground">
+                          {group.role?.label || group.roleCode}
+                        </h3>
+                        <Badge variant="secondary" className="text-xs">
+                          {group.players.length} {group.players.length === 1 ? 'giocatore' : 'giocatori'}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {group.role?.abbreviation}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Players Grid for this role */}
+                  <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1200px]:grid-cols-3 min-[1600px]:grid-cols-4 gap-4">
+                    {group.players.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || ''];
                   const imageSrc = p.avatar_url || defaultAvatarImageUrl || '';
                   const age = computeAge(p.birth_date);
@@ -1137,9 +1219,11 @@ const Squad = () => {
                         </div>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                  </div>
+                </div>
+              )))}
 
             </>
           )}
