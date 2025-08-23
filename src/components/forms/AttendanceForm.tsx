@@ -255,6 +255,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
       } catch (e) {
         // Non bloccare la chiusura se la RPC fallisce: segnala solo
         console.warn('RPC mark_training_session_no_response failed:', e);
+        toast.warning('Sessione chiusa, ma non è stato possibile aggiornare automaticamente i non rispondenti. Verifica manualmente le presenze.');
       }
 
       toast.success('Sessione chiusa con successo');
