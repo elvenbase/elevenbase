@@ -291,8 +291,8 @@ const Dashboard = () => {
     const pad = (n: number) => String(n).padStart(2, '0')
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
   })
-  const placeholderLine = placeholderDates.map(date => ({ date, value: 0, points: 0 }))
-  const placeholderBars = [{ name: 'Allen.', present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }, { name: 'Partite', present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }]
+  const placeholderLine = placeholderDates.map((date, i) => ({ date, value: 15 + (i % 3), points: 1 + (i % 3) }))
+  const placeholderBars = [{ name: 'Allen.', present: 12, late: 2, absent: 1, pending: 0, no_response: 1 }, { name: 'Partite', present: 8, late: 1, absent: 2, pending: 0, no_response: 0 }]
 
   return (
     <div className="min-h-screen bg-background">
@@ -401,7 +401,7 @@ const Dashboard = () => {
                       <ReLineChart data={(trend?.series as any) || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 1']} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
                       </ReLineChart>
@@ -426,7 +426,7 @@ const Dashboard = () => {
                       <ReLineChart data={trainingSeries?.curr || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
                       </ReLineChart>
@@ -451,7 +451,7 @@ const Dashboard = () => {
                       <ReLineChart data={matchSeries?.curr || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
                       </ReLineChart>
@@ -499,7 +499,7 @@ const Dashboard = () => {
                       <ReBarChart data={periodAttendanceDist ? [{ name: 'Allen.', ...periodAttendanceDist.training }, { name: 'Partite', ...periodAttendanceDist.match }] : placeholderBars} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <ChartLegend content={<ChartLegendContent className="text-[9px] sm:text-xs" />} />
                         <Bar dataKey="present" fill="var(--color-present)" isAnimationActive={animateOnceRef.current} />
