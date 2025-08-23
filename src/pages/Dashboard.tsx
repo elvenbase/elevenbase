@@ -286,13 +286,7 @@ const Dashboard = () => {
   const activePlayers = players.filter(player => player.status === 'active');
   const totalPlayers = activePlayers.length;
 
-  const placeholderDates = Array.from({ length: 10 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (9 - i));
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
-  })
-  const placeholderLine = placeholderDates.map((date, i) => ({ date, value: 0, points: 0 }))
-  const placeholderBars = [{ name: 'Allen.', present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }, { name: 'Partite', present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }]
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -395,18 +389,24 @@ const Dashboard = () => {
               render: () => (
                 <div>
                   <div className="h-64">
-                    <ChartContainer config={{
-                      points: { label: 'Punti', color: 'hsl(var(--primary))' },
-                    }} className="h-full">
-                      <ReLineChart data={(trend?.series as any) || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 1']} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
-                      </ReLineChart>
-                    </ChartContainer>
-                    {(!trend?.series || trend.series.length === 0) && (
+                    {trend?.series ? (
+                      <ChartContainer config={{
+                        points: { label: 'Punti', color: 'hsl(var(--primary))' },
+                      }} className="h-full">
+                        <ReLineChart data={trend.series as any} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 1']} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                        </ReLineChart>
+                      </ChartContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
+                      </div>
+                    )}
+                    {trend?.series && trend.series.length === 0 && (
                       <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                     )}
                   </div>
@@ -422,16 +422,22 @@ const Dashboard = () => {
               render: () => (
                 <div>
                   <div className="h-64">
-                    <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
-                      <ReLineChart data={trainingSeries?.curr || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
-                      </ReLineChart>
-                    </ChartContainer>
-                    {(!trainingSeries?.curr || trainingSeries.curr.length === 0) && (
+                    {trainingSeries?.curr ? (
+                      <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
+                        <ReLineChart data={trainingSeries.curr} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                        </ReLineChart>
+                      </ChartContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
+                      </div>
+                    )}
+                    {trainingSeries?.curr && trainingSeries.curr.length === 0 && (
                       <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                     )}
                   </div>
@@ -447,16 +453,22 @@ const Dashboard = () => {
               render: () => (
                 <div>
                   <div className="h-64">
-                    <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
-                      <ReLineChart data={matchSeries?.curr || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
-                      </ReLineChart>
-                    </ChartContainer>
-                    {(!matchSeries?.curr || matchSeries.curr.length === 0) && (
+                    {matchSeries?.curr ? (
+                      <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
+                        <ReLineChart data={matchSeries.curr} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
+                        </ReLineChart>
+                      </ChartContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
+                      </div>
+                    )}
+                    {matchSeries?.curr && matchSeries.curr.length === 0 && (
                       <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
                     )}
                   </div>
@@ -496,7 +508,7 @@ const Dashboard = () => {
                       pending: { label: 'In attesa', color: '#94a3b8' },
                       no_response: { label: 'No response', color: '#a3a3a3' },
                     }} className="h-full">
-                      <ReBarChart data={periodAttendanceDist ? [{ name: 'Allen.', ...periodAttendanceDist.training }, { name: 'Partite', ...periodAttendanceDist.match }] : placeholderBars} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                      <ReBarChart data={[{ name: 'Allen.', ...periodAttendanceDist.training }, { name: 'Partite', ...periodAttendanceDist.match }]} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                         <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 'dataMax + 2']} />
