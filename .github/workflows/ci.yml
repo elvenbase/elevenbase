@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ feat/multi-team ]
+    branches: [ main ]
   pull_request:
-    branches: [ feat/multi-team ]
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       environment:
@@ -222,7 +222,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, detect-changes]
     name: 🔗 Deploy Edge Functions (public)
-    if: github.ref == 'refs/heads/feat/multi-team' && needs.detect-changes.outputs.functions == 'true'
+    if: github.ref == 'refs/heads/main' && needs.detect-changes.outputs.functions == 'true'
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
