@@ -1148,6 +1148,20 @@ const Squad = () => {
                       className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${sectorHeroBgClass[sectorFromRoleCode((p as any).role_code)]}`}
                     >
                       <div className="relative p-4 md:p-6">
+                        {/* Edit button in top-right corner */}
+                        <div className="absolute top-2 right-2 z-10">
+                          <EditPlayerForm player={p}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-white/80 rounded-full"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </EditPlayerForm>
+                        </div>
+                        
                         {/* Photo: sporge solo in alto, non a sinistra. Aumentata di un ulteriore 1.5x */}
                         {imageSrc ? (
                           <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm border-0 ring-0">
@@ -1190,11 +1204,15 @@ const Squad = () => {
                           </div>
                         </div>
 
-                        {/* Riga 2: 3 label a tutta larghezza con spazio ridotto */}
-                        <div className="mt-0.5 grid grid-cols-3 gap-2">
+                        {/* Riga 2: 4 label a tutta larghezza con spazio ridotto */}
+                        <div className="mt-0.5 grid grid-cols-2 md:grid-cols-4 gap-2">
                           <div>
                             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
                             <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">ALLENAMENTI</div>
+                            <div className={`mt-1 text-xs tabular-nums ${(p.presences ?? 0) === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{p.presences ?? 0}</div>
                           </div>
                           <div>
                             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">ETÀ</div>
