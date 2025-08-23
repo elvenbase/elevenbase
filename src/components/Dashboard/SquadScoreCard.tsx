@@ -147,17 +147,17 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
           </div>
         </div>
 
-        {/* Desktop: Layout a 3 sezioni */}
-        <div className="hidden md:flex">
-          {/* Sezione 1: Player Info */}
-          <div className="flex-1 p-6 border-r">
+        {/* Desktop: Layout verticale a 3 righe */}
+        <div className="hidden md:block">
+          {/* Riga 1: Player Info */}
+          <div className="p-6 border-b">
             <Link 
               to={`/player/${player.id}?ref=/dashboard`}
               className="block group"
             >
               <div className="flex items-center gap-4">
                 {/* Avatar */}
-                <div className="relative w-16 h-16 rounded-full overflow-hidden bg-muted shrink-0">
+                <div className="relative w-20 h-20 rounded-full overflow-hidden bg-muted shrink-0">
                   {player.avatar_url ? (
                     <img
                       src={player.avatar_url}
@@ -167,89 +167,100 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
                         e.currentTarget.style.display = 'none'
                       }}
                     />
-                  ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                    <span className="text-lg font-semibold text-blue-600">
-                      {player.first_name?.[0]}{player.last_name?.[0]}
-                    </span>
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                      <span className="text-xl font-semibold text-blue-600">
+                        {player.first_name?.[0]}{player.last_name?.[0]}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Player Details */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-lg group-hover:text-primary transition-colors">
-                    {player.first_name}
+                  <div className="font-semibold text-xl group-hover:text-primary transition-colors">
+                    {player.first_name} {player.last_name}
                   </div>
-                  <div className="font-semibold text-lg group-hover:text-primary transition-colors">
-                    {player.last_name}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-muted-foreground mt-1">
                     {player.role_code && player.jersey_number 
                       ? `${player.role_code} #${player.jersey_number}`
                       : player.role_code || `#${player.jersey_number}` || 'N/A'
                     }
                   </div>
-                  
-                  {/* Score prominente */}
-                  <div className="mt-2">
-                    <div className={`text-3xl font-bold ${scoreColor}`}>
-                      <AnimatedNumber value={score} isVisible={isVisible} suffix=" pt" />
-                    </div>
+                </div>
+
+                {/* Score prominente */}
+                <div className="text-right">
+                  <div className={`text-4xl font-bold ${scoreColor}`}>
+                    <AnimatedNumber value={score} isVisible={isVisible} suffix=" pt" />
                   </div>
+                  <div className="text-sm text-muted-foreground">Squad Score</div>
                 </div>
               </div>
             </Link>
           </div>
 
-          {/* Sezione 2: Metriche Aggiuntive */}
-          <div className="flex-1 p-6 border-r">
-            <h4 className="font-medium text-sm text-muted-foreground mb-4">Statistiche</h4>
-            <div className="space-y-4">
+          {/* Riga 2: Statistiche Estese */}
+          <div className="p-6 border-b">
+            <h4 className="font-medium text-sm text-muted-foreground mb-4">Statistiche Dettagliate</h4>
+            <div className="grid grid-cols-3 gap-6">
               <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Calendar className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <div className="text-sm text-muted-foreground">Eventi totali</div>
-                  <div className="font-semibold">
+                  <div className="font-semibold text-lg">
                     <AnimatedNumber value={totalEvents} isVisible={isVisible} />
                   </div>
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
-                <Target className="h-4 w-4 text-muted-foreground" />
+                <Target className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <div className="text-sm text-muted-foreground">Media squadra</div>
-                  <div className="font-semibold">
+                  <div className="font-semibold text-lg">
                     <AnimatedNumber value={averageScore} isVisible={isVisible} suffix=" pt" />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2 border-t">
-                <div className="text-sm text-muted-foreground">Differenza dalla media</div>
-                <div className={`font-semibold ${score > averageScore ? 'text-green-600' : 'text-red-600'}`}>
-                  {score > averageScore ? '+' : ''}
-                  <AnimatedNumber value={score - averageScore} isVisible={isVisible} suffix=" pt" />
+              <div className="flex items-center gap-3">
+                {score > averageScore ? (
+                  <TrendingUp className="h-5 w-5 text-green-500" />
+                ) : (
+                  <TrendingDown className="h-5 w-5 text-red-500" />
+                )}
+                <div>
+                  <div className="text-sm text-muted-foreground">Differenza dalla media</div>
+                  <div className={`font-semibold text-lg ${score > averageScore ? 'text-green-600' : 'text-red-600'}`}>
+                    {score > averageScore ? '+' : ''}
+                    <AnimatedNumber value={score - averageScore} isVisible={isVisible} suffix=" pt" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Sezione 3: Top 5 Leaderboard */}
-          <div className="flex-1 p-6">
-            <h4 className="font-medium text-sm text-muted-foreground mb-4">Top 5</h4>
-            <div className="space-y-2">
+          {/* Riga 3: Top 5 Leaderboard */}
+          <div className="p-6">
+            <h4 className="font-medium text-sm text-muted-foreground mb-4">Top 5 Classifica</h4>
+            <div className="grid grid-cols-1 gap-3">
               {leaderboard.slice(0, 5).map((player, index) => (
-                <div key={player.player_id} className="flex items-center justify-between py-1">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="text-xs font-medium text-muted-foreground w-6">
+                <div key={player.player_id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span className={`text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center ${
+                      index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                      index === 1 ? 'bg-gray-100 text-gray-700' :
+                      index === 2 ? 'bg-orange-100 text-orange-700' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
                       {player.rank || index + 1}°
                     </span>
-                    <span className="text-sm truncate">
+                    <span className="font-medium">
                       {player.first_name} {player.last_name}
                     </span>
                   </div>
-                  <span className="text-sm font-medium ml-2">
+                  <span className="font-bold text-lg">
                     {Math.round(player.value)} pt
                   </span>
                 </div>
@@ -277,12 +288,13 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
                         e.currentTarget.style.display = 'none'
                       }}
                     />
-                  ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-blue-600">
-                      {player.first_name?.[0]}{player.last_name?.[0]}
-                    </span>
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                      <span className="text-sm font-semibold text-blue-600">
+                        {player.first_name?.[0]}{player.last_name?.[0]}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
