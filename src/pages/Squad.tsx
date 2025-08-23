@@ -864,8 +864,8 @@ const Squad = () => {
 
   // Group players by role
   const groupPlayersByRole = (players: Player[]) => {
-    // Tactical progression: Goalkeeper → Defense → Midfield → Attack
-    const roleOrder = ['POR', 'DC', 'DD', 'DS', 'MC', 'MD', 'MS', 'CC', 'CD', 'CS', 'TQ', 'AD', 'AS', 'AT', 'PC'];
+    // Tactical progression: Goalkeeper FIRST → Defense → Midfield → Attack  
+    const roleOrder = ['POR', 'P', 'GK', 'DC', 'DD', 'DS', 'MC', 'MD', 'MS', 'CC', 'CD', 'CS', 'TQ', 'AD', 'AS', 'AT', 'PC'];
     const groups: { [key: string]: Player[] } = {};
     
     // Initialize groups
