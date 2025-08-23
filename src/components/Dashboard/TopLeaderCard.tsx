@@ -278,13 +278,13 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
       <Link to={to} className="block">
         <Card className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${cardBgClass}`} style={isPresenceCard ? { background: metricStyle.headerBg } : {}}>
           <div className="relative p-4 md:p-5">
-            {/* Avatar overflowing left (identico a /squad) */}
+            {/* Avatar overflowing left - FIXED: square dimensions with proper containment */}
             {imageSrc ? (
-              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[108px] h-[144px] md:w-[144px] md:h-[180px] overflow-hidden rounded-sm border-0 ring-0">
+              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[120px] md:h-[120px] overflow-hidden rounded-full border-2 border-white shadow-lg">
                 <img
                   src={imageSrc}
                   alt={`${p.first_name} ${p.last_name}`}
-                  className="w-full h-full object-cover object-center select-none border-0 ring-0 outline-none"
+                  className="w-full h-full object-cover object-center select-none"
                   onError={(e) => {
                     const img = e.currentTarget as HTMLImageElement
                     // Prevent infinite loop by applying fallback only once
@@ -295,18 +295,25 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                       img.src = fallback
                     } else {
                       img.style.display = 'none'
+                      // Show initials fallback
+                      const fallbackDiv = img.parentElement?.parentElement?.querySelector('.avatar-initials-fallback') as HTMLElement
+                      if (fallbackDiv) {
+                        fallbackDiv.style.display = 'flex'
+                      }
                     }
                   }}
                   draggable={false}
                 />
               </div>
             ) : (
-              <div className="absolute top-4 left-0 md:top-6 md:left-0">
-                <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} avatarUrl={p.avatar_url || undefined} size="lg" />
+              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[120px] md:h-[120px] rounded-full border-2 border-white shadow-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center avatar-initials-fallback">
+                <span className="text-lg md:text-xl font-semibold text-blue-600">
+                  {p.first_name?.[0]}{p.last_name?.[0]}
+                </span>
               </div>
             )}
             {/* Right content padding to accommodate avatar */}
-            <div className="pl-[109.6px] md:pl-[115px] min-h-[120px] md:min-h-[150px] pr-2">
+            <div className="pl-[104px] md:pl-[128px] min-h-[88px] md:min-h-[112px] pr-2">
               <div className="space-y-2">
                 {/* Two-line name: Nome, a capo Cognome */}
                 <div className="font-semibold text-lg md:text-xl leading-tight">
