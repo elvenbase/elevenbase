@@ -27,7 +27,9 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
         const idsInit = modules.map(m => m.id)
         if (Array.isArray(parsed) && parsed.every(id => idsInit.includes(id))) return parsed
       }
-    } catch {}
+    } catch {
+      // Ignore JSON parsing errors
+    }
     return []
   })
   const [locked, setLocked] = useState<boolean>(false)
@@ -43,9 +45,11 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
           const parsed = JSON.parse(raw) as string[]
           if (Array.isArray(parsed) && parsed.every(id => ids.includes(id))) setOrder(parsed)
         }
-      } catch {}
+      } catch {
+        // Ignore localStorage parsing errors
+      }
     }
-  }, [storageKey, ids])
+  }, [storageKey, ids, order.length])
 
   useEffect(() => {
     const loadFromDb = async () => {

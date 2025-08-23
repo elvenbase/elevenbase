@@ -205,22 +205,11 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
     return { pieData: chartData, legend: legendItems, baseN: nPlayers, topFive }
   }, [distribution, metricLabel, variant])
 
-  if (!item) {
-    return (
-      <Card className="p-4 bg-card/80 border border-border rounded-2xl shadow-card">
-        <div className="text-sm">—</div>
-      </Card>
-    )
-  }
-
-  const p = item.player
-  const value = (item.value ?? item.count ?? 0)
-  const to = `/player/${p.id}?ref=/dashboard`
-
+  // React Hooks must be called at the top level, before any conditional returns
   const [computedMin, setComputedMin] = useState<number | null>(null)
   const [vw, setVw] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0)
   const { defaultAvatarImageUrl } = useAvatarBackgrounds()
-  const imageSrc = (p.avatar_url || defaultAvatarImageUrl || '') as string
+
   useLayoutEffect(() => {
     const onResize = () => setVw(window.innerWidth)
     window.addEventListener('resize', onResize)
@@ -235,6 +224,19 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
     const estimate = base
     setComputedMin(estimate)
   }, [vw, item])
+
+  if (!item) {
+    return (
+      <Card className="p-4 bg-card/80 border border-border rounded-2xl shadow-card">
+        <div className="text-sm">—</div>
+      </Card>
+    )
+  }
+
+  const p = item.player
+  const value = (item.value ?? item.count ?? 0)
+  const to = `/player/${p.id}?ref=/dashboard`
+  const imageSrc = (p.avatar_url || defaultAvatarImageUrl || '') as string
 
   return (
     <div className="w-full">

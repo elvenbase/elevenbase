@@ -111,7 +111,7 @@ serve(async (req) => {
     }
 
     // MVP awards within period
-    let mSel: any = supabase
+    const mSel: any = supabase
       .from('matches')
       .select('id, mvp_player_id, mvp_trialist_id, match_date, live_state')
       .eq('live_state', 'ended')
