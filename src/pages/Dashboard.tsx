@@ -517,7 +517,7 @@ const Dashboard = () => {
             },
             {
               id: 'leaders-training-presences',
-              title: 'Presenze Allenamenti',
+              title: 'Allenamenti',
               gridClassName: 'col-span-1',
               hasPeriodSelector: true,
               render: (period = 'current') => {
@@ -549,7 +549,7 @@ const Dashboard = () => {
             },
             {
               id: 'leaders-match-presences',
-              title: 'Presenze Partite',
+              title: 'Partite',
               gridClassName: 'col-span-1',
               hasPeriodSelector: true,
               render: (period = 'current') => {
@@ -581,7 +581,7 @@ const Dashboard = () => {
             },
             {
               id: 'leaders-total-presences',
-              title: 'Presenze Totali',
+              title: 'Totali',
               gridClassName: 'col-span-1',
               hasPeriodSelector: true,
               render: (period = 'current') => {

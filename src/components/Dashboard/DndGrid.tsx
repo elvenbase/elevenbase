@@ -145,7 +145,7 @@ export const DndGrid = ({ modules, storageKey = 'dashboard-layout', userId, pref
     return (
       <div ref={setNodeRef} style={style} className={`min-w-0 ${mod.gridClassName || ''}`}>
         <Card className={`p-4 bg-card border-border transition-smooth ${isDragging ? 'shadow-lg ring-1 ring-primary/30' : 'hover:shadow-glow'}`}>
-          <div className="mb-3 flex items-center justify-between gap-2">
+          <div className={`${mod.hasPeriodSelector ? 'mb-6' : 'mb-3'} flex items-center justify-between gap-2`}>
             <h3 className="text-sm font-semibold text-foreground truncate">{mod.title}</h3>
             <div className="flex items-center gap-2">
               {mod.hasPeriodSelector && (
