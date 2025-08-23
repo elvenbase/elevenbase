@@ -178,11 +178,16 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
                           img.src = fallback
                         } else {
                           img.style.display = 'none'
+                          // Show initials fallback when image fails
+                          const initialsDiv = img.parentElement?.querySelector('.initials-fallback') as HTMLElement
+                          if (initialsDiv) {
+                            initialsDiv.style.display = 'flex'
+                          }
                         }
                       }}
                     />
                   ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                  <div className={`initials-fallback absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center ${imageSrc ? 'hidden' : ''}`}>
                     <span className="text-xl font-semibold text-blue-600">
                       {player.first_name?.[0]}{player.last_name?.[0]}
                     </span>
@@ -262,9 +267,12 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
                 <div key={player.player_id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <span className={`text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center ${
-                      index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                      index === 1 ? 'bg-gray-100 text-gray-700' :
-                      index === 2 ? 'bg-orange-100 text-orange-700' :
+                      type === 'best' && index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                      type === 'best' && index === 1 ? 'bg-gray-100 text-gray-700' :
+                      type === 'best' && index === 2 ? 'bg-orange-100 text-orange-700' :
+                      type === 'worst' && index === 0 ? 'bg-red-100 text-red-700' :
+                      type === 'worst' && index === 1 ? 'bg-red-100 text-red-600' :
+                      type === 'worst' && index === 2 ? 'bg-red-100 text-red-500' :
                       'bg-muted text-muted-foreground'
                     }`}>
                       {player.rank || index + 1}°
@@ -307,11 +315,16 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
                           img.src = fallback
                         } else {
                           img.style.display = 'none'
+                          // Show initials fallback when image fails
+                          const initialsDiv = img.parentElement?.querySelector('.initials-fallback') as HTMLElement
+                          if (initialsDiv) {
+                            initialsDiv.style.display = 'flex'
+                          }
                         }
                       }}
                     />
                   ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                  <div className={`initials-fallback absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center ${imageSrc ? 'hidden' : ''}`}>
                     <span className="text-sm font-semibold text-blue-600">
                       {player.first_name?.[0]}{player.last_name?.[0]}
                     </span>
