@@ -1129,7 +1129,7 @@ const Squad = () => {
                   </CardHeader>
                   <CardContent>
                     {/* Players Grid for this role */}
-                    <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1200px]:grid-cols-3 min-[1600px]:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {group.players.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || ''];
                   const imageSrc = p.avatar_url || defaultAvatarImageUrl || '';
