@@ -145,6 +145,29 @@ deploy_fast() {
     exit 1
   fi
 
+  # Sistema di reminder per deploy lento ogni 10 deploy veloci
+  local counter_file="$HOME/.deploy_fast_counter"
+  local count=0
+
+  # Leggi contatore esistente
+  if [[ -f "$counter_file" ]]; then
+    count=$(cat "$counter_file")
+  fi
+
+  # Incrementa contatore
+  ((count++))
+  echo "$count" > "$counter_file"
+
+  # Verifica se è il momento di suggerire deploy lento
+  if [[ $((count % 10)) -eq 0 ]]; then
+    warning "🎯 RICORDO: Hai fatto $count deploy veloci!"
+    warning "🔄 CONSIGLIATO: Fai un deploy lento ogni tanto per verificare tutto funzioni"
+    warning "💡 Comando: ./scripts/dev-workflow.sh workflow \"controllo: deploy completo\""
+    echo ""
+  else
+    log "📊 Deploy veloce numero: $count (prossimo controllo a 10, 20, 30...)"
+  fi
+
   # Eseguire il deploy diretto
   log "Eseguo deploy diretto su Netlify..."
   npm run deploy:fast
@@ -156,6 +179,20 @@ deploy_fast() {
     error "Deploy fallito!"
     exit 1
   fi
+}
+
+# Funzione per resettare il contatore dei deploy veloci
+reset_counter() {
+  local counter_file="$HOME/.deploy_fast_counter"
+
+  if [[ -f "$counter_file" ]]; then
+    rm "$counter_file"
+    success "✅ Contatore deploy veloci resettato!"
+  else
+    log "📊 Nessun contatore trovato (primo utilizzo)"
+  fi
+
+  log "🔄 Prossimo reminder: dopo 10 deploy veloci"
 }
 
 # Funzione per status del progetto
@@ -192,6 +229,7 @@ echo "  push           - Push su origin/main"
 echo "  workflow MSG   - Workflow completo (lint + build + commit + push)"
 echo "  deploy         - Deploy locale (build + preview)"
 echo "  deploy:fast    - Deploy diretto su Netlify (molto veloce)"
+echo "  reset-counter  - Resetta contatore deploy veloci"
 echo "  status         - Stato del progetto"
     echo "  help           - Mostra questo aiuto"
     echo ""
@@ -226,6 +264,9 @@ case "${1:-help}" in
         ;;
     "deploy:fast")
         deploy_fast
+        ;;
+    "reset-counter")
+        reset_counter
         ;;
     "status")
         project_status

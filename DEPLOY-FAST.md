@@ -97,6 +97,27 @@ npx netlify-cli deploy --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID_PRODUC
 
 ## 🔧 Configurazione Avanzata
 
+### **Sistema di Reminder per Deploy Completi**
+```bash
+# Il sistema tiene traccia dei deploy veloci
+# Ogni 10 deploy veloci, riceverai un reminder
+./scripts/dev-workflow.sh deploy:fast
+
+# Esempio output:
+# 📊 Deploy veloce numero: 7 (prossimo controllo a 10, 20, 30...)
+# 🎯 RICORDO: Hai fatto 10 deploy veloci!
+# 🔄 CONSIGLIATO: Fai un deploy lento ogni tanto per verificare tutto funzioni
+```
+
+### **Gestione Contatore Deploy**
+```bash
+# Resetta il contatore se necessario
+./scripts/dev-workflow.sh reset-counter
+
+# Controlla lo stato attuale
+./scripts/dev-workflow.sh status
+```
+
 ### **Deploy con Messaggio Personalizzato**
 ```bash
 npx netlify-cli deploy \
