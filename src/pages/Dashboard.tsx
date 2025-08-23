@@ -56,6 +56,14 @@ const Dashboard = () => {
   // Previous month (July 2025)
   const previousStart = new Date(now.getFullYear(), now.getMonth()-1, 1)
   const previousEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+  
+  // Debug: Log date ranges
+  console.log('Date ranges debug:', {
+    now: now.toISOString(),
+    currentMonth: { start: currentStart.toISOString(), end: currentEnd.toISOString() },
+    previousMonth: { start: previousStart.toISOString(), end: previousEnd.toISOString() }
+  })
+  
   const { data: leadersPreviousMonth } = useLeaders({ startDate: previousStart, endDate: previousEnd })
   
   // All time (no date filters)
@@ -273,6 +281,17 @@ const Dashboard = () => {
     statsLoading,
     recentActivity,
     activityLoading
+  });
+
+  // Debug leaders data
+  console.log('Leaders data debug:', {
+    leadersCurrentMonth: leadersCurrentMonth ? 'has data' : 'no data',
+    leadersPreviousMonth: leadersPreviousMonth ? 'has data' : 'no data',
+    leadersAllTime: leadersAllTime ? 'has data' : 'no data',
+    currentMonthKeys: leadersCurrentMonth ? Object.keys(leadersCurrentMonth) : [],
+    previousMonthKeys: leadersPreviousMonth ? Object.keys(leadersPreviousMonth) : [],
+    currentMonthTrainingPresences: leadersCurrentMonth?.trainingPresences?.length || 0,
+    previousMonthTrainingPresences: leadersPreviousMonth?.trainingPresences?.length || 0,
   });
   
   const activePlayers = players.filter(player => player.status === 'active');
