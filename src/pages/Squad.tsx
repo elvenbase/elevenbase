@@ -864,7 +864,8 @@ const Squad = () => {
 
   // Group players by role
   const groupPlayersByRole = (players: Player[]) => {
-    const roleOrder = ['POR', 'DC', 'DD', 'DS', 'CC', 'CD', 'CS', 'MC', 'MD', 'MS', 'TQ', 'AD', 'AS', 'AT', 'PC'];
+    // Tactical progression: Goalkeeper → Defense → Midfield → Attack
+    const roleOrder = ['POR', 'DC', 'DD', 'DS', 'MC', 'MD', 'MS', 'CC', 'CD', 'CS', 'TQ', 'AD', 'AS', 'AT', 'PC'];
     const groups: { [key: string]: Player[] } = {};
     
     // Initialize groups
@@ -932,7 +933,8 @@ const Squad = () => {
   };
 
   return (
-    <div className="mx-auto w-full px-2 sm:px-4 lg:px-6 py-6">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header compatto */}
       <div className="flex items-center justify-between mb-2">
         <div className="text-base sm:text-lg font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
@@ -1109,26 +1111,25 @@ const Squad = () => {
                 </div>
               ) : (
                 groupedPlayers.map((group) => (
-                <div key={group.roleCode} className="mb-8">
-                  {/* Role Section Header */}
-                  <div className="mb-4 border-b border-border/40">
-                    <div className="flex items-center justify-between pb-2">
+                <Card key={group.roleCode} className="mb-6">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold text-foreground">
+                        <CardTitle className="text-lg">
                           {group.role?.label || group.roleCode}
-                        </h3>
+                        </CardTitle>
                         <Badge variant="secondary" className="text-xs">
                           {group.players.length} {group.players.length === 1 ? 'giocatore' : 'giocatori'}
                         </Badge>
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground font-mono">
                         {group.role?.abbreviation}
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Players Grid for this role */}
-                  <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1200px]:grid-cols-3 min-[1600px]:grid-cols-4 gap-4">
+                  </CardHeader>
+                  <CardContent>
+                    {/* Players Grid for this role */}
+                    <div className="grid grid-cols-1 min-[800px]:grid-cols-2 min-[1200px]:grid-cols-3 min-[1600px]:grid-cols-4 gap-4">
                     {group.players.map((p)=> {
                   const role = rolesByCode[(p as any).role_code || ''];
                   const imageSrc = p.avatar_url || defaultAvatarImageUrl || '';
@@ -1221,8 +1222,9 @@ const Squad = () => {
                     </div>
                     )
                   })}
-                  </div>
-                </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )))}
 
             </>
@@ -1397,6 +1399,7 @@ const Squad = () => {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };
