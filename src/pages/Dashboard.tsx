@@ -291,8 +291,8 @@ const Dashboard = () => {
     const pad = (n: number) => String(n).padStart(2, '0')
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
   })
-  const placeholderLine = placeholderDates.map((date, i) => ({ date, value: 15 + (i % 3), points: 1 + (i % 3) }))
-  const placeholderBars = [{ name: 'Allen.', present: 12, late: 2, absent: 1, pending: 0, no_response: 1 }, { name: 'Partite', present: 8, late: 1, absent: 2, pending: 0, no_response: 0 }]
+  const placeholderLine = placeholderDates.map((date, i) => ({ date, value: 0, points: 0 }))
+  const placeholderBars = [{ name: 'Allen.', present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }, { name: 'Partite', present: 0, late: 0, absent: 0, pending: 0, no_response: 0 }]
 
   return (
     <div className="min-h-screen bg-background">
