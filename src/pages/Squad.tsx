@@ -431,7 +431,7 @@ const NeonPillProgress: React.FC<{
       <div className="text-xs md:text-sm font-bold flex items-center">
         <span
           style={{
-            background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+            background: 'linear-gradient(90deg, rgba(0,191,255,0.6) 0%, rgba(0,191,255,1.0) 100%)',
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',
             color: 'transparent',
@@ -491,7 +491,7 @@ const NeonPillProgress: React.FC<{
               className="tabular-nums font-extrabold leading-none select-none"
               style={{
                 fontSize: '20px',
-                background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+                background: 'linear-gradient(90deg, rgba(0,191,255,0.6) 0%, rgba(0,191,255,1.0) 100%)',
                 WebkitBackgroundClip: 'text',
                 backgroundClip: 'text',
                 color: 'transparent',
@@ -519,7 +519,7 @@ const NeonPillProgress: React.FC<{
                 <div
                   className="h-full"
                   style={{
-                    background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+                    background: 'linear-gradient(90deg, rgba(0,191,255,0.6) 0%, rgba(0,191,255,1.0) 100%)',
                     ...stripeMaskStyle,
                     clipPath: clipPathPolygon,
                     transition: 'clip-path 180ms ease-out'
@@ -534,7 +534,7 @@ const NeonPillProgress: React.FC<{
                   className="absolute"
                   style={{
                     inset: INNER_MARGIN_PX,
-                    background: 'linear-gradient(90deg, rgba(0,191,255,0.35) 0%, rgba(0,191,255,0.9) 100%)',
+                    background: 'linear-gradient(90deg, rgba(0,191,255,0.6) 0%, rgba(0,191,255,1.0) 100%)',
                     ...stripeMaskStyle
                   }}
                 />
