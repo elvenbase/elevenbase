@@ -124,7 +124,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
                   trialist_id: trialistId,
                   status: evaluation.final_decision
                 });
-                console.log(`Status aggiornato per trialist ${trialistId} a ${evaluation.final_decision}`);
+
               } catch (statusError) {
                 console.error('Errore aggiornamento status trialist:', trialistId, statusError);
                 // Non mostriamo toast per errori di status, solo log

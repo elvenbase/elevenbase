@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session);
+
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Verifica se l'utente è attivo
       if (data.user) {
-        console.log('User logged in successfully:', data.user.email);
+
         
         try {
           const { data: isActive, error: statusError } = await supabase.rpc('is_user_active', {

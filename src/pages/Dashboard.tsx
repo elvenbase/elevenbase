@@ -57,23 +57,7 @@ const Dashboard = () => {
   const previousStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth()-1, 1))
   const previousEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999))
   
-  // Debug: Log date ranges (FIXED with UTC)
-  console.log('Date ranges debug (FIXED):', {
-    now: now.toISOString(),
-    nowUTC: { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1, day: now.getUTCDate() },
-    currentMonth: { 
-      start: currentStart.toISOString(), 
-      end: currentEnd.toISOString(),
-      startLocal: `${currentStart.getUTCFullYear()}-${String(currentStart.getUTCMonth()+1).padStart(2,'0')}-${String(currentStart.getUTCDate()).padStart(2,'0')}`,
-      endLocal: `${currentEnd.getUTCFullYear()}-${String(currentEnd.getUTCMonth()+1).padStart(2,'0')}-${String(currentEnd.getUTCDate()).padStart(2,'0')}`
-    },
-    previousMonth: { 
-      start: previousStart.toISOString(), 
-      end: previousEnd.toISOString(),
-      startLocal: `${previousStart.getUTCFullYear()}-${String(previousStart.getUTCMonth()+1).padStart(2,'0')}-${String(previousStart.getUTCDate()).padStart(2,'0')}`,
-      endLocal: `${previousEnd.getUTCFullYear()}-${String(previousEnd.getUTCMonth()+1).padStart(2,'0')}-${String(previousEnd.getUTCDate()).padStart(2,'0')}`
-    }
-  })
+
   
   const { data: leadersPreviousMonth } = useLeaders({ startDate: previousStart, endDate: previousEnd })
   
@@ -290,27 +274,7 @@ const Dashboard = () => {
   // Legacy scoreLeaders for backward compatibility
   const scoreLeaders = calculateScoreLeaders(leaders)
   
-  // Debug logging
-  console.log('Dashboard Debug:', {
-    players: players,
-    playersCount: players.length,
-    playersLoading,
-    stats,
-    statsLoading,
-    recentActivity,
-    activityLoading
-  });
 
-  // Debug leaders data
-  console.log('Leaders data debug:', {
-    leadersCurrentMonth: leadersCurrentMonth ? 'has data' : 'no data',
-    leadersPreviousMonth: leadersPreviousMonth ? 'has data' : 'no data',
-    leadersAllTime: leadersAllTime ? 'has data' : 'no data',
-    currentMonthKeys: leadersCurrentMonth ? Object.keys(leadersCurrentMonth) : [],
-    previousMonthKeys: leadersPreviousMonth ? Object.keys(leadersPreviousMonth) : [],
-    currentMonthTrainingPresences: leadersCurrentMonth?.trainingPresences?.length || 0,
-    previousMonthTrainingPresences: leadersPreviousMonth?.trainingPresences?.length || 0,
-  });
   
   const activePlayers = players.filter(player => player.status === 'active');
   const totalPlayers = activePlayers.length;

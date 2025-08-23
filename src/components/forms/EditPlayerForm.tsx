@@ -137,7 +137,7 @@ const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica
 
       // If player-avatars bucket doesn't exist, fallback to avatars bucket
       if (uploadResult.error && uploadResult.error.message.includes('Bucket not found')) {
-        console.log('player-avatars bucket not found, falling back to avatars bucket');
+
         uploadResult = await supabase.storage
           .from('avatars')
           .upload(fileName, file, {

@@ -214,7 +214,7 @@ const UserManagement = () => {
 
   const handleUpdateUserRole = async (userId: string, newRole: 'superadmin' | 'admin' | 'coach' | 'player') => {
     try {
-      console.log('Updating role for user:', userId, 'to:', newRole);
+
       
       // Rimuovi tutti i ruoli esistenti
       const { error: deleteError } = await supabase
@@ -249,7 +249,7 @@ const UserManagement = () => {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      console.log('Deleting user:', userId);
+
       
       // Call edge function to delete user from auth system and database
       const { data, error } = await supabase.functions.invoke('delete-user', {
@@ -274,7 +274,7 @@ const UserManagement = () => {
     if (!selectedUser) return;
     
     try {
-      console.log('Updating user:', selectedUser.id);
+
       
       // Prepare update data
       const updateData: any = {

@@ -42,8 +42,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
     ? `${window.location.origin}/session/${session.public_link_token}`
     : ''
   
-  console.log('Session URL generated:', sessionUrl)
-  console.log('Session token:', session.public_link_token)
+
 
   // Countdown timer
   useEffect(() => {
@@ -83,7 +82,7 @@ const PublicLinkSharing = ({ session, attendanceStats, onRefresh }: PublicLinkSh
 
   const openPublicLink = () => {
     if (sessionUrl) {
-      console.log('Opening URL:', sessionUrl)
+
       window.open(sessionUrl, '_blank')
     }
   }

@@ -211,7 +211,7 @@ export const useCreatePlayer = () => {
       is_captain?: boolean;
       created_by?: string;
     }) => {
-      console.log('Creating player:', player);
+
       const { data, error } = await supabase
         .from('players')
         .insert(player)
@@ -260,7 +260,7 @@ export const useUpdatePlayer = () => {
       is_captain?: boolean;
       created_by?: string;
     }) => {
-      console.log('Updating player:', id, updates);
+
       const { data, error } = await supabase
         .from('players')
         .update(updates)
@@ -292,7 +292,7 @@ export const useDeletePlayer = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      console.log('Deleting player:', id);
+
       const { error } = await supabase
         .from('players')
         .delete()
@@ -785,7 +785,7 @@ export const useUpdateTrialist = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; email?: string; phone?: string; birth_date?: string; position?: string; status?: 'in_prova' | 'promosso' | 'archiviato'; notes?: string; avatar_url?: string }) => {
-      console.log('Updating trialist:', id, updates);
+
       const { data, error } = await supabase
         .from('trialists')
         .update(updates)

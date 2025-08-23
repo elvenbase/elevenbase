@@ -112,7 +112,7 @@ const PublicSession = () => {
   }, [deadline])
 
   const loadSessionData = async () => {
-    console.log('Loading session data for token:', token)
+
     try {
       // Use fetch directly to handle HTTP errors better
       const response = await fetch(`${supabase.supabaseUrl}/functions/v1/public-registration`, {
@@ -125,7 +125,7 @@ const PublicSession = () => {
       })
 
       const data = await response.json()
-      console.log('Edge function response:', { status: response.status, data: JSON.stringify(data) })
+
 
       if (!response.ok) {
         setError(data.error || `Errore HTTP ${response.status}`)
@@ -144,7 +144,7 @@ const PublicSession = () => {
       setExistingAttendance(data.existingAttendance)
       
       if (data.convocati) {
-        console.log('✅ Setting convocati from edge function:', data.convocati.length)
+
         setConvocati(data.convocati)
       }
       

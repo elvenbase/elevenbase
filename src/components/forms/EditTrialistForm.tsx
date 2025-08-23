@@ -185,7 +185,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Attempting to update trialist:', trialist.id, formData);
+
     
     // Validate gaming fields
     if (formData.jersey_number && (isNaN(Number(formData.jersey_number)) || Number(formData.jersey_number) < 1 || Number(formData.jersey_number) > 99)) {
@@ -226,7 +226,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
         is_captain: formData.is_captain
       });
       setOpen(false);
-      console.log('Trialist updated successfully');
+
     } catch (error) {
       console.error('Error updating trialist:', error);
     }

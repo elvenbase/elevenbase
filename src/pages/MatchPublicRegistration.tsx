@@ -65,13 +65,7 @@ const MatchPublicRegistration = () => {
       if (!response.ok) { setError(data.error || `HTTP ${response.status}`); return }
       if (data.error) { setError(data.error); return }
       
-      // Debug per verificare i dati caricati
-      console.log('Dati caricati:', {
-        match: data.match,
-        players: data.players?.length,
-        trialistsInvited: data.trialistsInvited?.length,
-        existingAttendance: data.existingAttendance?.length
-      })
+
       
 
       
@@ -124,9 +118,7 @@ const MatchPublicRegistration = () => {
       if (!resp.ok) { toast.error(data?.error || `HTTP ${resp.status}`); return }
       if (data.error) { toast.error(data.error); return }
       toast.success('Registrazione completata!')
-      console.log('Registrazione completata, ricarico dati...')
       await loadData()
-      console.log('Dati ricaricati dopo registrazione')
       setSelectedEntity(''); setSelectedStatus('present')
     } catch (err: any) {
       console.error('Errore nella registrazione:', err)
@@ -287,7 +279,7 @@ const MatchPublicRegistration = () => {
                     )}
                     {trialistsInvited.map(t => {
                       const registration = getTrialistRegistration(t.id)
-                      console.log(`Rendering trialist ${t.id}:`, { trialist: t, registration, disabled: !!registration })
+
                       return (
                         <SelectItem key={t.id} value={`trialist:${t.id}` as SelectEntity} disabled={!!registration} className="py-3">
                           <div className="flex items-center gap-3 w-full">
@@ -339,13 +331,7 @@ const MatchPublicRegistration = () => {
           <CardHeader><CardTitle>Riepilogo Registrazioni</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             {(() => {
-              // Debug per verificare i dati
-              console.log('Conteggio - Dati disponibili:', {
-                players: players.length,
-                trialistsInvited: trialistsInvited.length,
-                existingAttendance: existingAttendance.length,
-                trialistsWithStatus: trialistsInvited.filter(t => t.status === 'present' || t.status === 'absent').length
-              })
+
               
               // Conteggio giocatori (da existingAttendance)
               const playerPresent = existingAttendance.filter(a => a.status === 'present').length
@@ -366,11 +352,7 @@ const MatchPublicRegistration = () => {
               const totalResponded = playerResponded + trialistResponded
               const totalNoResponse = totalEntities - totalResponded
               
-              console.log('Conteggio - Risultati:', {
-                playerPresent, playerAbsent, playerResponded, playerNoResponse,
-                trialistPresent, trialistAbsent, trialistResponded, trialistNoResponse,
-                presentTotal, absentTotal, totalResponded, totalNoResponse
-              })
+
               
               return (
                 <>

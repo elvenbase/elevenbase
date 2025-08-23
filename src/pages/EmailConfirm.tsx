@@ -26,7 +26,7 @@ const EmailConfirm = () => {
 
         // Se abbiamo un access_token (da query params o hash), significa che l'utente è già autenticato
         if (accessToken || hashAccessToken) {
-          console.log('Access token ricevuto, utente già autenticato');
+
           setStatus('success');
           setMessage('Email confermata con successo! Ora puoi accedere.');
           return;
@@ -94,7 +94,7 @@ const EmailConfirm = () => {
       const hashAccessToken = hashParams.get('access_token');
       
       if (hashAccessToken) {
-        console.log('Access token ricevuto dall\'hash, utente già autenticato');
+
         setStatus('success');
         setMessage('Email confermata con successo! Ora puoi accedere.');
       }

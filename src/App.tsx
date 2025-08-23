@@ -59,7 +59,7 @@ function App() {
 
   const checkAdminSetup = async () => {
     // TEMPORARY BYPASS - Skip admin setup check
-    console.log('Bypassing admin setup check - allowing direct access');
+
     setNeedsAdminSetup(false);
     
     // Original code commented out for now
@@ -99,7 +99,7 @@ function App() {
   };
 
   // TEMPORARY BYPASS - Always show main app
-  console.log('Bypassing admin setup - showing main app directly');
+
   
   /*
   if (needsAdminSetup === null) {
