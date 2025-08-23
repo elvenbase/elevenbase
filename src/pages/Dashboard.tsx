@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries, useAttendanceScoreSettings } from "@/hooks/useSupabaseData";
 
-import { UltrastableLineChart, UltrastableBarChart } from "@/components/ui/stable-chart-v2";
+import { FinalStableLineChart, FinalStableBarChart } from "@/components/ui/final-stable-chart";
 
 import { PlayerForm } from "@/components/forms/PlayerForm";
 import { TrainingForm } from "@/components/forms/TrainingForm";
@@ -366,14 +366,13 @@ const Dashboard = () => {
               title: 'Trend ultime partite (ultime 10)',
               render: () => (
                 <div>
-                  <UltrastableLineChart 
+                  <FinalStableLineChart 
                     data={trend?.series as any}
                     dataKey="points"
                     xKey="date"
                     color="hsl(var(--primary))"
                     label="Punti"
                     yAxisMax={5}
-                    isLoading={!trend?.series}
                   />
                   {trend && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite · Bilancio <span className="text-foreground font-medium">{trend.wdl.wins}V {trend.wdl.draws}N {trend.wdl.losses}P</span></div>
@@ -386,14 +385,13 @@ const Dashboard = () => {
               title: 'Presenze allenamenti (ultimi 30 giorni)',
               render: () => (
                 <div>
-                  <UltrastableLineChart 
+                  <FinalStableLineChart 
                     data={trainingSeries?.curr}
                     dataKey="value"
                     xKey="date"
                     color="hsl(var(--success))"
                     label="Presenze"
                     yAxisMax={25}
-                    isLoading={!trainingSeries?.curr}
                   />
                   {trainingSeries && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Ultimi 30 giorni · Variazione vs periodo precedente: <span className={trainingSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{trainingSeries.deltaPct >= 0 ? '+' : ''}{trainingSeries.deltaPct}%</span></div>
@@ -406,14 +404,13 @@ const Dashboard = () => {
               title: 'Presenze partite (ultime 10)',
               render: () => (
                 <div>
-                  <UltrastableLineChart 
+                  <FinalStableLineChart 
                     data={matchSeries?.curr}
                     dataKey="value"
                     xKey="date"
                     color="hsl(var(--accent))"
                     label="Presenze"
                     yAxisMax={20}
-                    isLoading={!matchSeries?.curr}
                   />
                   {matchSeries && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Ultime 10 partite · Variazione vs periodo precedente: <span className={matchSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{matchSeries.deltaPct >= 0 ? '+' : ''}{matchSeries.deltaPct}%</span></div>
@@ -443,7 +440,7 @@ const Dashboard = () => {
                 
                 return (
                 <div>
-                  <UltrastableBarChart 
+                  <FinalStableBarChart 
                     data={[
                       { name: 'Allen.', ...periodAttendanceDist.training }, 
                       { name: 'Partite', ...periodAttendanceDist.match }
@@ -457,7 +454,6 @@ const Dashboard = () => {
                       { key: 'no_response', label: 'No risp.', color: '#a3a3a3' },
                     ]}
                     yAxisMax={30}
-                    isLoading={!periodAttendanceDist}
                   />
                   <div className="mt-3 text-xs text-muted-foreground">Periodo: {getPeriodLabel(period)}</div>
                 </div>
