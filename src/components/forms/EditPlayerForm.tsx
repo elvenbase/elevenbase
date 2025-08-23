@@ -125,20 +125,35 @@ const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica
       const fileExt = file.name.split('.').pop();
       const fileName = `player-${player.id}/avatar-${Date.now()}.${fileExt}`;
       
-      const { data, error } = await supabase.storage
-        .from('user-avatars')
+      // Try player-avatars bucket first, fallback to avatars if not found
+      let uploadResult = await supabase.storage
+        .from('player-avatars')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
         });
 
-      if (error) {
-        console.error('Upload error:', error);
-        throw error;
+      let bucketName = 'player-avatars';
+
+      // If player-avatars bucket doesn't exist, fallback to avatars bucket
+      if (uploadResult.error && uploadResult.error.message.includes('Bucket not found')) {
+        console.log('player-avatars bucket not found, falling back to avatars bucket');
+        uploadResult = await supabase.storage
+          .from('avatars')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        bucketName = 'avatars';
+      }
+
+      if (uploadResult.error) {
+        console.error('Upload error:', uploadResult.error);
+        throw uploadResult.error;
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from('user-avatars')
+        .from(bucketName)
         .getPublicUrl(fileName);
 
       setAvatarUrl(publicUrl);
