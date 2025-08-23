@@ -277,7 +277,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
       {/* Front, aligned to /squad card */}
       <Link to={to} className="block">
         <Card className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${cardBgClass}`} style={isPresenceCard ? { background: metricStyle.headerBg } : {}}>
-          <div className="relative p-4 md:p-5">
+          <div className="relative p-[0.9rem]">
             {/* Avatar overflowing left - Clean square with no background */}
             {imageSrc ? (
               <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[150px] md:h-[150px] overflow-hidden">
