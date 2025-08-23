@@ -7,6 +7,8 @@ type PlayerRow = {
   first_name: string
   last_name: string
   score: number
+  totalEvents: number
+  hasMinEvents: boolean
   mvp: number
   // Training
   t_pres: number
@@ -98,11 +100,17 @@ export default function PlayersStatsTable() {
         mvpBonusOnce: scoreSettings.mvp_bonus_once ?? 5.0,
       } : undefined, scoreSettings?.min_events || 10)
 
+      const totalEvents = tPres + tAbs + tNr + mPres + mAbs + mNr
+      const minEvents = scoreSettings?.min_events || 10
+      const hasMinEvents = totalEvents >= minEvents
+
       return {
         id: pid,
         first_name: fn,
         last_name: ln,
-        score: (scoreSettings && (tPres + tAbs + tNr + mPres + mAbs + mNr) >= (scoreSettings.min_events || 10)) ? scoreData.score0to100 : 0,
+        score: (scoreSettings && hasMinEvents) ? scoreData.score0to100 : 0,
+        totalEvents,
+        hasMinEvents,
         mvp,
         t_pres: tPres,
         t_abs: tAbs,
@@ -173,6 +181,7 @@ export default function PlayersStatsTable() {
             <tr>
               <Th label="Giocatore" onClick={()=>onHeaderClick('last_name')} />
               <Th label="Score" onClick={()=>onHeaderClick('score')} />
+              <Th label="Eventi" onClick={()=>onHeaderClick('totalEvents')} />
               <Th label="MVP" onClick={()=>onHeaderClick('mvp')} />
               <Th label="All. Pres." onClick={()=>onHeaderClick('t_pres')} />
               <Th label="All. Ass." onClick={()=>onHeaderClick('t_abs')} />
@@ -198,7 +207,20 @@ export default function PlayersStatsTable() {
             {rows.map(r => (
               <tr key={r.id} className="border-t hover:bg-muted/30">
                 <td className="px-2 py-2 whitespace-nowrap font-medium">{r.last_name} {r.first_name}</td>
-                <td className="px-2 py-2 text-center tabular-nums font-semibold">{r.score.toFixed(1)}</td>
+                <td className="px-2 py-2 text-center tabular-nums font-semibold">
+                  {r.hasMinEvents ? (
+                    r.score.toFixed(1)
+                  ) : (
+                    <span className="text-muted-foreground" title={`Score non calcolato: solo ${r.totalEvents} eventi (min. ${scoreSettings?.min_events || 10})`}>
+                      {r.score.toFixed(1)}*
+                    </span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-center tabular-nums">
+                  <span className={r.hasMinEvents ? '' : 'text-amber-600 font-medium'} title={r.hasMinEvents ? '' : `Insufficienti per calcolo score (min. ${scoreSettings?.min_events || 10})`}>
+                    {r.totalEvents}
+                  </span>
+                </td>
                 <td className="px-2 py-2 text-center tabular-nums">{r.mvp}</td>
                 <td className="px-2 py-2 text-center tabular-nums">{r.t_pres}</td>
                 <td className="px-2 py-2 text-center tabular-nums">{r.t_abs}</td>
@@ -222,12 +244,25 @@ export default function PlayersStatsTable() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={19} className="px-3 py-6 text-center text-muted-foreground">Nessun dato per il periodo selezionato</td>
+                <td colSpan={20} className="px-3 py-6 text-center text-muted-foreground">Nessun dato per il periodo selezionato</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      
+      {/* Info note about score calculation */}
+      {scoreSettings && (
+        <div className="text-xs text-muted-foreground mt-2 px-2">
+          <div className="flex items-center gap-2">
+            <span>ℹ️</span>
+            <span>
+              Squad Score calcolato solo per giocatori con almeno <strong>{scoreSettings.min_events}</strong> eventi totali. 
+              Gli score contrassegnati con <span className="text-muted-foreground">*</span> indicano eventi insufficienti.
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
