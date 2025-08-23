@@ -28,9 +28,7 @@ import {
 } from "lucide-react";
 import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries, useAttendanceScoreSettings } from "@/hooks/useSupabaseData";
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-
-import { LineChart as ReLineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as ReBarChart, Bar } from 'recharts'
+import { StableLineChart, StableBarChart } from "@/components/ui/stable-chart";
 
 import { PlayerForm } from "@/components/forms/PlayerForm";
 import { TrainingForm } from "@/components/forms/TrainingForm";
@@ -86,23 +84,7 @@ const Dashboard = () => {
   const { data: matchSeries } = useMatchPresenceSeries(10)
   const { data: scoreSettings } = useAttendanceScoreSettings()
 
-  const formatDayMonth = (value: any) => {
-    try {
-      if (!value) return ''
-      // Support ISO strings (YYYY-MM-DD or with time)
-      const d = new Date(typeof value === 'string' ? value : String(value))
-      if (!isNaN(d.getTime())) {
-        return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })
 
-      }
-      // Fallback: try to parse YYYY-MM-DD manually
-      const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
-      if (m) return `${m[3]}/${m[2]}`
-      return String(value)
-    } catch {
-      return String(value)
-    }
-  }
 
   // Helpers to compose best/worst from leaders arrays using players list for avatar/role
 
@@ -386,20 +368,14 @@ const Dashboard = () => {
                 <div>
                   <div className="h-64">
                     {trend?.series ? (
-                      <ChartContainer config={{
-                        points: { label: 'Punti', color: 'hsl(var(--primary))' },
-                      }} className="h-full">
-                        <ReLineChart 
-                          key={`trend-${trend.series?.length || 0}`}
-                          data={trend.series as any} 
-                          margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 5]} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} />
-                        </ReLineChart>
-                      </ChartContainer>
+                      <StableLineChart 
+                        data={trend.series as any}
+                        dataKey="points"
+                        xKey="date"
+                        color="hsl(var(--primary))"
+                        label="Punti"
+                        yAxisMax={5}
+                      />
                     ) : (
                       <div className="h-full flex items-center justify-center">
                         <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
@@ -422,18 +398,14 @@ const Dashboard = () => {
                 <div>
                   <div className="h-64">
                     {trainingSeries?.curr ? (
-                      <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--success))' } }} className="h-full">
-                        <ReLineChart 
-                          key={`training-${trainingSeries.curr?.length || 0}`}
-                          data={trainingSeries.curr} 
-                          margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 25]} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
-                        </ReLineChart>
-                      </ChartContainer>
+                      <StableLineChart 
+                        data={trainingSeries.curr}
+                        dataKey="value"
+                        xKey="date"
+                        color="hsl(var(--success))"
+                        label="Presenze"
+                        yAxisMax={25}
+                      />
                     ) : (
                       <div className="h-full flex items-center justify-center">
                         <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
@@ -456,18 +428,14 @@ const Dashboard = () => {
                 <div>
                   <div className="h-64">
                     {matchSeries?.curr ? (
-                      <ChartContainer config={{ presenze: { label: 'Presenze', color: 'hsl(var(--accent))' } }} className="h-full">
-                        <ReLineChart 
-                          key={`matches-${matchSeries.curr?.length || 0}`}
-                          data={matchSeries.curr} 
-                          margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 20]} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line type="monotone" dataKey="value" name="Presenze" stroke="var(--color-presenze)" strokeWidth={2} dot={false} />
-                        </ReLineChart>
-                      </ChartContainer>
+                      <StableLineChart 
+                        data={matchSeries.curr}
+                        dataKey="value"
+                        xKey="date"
+                        color="hsl(var(--accent))"
+                        label="Presenze"
+                        yAxisMax={20}
+                      />
                     ) : (
                       <div className="h-full flex items-center justify-center">
                         <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
@@ -506,29 +474,21 @@ const Dashboard = () => {
                 return (
                 <div>
                   <div className="h-64">
-                    <ChartContainer config={{
-                      present: { label: 'Presenti', color: 'hsl(var(--success))' },
-                      late: { label: 'Ritardi', color: '#f59e0b' },
-                      absent: { label: 'Assenti', color: 'hsl(var(--destructive))' },
-                      pending: { label: 'In attesa', color: '#94a3b8' },
-                      no_response: { label: 'No response', color: '#a3a3a3' },
-                    }} className="h-full">
-                      <ReBarChart 
-                        key={`attendance-${period}-${periodAttendanceDist.training?.present || 0}`}
-                        data={[{ name: 'Allen.', ...periodAttendanceDist.training }, { name: 'Partite', ...periodAttendanceDist.match }]} 
-                        margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} domain={[0, 30]} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <ChartLegend content={<ChartLegendContent className="text-[9px] sm:text-xs" />} />
-                        <Bar dataKey="present" fill="var(--color-present)" />
-                        <Bar dataKey="late" fill="var(--color-late)" />
-                        <Bar dataKey="absent" fill="var(--color-absent)" />
-                        <Bar dataKey="pending" fill="var(--color-pending)" />
-                        <Bar dataKey="no_response" fill="var(--color-no_response)" />
-                      </ReBarChart>
-                    </ChartContainer>
+                    <StableBarChart 
+                      data={[
+                        { name: 'Allen.', ...periodAttendanceDist.training }, 
+                        { name: 'Partite', ...periodAttendanceDist.match }
+                      ]}
+                      categories={['Allen.', 'Partite']}
+                      datasets={[
+                        { key: 'present', label: 'Presenti', color: 'hsl(var(--success))' },
+                        { key: 'late', label: 'Ritardi', color: '#f59e0b' },
+                        { key: 'absent', label: 'Assenti', color: 'hsl(var(--destructive))' },
+                        { key: 'pending', label: 'In attesa', color: '#94a3b8' },
+                        { key: 'no_response', label: 'No risp.', color: '#a3a3a3' },
+                      ]}
+                      yAxisMax={30}
+                    />
                   </div>
                   <div className="mt-3 text-xs text-muted-foreground">Periodo: {getPeriodLabel(period)}</div>
                 </div>
