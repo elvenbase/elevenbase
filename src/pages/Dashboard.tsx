@@ -384,30 +384,13 @@ const Dashboard = () => {
             {
               id: 'trend-matches',
               title: 'Trend ultime partite (ultime 10)',
-              hasPeriodSelector: true,
-              render: (period = 'current') => {
-                const periodTrend = getTrendForPeriod(period)
-                
-                if (!periodTrend?.series || periodTrend.series.length === 0) {
-                  return (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="text-muted-foreground text-sm mb-2">
-                        📈 Nessun dato disponibile
-                      </div>
-                      <div className="text-muted-foreground text-xs">
-                        Non ci sono dati di trend per {getPeriodLabel(period)}
-                      </div>
-                    </div>
-                  )
-                }
-                
-                return (
+              render: () => (
                 <div>
                   <div className="h-64">
                     <ChartContainer config={{
                       points: { label: 'Punti', color: 'hsl(var(--primary))' },
                     }} className="h-full">
-                      <ReLineChart data={(periodTrend?.series as any) || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
+                      <ReLineChart data={(trend?.series as any) || placeholderLine} margin={{ left: -4, right: 6, top: 6, bottom: 6 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tickFormatter={formatDayMonth} tickLine={false} axisLine={false} />
                         <YAxis stroke="hsl(var(--muted-foreground))" width={28} tickLine={false} axisLine={false} />
@@ -415,13 +398,15 @@ const Dashboard = () => {
                         <Line type="monotone" dataKey="points" stroke="var(--color-points)" strokeWidth={2} dot={false} isAnimationActive={animateOnceRef.current} />
                       </ReLineChart>
                     </ChartContainer>
+                    {(!trend?.series || trend.series.length === 0) && (
+                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
+                    )}
                   </div>
-                  {periodTrend && (
-                    <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite ({getPeriodLabel(period)}) · Bilancio <span className="text-foreground font-medium">{periodTrend.wdl.wins}V {periodTrend.wdl.draws}N {periodTrend.wdl.losses}P</span></div>
+                  {trend && (
+                    <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite · Bilancio <span className="text-foreground font-medium">{trend.wdl.wins}V {trend.wdl.draws}N {trend.wdl.losses}P</span></div>
                   )}
                 </div>
-                )
-              }
+              )
             },
             {
               id: 'training-series',
