@@ -279,6 +279,8 @@ const Dashboard = () => {
     return {
       bestTwo: sorted.slice(0,2),
       worstTwo: sorted.slice(-2).reverse(),
+      topFive: sorted.slice(0,5).map((s, index) => ({ ...s, rank: index + 1 })),
+      bottomFive: sorted.slice(-5).reverse().map((s, index) => ({ ...s, rank: sorted.length - index })),
       hasInsufficientEvents: ineligible.length > 0,
       totalPlayersWithData: scores.length,
       minEventsRequired: minEv
@@ -730,7 +732,12 @@ const Dashboard = () => {
                         role_code: playerById.get((leaders?.bestScorePlayer?.id || s.player_id) as any)?.role_code || null,
                         jersey_number: playerById.get((leaders?.bestScorePlayer?.id || s.player_id) as any)?.jersey_number ?? null,
                       }, value: Number(s.score0to100 || s.value || 0) }}
-                      distribution={[]}
+                      distribution={periodScoreLeaders.topFive.map(player => ({
+                        player_id: player.player_id,
+                        first_name: player.first_name,
+                        last_name: player.last_name,
+                        value: Math.round(player.score0to100 || 0)
+                      }))}
                     />
                   ))}
                   {periodScoreLeaders.worstTwo.slice(0,1).map((s)=> (
@@ -747,7 +754,12 @@ const Dashboard = () => {
                         role_code: playerById.get((leaders?.worstScorePlayer?.id || s.player_id) as any)?.role_code || null,
                         jersey_number: playerById.get((leaders?.worstScorePlayer?.id || s.player_id) as any)?.jersey_number ?? null,
                       }, value: Number(s.score0to100 || s.value || 0) }}
-                      distribution={[]}
+                      distribution={periodScoreLeaders.bottomFive.map(player => ({
+                        player_id: player.player_id,
+                        first_name: player.first_name,
+                        last_name: player.last_name,
+                        value: Math.round(player.score0to100 || 0)
+                      }))}
                     />
                   ))}
                 </div>
