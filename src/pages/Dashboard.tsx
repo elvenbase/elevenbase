@@ -334,10 +334,10 @@ const Dashboard = () => {
             description="Eventi partita nel periodo"
           />
           <StatsCard
-            title="Allenatori"
+            title="Provinanti"
             value={stats?.activeTrials || 0}
             icon={Shield}
-            description="Coach registrati"
+            description="Giocatori in prova"
           />
         </div>
 
