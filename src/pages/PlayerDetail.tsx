@@ -63,6 +63,47 @@ const PlayerDetail = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const backRef = searchParams.get('ref') || ''
+  const backLabel = /session|match|formation/i.test(backRef) ? 'Torna alla formazione' : 'Torna alla rosa'
+
+  const periodAbstract = useMemo(() => {
+    let label = 'Tutto il periodo'
+    let from = startDate, to = endDate
+    if (timeMode==='ultimi') {
+      if (ultimiChoice==='7d' || ultimiChoice==='30d' || ultimiChoice==='90d') {
+        const days = ultimiChoice.replace('d','')
+        label = `Ultimi ${days} giorni`
+      } else if (ultimiChoice==='month') {
+        label = 'Ultimi 30 giorni'
+      } else if (ultimiChoice==='season') {
+        label = `Stagione · ${fmt(seasonStart())} → ${fmt(new Date())}`
+        from = seasonStart(); to = new Date()
+      } else if (ultimiChoice==='last10') {
+        label = 'Ultime 10'
+      }
+    } else if (timeMode==='intervallo') {
+      label = (customStart && customEnd) ? `Dal ${fmt(new Date(customStart))} al ${fmt(new Date(customEnd))}` : 'Seleziona intervallo'
+    } else if (timeMode==='giorno') {
+      label = customStart ? `${fmt(new Date(customStart))}` : 'Scegli giorno'
+    }
+    const ev = ((attendance as any)?.events || []) as any[]
+    let eventsIn: any[] = []
+    if (ultimiChoice==='last10' && timeMode==='ultimi') {
+      eventsIn = ev.slice(-10)
+    } else {
+      const inRange = (e:any) => {
+        const dt = e.date ? new Date(e.date) : null
+        if (!dt) return false
+        return dt >= from && dt <= to
+      }
+      eventsIn = ev.filter(inRange)
+    }
+    if (!eventsIn.length) return `${label ? label + ' · ' : ''}Nessun evento nel periodo selezionato.`
+    const tm = eventsIn.reduce((acc:any, e:any)=>{ if (e.type==='match') acc.m++; else if (e.type==='training') acc.t++; return acc }, { m:0, t:0 })
+    const partite = tm.m === 1 ? '1 partita' : `${tm.m} partite`
+    const allen = tm.t === 1 ? '1 allenamento' : `${tm.t} allenamenti`
+    return `${label} · ${partite}, ${allen}`
+  }, [timeMode, ultimiChoice, periodSel, customStart, customEnd, attendance, startDate, endDate])
+
   const handleBack = () => {
     const isInternal = backRef.startsWith('/')
     if (isInternal) {
@@ -75,7 +116,7 @@ const PlayerDetail = () => {
     }
     navigate('/squad')
   }
-  const backLabel = /session|match|formation/i.test(backRef) ? 'Torna alla formazione' : 'Torna alla rosa'
+
   useEffect(() => {
     (async () => {
       if (!id) return
@@ -267,6 +308,7 @@ const PlayerDetail = () => {
     setCustomStart(from.toISOString().slice(0,10))
     setCustomEnd(to.toISOString().slice(0,10))
   }
+
   const shortcuts = {
     thisMonth: () => { const n=new Date(); setRange(new Date(n.getFullYear(), n.getMonth(), 1), new Date(n.getFullYear(), n.getMonth()+1, 0)) },
     lastMonth: () => { const n=new Date(); setRange(new Date(n.getFullYear(), n.getMonth()-1, 1), new Date(n.getFullYear(), n.getMonth(), 0)) },
@@ -279,44 +321,6 @@ const PlayerDetail = () => {
     setRange(d,d)
     setTimeMode('giorno')
   }
-  const periodAbstract = useMemo(() => {
-    let label = 'Tutto il periodo'
-    let from = startDate, to = endDate
-    if (timeMode==='ultimi') {
-      if (ultimiChoice==='7d' || ultimiChoice==='30d' || ultimiChoice==='90d') {
-        const days = ultimiChoice.replace('d','')
-        label = `Ultimi ${days} giorni`
-      } else if (ultimiChoice==='month') {
-        label = 'Ultimi 30 giorni'
-      } else if (ultimiChoice==='season') {
-        label = `Stagione · ${fmt(seasonStart())} → ${fmt(new Date())}`
-        from = seasonStart(); to = new Date()
-      } else if (ultimiChoice==='last10') {
-        label = 'Ultime 10'
-      }
-    } else if (timeMode==='intervallo') {
-      label = (customStart && customEnd) ? `Dal ${fmt(new Date(customStart))} al ${fmt(new Date(customEnd))}` : 'Seleziona intervallo'
-    } else if (timeMode==='giorno') {
-      label = customStart ? `${fmt(new Date(customStart))}` : 'Scegli giorno'
-    }
-    const ev = ((attendance as any)?.events || []) as any[]
-    let eventsIn: any[] = []
-    if (ultimiChoice==='last10' && timeMode==='ultimi') {
-      eventsIn = ev.slice(-10)
-    } else {
-      const inRange = (e:any) => {
-        const dt = e.date ? new Date(e.date) : null
-        if (!dt) return false
-        return dt >= from && dt <= to
-      }
-      eventsIn = ev.filter(inRange)
-    }
-    if (!eventsIn.length) return `${label ? label + ' · ' : ''}Nessun evento nel periodo selezionato.`
-    const tm = eventsIn.reduce((acc:any, e:any)=>{ if (e.type==='match') acc.m++; else if (e.type==='training') acc.t++; return acc }, { m:0, t:0 })
-    const partite = tm.m === 1 ? '1 partita' : `${tm.m} partite`
-    const allen = tm.t === 1 ? '1 allenamento' : `${tm.t} allenamenti`
-    return `${label} · ${partite}, ${allen}`
-  }, [timeMode, ultimiChoice, periodSel, customStart, customEnd, attendance, startDate, endDate])
 
   return (
     <div className="min-h-screen bg-background">
