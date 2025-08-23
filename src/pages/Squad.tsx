@@ -428,32 +428,32 @@ const NeonPillProgress: React.FC<{
 
   return (
     <div className="space-y-1.5">
-      <div className="text-xs md:text-sm font-bold flex items-center">
-        <span
-          style={{
-            background: 'linear-gradient(90deg, rgba(0,191,255,0.6) 0%, rgba(0,191,255,1.0) 100%)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-            filter: 'drop-shadow(0 1px 0 rgba(0,0,0,0.25))'
-          }}
-        >
-          Squad Score
-        </span>
-        <span className="ml-2 text-[10px] font-normal align-middle text-muted-foreground">(mese corrente)</span>
-        <Popover open={infoOpen} onOpenChange={setInfoOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="ml-2 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
-              style={{ width: 24, height: 24 }}
-              onClick={(e)=>{ e.stopPropagation(); setInfoOpen((v)=> !v) }}
-              onMouseDown={(e)=>{ e.stopPropagation() }}
-              onTouchStart={(e)=>{ e.stopPropagation() }}
-            >
-              <Info className="h-3.5 w-3.5" />
-            </button>
-          </PopoverTrigger>
+      <div className="text-xs md:text-sm font-bold">
+        <div className="flex items-center">
+          <span
+            style={{
+              background: 'linear-gradient(90deg, rgba(0,191,255,0.6) 0%, rgba(0,191,255,1.0) 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+              filter: 'drop-shadow(0 1px 0 rgba(0,0,0,0.25))'
+            }}
+          >
+            Squad Score
+          </span>
+          <Popover open={infoOpen} onOpenChange={setInfoOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="ml-2 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+                style={{ width: 24, height: 24 }}
+                onClick={(e)=>{ e.stopPropagation(); setInfoOpen((v)=> !v) }}
+                onMouseDown={(e)=>{ e.stopPropagation() }}
+                onTouchStart={(e)=>{ e.stopPropagation() }}
+              >
+                <Info className="h-3.5 w-3.5" />
+              </button>
+            </PopoverTrigger>
           <PopoverContent align="start" alignOffset={-8 as any} sideOffset={8} className="w-72 text-xs relative translate-x-[-6px]">
             <button
               onClick={(e)=>{ e.stopPropagation(); setInfoOpen(false) }}
@@ -476,6 +476,10 @@ const NeonPillProgress: React.FC<{
             </div>
           </PopoverContent>
         </Popover>
+        </div>
+        <div className="text-[10px] font-normal text-muted-foreground mt-1">
+          (mese corrente)
+        </div>
       </div>
       {infoOpen && (
         <div
@@ -1212,8 +1216,8 @@ const Squad = () => {
                           </div>
                         </div>
 
-                        {/* Riga 2: 4 label a tutta larghezza con spazio ridotto */}
-                        <div className="mt-0.5 grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {/* Riga 2: 4 label dimensionate in base al contenuto */}
+                        <div className="mt-0.5 grid grid-cols-[auto_auto] md:grid-cols-[auto_auto_auto_auto] gap-2 justify-start">
                           <div>
                             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
                             <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
