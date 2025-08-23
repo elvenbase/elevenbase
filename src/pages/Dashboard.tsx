@@ -4,6 +4,7 @@ import StatsCard from "@/components/StatsCard";
 import DndGrid from "@/components/Dashboard/DndGrid";
 // removed BestWorstCard
 import TopLeaderCard from "@/components/Dashboard/TopLeaderCard";
+import { SquadScoreCard } from "@/components/Dashboard/SquadScoreCard";
 import PlayersStatsTable from "@/components/Dashboard/PlayersStatsTable";
 import { 
   Users, 
@@ -260,11 +261,17 @@ const Dashboard = () => {
     const ineligible = scores.filter(s => s.opportunities < minEv && s.opportunities > 0)
     const sorted = eligible.sort((a,b)=> tieBreakComparator({ ...a, eligible: true, player_id: a.player_id }, { ...b, eligible: true, player_id: b.player_id }))
     
+    // Calculate team average
+    const teamAverage = eligible.length > 0 
+      ? eligible.reduce((sum, s) => sum + s.score0to100, 0) / eligible.length 
+      : 0
+
     return {
       bestTwo: sorted.slice(0,2),
       worstTwo: sorted.slice(-2).reverse(),
       topFive: sorted.slice(0,5).map((s, index) => ({ ...s, rank: index + 1 })),
       bottomFive: sorted.slice(-5).reverse().map((s, index) => ({ ...s, rank: sorted.length - index })),
+      teamAverage,
       hasInsufficientEvents: ineligible.length > 0,
       totalPlayersWithData: scores.length,
       minEventsRequired: minEv
@@ -681,49 +688,53 @@ const Dashboard = () => {
                 }
                 
                 return (
-                <div className="grid grid-cols-1 min-[1000px]:grid-cols-4 min-[1440px]:grid-cols-4 min-[1800px]:grid-cols-4 gap-4 justify-items-stretch">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {periodScoreLeaders.bestTwo.slice(0,1).map((s)=> (
-                    <TopLeaderCard
+                    <SquadScoreCard
                       key={`best-1`}
-                      metricLabel={`Score migliore`}
-                      valueUnit="pt"
-                      variant="score_best"
-                      item={{ player: {
+                      type="best"
+                      player={{
                         id: (leaders?.bestScorePlayer?.id || s.player_id) as any,
                         first_name: s.first_name || '-',
                         last_name: s.last_name || '-',
                         avatar_url: playerById.get((leaders?.bestScorePlayer?.id || s.player_id) as any)?.avatar_url || null,
                         role_code: playerById.get((leaders?.bestScorePlayer?.id || s.player_id) as any)?.role_code || null,
                         jersey_number: playerById.get((leaders?.bestScorePlayer?.id || s.player_id) as any)?.jersey_number ?? null,
-                      }, value: Number(s.score0to100 || s.value || 0) }}
-                      distribution={periodScoreLeaders.topFive.map(player => ({
+                      }}
+                      score={Math.round(s.score0to100 || s.value || 0)}
+                      leaderboard={periodScoreLeaders.topFive.map(player => ({
                         player_id: player.player_id,
                         first_name: player.first_name,
                         last_name: player.last_name,
-                        value: Math.round(player.score0to100 || 0)
+                        value: Math.round(player.score0to100 || 0),
+                        rank: player.rank
                       }))}
+                      totalEvents={s.opportunities || 0}
+                      averageScore={Math.round(periodScoreLeaders.teamAverage || 0)}
                     />
                   ))}
                   {periodScoreLeaders.worstTwo.slice(0,1).map((s)=> (
-                    <TopLeaderCard
+                    <SquadScoreCard
                       key={`worst-1`}
-                      metricLabel={`Score peggiore`}
-                      valueUnit="pt"
-                      variant="score_worst"
-                      item={{ player: {
+                      type="worst"
+                      player={{
                         id: (leaders?.worstScorePlayer?.id || s.player_id) as any,
                         first_name: s.first_name || '-',
                         last_name: s.last_name || '-',
                         avatar_url: playerById.get((leaders?.worstScorePlayer?.id || s.player_id) as any)?.avatar_url || null,
                         role_code: playerById.get((leaders?.worstScorePlayer?.id || s.player_id) as any)?.role_code || null,
                         jersey_number: playerById.get((leaders?.worstScorePlayer?.id || s.player_id) as any)?.jersey_number ?? null,
-                      }, value: Number(s.score0to100 || s.value || 0) }}
-                      distribution={periodScoreLeaders.bottomFive.map(player => ({
+                      }}
+                      score={Math.round(s.score0to100 || s.value || 0)}
+                      leaderboard={periodScoreLeaders.bottomFive.map(player => ({
                         player_id: player.player_id,
                         first_name: player.first_name,
                         last_name: player.last_name,
-                        value: Math.round(player.score0to100 || 0)
+                        value: Math.round(player.score0to100 || 0),
+                        rank: player.rank
                       }))}
+                      totalEvents={s.opportunities || 0}
+                      averageScore={Math.round(periodScoreLeaders.teamAverage || 0)}
                     />
                   ))}
                 </div>
