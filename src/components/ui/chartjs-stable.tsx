@@ -196,8 +196,9 @@ export const ChartJSStableBar: React.FC<ChartJSBarProps> = ({
         data: data.map(item => item[dataset.key] || 0),
         backgroundColor: dataset.color,
         borderColor: dataset.color,
-        borderWidth: 0, // Remove border for cleaner stacked look
-        stack: 'attendance', // ✅ CRITICAL: Add explicit stack group
+        borderWidth: 1,
+        borderRadius: 4, // Add rounded corners for better look
+        // ✅ REMOVED: stack property for grouped bars
       }))
     };
   }, [data, categories, datasets]);
@@ -210,6 +211,13 @@ export const ChartJSStableBar: React.FC<ChartJSBarProps> = ({
     interaction: {
       intersect: false,
       mode: 'index' as const,
+    },
+    // ✅ Configure grouped bars spacing
+    datasets: {
+      bar: {
+        categoryPercentage: 0.8, // Space between categories (Allen. vs Partite)
+        barPercentage: 0.9, // Space between bars in same category
+      }
     },
     plugins: {
       legend: {
@@ -235,7 +243,7 @@ export const ChartJSStableBar: React.FC<ChartJSBarProps> = ({
     scales: {
       x: {
         display: true,
-        stacked: true, // ✅ FIXED: Enable stacking on X axis too
+        // ✅ REMOVED: stacked property for grouped bars
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
           drawBorder: false,
@@ -251,7 +259,7 @@ export const ChartJSStableBar: React.FC<ChartJSBarProps> = ({
         display: true,
         min: 0,
         max: yAxisMax,
-        stacked: true,
+        // ✅ REMOVED: stacked property for grouped bars
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
           drawBorder: false,
