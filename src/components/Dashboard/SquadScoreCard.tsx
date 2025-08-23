@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Link } from 'react-router-dom'
 import { TrendingUp, TrendingDown, Calendar, Target } from 'lucide-react'
+import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 
 interface SquadScorePlayer {
   player_id: string
@@ -103,6 +104,7 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
+  const { defaultAvatarImageUrl } = useAvatarBackgrounds()
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -129,6 +131,9 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
   const scoreColor = type === 'best' ? 'text-green-600' : 'text-red-600'
   const iconColor = type === 'best' ? 'text-green-500' : 'text-red-500'
   const borderColor = type === 'best' ? 'border-green-200' : 'border-red-200'
+  
+  // Avatar with fallback logic
+  const imageSrc = (player.avatar_url || defaultAvatarImageUrl || '') as string
 
   return (
     <Card ref={cardRef} className={`overflow-hidden ${borderColor} border-2 hover:shadow-lg transition-all duration-300`}>
@@ -158,22 +163,30 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
               <div className="flex items-center gap-4">
                 {/* Avatar */}
                 <div className="relative w-20 h-20 rounded-full overflow-hidden bg-muted shrink-0">
-                  {player.avatar_url ? (
+                  {imageSrc ? (
                     <img
-                      src={player.avatar_url}
+                      src={imageSrc}
                       alt={`${player.first_name} ${player.last_name}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none'
+                        const img = e.currentTarget as HTMLImageElement
+                        // Prevent infinite loop by applying fallback only once
+                        const fallback = defaultAvatarImageUrl || ''
+                        const already = (img as any).dataset.fallbackApplied === '1'
+                        if (!already && fallback && img.src !== fallback) {
+                          ;(img as any).dataset.fallbackApplied = '1'
+                          img.src = fallback
+                        } else {
+                          img.style.display = 'none'
+                        }
                       }}
                     />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                      <span className="text-xl font-semibold text-blue-600">
-                        {player.first_name?.[0]}{player.last_name?.[0]}
-                      </span>
-                    </div>
-                  )}
+                  ) : null}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                    <span className="text-xl font-semibold text-blue-600">
+                      {player.first_name?.[0]}{player.last_name?.[0]}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Player Details */}
@@ -279,22 +292,30 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
             >
               <div className="flex items-center gap-3">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted shrink-0">
-                  {player.avatar_url ? (
+                  {imageSrc ? (
                     <img
-                      src={player.avatar_url}
+                      src={imageSrc}
                       alt={`${player.first_name} ${player.last_name}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none'
+                        const img = e.currentTarget as HTMLImageElement
+                        // Prevent infinite loop by applying fallback only once
+                        const fallback = defaultAvatarImageUrl || ''
+                        const already = (img as any).dataset.fallbackApplied === '1'
+                        if (!already && fallback && img.src !== fallback) {
+                          ;(img as any).dataset.fallbackApplied = '1'
+                          img.src = fallback
+                        } else {
+                          img.style.display = 'none'
+                        }
                       }}
                     />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                      <span className="text-sm font-semibold text-blue-600">
-                        {player.first_name?.[0]}{player.last_name?.[0]}
-                      </span>
-                    </div>
-                  )}
+                  ) : null}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-blue-600">
+                      {player.first_name?.[0]}{player.last_name?.[0]}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex-1 min-w-0">
