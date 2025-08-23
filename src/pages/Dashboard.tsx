@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { usePlayers, useStats, useRecentActivity, useLeaders, useTeamTrend, useAttendanceDistribution, useTrainingPresenceSeries, useMatchPresenceSeries, useAttendanceScoreSettings } from "@/hooks/useSupabaseData";
 
-import { StableLineChart, StableBarChart } from "@/components/ui/stable-chart";
+import { SmartLineChart, SmartBarChart } from "@/components/ui/smart-chart";
 
 import { PlayerForm } from "@/components/forms/PlayerForm";
 import { TrainingForm } from "@/components/forms/TrainingForm";
@@ -366,25 +366,15 @@ const Dashboard = () => {
               title: 'Trend ultime partite (ultime 10)',
               render: () => (
                 <div>
-                  <div className="h-64">
-                    {trend?.series ? (
-                      <StableLineChart 
-                        data={trend.series as any}
-                        dataKey="points"
-                        xKey="date"
-                        color="hsl(var(--primary))"
-                        label="Punti"
-                        yAxisMax={5}
-                      />
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
-                      </div>
-                    )}
-                    {trend?.series && trend.series.length === 0 && (
-                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                    )}
-                  </div>
+                  <SmartLineChart 
+                    data={trend?.series as any}
+                    dataKey="points"
+                    xKey="date"
+                    color="hsl(var(--primary))"
+                    label="Punti"
+                    yAxisMax={5}
+                    isLoading={!trend?.series}
+                  />
                   {trend && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Periodo: ultime 10 partite · Bilancio <span className="text-foreground font-medium">{trend.wdl.wins}V {trend.wdl.draws}N {trend.wdl.losses}P</span></div>
                   )}
@@ -396,25 +386,15 @@ const Dashboard = () => {
               title: 'Presenze allenamenti (ultimi 30 giorni)',
               render: () => (
                 <div>
-                  <div className="h-64">
-                    {trainingSeries?.curr ? (
-                      <StableLineChart 
-                        data={trainingSeries.curr}
-                        dataKey="value"
-                        xKey="date"
-                        color="hsl(var(--success))"
-                        label="Presenze"
-                        yAxisMax={25}
-                      />
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
-                      </div>
-                    )}
-                    {trainingSeries?.curr && trainingSeries.curr.length === 0 && (
-                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                    )}
-                  </div>
+                  <SmartLineChart 
+                    data={trainingSeries?.curr}
+                    dataKey="value"
+                    xKey="date"
+                    color="hsl(var(--success))"
+                    label="Presenze"
+                    yAxisMax={25}
+                    isLoading={!trainingSeries?.curr}
+                  />
                   {trainingSeries && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Ultimi 30 giorni · Variazione vs periodo precedente: <span className={trainingSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{trainingSeries.deltaPct >= 0 ? '+' : ''}{trainingSeries.deltaPct}%</span></div>
                   )}
@@ -426,25 +406,15 @@ const Dashboard = () => {
               title: 'Presenze partite (ultime 10)',
               render: () => (
                 <div>
-                  <div className="h-64">
-                    {matchSeries?.curr ? (
-                      <StableLineChart 
-                        data={matchSeries.curr}
-                        dataKey="value"
-                        xKey="date"
-                        color="hsl(var(--accent))"
-                        label="Presenze"
-                        yAxisMax={20}
-                      />
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <div className="animate-pulse text-muted-foreground">Caricamento grafico...</div>
-                      </div>
-                    )}
-                    {matchSeries?.curr && matchSeries.curr.length === 0 && (
-                      <div className="text-sm text-muted-foreground">Nessun dato disponibile</div>
-                    )}
-                  </div>
+                  <SmartLineChart 
+                    data={matchSeries?.curr}
+                    dataKey="value"
+                    xKey="date"
+                    color="hsl(var(--accent))"
+                    label="Presenze"
+                    yAxisMax={20}
+                    isLoading={!matchSeries?.curr}
+                  />
                   {matchSeries && (
                     <div className="mt-3 text-xs text-muted-foreground break-words">Ultime 10 partite · Variazione vs periodo precedente: <span className={matchSeries.deltaPct >= 0 ? 'text-success' : 'text-destructive'}>{matchSeries.deltaPct >= 0 ? '+' : ''}{matchSeries.deltaPct}%</span></div>
                   )}
@@ -473,23 +443,22 @@ const Dashboard = () => {
                 
                 return (
                 <div>
-                  <div className="h-64">
-                    <StableBarChart 
-                      data={[
-                        { name: 'Allen.', ...periodAttendanceDist.training }, 
-                        { name: 'Partite', ...periodAttendanceDist.match }
-                      ]}
-                      categories={['Allen.', 'Partite']}
-                      datasets={[
-                        { key: 'present', label: 'Presenti', color: 'hsl(var(--success))' },
-                        { key: 'late', label: 'Ritardi', color: '#f59e0b' },
-                        { key: 'absent', label: 'Assenti', color: 'hsl(var(--destructive))' },
-                        { key: 'pending', label: 'In attesa', color: '#94a3b8' },
-                        { key: 'no_response', label: 'No risp.', color: '#a3a3a3' },
-                      ]}
-                      yAxisMax={30}
-                    />
-                  </div>
+                  <SmartBarChart 
+                    data={[
+                      { name: 'Allen.', ...periodAttendanceDist.training }, 
+                      { name: 'Partite', ...periodAttendanceDist.match }
+                    ]}
+                    categories={['Allen.', 'Partite']}
+                    datasets={[
+                      { key: 'present', label: 'Presenti', color: 'hsl(var(--success))' },
+                      { key: 'late', label: 'Ritardi', color: '#f59e0b' },
+                      { key: 'absent', label: 'Assenti', color: 'hsl(var(--destructive))' },
+                      { key: 'pending', label: 'In attesa', color: '#94a3b8' },
+                      { key: 'no_response', label: 'No risp.', color: '#a3a3a3' },
+                    ]}
+                    yAxisMax={30}
+                    isLoading={!periodAttendanceDist}
+                  />
                   <div className="mt-3 text-xs text-muted-foreground">Periodo: {getPeriodLabel(period)}</div>
                 </div>
                 )
