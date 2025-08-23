@@ -272,7 +272,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               </div>
             )}
             {/* Right content padding to accommodate avatar */}
-            <div className="pl-[109.6px] md:pl-[146.4px] min-h-[144px] md:min-h-[180px] pr-2">
+            <div className="pl-[109.6px] md:pl-[115px] min-h-[144px] md:min-h-[180px] pr-2">
               <div className="space-y-2">
                 <div className="font-semibold text-lg md:text-xl leading-tight line-clamp-2">{p.first_name} {p.last_name}</div>
                 <div className="flex items-center gap-2 min-w-0">
