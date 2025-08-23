@@ -127,6 +127,37 @@ local_deploy() {
     npm run preview
 }
 
+# Funzione per deploy diretto e veloce (salta GitHub Actions)
+deploy_fast() {
+  log "🚀 AVVIO DEPLOY DIRETTO E VELOCE (salta GitHub Actions)"
+  check_project_dir
+
+  # Controllo variabili d'ambiente necessarie
+  if [[ -z "$NETLIFY_AUTH_TOKEN" ]]; then
+    error "NETLIFY_AUTH_TOKEN non impostata!"
+    echo "Imposta la variabile: export NETLIFY_AUTH_TOKEN=your_token"
+    exit 1
+  fi
+
+  if [[ -z "$NETLIFY_SITE_ID_PRODUCTION" ]]; then
+    error "NETLIFY_SITE_ID_PRODUCTION non impostata!"
+    echo "Imposta la variabile: export NETLIFY_SITE_ID_PRODUCTION=your_site_id"
+    exit 1
+  fi
+
+  # Eseguire il deploy diretto
+  log "Eseguo deploy diretto su Netlify..."
+  npm run deploy:fast
+
+  if [[ $? -eq 0 ]]; then
+    success "🎉 DEPLOY COMPLETATO CON SUCCESSO!"
+    success "I tuoi file sono ora live su Netlify"
+  else
+    error "Deploy fallito!"
+    exit 1
+  fi
+}
+
 # Funzione per status del progetto
 project_status() {
     log "=== STATO DEL PROGETTO ==="
@@ -157,18 +188,20 @@ show_help() {
     echo "Comandi disponibili:"
     echo "  build          - Build del progetto"
     echo "  commit MSG     - Commit con messaggio"
-    echo "  push           - Push su origin/main"
-    echo "  workflow MSG   - Workflow completo (lint + build + commit + push)"
-    echo "  deploy         - Deploy locale (build + preview)"
-    echo "  status         - Stato del progetto"
+echo "  push           - Push su origin/main"
+echo "  workflow MSG   - Workflow completo (lint + build + commit + push)"
+echo "  deploy         - Deploy locale (build + preview)"
+echo "  deploy:fast    - Deploy diretto su Netlify (molto veloce)"
+echo "  status         - Stato del progetto"
     echo "  help           - Mostra questo aiuto"
     echo ""
     echo "Esempi:"
     echo "  $0 build"
     echo "  $0 commit \"Fix bug nella formazione\""
     echo "  $0 workflow \"Aggiunta nuova feature\""
-    echo "  $0 deploy"
-    echo "  $0 status"
+echo "  $0 deploy"
+echo "  $0 deploy:fast    # Deploy diretto e veloce"
+echo "  $0 status"
 }
 
 # Main script logic
@@ -190,6 +223,9 @@ case "${1:-help}" in
         ;;
     "deploy")
         local_deploy
+        ;;
+    "deploy:fast")
+        deploy_fast
         ;;
     "status")
         project_status
