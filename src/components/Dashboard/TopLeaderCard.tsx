@@ -353,7 +353,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                         {entry.first_name} {entry.last_name}
                       </span>
                       <span className="font-bold tabular-nums text-muted-foreground">
-                        {Math.round(Number(entry.value || entry.count || 0))}
+                        <AnimatedNumber value={Math.round(Number(entry.value || entry.count || 0))} />
                       </span>
                     </div>
                   ))}
@@ -381,7 +381,9 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                   <div className="space-y-2">
                     <div className="rounded-lg border p-2">
                       <div className="text-muted-foreground">Opportunità totali</div>
-                      <div className="font-semibold">{meta.opportunities ?? '—'}</div>
+                      <div className="font-semibold">
+                        {typeof meta.opportunities === 'number' ? <AnimatedNumber value={meta.opportunities} /> : '—'}
+                      </div>
                     </div>
                     <div className="rounded-lg border p-2">
                       <div className="text-muted-foreground">Punti grezzi</div>
@@ -431,7 +433,9 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                         return items.map((it, i) => (
                           <li key={it.key || i} className="flex items-center justify-between border-b border-border/30 py-0.5">
                             <span className="text-muted-foreground">{it.label}</span>
-                            <span className="font-semibold tabular-nums">{isNaN(it.value) ? 0 : it.value}</span>
+                            <span className="font-semibold tabular-nums">
+                              <AnimatedNumber value={isNaN(it.value) ? 0 : it.value} />
+                            </span>
                           </li>
                         ))
                       })()}
