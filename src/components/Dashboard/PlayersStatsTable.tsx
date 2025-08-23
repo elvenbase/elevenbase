@@ -39,8 +39,9 @@ export default function PlayersStatsTable() {
   const { data: players = [] } = usePlayers()
 
   const now = new Date()
-  const [startDate, setStartDate] = useState<Date>(new Date(now.getFullYear(), now.getMonth(), 1))
-  const [endDate, setEndDate] = useState<Date>(new Date(now.getFullYear(), now.getMonth() + 1, 0))
+  // Use UTC dates to match the dashboard selectors and avoid timezone issues
+  const [startDate, setStartDate] = useState<Date>(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)))
+  const [endDate, setEndDate] = useState<Date>(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999)))
   const { data: leaders } = useLeaders({ startDate, endDate })
   const { data: scoreSettings } = useAttendanceScoreSettings()
 
@@ -147,18 +148,19 @@ export default function PlayersStatsTable() {
     else { setSortKey(key); setSortDir('desc') }
   }
 
-  const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  // Format UTC dates for input fields
+  const fmt = (d: Date) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2 text-sm">
           <label>Dal</label>
-          <input type="date" className="h-8 rounded border px-2 bg-background" value={fmt(startDate)} onChange={(e)=>{ const v=e.target.value; if (v) setStartDate(new Date(v)) }} />
+          <input type="date" className="h-8 rounded border px-2 bg-background" value={fmt(startDate)} onChange={(e)=>{ const v=e.target.value; if (v) setStartDate(new Date(v + 'T00:00:00.000Z')) }} />
         </div>
         <div className="flex items-center gap-2 text-sm">
           <label>Al</label>
-          <input type="date" className="h-8 rounded border px-2 bg-background" value={fmt(endDate)} onChange={(e)=>{ const v=e.target.value; if (v) setEndDate(new Date(v)) }} />
+          <input type="date" className="h-8 rounded border px-2 bg-background" value={fmt(endDate)} onChange={(e)=>{ const v=e.target.value; if (v) setEndDate(new Date(v + 'T23:59:59.999Z')) }} />
         </div>
         <div className="ml-auto flex items-center gap-2 text-sm">
           <input placeholder="Filtra per nome..." value={nameFilter} onChange={(e)=>setNameFilter(e.target.value)} className="h-8 rounded border px-2 bg-background" />
