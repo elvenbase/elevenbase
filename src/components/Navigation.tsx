@@ -92,12 +92,12 @@ const Navigation = () => {
           </NavLink>
 
           {/* Desktop Navigation */}
-          <div className="hidden nav:flex items-center space-x-2">
+          <div className="hidden nav:flex items-center space-x-1">
             {/* Dashboard first */}
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `flex items-center space-x-2 px-5 py-2.5 rounded-xl transition-smooth ${
+                `flex items-center space-x-2 px-3 py-2 rounded-xl transition-smooth ${
                   isActive
                     ? "bg-primary text-primary-foreground shadow-glow"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -112,7 +112,7 @@ const Navigation = () => {
             <NavLink
               to="/squad"
               className={({ isActive }) =>
-                `flex items-center space-x-2 px-5 py-2.5 rounded-xl transition-smooth ${
+                `flex items-center space-x-2 px-3 py-2 rounded-xl transition-smooth ${
                   isActive
                     ? "bg-primary text-primary-foreground shadow-glow"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -132,7 +132,7 @@ const Navigation = () => {
                     key={item.path}
                     to={item.path}
                     className={
-                      `flex items-center space-x-2 px-5 py-2.5 rounded-xl transition-smooth ${
+                      `flex items-center space-x-2 px-3 py-2 rounded-xl transition-smooth ${
                         isMatchesActive
                           ? "bg-primary text-primary-foreground shadow-glow"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -149,7 +149,7 @@ const Navigation = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center space-x-2 px-5 py-2.5 rounded-xl transition-smooth ${
+                    `flex items-center space-x-2 px-3 py-2 rounded-xl transition-smooth ${
                       isActive
                         ? "bg-primary text-primary-foreground shadow-glow"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -167,7 +167,7 @@ const Navigation = () => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-xl transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <Shield className="h-4 w-4" />
                   <span className="text-sm font-medium">Admin</span>
@@ -194,7 +194,7 @@ const Navigation = () => {
           </div>
 
           {/* User Menu */}
-          <div className="hidden nav:flex items-center space-x-4">
+          <div className="hidden nav:flex items-center space-x-3">
             <Button 
               variant="ghost" 
               size="icon" 
