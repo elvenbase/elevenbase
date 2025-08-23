@@ -278,9 +278,9 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
       <Link to={to} className="block">
         <Card className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${cardBgClass}`} style={isPresenceCard ? { background: metricStyle.headerBg } : {}}>
           <div className="relative p-4 md:p-5">
-            {/* Avatar overflowing left - FIXED: square dimensions with proper containment */}
+            {/* Avatar overflowing left - Clean square with no background */}
             {imageSrc ? (
-              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[120px] md:h-[120px] overflow-hidden rounded-full border-2 border-white shadow-lg">
+              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[150px] md:h-[150px] overflow-hidden">
                 <img
                   src={imageSrc}
                   alt={`${p.first_name} ${p.last_name}`}
@@ -306,14 +306,14 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 />
               </div>
             ) : (
-              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[120px] md:h-[120px] rounded-full border-2 border-white shadow-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center avatar-initials-fallback">
-                <span className="text-lg md:text-xl font-semibold text-blue-600">
+              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[150px] md:h-[150px] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center avatar-initials-fallback">
+                <span className="text-lg md:text-2xl font-semibold text-blue-600">
                   {p.first_name?.[0]}{p.last_name?.[0]}
                 </span>
               </div>
             )}
             {/* Right content padding to accommodate avatar */}
-            <div className="pl-[104px] md:pl-[128px] min-h-[88px] md:min-h-[112px] pr-2">
+            <div className="pl-[104px] md:pl-[158px] min-h-[88px] md:min-h-[142px] pr-2">
               <div className="space-y-2">
                 {/* Two-line name: Nome, a capo Cognome */}
                 <div className="font-semibold text-lg md:text-xl leading-tight">
