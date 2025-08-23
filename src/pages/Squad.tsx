@@ -1151,7 +1151,7 @@ const Squad = () => {
                       onKeyDown={(e) => { if (e.key === 'Enter') (window.location.href = `/player/${p.id}`) }}
                       className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${sectorHeroBgClass[sectorFromRoleCode((p as any).role_code)]}`}
                     >
-                      <div className="relative p-4 md:p-6">
+                      <div className="relative p-4 md:p-2">
                         {/* Edit button in top-right corner */}
                         <div className="absolute top-2 right-2 z-10">
                           <EditPlayerForm player={p}>
@@ -1216,8 +1216,8 @@ const Squad = () => {
                           </div>
                         </div>
 
-                        {/* Riga 2: 4 label dimensionate in base al contenuto */}
-                        <div className="mt-0.5 grid grid-cols-[auto_auto] md:grid-cols-[auto_auto_auto_auto] gap-2 justify-start">
+                        {/* Riga 2: 4 label che occupano tutta la larghezza */}
+                        <div className="mt-0.5 grid grid-cols-2 md:grid-cols-4 gap-2 w-full">
                           <div>
                             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">PARTITE</div>
                             <div className={`mt-1 text-xs tabular-nums ${pres === 0 ? 'text-muted-foreground' : 'text-foreground'}`}>{pres}</div>
