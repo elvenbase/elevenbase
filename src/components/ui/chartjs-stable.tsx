@@ -196,7 +196,8 @@ export const ChartJSStableBar: React.FC<ChartJSBarProps> = ({
         data: data.map(item => item[dataset.key] || 0),
         backgroundColor: dataset.color,
         borderColor: dataset.color,
-        borderWidth: 1,
+        borderWidth: 0, // Remove border for cleaner stacked look
+        stack: 'attendance', // ✅ CRITICAL: Add explicit stack group
       }))
     };
   }, [data, categories, datasets]);
@@ -227,11 +228,14 @@ export const ChartJSStableBar: React.FC<ChartJSBarProps> = ({
         titleColor: 'white',
         bodyColor: 'white',
         borderWidth: 1,
+        mode: 'index' as const, // ✅ Show all values for stacked chart
+        intersect: false,
       },
     },
     scales: {
       x: {
         display: true,
+        stacked: true, // ✅ FIXED: Enable stacking on X axis too
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
           drawBorder: false,
