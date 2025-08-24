@@ -100,13 +100,11 @@ const AuthMultiTeam = () => {
     try {
       console.log('Starting team creation...', createTeamData);
       
-      // 1. Sign up the user
+      // 1. Sign up the user - Simplified without redirect
+      console.log('Attempting signup for:', createTeamData.email);
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: createTeamData.email,
-        password: createTeamData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/confirm`
-        }
+        password: createTeamData.password
       });
       
       if (authError) {
@@ -256,21 +254,17 @@ const AuthMultiTeam = () => {
         throw new Error('Questo codice invito ha raggiunto il limite di utilizzi');
       }
       
-      // 2. Sign up the user
+      // 2. Sign up the user - Simplified
+      console.log('Attempting signup for team join:', joinTeamData.email);
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: joinTeamData.email,
-        password: joinTeamData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/email-confirm`,
-          data: {
-            team_id: invite.team_id,
-            invite_code: invite.code,
-            role: invite.role
-          }
-        }
+        password: joinTeamData.password
       });
       
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Join team auth error:', authError);
+        throw authError;
+      }
       
       // 3. Add user to team
       const { error: memberError } = await supabase
