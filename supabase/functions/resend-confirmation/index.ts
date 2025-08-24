@@ -36,7 +36,7 @@ serve(async (req) => {
       type: 'signup',
       email: email,
       options: {
-        redirectTo: 'https://gleaming-kleicha-dec5b4.netlify.app/confirm'
+        redirectTo: 'https://elevenbase.pro/confirm'
       }
     })
 

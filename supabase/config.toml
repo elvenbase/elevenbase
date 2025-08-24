@@ -117,9 +117,13 @@ file_size_limit = "50MiB"
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "https://gleaming-kleicha-dec5b4.netlify.app"
+site_url = "https://elevenbase.pro"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 additional_redirect_urls = [
+  "https://elevenbase.pro",
+  "https://elevenbase.pro/auth",
+  "https://elevenbase.pro/confirm",
+  "https://elevenbase.pro/dashboard",
   "https://gleaming-kleicha-dec5b4.netlify.app",
   "https://gleaming-kleicha-dec5b4.netlify.app/auth",
   "https://gleaming-kleicha-dec5b4.netlify.app/confirm",
