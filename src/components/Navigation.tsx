@@ -78,7 +78,7 @@ const Navigation = () => {
   return (
     <nav className="bg-card border-b border-border shadow-card sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex items-center h-16">
           {/* Logo and brand */}
           <NavLink to="/" className="flex items-center space-x-3">
             <div className="ml-[-12px]">
@@ -91,8 +91,11 @@ const Navigation = () => {
             </div>
           </NavLink>
 
-          {/* Desktop Navigation */}
-          <div className="hidden nav:flex items-center space-x-1">
+          {/* Spacer to push navigation to the right */}
+          <div className="flex-1" />
+
+          {/* Desktop Navigation - aligned to the right */}
+          <div className="hidden nav:flex items-center space-x-1 mr-5">
             {/* Dashboard first */}
             <NavLink
               to="/"
@@ -193,8 +196,8 @@ const Navigation = () => {
             </DropdownMenu>
           </div>
 
-          {/* User Menu */}
-          <div className="hidden nav:flex items-center space-x-3">
+          {/* User Menu - with 20px gap from navigation */}
+          <div className="hidden nav:flex items-center space-x-3 ml-5">
             <Button 
               variant="ghost" 
               size="icon" 
