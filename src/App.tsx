@@ -39,6 +39,9 @@ const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
 
+// Test multi-team auth
+const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
+
 // Admin pages
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const FormationManagement = lazy(() => import("@/pages/admin/FormationManagement"));
@@ -142,6 +145,7 @@ function App() {
                   }>
                     <Routes>
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/auth-new" element={<AuthMultiTeam />} />
                       <Route path="/confirm" element={<EmailConfirm />} />
                       <Route path="/register/:token" element={<PublicRegistration />} />
                       <Route path="/m/:token" element={<MatchPublicRegistration />} />

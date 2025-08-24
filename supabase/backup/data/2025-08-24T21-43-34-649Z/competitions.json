@@ -1,0 +1,38 @@
+[
+  {
+    "id": "6a92e73c-71ff-4672-90f5-1ef82fa7ba87",
+    "name": "VPG",
+    "type": "championship",
+    "description": null,
+    "start_date": null,
+    "end_date": null,
+    "is_active": true,
+    "created_by": "f731039f-eb6a-4606-8ebf-ce2e357e45bc",
+    "created_at": "2025-08-09T21:18:16.467002+00:00",
+    "updated_at": "2025-08-09T21:18:16.467002+00:00"
+  },
+  {
+    "id": "00e9be41-3db2-40f0-810e-7557d25759b0",
+    "name": "LND",
+    "type": "championship",
+    "description": null,
+    "start_date": null,
+    "end_date": null,
+    "is_active": true,
+    "created_by": "f731039f-eb6a-4606-8ebf-ce2e357e45bc",
+    "created_at": "2025-08-10T13:35:40.29779+00:00",
+    "updated_at": "2025-08-10T13:35:40.29779+00:00"
+  },
+  {
+    "id": "8af3a0b5-35aa-4a7a-a481-4e8117b01973",
+    "name": "HVR",
+    "type": "championship",
+    "description": null,
+    "start_date": null,
+    "end_date": null,
+    "is_active": true,
+    "created_by": "f731039f-eb6a-4606-8ebf-ce2e357e45bc",
+    "created_at": "2025-08-23T12:19:08.329351+00:00",
+    "updated_at": "2025-08-23T12:19:08.329351+00:00"
+  }
+]

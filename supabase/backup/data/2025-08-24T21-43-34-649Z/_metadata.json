@@ -1,0 +1,90 @@
+{
+  "timestamp": "2025-08-24T21-43-34-649Z",
+  "date": "2025-08-24T21:43:39.967Z",
+  "supabase_url": "https://cuthalxqxkonmfzqjdvw.supabase.co",
+  "tables": [
+    {
+      "table": "players",
+      "status": "success",
+      "records": 23
+    },
+    {
+      "table": "user_roles",
+      "status": "success",
+      "records": 0
+    },
+    {
+      "table": "profiles",
+      "status": "success",
+      "records": 0
+    },
+    {
+      "table": "training_sessions",
+      "status": "success",
+      "records": 15
+    },
+    {
+      "table": "training_attendance",
+      "status": "success",
+      "records": 335
+    },
+    {
+      "table": "matches",
+      "status": "success",
+      "records": 11
+    },
+    {
+      "table": "match_attendance",
+      "status": "success",
+      "records": 231
+    },
+    {
+      "table": "competitions",
+      "status": "success",
+      "records": 3
+    },
+    {
+      "table": "trialists",
+      "status": "success",
+      "records": 3
+    },
+    {
+      "table": "trial_evaluations",
+      "status": "success",
+      "records": 0
+    },
+    {
+      "table": "app_settings",
+      "status": "error",
+      "error": "Could not find the table 'public.app_settings' in the schema cache"
+    },
+    {
+      "table": "jersey_templates",
+      "status": "success",
+      "records": 0
+    },
+    {
+      "table": "custom_formations",
+      "status": "success",
+      "records": 1
+    },
+    {
+      "table": "field_options",
+      "status": "success",
+      "records": 41
+    },
+    {
+      "table": "avatar_backgrounds",
+      "status": "error",
+      "error": "Could not find the table 'public.avatar_backgrounds' in the schema cache"
+    },
+    {
+      "table": "png_export_settings",
+      "status": "success",
+      "records": 0
+    }
+  ],
+  "total_tables": 16,
+  "successful": 14,
+  "failed": 2
+}

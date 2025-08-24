@@ -1,0 +1,113 @@
+[
+  {
+    "id": "f5c9b7c9-5a92-4cb2-8ab9-3d7dddfed551",
+    "name": "4-3-3 offensivo",
+    "defenders": 4,
+    "midfielders": 3,
+    "forwards": 3,
+    "positions": [
+      {
+        "x": 50,
+        "y": 85,
+        "id": "gk",
+        "name": "Portiere",
+        "role": "Portiere",
+        "roleShort": "P",
+        "role_code": "P"
+      },
+      {
+        "x": 10,
+        "y": 70,
+        "id": "def-1",
+        "name": "Difensore 1",
+        "role": "Terzino Sinistro",
+        "roleShort": "TS",
+        "role_code": "TS"
+      },
+      {
+        "x": 36.66666666666667,
+        "y": 70,
+        "id": "def-2",
+        "name": "Difensore 2",
+        "role": "Difensore Centrale Sinistro",
+        "roleShort": "DCS",
+        "role_code": "DCS"
+      },
+      {
+        "x": 63.333333333333336,
+        "y": 70,
+        "id": "def-3",
+        "name": "Difensore 3",
+        "role": "Difensore Centrale Destro",
+        "roleShort": "DCD",
+        "role_code": "DCD"
+      },
+      {
+        "x": 90,
+        "y": 70,
+        "id": "def-4",
+        "name": "Difensore 4",
+        "role": "Terzino Destro",
+        "roleShort": "TD",
+        "role_code": "TD"
+      },
+      {
+        "x": 10,
+        "y": 45,
+        "id": "mid-5",
+        "name": "Centrocampista 5",
+        "role": "Mezzala Destra",
+        "roleShort": "MD",
+        "role_code": "MD"
+      },
+      {
+        "x": 50,
+        "y": 45,
+        "id": "mid-6",
+        "name": "Centrocampista 6",
+        "role": "Mediano",
+        "roleShort": "MED",
+        "role_code": "MED"
+      },
+      {
+        "x": 90,
+        "y": 45,
+        "id": "mid-7",
+        "name": "Centrocampista 7",
+        "role": "Mezzala Sinistra",
+        "roleShort": "MS",
+        "role_code": "MS"
+      },
+      {
+        "x": 10,
+        "y": 20,
+        "id": "fwd-8",
+        "name": "Attaccante 8",
+        "role": "Ala Destra",
+        "roleShort": "AD",
+        "role_code": "AD"
+      },
+      {
+        "x": 50,
+        "y": 20,
+        "id": "fwd-9",
+        "name": "Attaccante 9",
+        "role": "Punta",
+        "roleShort": "PU",
+        "role_code": "PU"
+      },
+      {
+        "x": 90,
+        "y": 20,
+        "id": "fwd-10",
+        "name": "Attaccante 10",
+        "role": "Ala Sinistra",
+        "roleShort": "AS",
+        "role_code": "AS"
+      }
+    ],
+    "created_by": null,
+    "created_at": "2025-08-24T20:01:11.032161+00:00",
+    "updated_at": "2025-08-24T20:01:11.032161+00:00"
+  }
+]
