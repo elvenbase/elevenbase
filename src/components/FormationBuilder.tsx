@@ -43,63 +43,103 @@ export const FormationBuilder: React.FC<FormationBuilderProps> = ({
     const newPositions = []
     let positionId = 1
 
-    // No default specific roles except GK; sector placeholders are shown until user picks
+    // Build role helpers from roles table
+    const roleByCode = new Map<string, { label: string; abbreviation: string }>(
+      (playerRoles || []).map(r => [r.code.toUpperCase(), { label: r.label, abbreviation: r.abbreviation }])
+    )
+    const pick = (codes: string[], fallbackLabel: string) => {
+      for (const c of codes) {
+        const r = roleByCode.get(c)
+        if (r) return { code: c, label: r.label, abbr: r.abbreviation }
+      }
+      return { code: codes[0], label: fallbackLabel, abbr: codes[0] }
+    }
 
     // Goalkeeper (always present)
-    newPositions.push({
-      id: `gk`,
-      name: `Portiere`,
-      x: 50,
-      y: 85,
-      role: 'Portiere',
-      roleShort: 'P',
-      role_code: 'P'
-    })
+    {
+      const r = pick(['P'], 'Portiere')
+      newPositions.push({
+        id: `gk`,
+        name: `Portiere`,
+        x: 50,
+        y: 85,
+        role: r.label,
+        roleShort: r.abbr,
+        role_code: r.code
+      })
+    }
 
-    // Defenders
+    // Defenders - distribute roles across the line (left -> right)
     const defenderSpacing = defenders > 1 ? 80 / (defenders - 1) : 0
+    const defPattern = (() => {
+      if (defenders === 3) return ['DCS','DC','DCD']
+      if (defenders === 4) return ['TS','DCS','DCD','TD']
+      if (defenders === 5) return ['TS','DCS','DC','DCD','TD']
+      return Array(defenders).fill('DC')
+    })()
     for (let i = 0; i < defenders; i++) {
       const x = defenders === 1 ? 50 : 10 + (i * defenderSpacing)
+      const pref = defPattern[Math.min(i, defPattern.length - 1)]
+      const r = pick([pref, 'DC', 'DCS', 'DCD', 'TS', 'TD'], 'Difensore')
       newPositions.push({
         id: `def-${positionId}`,
         name: `Difensore ${positionId}`,
         x,
         y: 70,
-        role: undefined,
-        roleShort: undefined,
-        role_code: undefined
+        role: r.label,
+        roleShort: r.abbr,
+        role_code: r.code
       })
       positionId++
     }
 
-    // Midfielders
+    // Midfielders - common patterns
     const midfielderSpacing = midfielders > 1 ? 80 / (midfielders - 1) : 0
+    const midPattern = (() => {
+      if (midfielders === 2) return ['MD','MS']
+      if (midfielders === 3) return ['MD','MED','MS']
+      if (midfielders === 4) return ['ED','MC','MC','ES']
+      if (midfielders === 5) return ['QS','MS','MED','MD','QD']
+      if (midfielders === 6) return ['QS','MS','MC','MED','MC','QD']
+      return Array(midfielders).fill('MC')
+    })()
     for (let i = 0; i < midfielders; i++) {
       const x = midfielders === 1 ? 50 : 10 + (i * midfielderSpacing)
+      const pref = midPattern[Math.min(i, midPattern.length - 1)]
+      const r = pick([pref, 'MC', 'MED', 'MD', 'MS', 'ED', 'ES', 'QD', 'QS'], 'Centrocampista')
       newPositions.push({
         id: `mid-${positionId}`,
         name: `Centrocampista ${positionId}`,
         x,
         y: 45,
-        role: undefined,
-        roleShort: undefined,
-        role_code: undefined
+        role: r.label,
+        roleShort: r.abbr,
+        role_code: r.code
       })
       positionId++
     }
 
-    // Forwards
+    // Forwards - distribute by count
     const forwardSpacing = forwards > 1 ? 80 / (forwards - 1) : 0
+    const fwdPattern = (() => {
+      if (forwards === 1) return ['PU']
+      if (forwards === 2) return ['ATT','ATT']
+      if (forwards === 3) return ['AD','PU','AS']
+      if (forwards === 4) return ['AD','ATT','ATT','AS']
+      return Array(forwards).fill('ATT')
+    })()
     for (let i = 0; i < forwards; i++) {
       const x = forwards === 1 ? 50 : 10 + (i * forwardSpacing)
+      const pref = fwdPattern[Math.min(i, fwdPattern.length - 1)]
+      const r = pick([pref, 'PU', 'ATT', 'AD', 'AS'], 'Attaccante')
       newPositions.push({
         id: `fwd-${positionId}`,
         name: `Attaccante ${positionId}`,
         x,
         y: 20,
-        role: undefined,
-        roleShort: undefined,
-        role_code: undefined
+        role: r.label,
+        roleShort: r.abbr,
+        role_code: r.code
       })
       positionId++
     }
