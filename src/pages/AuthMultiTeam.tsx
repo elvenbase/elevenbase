@@ -18,11 +18,11 @@ const AuthMultiTeam = () => {
   // Form states
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [createTeamData, setCreateTeamData] = useState({
-    email: '',
-    password: '',
-    teamName: '',
-    fcName: '',
-    abbreviation: '',
+    email: 'test@elevenbase.com', // Pre-filled for testing
+    password: 'Test123!',
+    teamName: 'Test Team',
+    fcName: 'Test FC',
+    abbreviation: 'TST',
     primaryColor: '#DC2626',
     secondaryColor: '#1E40AF',
     logoFile: null as File | null,
