@@ -98,75 +98,113 @@ const AuthMultiTeam = () => {
     setIsLoading(true);
     
     try {
+      console.log('Starting team creation...', createTeamData);
+      
       // 1. Sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: createTeamData.email,
         password: createTeamData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/email-confirm`
+          emailRedirectTo: `${window.location.origin}/confirm`
         }
       });
       
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw authError;
+      }
+      
+      console.log('User created:', authData.user?.id);
+      
+      // Wait a moment for the user to be properly created
+      if (!authData.user?.id) {
+        console.error('No user ID available after signup');
+        throw new Error('Registrazione utente non completata. Riprova.');
+      }
       
       // 2. Create the team
+      const teamData = {
+        name: createTeamData.teamName,
+        fc_name: createTeamData.fcName || createTeamData.teamName,
+        abbreviation: createTeamData.abbreviation.toUpperCase(),
+        primary_color: createTeamData.primaryColor,
+        secondary_color: createTeamData.secondaryColor,
+        owner_id: authData.user.id,
+        created_by: authData.user.id,
+        invite_code: createTeamData.abbreviation.toUpperCase() + Math.random().toString(36).substring(2, 7).toUpperCase()
+      };
+      
+      console.log('Creating team with data:', teamData);
+      
       const { data: team, error: teamError } = await supabase
         .from('teams')
-        .insert({
-          name: createTeamData.teamName,
-          fc_name: createTeamData.fcName || createTeamData.teamName,
-          abbreviation: createTeamData.abbreviation.toUpperCase(),
-          primary_color: createTeamData.primaryColor,
-          secondary_color: createTeamData.secondaryColor,
-          owner_id: authData.user?.id,
-          created_by: authData.user?.id,
-          invite_code: createTeamData.abbreviation.toUpperCase() + Math.random().toString(36).substring(2, 7).toUpperCase()
-        })
+        .insert(teamData)
         .select()
         .single();
       
-      if (teamError) throw teamError;
+      if (teamError) {
+        console.error('Team creation error:', teamError);
+        throw teamError;
+      }
       
-      // 3. Upload logo if provided
+      console.log('Team created:', team);
+      
+      // 3. Upload logo if provided (optional, don't fail if it doesn't work)
       let logoUrl = null;
       if (createTeamData.logoFile && team.id) {
-        const fileExt = createTeamData.logoFile.name.split('.').pop();
-        const fileName = `logo.${fileExt}`;
-        const filePath = `${team.id}/${fileName}`;
-        
-        const { error: uploadError, data: uploadData } = await supabase.storage
-          .from('team-logos')
-          .upload(filePath, createTeamData.logoFile, {
-            upsert: true
-          });
-        
-        if (!uploadError && uploadData) {
-          const { data: { publicUrl } } = supabase.storage
+        try {
+          console.log('Uploading logo...');
+          const fileExt = createTeamData.logoFile.name.split('.').pop();
+          const fileName = `logo.${fileExt}`;
+          const filePath = `${team.id}/${fileName}`;
+          
+          const { error: uploadError, data: uploadData } = await supabase.storage
             .from('team-logos')
-            .getPublicUrl(filePath);
+            .upload(filePath, createTeamData.logoFile, {
+              upsert: true
+            });
           
-          logoUrl = publicUrl;
-          
-          // Update team with logo URL
-          await supabase
-            .from('teams')
-            .update({ logo_url: logoUrl })
-            .eq('id', team.id);
+          if (uploadError) {
+            console.error('Logo upload error:', uploadError);
+            // Don't throw, just continue without logo
+          } else if (uploadData) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('team-logos')
+              .getPublicUrl(filePath);
+            
+            logoUrl = publicUrl;
+            console.log('Logo uploaded:', logoUrl);
+            
+            // Update team with logo URL
+            await supabase
+              .from('teams')
+              .update({ logo_url: logoUrl })
+              .eq('id', team.id);
+          }
+        } catch (logoError) {
+          console.error('Logo processing error:', logoError);
+          // Continue without logo
         }
       }
       
       // 4. Add user as team admin
+      console.log('Adding user as team admin...');
       const { error: memberError } = await supabase
         .from('team_members')
         .insert({
           team_id: team.id,
-          user_id: authData.user?.id,
+          user_id: authData.user.id,
           role: 'admin',
           status: 'active',
           joined_at: new Date().toISOString()
         });
       
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Member creation error:', memberError);
+        throw memberError;
+      }
+      
+      console.log('User added to team as admin');
       
       // 4. Create initial invite codes
       const inviteCodes = [
