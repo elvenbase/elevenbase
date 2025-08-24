@@ -120,39 +120,21 @@ const AuthMultiTeam = () => {
         throw new Error('Registrazione utente non completata. Riprova.');
       }
       
-      // 1.5 Try to sign in (might fail if email confirmation is required)
-      console.log('Attempting sign in...');
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: createTeamData.email,
-        password: createTeamData.password
-      });
-      
-      // If sign in fails, it's ok - user needs to confirm email first
-      if (signInError) {
-        console.log('Sign in not possible yet (need email confirmation):', signInError.message);
-      } else {
-        console.log('User signed in successfully');
-      }
-      
-      // 2. Create the team with the user ID (even without full session)
-      const teamData = {
-        name: createTeamData.teamName,
-        fc_name: createTeamData.fcName || createTeamData.teamName,
-        abbreviation: createTeamData.abbreviation.toUpperCase(),
-        primary_color: createTeamData.primaryColor,
-        secondary_color: createTeamData.secondaryColor,
-        owner_id: authData.user.id,
-        created_by: authData.user.id,
-        invite_code: createTeamData.abbreviation.toUpperCase() + Math.random().toString(36).substring(2, 7).toUpperCase()
-      };
-      
-      console.log('Creating team with data:', teamData);
+      // 2. Create the team using our database function (works with anon key!)
+      console.log('Creating team via database function...');
       
       const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .insert(teamData)
-        .select()
-        .single();
+        .rpc('create_team_for_new_user', {
+          p_name: createTeamData.teamName,
+          p_fc_name: createTeamData.fcName || createTeamData.teamName,
+          p_abbreviation: createTeamData.abbreviation.toUpperCase(),
+          p_primary_color: createTeamData.primaryColor,
+          p_secondary_color: createTeamData.secondaryColor,
+          p_owner_id: authData.user.id,
+          p_invite_code: createTeamData.abbreviation.toUpperCase() + Math.random().toString(36).substring(2, 7).toUpperCase()
+        });
+      
+      console.log('Team creation result:', team, 'Error:', teamError);
       
       if (teamError) {
         console.error('Team creation error:', teamError);
@@ -218,26 +200,9 @@ const AuthMultiTeam = () => {
       
       console.log('User added to team as admin');
       
-      // 4. Create initial invite codes
-      const inviteCodes = [
-        { role: 'admin', max_uses: 1, suffix: 'ADM' },
-        { role: 'coach', max_uses: 5, suffix: 'COACH' },
-        { role: 'player', max_uses: 50, suffix: 'PLAY' }
-      ];
+      // Invite codes are created automatically by the database function
       
-      for (const invite of inviteCodes) {
-        await supabase
-          .from('team_invites')
-          .insert({
-            team_id: team.id,
-            code: `${createTeamData.abbreviation.toUpperCase()}${invite.suffix}${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-            role: invite.role,
-            max_uses: invite.max_uses,
-            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 giorni
-          });
-      }
-      
-      toast.success('Squadra creata! Controlla la tua email per confermare l\'account.');
+      toast.success('Team creato con successo! Controlla la tua email per confermare l\'account e accedere.');
       
     } catch (error: any) {
       toast.error(error.message || 'Errore durante la creazione della squadra');
