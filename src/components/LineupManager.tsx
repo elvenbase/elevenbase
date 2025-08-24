@@ -15,6 +15,8 @@ import { usePngExportSettings } from '@/hooks/usePngExportSettings'
 import { useAvatarColor } from '@/hooks/useAvatarColor'
 import html2canvas from 'html2canvas'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
+import { useRoles } from '@/hooks/useRoles'
+import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
 
 // Stili CSS personalizzati per il range slider
 const rangeSliderStyles = `
@@ -462,6 +464,9 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
     return '💾 Salva Ora'
   }
 
+  const { data: roles = [] } = useRoles()
+  const roleMap = new Map<string, { label: string; abbreviation: string }>(roles.map(r => [r.code, { label: r.label, abbreviation: r.abbreviation }]))
+
   return (
     <Card>
       <CardHeader>
@@ -599,7 +604,11 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         )}
                         {/* Mobile: Mostra solo ruolo ridotto come badge minimo */}
                         <div className="text-xs text-white font-medium px-1.5 py-0.5 bg-black/60 rounded backdrop-blur-sm">
-                          {position.roleShort || position.role?.substring(0, 3) || position.name.substring(0, 3)}
+                          {(() => {
+                            const code = normalizeRoleCodeFrom(position)
+                            const rm = roleMap.get(code)
+                            return rm?.abbreviation || position.roleShort || (position.role?.substring(0,3) || position.name.substring(0,3))
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -616,7 +625,26 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Rimuovi giocatore</SelectItem>
-                          {getAvailablePlayers(position.id).map(player => (
+                          {(() => {
+                            const posCode = normalizeRoleCodeFrom(position)
+                            const rmPos = roleMap.get(posCode)
+                            const labelPos = rmPos?.label || position.role || position.name
+                            const abbrPos = rmPos?.abbreviation || position.roleShort
+                            const scored = getAvailablePlayers(position.id).map(player => {
+                              const pCode = normalizeRoleCodeFrom({ role_code: (player as any).role_code as any, roleShort: (player as any).roleShort as any, role: (player as any).position as any })
+                              const pRole = roleMap.get(pCode)
+                              const isExact = pCode === posCode ? 1 : 0
+                              const isSector = (() => {
+                                const c = (pCode || '').toUpperCase()
+                                if (['TD','DCD','DC','DCS','TS'].includes(c) && ['TD','DCD','DC','DCS','TS'].includes(posCode)) return 1
+                                if (['MED','REG','MC','MD','MS','QD','QS','ED','ES'].includes(c) && ['MED','REG','MC','MD','MS','QD','QS','ED','ES'].includes(posCode)) return 1
+                                if (['PU','AD','AS','ATT'].includes(c) && ['PU','AD','AS','ATT'].includes(posCode)) return 1
+                                return 0
+                              })()
+                              const name = `${player.first_name} ${player.last_name}`.toLowerCase()
+                              return { player, score: isExact * 100 + isSector * 10, name, pRole }
+                            }).sort((a,b) => b.score - a.score || a.name.localeCompare(b.name))
+                            return scored.map(({ player, pRole }) => (
                             <SelectItem key={player.id} value={player.id} className="py-2 min-h-10">
                               <div className="flex items-center gap-3">
                                 <Avatar 
@@ -633,9 +661,13 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                                 </Avatar>
                                 <div className="flex flex-col">
                                   <span className="font-medium flex items-center gap-1">{player.first_name} {player.last_name}{player.isTrialist && (<Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>)}</span>
-                                  {player.position && (
-                                    <span className="text-xs text-muted-foreground">{player.position}</span>
-                                  )}
+                                  <span className="text-xs text-muted-foreground">
+                                    {(() => {
+                                      const pCode = normalizeRoleCodeFrom({ role_code: (player as any).role_code as any, roleShort: (player as any).roleShort as any, role: (player as any).position as any })
+                                      const r = roleMap.get(pCode)
+                                      return r ? `${r.label} (${r.abbreviation})` : ((player as any).position || 'Ruolo non definito')
+                                    })()}
+                                  </span>
                                 </div>
                                 {player.jersey_number && (
                                   <Badge variant="outline" className="ml-auto">
@@ -644,7 +676,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                                 )}
                               </div>
                             </SelectItem>
-                          ))}
+                            ))
+                          })()}
                         </SelectContent>
                       </Select>
                       {assignedPlayer && (
@@ -767,7 +800,11 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         ) : (
                           <div className="w-16 h-16 bg-white/80 border-3 border-dashed border-gray-400 rounded-full flex items-center justify-center group-hover:bg-white transition-colors shadow-lg">
                             <span className="text-gray-600 text-sm font-medium">
-                              {position.roleShort || position.role?.charAt(0) || '?'}
+                              {(() => {
+                                const code = normalizeRoleCodeFrom(position)
+                                const rm = roleMap.get(code)
+                                return rm?.abbreviation || position.roleShort || position.role?.charAt(0) || '?'
+                              })()}
                             </span>
                           </div>
                         )}
@@ -797,7 +834,22 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Nessun giocatore</SelectItem>
-                                                     {getAvailablePlayers(position.id).map(player => (
+                          {(() => {
+                            const posCode = normalizeRoleCodeFrom(position)
+                            const scored = getAvailablePlayers(position.id).map(player => {
+                              const pCode = normalizeRoleCodeFrom({ role_code: (player as any).role_code as any, roleShort: (player as any).roleShort as any, role: (player as any).position as any })
+                              const isExact = pCode === posCode ? 1 : 0
+                              const isSector = (() => {
+                                const c = (pCode || '').toUpperCase()
+                                if (['TD','DCD','DC','DCS','TS'].includes(c) && ['TD','DCD','DC','DCS','TS'].includes(posCode)) return 1
+                                if (['MED','REG','MC','MD','MS','QD','QS','ED','ES'].includes(c) && ['MED','REG','MC','MD','MS','QD','QS','ED','ES'].includes(posCode)) return 1
+                                if (['PU','AD','AS','ATT'].includes(c) && ['PU','AD','AS','ATT'].includes(posCode)) return 1
+                                return 0
+                              })()
+                              const name = `${player.first_name} ${player.last_name}`.toLowerCase()
+                              return { player, score: isExact * 100 + isSector * 10, name }
+                            }).sort((a,b) => b.score - a.score || a.name.localeCompare(b.name))
+                            return scored.map(({ player }) => (
                             <SelectItem key={player.id} value={player.id} className="py-2 min-h-10">
                               <div className="flex items-center gap-3">
                                 <Avatar 
@@ -814,9 +866,13 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                                 </Avatar>
                                 <div className="flex flex-col">
                                   <span className="font-medium flex items-center gap-1">{player.first_name} {player.last_name}{player.isTrialist && (<Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>)}</span>
-                                  {player.position && (
-                                    <span className="text-xs text-muted-foreground">{player.position}</span>
-                                  )}
+                                  <span className="text-xs text-muted-foreground">
+                                    {(() => {
+                                      const pCode = normalizeRoleCodeFrom({ role_code: (player as any).role_code as any, roleShort: (player as any).roleShort as any, role: (player as any).position as any })
+                                      const r = roleMap.get(pCode)
+                                      return r ? `${r.label} (${r.abbreviation})` : ((player as any).position || 'Ruolo non definito')
+                                    })()}
+                                  </span>
                                 </div>
                                 {player.jersey_number && (
                                   <Badge variant="outline" className="ml-auto">
@@ -825,7 +881,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                                 )}
                               </div>
                             </SelectItem>
-                          ))}
+                            ))
+                          })()}
                         </SelectContent>
                       </Select>
                       {assignedPlayer && (
