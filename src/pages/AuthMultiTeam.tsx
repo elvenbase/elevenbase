@@ -120,21 +120,21 @@ const AuthMultiTeam = () => {
         throw new Error('Registrazione utente non completata. Riprova.');
       }
       
-      // 1.5 Sign in the user to get a valid session
-      console.log('Signing in user...');
+      // 1.5 Try to sign in (might fail if email confirmation is required)
+      console.log('Attempting sign in...');
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: createTeamData.email,
         password: createTeamData.password
       });
       
+      // If sign in fails, it's ok - user needs to confirm email first
       if (signInError) {
-        console.error('Sign in error:', signInError);
-        throw signInError;
+        console.log('Sign in not possible yet (need email confirmation):', signInError.message);
+      } else {
+        console.log('User signed in successfully');
       }
       
-      console.log('User signed in, session:', signInData.session?.user?.id);
-      
-      // 2. Create the team
+      // 2. Create the team with the user ID (even without full session)
       const teamData = {
         name: createTeamData.teamName,
         fc_name: createTeamData.fcName || createTeamData.teamName,
