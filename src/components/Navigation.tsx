@@ -54,7 +54,6 @@ const Navigation = () => {
   ];
 
   const adminItems = [
-    { name: "Dashboard", path: "/admin", icon: Shield },
     { name: "Utenti", path: "/admin/users", icon: Users },
     { name: "Formazioni", path: "/admin/formations", icon: Layout },
     { name: "Maglie", path: "/admin/jerseys", icon: Shirt },
@@ -63,6 +62,7 @@ const Navigation = () => {
     { name: "Avversari", path: "/admin/opponents", icon: Users },
     { name: "Opzioni Giocatori", path: "/field-options", icon: UserCog },
     { name: "Squad Score", path: "/admin/attendance-score", icon: BarChart3 },
+    { name: "Tutte le opzioni", path: "/admin", icon: Shield },
   ];
 
   const squadItems = [
