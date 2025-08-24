@@ -24,7 +24,7 @@ import {
   Image,
   Shirt,
   UserCog,
-  Target
+  Circle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -50,7 +50,7 @@ const Navigation = () => {
     { name: "Dashboard", path: "/", icon: BarChart3 },
     { name: "Provini", path: "/trials", icon: UserPlus },
     { name: "Allenamenti", path: "/training", icon: Activity },
-    { name: "Partite", path: "/matches", icon: Target },
+    { name: "Partite", path: "/matches", icon: Circle },
   ];
 
   const adminItems = [
