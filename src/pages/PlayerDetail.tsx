@@ -682,7 +682,10 @@ const PlayerDetail = () => {
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
                     <div><div className="text-muted-foreground">Periodo prova</div><div className="font-medium">{formerTrialist?.created_at ? new Date(formerTrialist.created_at).toLocaleDateString() : '-'} → {formerTrialist?.updated_at ? new Date(formerTrialist.updated_at).toLocaleDateString() : '-'}</div></div>
-                    <div><div className="text-muted-foreground">Ruolo</div><div className="font-medium">{formerTrialist?.role_code || '-'}</div></div>
+                    <div>
+                      <div className="text-muted-foreground">Ruolo</div>
+                      <div className="font-medium">{formerTrialist?.role_code ? `${roleMap[formerTrialist.role_code]?.label || formerTrialist.role_code} (${roleMap[formerTrialist.role_code]?.abbreviation || formerTrialist.role_code})` : '-'}</div>
+                    </div>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">

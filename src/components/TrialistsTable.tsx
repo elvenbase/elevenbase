@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card } from '@/components/ui/card';
 import QuickEvaluationDisplay from '@/components/QuickEvaluationDisplay';
 import SessionCounter from '@/components/SessionCounter';
+import { useRoles } from '@/hooks/useRoles';
 
 type SortField = 'first_name' | 'last_name' | 'position' | 'status' | 'trial_start_date';
 type SortDirection = 'asc' | 'desc';
@@ -27,6 +28,13 @@ const TrialistsTable = () => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const { data: trialists = [], isLoading } = useTrialists();
+  const { data: roles = [] } = useRoles();
+  const roleMap = useMemo(() => new Map<string, { label: string; abbreviation: string }>(roles.map(r => [r.code, { label: r.label, abbreviation: r.abbreviation }])), [roles]);
+  const getRoleLabel = (code?: string) => {
+    if (!code) return 'Ruolo non specificato';
+    const r = roleMap.get(code) as any;
+    return r ? `${r.label} (${r.abbreviation})` : code;
+  };
   const deleteTrialist = useDeleteTrialist();
 
   const toggleRowExpansion = (trialistId: string) => {
@@ -71,6 +79,10 @@ const TrialistsTable = () => {
       if (sortField === 'trial_start_date') {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
+      } else if (sortField === 'position') {
+        // Sort by role label based on roles source of truth
+        aValue = getRoleLabel((a as any).role_code || '');
+        bValue = getRoleLabel((b as any).role_code || '');
       } else if (typeof aValue === 'string') {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
@@ -208,7 +220,7 @@ const TrialistsTable = () => {
                       <SessionCounter trialistId={trialist.id} />
                     </div>
                   </TableCell>
-                  <TableCell>{trialist.position || 'Non specificata'}</TableCell>
+                  <TableCell>{getRoleLabel((trialist as any).role_code)}</TableCell>
                   <TableCell>{getStatusBadge(trialist.status)}</TableCell>
                   <TableCell>
                     {new Date(trialist.trial_start_date).toLocaleDateString('it-IT')}
@@ -399,7 +411,7 @@ const TrialistsTable = () => {
                     <SessionCounter trialistId={trialist.id} />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {trialist.position || 'Ruolo non specificato'}
+                    {getRoleLabel((trialist as any).role_code)}
                   </p>
                 </div>
               </div>

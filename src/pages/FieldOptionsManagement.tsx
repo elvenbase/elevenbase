@@ -344,7 +344,6 @@ const FieldOptionsManagement = () => {
                           <Badge variant="outline" className="text-[10px] sm:text-xs">#{r.sort_order}</Badge>
                           <div>
                             <div className="font-medium text-sm sm:text-base">{r.label} <span className="ml-2 text-[10px] sm:text-xs bg-primary/10 text-primary px-1 rounded">{r.abbreviation}</span></div>
-                            <div className="text-xs sm:text-sm text-muted-foreground">{r.code}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">

@@ -14,6 +14,8 @@ import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
+import { useRoles } from '@/hooks/useRoles'
+import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
 
 interface Player {
   id: string
@@ -77,6 +79,8 @@ const PublicSession = () => {
   const [convocati, setConvocati] = useState<any[]>([])
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
+  const { data: roles = [] } = useRoles()
+  const roleMap = new Map<string, { label: string; abbreviation: string }>(roles.map(r => [r.code, { label: r.label, abbreviation: r.abbreviation }]))
 
 
   useEffect(() => {
@@ -730,7 +734,12 @@ const PublicSession = () => {
                           key={position.id}
                           className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
                           style={{ left: `${position.x}%`, top: `${position.y}%` }}
-                          title={person ? `${firstName} ${lastName} - ${position.roleShort || position.name}` : position.roleShort || position.name}
+                          title={(() => {
+                            const code = normalizeRoleCodeFrom(position);
+                            const rm = roleMap.get(code);
+                            const label = rm?.label || position.roleShort || position.name;
+                            return person ? `${firstName} ${lastName} - ${label}` : label;
+                          })()}
                         >
                           {person ? (
                             <div className="relative">
@@ -766,13 +775,8 @@ const PublicSession = () => {
                       const code = (position.role_code || '').toString().toUpperCase()
                       if (code === 'P') return 'Portiere'
                       if (['TD','DC','DCD','DCS','TS'].includes(code)) return 'Difesa'
-                      if (['MED','REG','MC','MD','MS','QD','QS'].includes(code)) return 'Centrocampo'
-                      if (['ATT','PU','AD','AS'].includes(code)) return 'Attacco'
-                      const r = (position.roleShort || (position as any).role || position.name || '').toString().toLowerCase()
-                      if (r === 'p' || r === 'gk' || r.includes('port') || r.includes('goal')) return 'Portiere'
-                      if (r.includes('td') || r.includes('terzino dest') || r.includes('ts') || r.includes('terzino sin') || r.includes('dif') || r.includes('cb') || r.includes('rb') || r.includes('lb') || r.includes('dc') || r.includes('dcd') || r.includes('dcs')) return 'Difesa'
-                      if (r.includes('ed') || r.includes('es') || r.includes('esterno dx') || r.includes('esterno sx') || r.includes('med') || r.includes('reg') || r.includes('mez') || r.includes('centro') || r.includes('cm') || r.includes('mc') || r.includes('md') || r.includes('ms') || r.includes('cdm') || r.includes('rwb') || r.includes('lwb') || r.includes('qd') || r.includes('qs')) return 'Centrocampo'
-                      if (r.includes('att') || r.includes('pun') || r.includes('st') || r.includes('fw') || r.includes('forward') || r.includes('ala') || r.includes('wing')) return 'Attacco'
+                      if (['MC','MED','REG','MD','MS','ED','ES','QD','QS'].includes(code)) return 'Centrocampo'
+                      if (['PU','ATT','AD','AS'].includes(code)) return 'Attacco'
                       return 'Altri'
                     }
                     const positions = getFormationFromLineup(lineup.formation)?.positions || []
@@ -809,7 +813,13 @@ const PublicSession = () => {
                                   <div className="flex-1 min-w-0">
                                     <div className="font-medium text-sm truncate">{firstName} {lastName}</div>
                                     <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <span className="font-medium">{position.roleShort || (position as any).role || position.name}</span>
+                                      {(() => {
+                                        const code = normalizeRoleCodeFrom(position);
+                                        const rm = roleMap.get(code);
+                                        const label = rm?.label || (position as any).role || position.name;
+                                        const abbr = rm?.abbreviation || position.roleShort;
+                                        return <span className="font-medium">{label}{abbr ? ` (${abbr})` : ''}</span>;
+                                      })()}
                                     </div>
                                   </div>
                                 </div>

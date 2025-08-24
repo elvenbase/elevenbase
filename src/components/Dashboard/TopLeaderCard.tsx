@@ -321,9 +321,11 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                   <div className="truncate">{p.first_name}</div>
                   <div className="truncate">{p.last_name}</div>
                 </div>
-                {/* Role and jersey number on same line */}
+                {/* Role and jersey number on same line (mapped via roles) */}
                 <div className="text-xs md:text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="truncate">{p.role_code || '—'}</span>
+                  <span className="truncate">
+                    {p.role_code ? `${roleLabelByCode.get(p.role_code) || p.role_code}` : '—'}
+                  </span>
                   {typeof (p as any).jersey_number === 'number' && (
                     <span>#{(p as any).jersey_number}</span>
                   )}

@@ -1,8 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Link } from 'react-router-dom'
 import { TrendingUp, TrendingDown, Calendar, Target } from 'lucide-react'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
+import { useRoles } from '@/hooks/useRoles'
 
 interface SquadScorePlayer {
   player_id: string
@@ -125,6 +126,8 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
     return () => observer.disconnect()
   }, [])
 
+  const { data: roles = [] } = useRoles()
+  const roleMap = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
   const sector = sectorFromRoleCode(player.role_code)
   const heroBg = sectorHeroBgClass(sector, type)
   
@@ -200,10 +203,14 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
                     {player.first_name} {player.last_name}
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
-                    {player.role_code && player.jersey_number 
-                      ? `${player.role_code} #${player.jersey_number}`
-                      : player.role_code || `#${player.jersey_number}` || 'N/A'
-                    }
+                    {(() => {
+                      const rc = player.role_code || ''
+                      const lbl = rc ? `${roleMap[rc]?.label || rc}` : ''
+                      const abbr = rc ? `${roleMap[rc]?.abbreviation || rc}` : ''
+                      return (rc && player.jersey_number)
+                        ? `${lbl} (${abbr}) #${player.jersey_number}`
+                        : (rc ? `${lbl} (${abbr})` : (typeof player.jersey_number === 'number' ? `#${player.jersey_number}` : 'N/A'))
+                    })()}
                   </div>
                 </div>
 
@@ -336,10 +343,14 @@ export const SquadScoreCard: React.FC<SquadScoreCardProps> = ({
                     {player.first_name} {player.last_name}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {player.role_code && player.jersey_number 
-                      ? `${player.role_code} #${player.jersey_number}`
-                      : player.role_code || `#${player.jersey_number}` || 'N/A'
-                    }
+                    {(() => {
+                      const rc = player.role_code || ''
+                      const lbl = rc ? `${roleMap[rc]?.label || rc}` : ''
+                      const abbr = rc ? `${roleMap[rc]?.abbreviation || rc}` : ''
+                      return (rc && player.jersey_number)
+                        ? `${lbl} (${abbr}) #${player.jersey_number}`
+                        : (rc ? `${lbl} (${abbr})` : (typeof player.jersey_number === 'number' ? `#${player.jersey_number}` : 'N/A'))
+                    })()}
                   </div>
                 </div>
 

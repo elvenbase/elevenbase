@@ -14,6 +14,8 @@ import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import FormationExporter from '@/components/FormationExporter'
 import html2canvas from 'html2canvas'
+import { useRoles } from '@/hooks/useRoles'
+import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
 
 interface Player { id: string; first_name: string; last_name: string; jersey_number?: number; avatar_url?: string }
 interface Trialist { id: string; first_name: string; last_name: string; status?: string; self_registered?: boolean }
@@ -40,6 +42,8 @@ const MatchPublicRegistration = () => {
   const [bench, setBench] = useState<any[]>([])
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
+  const { data: roles = [] } = useRoles()
+  const roleMap = new Map<string, { label: string; abbreviation: string }>(roles.map(r => [r.code, { label: r.label, abbreviation: r.abbreviation }]))
 
   useEffect(() => { if (!token) { setError('Token mancante'); setLoading(false); return } loadData() }, [token])
 
@@ -456,7 +460,7 @@ const MatchPublicRegistration = () => {
                       const code = (p.role_code || '').toString().toUpperCase()
                       if (code === 'P') return 'Portiere'
                       if (['TD','DC','DCD','DCS','TS'].includes(code)) return 'Difesa'
-                      if (['MED','REG','MC','MD','MS','QD','QS'].includes(code)) return 'Centrocampo'
+                      if (['MED','REG','MC','MD','MS','QD','QS','ED','ES'].includes(code)) return 'Centrocampo'
                       if (['ATT','PU','AD','AS'].includes(code)) return 'Attacco'
                       const r = (p.roleShort || (p as any).role || p.name || '').toString().toLowerCase()
                       if (r === 'p' || r === 'gk' || r.includes('port') || r.includes('goal')) return 'Portiere'
@@ -495,7 +499,15 @@ const MatchPublicRegistration = () => {
                                   <PlayerAvatar firstName={person.first_name} lastName={person.last_name} avatarUrl={person.avatar_url} size="sm" className="border-2 border-white" />
                                   <div className="flex-1 min-w-0">
                                     <div className="font-medium text-sm truncate">{person.first_name} {person.last_name}</div>
-                                    <div className="text-xs text-muted-foreground truncate">{position.roleShort || (position as any).role || position.name}</div>
+                                    <div className="text-xs text-muted-foreground truncate">
+                                      {(() => {
+                                        const code = normalizeRoleCodeFrom(position);
+                                        const rm = roleMap.get(code);
+                                        const label = rm?.label || (position as any).role || position.name;
+                                        const abbr = rm?.abbreviation || position.roleShort;
+                                        return `${label}${abbr ? ` (${abbr})` : ''}`
+                                      })()}
+                                    </div>
                                   </div>
                                 </div>
                               )

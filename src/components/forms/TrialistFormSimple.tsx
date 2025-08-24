@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useRoles } from '@/hooks/useRoles';
 import { useCreateTrialist } from '@/hooks/useSupabaseData';
 import { UserPlus } from 'lucide-react';
 
@@ -18,7 +19,7 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
     last_name: '',
     phone: '',
     birth_date: '',
-    position: '',
+    player_role: '',
     notes: '',
     esperienza: '',
     jersey_number: '',
@@ -28,6 +29,7 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
   });
 
   const createTrialist = useCreateTrialist();
+  const { data: roles = [] } = useRoles();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +39,8 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
       last_name: formData.last_name,
       phone: formData.phone || undefined,
       birth_date: formData.birth_date || undefined,
-      position: formData.position || undefined,
+      position: undefined,
+      role_code: formData.player_role || undefined,
       notes: formData.notes || undefined,
       esperienza: formData.esperienza || undefined,
       jersey_number: formData.jersey_number ? parseInt(formData.jersey_number) : undefined,
@@ -56,7 +59,7 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
         last_name: '',
         phone: '',
         birth_date: '',
-        position: '',
+        player_role: '',
         notes: '',
         esperienza: '',
         jersey_number: '',
@@ -135,12 +138,27 @@ export const TrialistFormSimple = ({ children }: TrialistFormProps) => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Ruolo</label>
-              <Input
-                type="text"
-                placeholder="es. Centrocampista"
-                value={formData.position}
-                onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-              />
+              <Select
+                value={formData.player_role}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, player_role: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleziona ruolo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.length > 0 ? (
+                    roles.map((r) => (
+                      <SelectItem key={r.code} value={r.code}>
+                        {r.label} ({r.abbreviation})
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="loading" disabled>
+                      Caricamento opzioni...
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

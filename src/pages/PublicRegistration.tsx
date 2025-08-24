@@ -14,6 +14,8 @@ import { Users, Target, Download } from 'lucide-react'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
 import { useJerseyTemplates } from '@/hooks/useJerseyTemplates'
 import FormationExporter from '@/components/FormationExporter'
+import { useRoles } from '@/hooks/useRoles'
+import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
 import html2canvas from 'html2canvas'
 
 interface Player { id: string; first_name: string; last_name: string; jersey_number?: number }
@@ -38,6 +40,8 @@ const MatchPublicRegistration = () => {
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [lineup, setLineup] = useState<any | null>(null)
   const [bench, setBench] = useState<any[]>([])
+  const { data: roles = [] } = useRoles()
+  const roleMap = new Map<string, { label: string; abbreviation: string }>(roles.map(r => [r.code, { label: r.label, abbreviation: r.abbreviation }]))
   const { formations: customFormations } = useCustomFormations()
   const { defaultJersey } = useJerseyTemplates()
 
@@ -300,7 +304,7 @@ const MatchPublicRegistration = () => {
               </div>
             </CardHeader>
             <CardContent className="p-4">
-              {/* ... */}
+              {/* Formation preview (omitted for brevity) */}
             </CardContent>
           </Card>
         )}
