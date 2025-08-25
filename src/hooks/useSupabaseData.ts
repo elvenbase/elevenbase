@@ -638,6 +638,12 @@ export const useCreateTrainingSession = () => {
       communication_details?: string | null;
       max_participants?: number;
     }) => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
       // Generate public link token client-side to avoid DB default that may use missing gen_random_bytes
       let public_link_token = '';
       try {
@@ -651,7 +657,12 @@ export const useCreateTrainingSession = () => {
 
       const { data, error } = await supabase
         .from('training_sessions')
-        .insert([{ ...session, public_link_token, created_by: (await supabase.auth.getUser()).data.user?.id }])
+        .insert([{ 
+          ...session, 
+          team_id: currentTeamId,
+          public_link_token, 
+          created_by: (await supabase.auth.getUser()).data.user?.id 
+        }])
         .select()
         .single();
       
