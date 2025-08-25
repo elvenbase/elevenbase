@@ -839,11 +839,39 @@ export const useCompetitions = () => {
   return useQuery({
     queryKey: ['competitions'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      let query = supabase
         .from('competitions')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        query = query.eq('team_id', currentTeamId);
+      }
       
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     }
@@ -862,9 +890,19 @@ export const useCreateCompetition = () => {
       start_date?: string;
       end_date?: string;
     }) => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
       const { data, error } = await supabase
         .from('competitions')
-        .insert([{ ...competition, created_by: (await supabase.auth.getUser()).data.user?.id }])
+        .insert([{ 
+          ...competition, 
+          team_id: currentTeamId,
+          created_by: (await supabase.auth.getUser()).data.user?.id 
+        }])
         .select()
         .single();
       
@@ -1837,17 +1875,32 @@ export const useCompetitionStats = () => {
   return useQuery({
     queryKey: ['competition-stats'],
     queryFn: async () => {
-      const [championshipsResult, tournamentsResult, matchesResult, nextMatchResult] = await Promise.all([
-        supabase.from('competitions').select('id', { count: 'exact' }).eq('type', 'championship').eq('is_active', true),
-        supabase.from('competitions').select('id', { count: 'exact' }).eq('type', 'tournament').eq('is_active', true),
-        supabase.from('matches').select('id', { count: 'exact' }),
-        supabase
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      
+      let championshipsQuery = supabase.from('competitions').select('id', { count: 'exact' }).eq('type', 'championship').eq('is_active', true);
+      let tournamentsQuery = supabase.from('competitions').select('id', { count: 'exact' }).eq('type', 'tournament').eq('is_active', true);
+      let matchesQuery = supabase.from('matches').select('id', { count: 'exact' });
+      let nextMatchQuery = supabase
           .from('matches')
           .select('match_date, opponent_name')
           .gte('match_date', new Date().toISOString().split('T')[0])
           .order('match_date', { ascending: true })
-          .limit(1)
-          .maybeSingle()
+          .limit(1);
+
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        championshipsQuery = championshipsQuery.eq('team_id', currentTeamId);
+        tournamentsQuery = tournamentsQuery.eq('team_id', currentTeamId);
+        matchesQuery = matchesQuery.eq('team_id', currentTeamId);
+        nextMatchQuery = nextMatchQuery.eq('team_id', currentTeamId);
+      }
+
+      const [championshipsResult, tournamentsResult, matchesResult, nextMatchResult] = await Promise.all([
+        championshipsQuery,
+        tournamentsQuery,
+        matchesQuery,
+        nextMatchQuery.maybeSingle()
       ]);
 
       let daysToNext = 0;
