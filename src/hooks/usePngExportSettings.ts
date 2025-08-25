@@ -18,6 +18,7 @@ export interface PngExportSetting {
   created_at: string
   updated_at: string
   created_by: string | null
+  team_id?: string | null
 }
 
 export const usePngExportSettings = () => {
@@ -32,97 +33,78 @@ export const usePngExportSettings = () => {
 
   const checkTableAndLoadSettings = async () => {
     try {
-      // Verifica se la tabella esiste
       const { data, error } = await supabase
         .from('png_export_settings')
         .select('count')
         .limit(1)
 
-      if (error && error.code === '42P01') {
-        // Tabella non esiste - usa impostazioni di default
+      if (error && (error as any).code === '42P01') {
         setTableExists(false)
-        setDefaultSetting({
-          id: 'default',
-          name: 'Impostazioni Default',
-          description: 'Impostazioni di default per l\'esportazione PNG',
-          field_lines_color: '#ffffff',
-          field_lines_thickness: 2,
-          jersey_numbers_color: '#000000',
-          jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
-          use_player_avatars: false,
-          name_box_color: '#ffffff',
-          name_text_color: '#000000',
-          avatar_background_color: '#1a2332',
-          is_default: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          created_by: null
-        })
+        setDefaultSetting(defaultDefaults())
         setSettings([])
       } else {
-        // Tabella esiste - carica i dati
         setTableExists(true)
-        await loadSettings(true) // 🔧 FIX: Passa true per bypassare race condition
+        await loadSettings(true)
       }
     } catch (error) {
       console.error('Errore nel controllo della tabella:', error)
-      // In caso di errore, usa impostazioni di default
-      setDefaultSetting({
-        id: 'default',
-        name: 'Impostazioni Default',
-        description: 'Impostazioni di default per l\'esportazione PNG',
-        field_lines_color: '#ffffff',
-        field_lines_thickness: 2,
-        jersey_numbers_color: '#000000',
-        jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
-        use_player_avatars: false,
-        name_box_color: '#ffffff',
-        name_text_color: '#000000',
-        avatar_background_color: '#1a2332',
-        is_default: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        created_by: null
-      })
+      setDefaultSetting(defaultDefaults())
       setSettings([])
     } finally {
       setLoading(false)
     }
   }
 
+  const resolveCurrentTeamId = async (): Promise<string | null> => {
+    let currentTeamId = localStorage.getItem('currentTeamId')
+    if (currentTeamId) return currentTeamId
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: tm } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle()
+      if (tm?.team_id) {
+        currentTeamId = tm.team_id
+        localStorage.setItem('currentTeamId', currentTeamId)
+        return currentTeamId
+      }
+    }
+    return null
+  }
+
   const loadSettings = async (forceTableExists = false) => {
     const actualTableExists = forceTableExists || tableExists
-    if (!actualTableExists) {
-      return
-    }
+    if (!actualTableExists) return
 
-          try {
-        const { data, error } = await supabase
-          .from('png_export_settings')
-          .select('*')
-          // MODIFICA: Carica TUTTE le impostazioni (utente + system default)
-          .order('created_at', { ascending: false })
+    try {
+      const currentTeamId = await resolveCurrentTeamId()
+      const { data, error } = await supabase
+        .from('png_export_settings')
+        .select('*')
+        // Carica default globali (is_default=true, team_id NULL) o quelle del team corrente
+        .or(`is_default.eq.true,team_id.eq.${currentTeamId || 'null'}`)
+        .order('created_at', { ascending: false })
 
       if (error) {
         console.error('Errore nel caricamento delle impostazioni:', error)
         return
       }
 
-      // Ensure all required properties are present
       const settingsWithDefaults = (data || []).map(setting => ({
         ...setting,
-        use_player_avatars: setting.use_player_avatars ?? false
-      }))
+        use_player_avatars: (setting as any).use_player_avatars ?? false
+      })) as PngExportSetting[]
 
       setSettings(settingsWithDefaults)
 
-      // Trova l'impostazione di default
-      const defaultData = settingsWithDefaults?.find(setting => setting.is_default)
-      
+      const defaultData = settingsWithDefaults.find(s => s.is_default)
       if (defaultData) {
         setDefaultSetting(defaultData)
-      } else if (settingsWithDefaults && settingsWithDefaults.length > 0) {
-        // Se non c'è un default esplicito, usa la prima impostazione salvata
+      } else if (settingsWithDefaults.length > 0) {
         setDefaultSetting(settingsWithDefaults[0])
       } else {
         setDefaultSetting(null)
@@ -151,22 +133,24 @@ export const usePngExportSettings = () => {
     }
 
     try {
-      // Se questa è l'impostazione di default, rimuovi il flag dalle TUTTE le altre
+      // Se impostata default per team: rimuovi il flag default dalle impostazioni del medesimo team
       if (settingData.is_default) {
+        const currentTeamId = await resolveCurrentTeamId()
         const { error: resetError } = await supabase
           .from('png_export_settings')
           .update({ is_default: false })
-          // 🔧 FIX: Rimuovi da TUTTE (non solo utente), incluso sistema
-        
+          .eq('team_id', currentTeamId)
         if (resetError) {
-          console.error('Errore nel reset default:', resetError)
+          console.error('Errore nel reset default team:', resetError)
         }
       }
 
+      const currentTeamId = await resolveCurrentTeamId()
       const { data, error } = await supabase
         .from('png_export_settings')
         .insert([{
           ...settingData,
+          team_id: currentTeamId,
           created_by: (await supabase.auth.getUser()).data.user?.id
         }])
         .select()
@@ -178,11 +162,11 @@ export const usePngExportSettings = () => {
         return
       }
 
-      await loadSettings(true) // 🔧 FIX: Ricarica con forceTableExists
+      await loadSettings(true)
       toast.success('Impostazioni create con successo!')
       return data
     } catch (error) {
-      console.error('Errore nella creazione:', error)
+      console.error('Errore nella creazione delle impostazioni:', error)
       toast.error('Errore nella creazione delle impostazioni')
     }
   }
@@ -194,14 +178,13 @@ export const usePngExportSettings = () => {
     if (!tableExists) return
 
     try {
-      // Se questa diventa l'impostazione di default, rimuovi il flag da TUTTE le altre
       if (updates.is_default) {
+        const currentTeamId = await resolveCurrentTeamId()
         const { error: resetError } = await supabase
           .from('png_export_settings')
           .update({ is_default: false })
-          .neq('id', id) // Escludi solo l'impostazione corrente
-          // 🔧 FIX: Rimuovi da TUTTE, incluso sistema
-        
+          .eq('team_id', currentTeamId)
+          .neq('id', id)
         if (resetError) {
           console.error('Errore nel reset default (updateSetting):', resetError)
         }
@@ -218,10 +201,10 @@ export const usePngExportSettings = () => {
         return
       }
 
-      await loadSettings(true) // 🔧 FIX: Ricarica con forceTableExists
+      await loadSettings(true)
       toast.success('Impostazioni aggiornate con successo!')
     } catch (error) {
-      console.error('Errore nell\'aggiornamento:', error)
+      console.error('Errore nell\'aggiornamento delle impostazioni:', error)
       toast.error('Errore nell\'aggiornamento delle impostazioni')
     }
   }
@@ -241,7 +224,7 @@ export const usePngExportSettings = () => {
         return
       }
 
-      await loadSettings()
+      await loadSettings(true)
       toast.success('Impostazioni eliminate con successo!')
     } catch (error) {
       console.error('Errore nell\'eliminazione:', error)
@@ -253,17 +236,15 @@ export const usePngExportSettings = () => {
     if (!tableExists) return
 
     try {
-      // Rimuovi il flag default da TUTTE le altre impostazioni (incluso sistema)
+      const currentTeamId = await resolveCurrentTeamId()
       const { error: resetError } = await supabase
         .from('png_export_settings')
         .update({ is_default: false })
-        // 🔧 FIX: Rimuovi da TUTTE, incluso sistema
-      
+        .eq('team_id', currentTeamId)
       if (resetError) {
         console.error('Errore nel reset default (setAsDefault):', resetError)
       }
 
-      // Imposta questa come default
       const { error } = await supabase
         .from('png_export_settings')
         .update({ is_default: true })
@@ -275,7 +256,7 @@ export const usePngExportSettings = () => {
         return
       }
 
-      await loadSettings(true) // 🔧 FIX: Usa forceTableExists per evitare race condition
+      await loadSettings(true)
       toast.success('Impostazioni impostate come default!')
     } catch (error) {
       console.error('Errore nell\'impostazione del default:', error)
@@ -293,5 +274,26 @@ export const usePngExportSettings = () => {
     deleteSetting,
     setAsDefault,
     loadSettings
+  }
+}
+
+function defaultDefaults(): PngExportSetting {
+  return {
+    id: 'default',
+    name: 'Impostazioni Default',
+    description: 'Impostazioni di default per l\'esportazione PNG',
+    field_lines_color: '#ffffff',
+    field_lines_thickness: 2,
+    jersey_numbers_color: '#000000',
+    jersey_numbers_shadow: '2px 2px 4px rgba(0,0,0,0.9)',
+    use_player_avatars: false,
+    name_box_color: '#ffffff',
+    name_text_color: '#000000',
+    avatar_background_color: '#1a2332',
+    is_default: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    created_by: null,
+    team_id: null,
   }
 }

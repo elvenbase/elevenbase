@@ -58,11 +58,34 @@ export const useFieldOptions = () => {
       
       // Crea una nuova promise per evitare chiamate multiple
       globalLoadingPromise = (async () => {
-        const { data, error } = await supabase
+        // Scope by current team
+        let currentTeamId = localStorage.getItem('currentTeamId');
+        if (!currentTeamId) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: tm } = await supabase
+              .from('team_members')
+              .select('team_id')
+              .eq('user_id', user.id)
+              .eq('status', 'active')
+              .limit(1)
+              .maybeSingle();
+            if (tm?.team_id) {
+              currentTeamId = tm.team_id;
+              localStorage.setItem('currentTeamId', currentTeamId);
+            }
+          }
+        }
+
+        let query = supabase
           .from('field_options')
           .select('*')
           .eq('is_active', true)
           .order('sort_order', { ascending: true });
+        if (currentTeamId) {
+          query = query.eq('team_id', currentTeamId);
+        }
+        const { data, error } = await query;
 
         if (error) throw error;
 
@@ -101,10 +124,26 @@ export const useFieldOptions = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('User not authenticated');
 
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        const { data: tm } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', user.user.id)
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle();
+        if (tm?.team_id) {
+          currentTeamId = tm.team_id;
+          localStorage.setItem('currentTeamId', currentTeamId);
+        }
+      }
+
       const { error } = await supabase
         .from('field_options')
         .insert({
           ...option,
+          team_id: currentTeamId,
           created_by: user.user.id
         });
 
