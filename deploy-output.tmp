@@ -9,9 +9,9 @@ Netlify Build
   @netlify/build 29.58.0
 ​
 ❯ Flags
-  deployId: 68acbd12303a4e5ec1067a66
+  deployId: 68acbf339b83b3099e0c38c9
   dir: dist
-  message: 'Preview: purge jerseys + static fallback (feature/multi-team) 2025-08-25T19:44:08Z'
+  message: 'Preview: Global Admin panel (feature/multi-team) 2025-08-25T19:53:12Z'
   open: false
   prod: false
   prodIfUnlocked: false
@@ -26,10 +26,10 @@ Netlify Build
 ❯ Context
   dev
 
-[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68acbd12303a4e5ec1067a66
-[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68acbd12303a4e5ec1067a66
-[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68acbd12303a4e5ec1067a66
-[32mWebsite draft URL: [39m https://68acbd12303a4e5ec1067a66--gleaming-kleicha-dec5b4.netlify.app
+[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68acbf339b83b3099e0c38c9
+[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68acbf339b83b3099e0c38c9
+[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68acbf339b83b3099e0c38c9
+[32mWebsite draft URL: [39m https://68acbf339b83b3099e0c38c9--gleaming-kleicha-dec5b4.netlify.app
 
 If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.
 netlify deploy --prod

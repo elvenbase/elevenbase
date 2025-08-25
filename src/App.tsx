@@ -37,6 +37,7 @@ const PublicSession = lazy(() => import("@/pages/PublicSession"));
 const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 
 // Multi-team authentication system
 const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
@@ -149,6 +150,7 @@ function App() {
                       <Route path="/register/:token" element={<PublicRegistration />} />
                       <Route path="/m/:token" element={<MatchPublicRegistration />} />
                       <Route path="/session/:token" element={<PublicSession />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/" element={
                         <ProtectedRoute>
                           <Navigation />
