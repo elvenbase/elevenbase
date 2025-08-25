@@ -39,6 +39,7 @@ const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const TeamSettings = lazy(() => import("@/pages/TeamSettings"));
 
 // Multi-team authentication system
 const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
@@ -270,6 +271,14 @@ function App() {
                           <Navigation />
                           <main className="ml-0 transition-all duration-200">
                             <PlayerDetail />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/team/settings" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <TeamSettings />
                           </main>
                         </ProtectedRoute>
                       } />
