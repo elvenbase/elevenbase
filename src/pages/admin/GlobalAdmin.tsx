@@ -15,27 +15,24 @@ const GlobalAdmin: React.FC = () => {
   const ensureGlobalAdmin = async () => {
     const { data: user } = await supabase.auth.getUser()
     if (!user.user) throw new Error('Non autenticato')
-    // Authorization enforced by RLS; keeping this check minimal
     return true
   }
 
   const loadCurrentDefaults = async () => {
     try {
-      // Jersey default (system)
+      // Jersey default (system): created_by NULL + is_default
       const { data: sysJersey } = await supabase
         .from('jersey_templates')
         .select('image_url')
-        .is('team_id', null)
         .is('created_by', null)
         .eq('is_default', true)
         .maybeSingle()
       if (sysJersey?.image_url) setJerseyUrl(sysJersey.image_url)
 
-      // Avatar Persona default (system)
+      // Avatar Persona default (system): created_by NULL + is_default + type=image + name
       const { data: sysAvatar } = await supabase
         .from('avatar_assets')
         .select('value')
-        .is('team_id', null)
         .is('created_by', null)
         .eq('name', 'default-avatar')
         .eq('type', 'image')
@@ -43,11 +40,10 @@ const GlobalAdmin: React.FC = () => {
         .maybeSingle()
       if (sysAvatar?.value) setAvatarUrl(sysAvatar.value)
 
-      // Avatar Background default (system)
+      // Avatar Background default (system): created_by NULL + is_default + type=color
       const { data: sysBg } = await supabase
         .from('avatar_assets')
         .select('value')
-        .is('team_id', null)
         .is('created_by', null)
         .eq('name', 'system-default-background')
         .eq('type', 'color')
@@ -101,10 +97,12 @@ const GlobalAdmin: React.FC = () => {
     try {
       await ensureGlobalAdmin()
       if (!jerseyUrl) throw new Error('Carica prima un\'immagine maglia')
-      await supabase.from('jersey_templates').delete().is('team_id', null).is('created_by', null)
+      // Clear previous system default
+      await supabase.from('jersey_templates').delete().is('created_by', null)
+      // Insert new system default (omit team_id key for compatibility)
       const { error } = await supabase.from('jersey_templates').insert({
         name: 'System Default Jersey', description: 'Global default jersey', image_url: jerseyUrl,
-        is_default: true, team_id: null, created_by: null
+        is_default: true, created_by: null
       })
       if (error) throw error
       await loadCurrentDefaults()
@@ -118,10 +116,12 @@ const GlobalAdmin: React.FC = () => {
     try {
       await ensureGlobalAdmin()
       if (!avatarUrl) throw new Error('Carica prima un\'immagine di Avatar Persona')
-      await supabase.from('avatar_assets').delete().is('team_id', null).is('created_by', null).eq('name', 'default-avatar')
+      // Remove prior system default avatar persona
+      await supabase.from('avatar_assets').delete().is('created_by', null).eq('name', 'default-avatar')
+      // Insert new (omit team_id key)
       const { error } = await supabase.from('avatar_assets').insert({
         name: 'default-avatar', type: 'image', value: avatarUrl,
-        is_default: true, team_id: null, created_by: null
+        is_default: true, created_by: null
       })
       if (error) throw error
       await loadCurrentDefaults()
@@ -134,10 +134,12 @@ const GlobalAdmin: React.FC = () => {
   const saveSystemAvatarBackground = async () => {
     try {
       await ensureGlobalAdmin()
-      await supabase.from('avatar_assets').update({ is_default: false }).is('team_id', null).is('created_by', null)
+      // Reset prior system defaults (created_by NULL)
+      await supabase.from('avatar_assets').update({ is_default: false }).is('created_by', null)
+      // Insert new (omit team_id key)
       const { error } = await supabase.from('avatar_assets').insert({
         name: 'system-default-background', type: 'color', value: bgColor,
-        is_default: true, team_id: null, created_by: null
+        is_default: true, created_by: null
       })
       if (error) throw error
       await loadCurrentDefaults()
