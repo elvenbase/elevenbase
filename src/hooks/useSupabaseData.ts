@@ -1627,11 +1627,46 @@ export const useStats = () => {
   return useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
+      // Get current team ID
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      let playersQuery = supabase.from('players').select('id', { count: 'exact' }).eq('status', 'active');
+      let sessionsQuery = supabase.from('training_sessions').select('id', { count: 'exact' });
+      let competitionsQuery = supabase.from('competitions').select('id', { count: 'exact' }).eq('is_active', true);
+      let trialistsQuery = supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'in_prova');
+
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        playersQuery = playersQuery.eq('team_id', currentTeamId);
+        sessionsQuery = sessionsQuery.eq('team_id', currentTeamId);
+        competitionsQuery = competitionsQuery.eq('team_id', currentTeamId);
+        trialistsQuery = trialistsQuery.eq('team_id', currentTeamId);
+      }
+
       const [playersResult, sessionsResult, competitionsResult, trialistsResult] = await Promise.all([
-        supabase.from('players').select('id', { count: 'exact' }).eq('status', 'active'),
-        supabase.from('training_sessions').select('id', { count: 'exact' }),
-        supabase.from('competitions').select('id', { count: 'exact' }).eq('is_active', true),
-        supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'in_prova')
+        playersQuery,
+        sessionsQuery,
+        competitionsQuery,
+        trialistsQuery
       ]);
 
       return {
@@ -1648,11 +1683,32 @@ export const useTrialistStats = () => {
   return useQuery({
     queryKey: ['trialist-stats'],
     queryFn: async () => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+
+      let inTrialQuery = supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'in_prova');
+      let promotedQuery = supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'promosso');
+      let archivedQuery = supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'archiviato');
+      let evaluationsQuery = supabase.from('trial_evaluations').select('overall_rating');
+
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        // Note: trial_evaluations might need team filtering via trialists join
+        inTrialQuery = inTrialQuery.eq('team_id', currentTeamId);
+        promotedQuery = promotedQuery.eq('team_id', currentTeamId);
+        archivedQuery = archivedQuery.eq('team_id', currentTeamId);
+        // For evaluations, we'll filter through trialists join
+        evaluationsQuery = supabase
+          .from('trial_evaluations')
+          .select('overall_rating, trialists!inner(team_id)')
+          .eq('trialists.team_id', currentTeamId);
+      }
+
       const [inTrialResult, promotedResult, archivedResult, evaluationsResult] = await Promise.all([
-        supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'in_prova'),
-        supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'promosso'),
-        supabase.from('trialists').select('id', { count: 'exact' }).eq('status', 'archiviato'),
-        supabase.from('trial_evaluations').select('overall_rating')
+        inTrialQuery,
+        promotedQuery,
+        archivedQuery,
+        evaluationsQuery
       ]);
 
       const ratings = evaluationsResult.data?.map(e => e.overall_rating).filter(r => r !== null) || [];
@@ -1673,11 +1729,27 @@ export const useRecentActivity = () => {
   return useQuery({
     queryKey: ['recent-activity'],
     queryFn: async () => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+
+      let playersQuery = supabase.from('players').select('first_name, last_name, created_at').order('created_at', { ascending: false }).limit(3);
+      let trainingsQuery = supabase.from('training_sessions').select('title, created_at').order('created_at', { ascending: false }).limit(3);
+      let competitionsQuery = supabase.from('competitions').select('name, created_at').order('created_at', { ascending: false }).limit(3);
+      let trialistsQuery = supabase.from('trialists').select('first_name, last_name, created_at').order('created_at', { ascending: false }).limit(3);
+
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        playersQuery = playersQuery.eq('team_id', currentTeamId);
+        trainingsQuery = trainingsQuery.eq('team_id', currentTeamId);
+        competitionsQuery = competitionsQuery.eq('team_id', currentTeamId);
+        trialistsQuery = trialistsQuery.eq('team_id', currentTeamId);
+      }
+
       const [playersResult, trainingsResult, competitionsResult, trialistsResult] = await Promise.all([
-        supabase.from('players').select('first_name, last_name, created_at').order('created_at', { ascending: false }).limit(3),
-        supabase.from('training_sessions').select('title, created_at').order('created_at', { ascending: false }).limit(3),
-        supabase.from('competitions').select('name, created_at').order('created_at', { ascending: false }).limit(3),
-        supabase.from('trialists').select('first_name, last_name, created_at').order('created_at', { ascending: false }).limit(3)
+        playersQuery,
+        trainingsQuery,
+        competitionsQuery,
+        trialistsQuery
       ]);
 
       const activities: Array<{type: string, message: string, timestamp: string}> = [];
