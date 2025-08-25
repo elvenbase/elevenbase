@@ -359,9 +359,29 @@ const Navigation = () => {
               </div>
               
               <div className="pt-4 border-t border-border mt-4">
+                {/* Team Info Mobile */}
+                <div className="mx-4 mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground shadow-sm">
+                      {localStorage.getItem('currentTeamName')?.substring(0, 2).toUpperCase() || 'TM'}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-foreground">
+                        {localStorage.getItem('currentTeamName') || 'Team'}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Ruolo: {localStorage.getItem('userRole') || 'member'}
+                      </div>
+                    </div>
+                    <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-xs font-bold shadow-glow">
+                      {user?.email?.charAt(0).toUpperCase()}
+                    </div>
+                  </div>
+                </div>
+                
                 <button
                   onClick={() => { handleSignOut(); setIsExiting(true); setTimeout(() => { setIsMobileMenuOpen(false); setIsExiting(false) }, 300) }}
-                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50"
+                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
                   title="Esci"
                 >
                   <LogOut className="h-5 w-5" />
