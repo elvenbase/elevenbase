@@ -19,20 +19,45 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
       }
 
       try {
-        // Verifica se l'utente è superadmin o admin
-        const { data: isSuperAdminResult } = await supabase
-          .rpc('has_role', { 
-            _user_id: user.id, 
-            _role: 'superadmin' 
-          });
+        // 1) Superadmin globale: bypassa controllo team
+        const { data: isSuperAdmin } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'superadmin',
+        });
+        if (isSuperAdmin) {
+          setIsAdmin(true);
+          return;
+        }
 
-        const { data: isAdminResult } = await supabase
-          .rpc('has_role', { 
-            _user_id: user.id, 
-            _role: 'admin' 
-          });
+        // 2) Admin di team: verifica permesso sul team corrente
+        let teamId: string | null = null;
+        if (typeof window !== 'undefined') {
+          teamId = localStorage.getItem('currentTeamId');
+        }
 
-        setIsAdmin(isSuperAdminResult || isAdminResult);
+        // Se non presente in localStorage, trova un team attivo dell'utente
+        if (!teamId) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, status')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle();
+          teamId = teamMember?.team_id ?? null;
+        }
+
+        if (!teamId) {
+          setIsAdmin(false);
+          return;
+        }
+
+        const { data: hasManageTeamPermission } = await supabase.rpc('has_team_permission', {
+          _team_id: teamId,
+          _permission: 'manage_team',
+        });
+
+        setIsAdmin(Boolean(hasManageTeamPermission));
       } catch (error) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
