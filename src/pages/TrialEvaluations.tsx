@@ -97,7 +97,7 @@ const TrialEvaluations = () => {
         if (evaluation && trialist) {
           const payload = {
             trialist_id: trialistId,
-            // team_id: trialist.team_id || null, // Temporaneamente disabilitato - colonna non esiste in produzione
+            team_id: trialist.team_id || null,
             personality_ratings: evaluation.personality_ratings || [],
             ability_ratings: evaluation.ability_ratings || [],
             flexibility_ratings: evaluation.flexibility_ratings || [],
