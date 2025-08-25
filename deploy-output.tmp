@@ -1,0 +1,33 @@
+[32mDeploy path: [39m       /workspace/elevenbase/dist
+[32mConfiguration path: [39m/workspace/elevenbase/netlify.toml
+Deploying to main site URL...
+​
+Netlify Build                                                 
+────────────────────────────────────────────────────────────────
+​
+❯ Version
+  @netlify/build 29.58.0
+​
+❯ Flags
+  deployId: 68acd2eb25dcfc0ea11ef473
+  dir: dist
+  message: 'Production deploy: improved avatar fallback (default persona over background) 2025-08-25T21:17:21Z'
+  open: false
+  prod: true
+  prodIfUnlocked: false
+  skipFunctionsCache: false
+​
+❯ Current directory
+  /workspace/elevenbase
+​
+❯ Config file
+  /workspace/elevenbase/netlify.toml
+​
+❯ Context
+  dev
+
+[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68acd2eb25dcfc0ea11ef473
+[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions
+[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions
+[32mUnique deploy URL: [39m https://68acd2eb25dcfc0ea11ef473--gleaming-kleicha-dec5b4.netlify.app
+[32mWebsite URL: [39m       https://elevenbase.pro

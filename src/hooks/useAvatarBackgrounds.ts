@@ -24,7 +24,7 @@ let backgroundsPromise: Promise<AvatarBackground[]> | null = null
 
 async function fetchBackgroundsOnce(): Promise<AvatarBackground[]> {
   try {
-    // Team-first, then personal
+    // Team-first, then personal, then system default
     let currentTeamId: string | null = localStorage.getItem('currentTeamId')
     if (!currentTeamId) {
       const { data: { user } } = await supabase.auth.getUser()
@@ -69,8 +69,20 @@ async function fetchBackgroundsOnce(): Promise<AvatarBackground[]> {
       personalRows = me || []
     }
 
-    // Return only team/personal; system defaults will be used separately for fallback
+    // 3) System default fallback (global)
+    const { data: systemDefault } = await supabase
+      .from('avatar_assets')
+      .select('*')
+      .is('team_id', null)
+      .is('created_by', null)
+      .eq('is_default', true)
+      .limit(1)
+    const systemRows = systemDefault || []
+
     const combined = [...teamRows, ...personalRows]
+    if (combined.length === 0) {
+      return systemRows as any
+    }
     return combined as any
   } catch (err) {
     if (!hasLoggedLoadError) {
