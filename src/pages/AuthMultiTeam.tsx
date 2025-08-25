@@ -309,13 +309,9 @@ const AuthMultiTeam = () => {
     try {
       const email = loginData.email.trim().toLowerCase();
       if (email !== 'coach@elevenbase.pro') throw new Error('Email non autorizzata');
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password: loginData.password
-      });
+      const { error } = await supabase.auth.signInWithPassword({ email, password: loginData.password });
       if (error) throw error;
-      localStorage.setItem('isGlobalAdmin', 'true');
-      // Non eseguire controlli team, vai direttamente al pannello globale
+      // Nessun flag locale: l'autorizzazione avviene via RLS/ruolo superadmin
       window.location.href = '/global-admin';
     } catch (err: any) {
       toast.error(err?.message || 'Errore login admin globale');
