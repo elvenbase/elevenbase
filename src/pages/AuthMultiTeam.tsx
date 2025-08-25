@@ -120,7 +120,30 @@ const AuthMultiTeam = () => {
         throw new Error('Registrazione utente non completata. Riprova.');
       }
       
-      // 2. Create the team using our database function (works with anon key!)
+      // 2. Check if team name or abbreviation already exists
+      console.log('Checking if team name and abbreviation are available...');
+      
+      const { data: existingByName } = await supabase
+        .from('teams')
+        .select('name')
+        .eq('name', createTeamData.teamName)
+        .single();
+      
+      if (existingByName) {
+        throw new Error(`Una squadra con il nome "${createTeamData.teamName}" esiste già. Scegli un nome diverso.`);
+      }
+      
+      const { data: existingByAbbr } = await supabase
+        .from('teams')
+        .select('abbreviation')
+        .eq('abbreviation', createTeamData.abbreviation.toUpperCase())
+        .single();
+      
+      if (existingByAbbr) {
+        throw new Error(`La sigla "${createTeamData.abbreviation.toUpperCase()}" è già in uso. Scegli una sigla diversa.`);
+      }
+      
+      // 3. Create the team using our database function (works with anon key!)
       console.log('Creating team via database function...');
       
       const { data: team, error: teamError } = await supabase
