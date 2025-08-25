@@ -436,11 +436,12 @@ export const useUpdatePlayer = () => {
 
       console.log('Team verification passed, proceeding with update...');
 
+      // Since we've already verified the player belongs to the correct team,
+      // we can update by ID only to avoid RLS policy conflicts
       const { data, error } = await supabase
         .from('players')
         .update(updates)
         .eq('id', id)
-        .eq('team_id', currentTeamId)
         .select()
         .single();
       
@@ -497,11 +498,37 @@ export const useDeletePlayer = () => {
 
       console.log('Deleting player with team_id filter:', currentTeamId, 'player_id:', id);
 
+      // First verify the player belongs to the current team
+      const { data: existingPlayer, error: checkError } = await supabase
+        .from('players')
+        .select('id, first_name, last_name, team_id')
+        .eq('id', id)
+        .single();
+
+      if (checkError) {
+        console.error('Player check failed:', checkError);
+        throw new Error(`Player not found: ${checkError.message}`);
+      }
+
+      if (!existingPlayer) {
+        throw new Error('Player not found in database');
+      }
+
+      if (existingPlayer.team_id !== currentTeamId) {
+        console.error('Team mismatch!');
+        console.error('Player team_id:', existingPlayer.team_id);
+        console.error('Current team_id:', currentTeamId);
+        throw new Error(`Access denied: Player belongs to different team (${existingPlayer.team_id} vs ${currentTeamId})`);
+      }
+
+      console.log('Team verification passed, proceeding with delete...');
+
+      // Since we've already verified the player belongs to the correct team,
+      // we can delete by ID only to avoid RLS policy conflicts
       const { error } = await supabase
         .from('players')
         .delete()
-        .eq('id', id)
-        .eq('team_id', currentTeamId);
+        .eq('id', id);
       
       if (error) {
         console.error('Error deleting player:', error);
@@ -1107,11 +1134,36 @@ export const useUpdateTrialistStatus = () => {
 
       console.log('Updating trialist status with team_id filter:', currentTeamId, 'trialist_id:', id);
 
+      // First verify the trialist belongs to the current team
+      const { data: existingTrialist, error: checkError } = await supabase
+        .from('trialists')
+        .select('id, first_name, last_name, team_id')
+        .eq('id', id)
+        .single();
+
+      if (checkError) {
+        console.error('Trialist check failed:', checkError);
+        throw new Error(`Trialist not found: ${checkError.message}`);
+      }
+
+      if (!existingTrialist) {
+        throw new Error('Trialist not found in database');
+      }
+
+      if (existingTrialist.team_id !== currentTeamId) {
+        console.error('Team mismatch!');
+        console.error('Trialist team_id:', existingTrialist.team_id);
+        console.error('Current team_id:', currentTeamId);
+        throw new Error(`Access denied: Trialist belongs to different team (${existingTrialist.team_id} vs ${currentTeamId})`);
+      }
+
+      console.log('Team verification passed, proceeding with trialist status update...');
+
+      // Since we've verified team ownership, update by ID only
       const { data, error } = await supabase
         .from('trialists')
         .update({ status })
         .eq('id', id)
-        .eq('team_id', currentTeamId)
         .select()
         .single();
       
@@ -1163,11 +1215,36 @@ export const useUpdateTrialist = () => {
 
       console.log('Updating trialist with team_id filter:', currentTeamId, 'trialist_id:', id);
 
+      // First verify the trialist belongs to the current team
+      const { data: existingTrialist, error: checkError } = await supabase
+        .from('trialists')
+        .select('id, first_name, last_name, team_id')
+        .eq('id', id)
+        .single();
+
+      if (checkError) {
+        console.error('Trialist check failed:', checkError);
+        throw new Error(`Trialist not found: ${checkError.message}`);
+      }
+
+      if (!existingTrialist) {
+        throw new Error('Trialist not found in database');
+      }
+
+      if (existingTrialist.team_id !== currentTeamId) {
+        console.error('Team mismatch!');
+        console.error('Trialist team_id:', existingTrialist.team_id);
+        console.error('Current team_id:', currentTeamId);
+        throw new Error(`Access denied: Trialist belongs to different team (${existingTrialist.team_id} vs ${currentTeamId})`);
+      }
+
+      console.log('Team verification passed, proceeding with trialist update...');
+
+      // Since we've verified team ownership, update by ID only
       const { data, error } = await supabase
         .from('trialists')
         .update(updates)
         .eq('id', id)
-        .eq('team_id', currentTeamId)
         .select()
         .single();
       
@@ -1223,11 +1300,36 @@ export const useDeleteTrialist = () => {
 
       console.log('Deleting trialist with team_id filter:', currentTeamId, 'trialist_id:', id);
 
+      // First verify the trialist belongs to the current team
+      const { data: existingTrialist, error: checkError } = await supabase
+        .from('trialists')
+        .select('id, first_name, last_name, team_id')
+        .eq('id', id)
+        .single();
+
+      if (checkError) {
+        console.error('Trialist check failed:', checkError);
+        throw new Error(`Trialist not found: ${checkError.message}`);
+      }
+
+      if (!existingTrialist) {
+        throw new Error('Trialist not found in database');
+      }
+
+      if (existingTrialist.team_id !== currentTeamId) {
+        console.error('Team mismatch!');
+        console.error('Trialist team_id:', existingTrialist.team_id);
+        console.error('Current team_id:', currentTeamId);
+        throw new Error(`Access denied: Trialist belongs to different team (${existingTrialist.team_id} vs ${currentTeamId})`);
+      }
+
+      console.log('Team verification passed, proceeding with trialist delete...');
+
+      // Since we've verified team ownership, delete by ID only
       const { error } = await supabase
         .from('trialists')
         .delete()
-        .eq('id', id)
-        .eq('team_id', currentTeamId);
+        .eq('id', id);
       
       if (error) {
         console.error('Error deleting trialist:', error);
@@ -2243,12 +2345,36 @@ export const useUpdateTrialistStatusFromQuickEvaluation = () => {
 
       console.log('Updating trialist status from quick evaluation with team_id filter:', currentTeamId, 'trialist_id:', data.trialist_id);
 
-      // Aggiorniamo lo status con filtro team_id
+      // First verify the trialist belongs to the current team
+      const { data: existingTrialist, error: checkError } = await supabase
+        .from('trialists')
+        .select('id, first_name, last_name, team_id')
+        .eq('id', data.trialist_id)
+        .single();
+
+      if (checkError) {
+        console.error('Trialist check failed:', checkError);
+        throw new Error(`Trialist not found: ${checkError.message}`);
+      }
+
+      if (!existingTrialist) {
+        throw new Error('Trialist not found in database');
+      }
+
+      if (existingTrialist.team_id !== currentTeamId) {
+        console.error('Team mismatch!');
+        console.error('Trialist team_id:', existingTrialist.team_id);
+        console.error('Current team_id:', currentTeamId);
+        throw new Error(`Access denied: Trialist belongs to different team (${existingTrialist.team_id} vs ${currentTeamId})`);
+      }
+
+      console.log('Team verification passed, proceeding with quick evaluation update...');
+
+      // Since we've verified team ownership, update by ID only
       const { data: result, error } = await supabase
         .from('trialists')
         .update({ status: data.status })
         .eq('id', data.trialist_id)
-        .eq('team_id', currentTeamId)
         .select('id, status, first_name, last_name')
         .maybeSingle();
       
