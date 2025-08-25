@@ -9,6 +9,8 @@ const GlobalAdmin: React.FC = () => {
   const [jerseyUrl, setJerseyUrl] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   const [bgColor, setBgColor] = useState('#222222')
+  const [uploadingJersey, setUploadingJersey] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   const ensureGlobalAdmin = async () => {
     const { data: user } = await supabase.auth.getUser()
@@ -17,9 +19,48 @@ const GlobalAdmin: React.FC = () => {
     if (email !== 'coach@elevenbase.pro') throw new Error('Solo global admin')
   }
 
+  const uploadJerseyImage = async (file: File) => {
+    try {
+      setUploadingJersey(true)
+      await ensureGlobalAdmin()
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+      const fileName = `system-default-jersey-${Date.now()}.${ext}`
+      const filePath = `jerseys/${fileName}`
+      const { error: upErr } = await supabase.storage.from('jerseys').upload(filePath, file, { upsert: true })
+      if (upErr) throw upErr
+      const { data: pub } = supabase.storage.from('jerseys').getPublicUrl(filePath)
+      setJerseyUrl(pub.publicUrl)
+      toast.success('Immagine maglia caricata')
+    } catch (e: any) {
+      toast.error(e.message || 'Errore upload maglia')
+    } finally {
+      setUploadingJersey(false)
+    }
+  }
+
+  const uploadAvatarImage = async (file: File) => {
+    try {
+      setUploadingAvatar(true)
+      await ensureGlobalAdmin()
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+      const fileName = `system-default-avatar-${Date.now()}.${ext}`
+      const filePath = `${fileName}`
+      const { error: upErr } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true })
+      if (upErr) throw upErr
+      const { data: pub } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      setAvatarUrl(pub.publicUrl)
+      toast.success('Immagine avatar caricata')
+    } catch (e: any) {
+      toast.error(e.message || 'Errore upload avatar')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
   const saveSystemJersey = async () => {
     try {
       await ensureGlobalAdmin()
+      if (!jerseyUrl) throw new Error('Carica prima un\'immagine maglia')
       // Upsert system default jersey (team_id NULL, created_by NULL)
       await supabase.from('jersey_templates').delete().is('team_id', null).is('created_by', null)
       const { error } = await supabase.from('jersey_templates').insert({
@@ -40,8 +81,14 @@ const GlobalAdmin: React.FC = () => {
   const saveSystemAvatar = async () => {
     try {
       await ensureGlobalAdmin()
+      if (!avatarUrl) throw new Error('Carica prima un\'immagine avatar')
       // Upsert system default avatar image asset (name default-avatar)
-      await supabase.from('avatar_assets').delete().is('team_id', null).is('created_by', null).eq('name', 'default-avatar')
+      await supabase
+        .from('avatar_assets')
+        .delete()
+        .is('team_id', null)
+        .is('created_by', null)
+        .eq('name', 'default-avatar')
       const { error } = await supabase.from('avatar_assets').insert({
         name: 'default-avatar',
         type: 'image',
@@ -60,8 +107,12 @@ const GlobalAdmin: React.FC = () => {
   const saveSystemAvatarBackground = async () => {
     try {
       await ensureGlobalAdmin()
-      // Upsert system default avatar background color asset
-      await supabase.from('avatar_assets').update({ is_default: false }).is('team_id', null).is('created_by', null)
+      // Upsert system default avatar background color asset (team_id NULL, created_by NULL)
+      await supabase
+        .from('avatar_assets')
+        .update({ is_default: false })
+        .is('team_id', null)
+        .is('created_by', null)
       const { error } = await supabase.from('avatar_assets').insert({
         name: 'system-default-background',
         type: 'color',
@@ -83,16 +134,22 @@ const GlobalAdmin: React.FC = () => {
         <CardHeader>
           <CardTitle>Pannello Amministrazione Globale (provvisorio)</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
           <div className="space-y-2">
             <div className="font-semibold">Maglia di default (globale)</div>
-            <Input placeholder="URL immagine maglia" value={jerseyUrl} onChange={(e) => setJerseyUrl(e.target.value)} />
-            <Button onClick={saveSystemJersey}>Salva maglia default</Button>
+            <Input type="file" accept="image/*" onChange={(e) => {
+              const f = e.target.files?.[0]; if (f) uploadJerseyImage(f)
+            }} />
+            {jerseyUrl && <img src={jerseyUrl} alt="jersey" className="h-24 border rounded" />}
+            <Button disabled={uploadingJersey} onClick={saveSystemJersey}>Salva maglia default</Button>
           </div>
           <div className="space-y-2">
             <div className="font-semibold">Avatar di default (globale)</div>
-            <Input placeholder="URL immagine avatar" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} />
-            <Button onClick={saveSystemAvatar}>Salva avatar default</Button>
+            <Input type="file" accept="image/*" onChange={(e) => {
+              const f = e.target.files?.[0]; if (f) uploadAvatarImage(f)
+            }} />
+            {avatarUrl && <img src={avatarUrl} alt="avatar" className="h-24 w-24 rounded-full border" />}
+            <Button disabled={uploadingAvatar} onClick={saveSystemAvatar}>Salva avatar default</Button>
           </div>
           <div className="space-y-2">
             <div className="font-semibold">Sfondo avatar di default (globale)</div>
