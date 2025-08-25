@@ -18,7 +18,6 @@ import Navigation from "@/components/Navigation";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("@/pages/Index"));
-const Auth = lazy(() => import("@/pages/Auth"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Squad = lazy(() => import("@/pages/Squad"));
 const Training = lazy(() => import("@/pages/Training"));
@@ -39,7 +38,7 @@ const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
 
-// Test multi-team auth
+// Multi-team authentication system
 const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
 
 // Admin pages
@@ -144,8 +143,7 @@ function App() {
                     </div>
                   }>
                     <Routes>
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/auth-new" element={<AuthMultiTeam />} />
+                      <Route path="/auth" element={<AuthMultiTeam />} />
                       <Route path="/confirm" element={<EmailConfirm />} />
                       <Route path="/register/:token" element={<PublicRegistration />} />
                       <Route path="/m/:token" element={<MatchPublicRegistration />} />
