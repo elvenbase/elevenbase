@@ -82,19 +82,22 @@ const AuthMultiTeam = () => {
       if (!teamMember) {
         toast.error('Non appartieni a nessuna squadra. Contatta un amministratore.');
         await supabase.auth.signOut();
-      } else if (teamMember.status === 'pending') {
-        // Check if user is the team owner - owners should always be active
-        if (teamMember.teams.owner_id === data.user.id) {
-          console.log('User is team owner but status is pending - allowing access');
-          toast.success(`Benvenuto fondatore di ${teamMember.teams.name}!`);
-        } else {
+      } else {
+        // Check if user is owner (owner should ALWAYS be active from DB)
+        const isOwner = teamMember.teams.owner_id === data.user.id;
+        
+        // Only non-owners need activation
+        if (!isOwner && teamMember.status === 'pending') {
           toast.error('Il tuo account non è ancora stato attivato. Contatta un amministratore del team.');
           await supabase.auth.signOut();
           return;
         }
-      } else {
+        
         console.log('Team member found:', teamMember);
-        toast.success(`Benvenuto in ${teamMember.teams.name}!`);
+        const welcomeMessage = isOwner 
+          ? `Benvenuto fondatore di ${teamMember.teams.name}!`
+          : `Benvenuto in ${teamMember.teams.name}!`;
+        toast.success(welcomeMessage);
       }
       
       // Store team info in localStorage for the app to use
