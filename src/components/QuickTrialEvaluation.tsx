@@ -105,10 +105,13 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
       // Salva tutte le valutazioni
       for (const trialistId of selectedTrialists) {
         const evaluation = evaluations[trialistId];
-        if (evaluation) {
+        const trialist = trialists.find(t => t.id === trialistId);
+        
+        if (evaluation && trialist) {
           try {
             await createQuickEvaluation.mutateAsync({
               trialist_id: trialistId,
+              team_id: trialist.team_id,
               session_id: sessionId,
               personality_ratings: evaluation.personality_ratings,
               ability_ratings: evaluation.ability_ratings,

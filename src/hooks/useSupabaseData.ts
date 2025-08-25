@@ -2461,6 +2461,7 @@ export const useCreateQuickTrialEvaluation = () => {
   return useMutation({
     mutationFn: async (data: {
       trialist_id: string;
+      team_id?: string;
       session_id?: string;
       personality_ratings?: number[];
       ability_ratings?: number[];

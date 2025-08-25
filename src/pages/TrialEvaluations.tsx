@@ -92,9 +92,12 @@ const TrialEvaluations = () => {
       // Salva le valutazioni
       for (const trialistId of selectedTrialists) {
         const evaluation = evaluations[trialistId];
-        if (evaluation) {
+        const trialist = trialists.find(t => t.id === trialistId);
+        
+        if (evaluation && trialist) {
           await createEvaluation.mutateAsync({
             trialist_id: trialistId,
+            team_id: trialist.team_id,
             personality_ratings: evaluation.personality_ratings,
             ability_ratings: evaluation.ability_ratings,
             flexibility_ratings: evaluation.flexibility_ratings,
