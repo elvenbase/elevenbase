@@ -380,11 +380,40 @@ export const useUpdatePlayer = () => {
       is_captain?: boolean;
       created_by?: string;
     }) => {
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      if (!currentTeamId) {
+        throw new Error('No team found - cannot update player without team association');
+      }
+
+      console.log('Updating player with team_id filter:', currentTeamId, 'player_id:', id);
 
       const { data, error } = await supabase
         .from('players')
         .update(updates)
         .eq('id', id)
+        .eq('team_id', currentTeamId)
         .select()
         .single();
       
@@ -412,11 +441,40 @@ export const useDeletePlayer = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      if (!currentTeamId) {
+        throw new Error('No team found - cannot delete player without team association');
+      }
+
+      console.log('Deleting player with team_id filter:', currentTeamId, 'player_id:', id);
 
       const { error } = await supabase
         .from('players')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('team_id', currentTeamId);
       
       if (error) {
         console.error('Error deleting player:', error);
@@ -993,10 +1051,40 @@ export const useUpdateTrialistStatus = () => {
 
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'in_prova' | 'promosso' | 'archiviato' }) => {
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      if (!currentTeamId) {
+        throw new Error('No team found - cannot update trialist without team association');
+      }
+
+      console.log('Updating trialist status with team_id filter:', currentTeamId, 'trialist_id:', id);
+
       const { data, error } = await supabase
         .from('trialists')
         .update({ status })
         .eq('id', id)
+        .eq('team_id', currentTeamId)
         .select()
         .single();
       
@@ -1019,11 +1107,40 @@ export const useUpdateTrialist = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; first_name?: string; last_name?: string; email?: string; phone?: string; birth_date?: string; position?: string; status?: 'in_prova' | 'promosso' | 'archiviato'; notes?: string; avatar_url?: string }) => {
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      if (!currentTeamId) {
+        throw new Error('No team found - cannot update trialist without team association');
+      }
+
+      console.log('Updating trialist with team_id filter:', currentTeamId, 'trialist_id:', id);
 
       const { data, error } = await supabase
         .from('trialists')
         .update(updates)
         .eq('id', id)
+        .eq('team_id', currentTeamId)
         .select()
         .single();
       
@@ -1050,10 +1167,40 @@ export const useDeleteTrialist = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      if (!currentTeamId) {
+        throw new Error('No team found - cannot delete trialist without team association');
+      }
+
+      console.log('Deleting trialist with team_id filter:', currentTeamId, 'trialist_id:', id);
+
       const { error } = await supabase
         .from('trialists')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('team_id', currentTeamId);
       
       if (error) {
         console.error('Error deleting trialist:', error);
@@ -2040,11 +2187,41 @@ export const useUpdateTrialistStatusFromQuickEvaluation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: { trialist_id: string; status: 'in_prova' | 'promosso' | 'archiviato' }) => {
-      // Aggiorniamo lo status senza verifiche preliminari
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      if (!currentTeamId) {
+        throw new Error('No team found - cannot update trialist without team association');
+      }
+
+      console.log('Updating trialist status from quick evaluation with team_id filter:', currentTeamId, 'trialist_id:', data.trialist_id);
+
+      // Aggiorniamo lo status con filtro team_id
       const { data: result, error } = await supabase
         .from('trialists')
         .update({ status: data.status })
         .eq('id', data.trialist_id)
+        .eq('team_id', currentTeamId)
         .select('id, status, first_name, last_name')
         .maybeSingle();
       
