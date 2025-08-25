@@ -11,6 +11,7 @@ export interface JerseyTemplate {
   created_at: string
   updated_at: string
   created_by: string | null
+  team_id?: string | null
 }
 
 export const useJerseyTemplates = () => {
@@ -97,50 +98,56 @@ export const useJerseyTemplates = () => {
     if (!tableExists) return
 
     try {
-      // Prima proviamo a vedere tutte le maglie per debug
-      const { data: allJerseys, error: allError } = await supabase
+      // Determina team corrente
+      let currentTeamId = localStorage.getItem('currentTeamId')
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: tm } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle()
+          if (tm?.team_id) {
+            currentTeamId = tm.team_id
+            localStorage.setItem('currentTeamId', currentTeamId)
+          }
+        }
+      }
+
+      // Carica solo maglie del team corrente
+      let query = supabase
         .from('jersey_templates')
         .select('*')
         .order('created_at', { ascending: false })
 
-      // Poi filtriamo per quelle degli utenti
-      const { data, error } = await supabase
-        .from('jersey_templates')
-        .select('*')
-        .not('created_by', 'is', null) // Escludi la maglia di sistema (created_by = NULL)
-        .order('created_at', { ascending: false }) // Ordina per data di creazione (più recenti prima)
-
-      // Se il filtro non funziona, filtriamo manualmente
-      if (!data || data.length === 0) {
-        const userJerseys = allJerseys?.filter(jersey => jersey.created_by !== null) || []
-        setJerseyTemplates(userJerseys)
-        
-        // Trova la maglia di default tra quelle degli utenti
-        const defaultTemplate = userJerseys.find(template => template.is_default)
-        
-        // Se non c'è una default tra le maglie degli utenti, usa la prima
-        if (!defaultTemplate && userJerseys.length > 0) {
-          setDefaultJersey(userJerseys[0])
-        } else {
-          setDefaultJersey(defaultTemplate || null)
-        }
-        return
-      }
-
-      if (error) {
-        throw error
-      }
-      
-      setJerseyTemplates(data || [])
-      
-      // Trova la maglia di default tra quelle degli utenti
-      const defaultTemplate = data?.find(template => template.is_default)
-      
-      // Se non c'è una default tra le maglie degli utenti, usa la prima
-      if (!defaultTemplate && data && data.length > 0) {
-        setDefaultJersey(data[0])
+      if (currentTeamId) {
+        query = query.eq('team_id', currentTeamId)
       } else {
-        setDefaultJersey(defaultTemplate || null)
+        // Nessun team: nessuna maglia team-specific
+        setJerseyTemplates([])
+      }
+
+      const { data, error } = await query
+      if (error) throw error
+
+      setJerseyTemplates(data || [])
+
+      // Fallback: se non ci sono maglie del team, usa la default di sistema (created_by IS NULL AND is_default)
+      if (!data || data.length === 0) {
+        const { data: systemJersey } = await supabase
+          .from('jersey_templates')
+          .select('*')
+          .is('created_by', null)
+          .is('team_id', null)
+          .eq('is_default', true)
+          .maybeSingle()
+        setDefaultJersey(systemJersey || null)
+      } else {
+        const defaultTemplate = data.find(t => t.is_default)
+        setDefaultJersey(defaultTemplate || data[0] || null)
       }
       
 
@@ -165,34 +172,47 @@ export const useJerseyTemplates = () => {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('Utente non autenticato')
 
-      // Se questa è la nuova maglia di default, rimuovi il flag da tutte le altre
-      if (templateData.is_default) {
-        await supabase
-          .from('jersey_templates')
-          .update({ is_default: false })
-          .not('created_by', 'is', null) // Solo dalle maglie degli utenti
+      // Determina team corrente
+      let currentTeamId = localStorage.getItem('currentTeamId')
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: tm } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle()
+          if (tm?.team_id) {
+            currentTeamId = tm.team_id
+            localStorage.setItem('currentTeamId', currentTeamId)
+          }
+        }
       }
+      if (!currentTeamId) throw new Error('Nessun team selezionato')
 
-      // Se è la prima maglia dell'utente, impostala automaticamente come default
+      // Se è la prima maglia del team, impostala automaticamente come default
       const { data: existingJerseys } = await supabase
         .from('jersey_templates')
         .select('id')
-        .not('created_by', 'is', null)
+        .eq('team_id', currentTeamId)
         .limit(1)
 
       const isFirstJersey = !existingJerseys || existingJerseys.length === 0
       const finalTemplateData = {
         ...templateData,
         created_by: userData.user.id,
+        team_id: currentTeamId,
         is_default: isFirstJersey || templateData.is_default
       }
 
-      // Se questa diventa default, rimuovi il flag dalle altre
+      // Se questa diventa default, rimuovi il flag dalle altre DEL TEAM CORRENTE
       if (finalTemplateData.is_default) {
         await supabase
           .from('jersey_templates')
           .update({ is_default: false })
-          .not('created_by', 'is', null)
+          .eq('team_id', currentTeamId)
       }
 
       const { data, error } = await supabase
@@ -223,12 +243,15 @@ export const useJerseyTemplates = () => {
     }
 
     try {
-      // Se questa diventa la nuova maglia di default, rimuovi il flag da tutte le altre
+      // Se questa diventa la nuova maglia di default, rimuovi il flag da tutte le altre DEL TEAM
       if (updates.is_default) {
+        // Trova team_id della maglia
+        const { data: jt } = await supabase.from('jersey_templates').select('team_id').eq('id', id).maybeSingle()
         await supabase
           .from('jersey_templates')
           .update({ is_default: false })
           .neq('id', id)
+          .eq('team_id', jt?.team_id || null)
       }
 
       const { data, error } = await supabase

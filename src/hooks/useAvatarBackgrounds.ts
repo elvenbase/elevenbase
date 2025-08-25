@@ -158,8 +158,13 @@ export const useAvatarBackgrounds = () => {
 
   const setAsDefaultBackground = async (id: string) => {
     try {
-      await supabase.from('avatar_assets').update({ is_default: false }).neq('id', id)
-      const { error } = await supabase.from('avatar_assets').update({ is_default: true }).eq('id', id)
+      // Limita al solo proprietario: resetta default solo degli elementi creati dall'utente corrente
+      const { data: user } = await supabase.auth.getUser()
+      const userId = user.user?.id
+      if (!userId) throw new Error('User non autenticato')
+
+      await supabase.from('avatar_assets').update({ is_default: false }).eq('created_by', userId).neq('id', id)
+      const { error } = await supabase.from('avatar_assets').update({ is_default: true }).eq('id', id).eq('created_by', userId)
       if (error) throw error
       toast.success('Sfondo predefinito aggiornato')
     } catch (error) {
