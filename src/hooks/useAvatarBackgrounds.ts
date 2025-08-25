@@ -25,7 +25,7 @@ let backgroundsPromise: Promise<AvatarBackground[]> | null = null
 async function fetchBackgroundsOnce(): Promise<AvatarBackground[]> {
   try {
     // Tentativo completo (admin)
-    const { data, error, status } = await supabase
+    let { data, error, status } = await supabase
       .from('avatar_assets')
       .select('*')
       .order('is_default', { ascending: false })
