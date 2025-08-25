@@ -2014,7 +2014,19 @@ export const useCreateMatch = () => {
         }
       }
 
-      const payload: any = { ...match, opponent_logo_url: undefined, opponent_id, created_by: (await supabase.auth.getUser()).data.user?.id }
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
+      const payload: any = { 
+        ...match, 
+        opponent_logo_url: undefined, 
+        opponent_id, 
+        team_id: currentTeamId,
+        created_by: (await supabase.auth.getUser()).data.user?.id 
+      }
       const { data, error } = await supabase
         .from('matches')
         .insert([payload])
@@ -2127,6 +2139,12 @@ export const useCloneMatch = () => {
       originalDate.setDate(originalDate.getDate() + 7)
       const y = originalDate.getFullYear(); const mo = String(originalDate.getMonth()+1).padStart(2,'0'); const d = String(originalDate.getDate()).padStart(2,'0')
       const newDate = `${y}-${mo}-${d}`
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
       const insert = {
         opponent_name: m.opponent_name,
         match_date: newDate,
@@ -2134,7 +2152,8 @@ export const useCloneMatch = () => {
         home_away: m.home_away,
         location: m.location,
         competition_id: m.competition_id,
-        notes: m.notes
+        notes: m.notes,
+        team_id: currentTeamId
       }
       const { data: inserted, error: insErr } = await supabase.from('matches').insert(insert).select().single()
       if (insErr) throw insErr
@@ -2922,11 +2941,20 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       const mpsRes = await mpsSel
       if (mpsRes.error) throw mpsRes.error
       const statsRows = (mpsRes.data || []) as any[]
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+
       // MVP awards (ended matches only)
       let mvpSel = supabase
         .from('matches')
         .select('mvp_player_id, match_date, live_state')
         .eq('live_state', 'ended')
+      
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        mvpSel = mvpSel.eq('team_id', currentTeamId);
+      }
+      
       if (startStr) mvpSel = mvpSel.gte('match_date', startStr) as any
       if (endStr) mvpSel = mvpSel.lte('match_date', endStr) as any
       const mvpRes = await mvpSel
@@ -3181,11 +3209,20 @@ export const useTeamTrend = (opts?: { limit?: number; startDate?: Date; endDate?
       const endStr = fmt(opts?.endDate)
       const limit = opts?.limit || 10
 
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+
       let q = supabase
         .from('matches')
         .select('id, match_date, opponent_name, our_score, opponent_score, live_state')
         .eq('live_state', 'ended')
         .order('match_date', { ascending: true })
+      
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        q = q.eq('team_id', currentTeamId);
+      }
+      
       if (startStr) q = q.gte('match_date', startStr)
       if (endStr) q = q.lte('match_date', endStr)
       const res = await q
@@ -3329,12 +3366,22 @@ export const useMatchPresenceSeries = (limit: number = 10) => {
   return useQuery({
     queryKey: ['match-presence-series', limit],
     queryFn: async () => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+
       // Fetch last 2*limit ended matches chronologically ascending
-      const mRes = await supabase
+      let matchQuery = supabase
         .from('matches')
         .select('id, match_date')
         .eq('live_state', 'ended')
-        .order('match_date', { ascending: true })
+        .order('match_date', { ascending: true });
+
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        matchQuery = matchQuery.eq('team_id', currentTeamId);
+      }
+
+      const mRes = await matchQuery;
       if (mRes.error) throw mRes.error
       const matches = (mRes.data || []) as any[]
       const take = matches.slice(Math.max(matches.length - (limit * 2), 0))
