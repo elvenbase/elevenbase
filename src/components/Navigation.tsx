@@ -57,7 +57,7 @@ const Navigation = () => {
     { name: "Utenti", path: "/admin/users", icon: Users },
     { name: "Formazioni", path: "/admin/formations", icon: Layout },
     { name: "Maglie", path: "/admin/jerseys", icon: Shirt },
-    { name: "Gestione Avatar", path: "/admin/avatar-backgrounds", icon: Image },
+    { name: "Avatar Persona & Avatar Background", path: "/admin/avatar-backgrounds", icon: Image },
     { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
     { name: "Avversari", path: "/admin/opponents", icon: Users },
     { name: "Opzioni Giocatori", path: "/field-options", icon: UserCog },

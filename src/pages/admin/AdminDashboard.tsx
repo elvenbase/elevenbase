@@ -49,8 +49,8 @@ const AdminDashboard = () => {
         badge: 'Maglie'
       },
     {
-      title: 'Gestione Avatar',
-      description: 'Carica avatar di default e personalizza sfondi avatar',
+      title: 'Avatar Persona & Avatar Background',
+      description: 'Gestisci Avatar Persona di default e Avatar Background',
       icon: Image,
       href: '/admin/avatar-backgrounds',
       color: 'bg-orange-500',
@@ -121,14 +121,11 @@ const AdminDashboard = () => {
                   {section.description}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent>
                 <Link to={section.href}>
-                  <Button 
-                    variant="outline"
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                  >
-                    <span className="text-sm">Accedi</span>
-                    <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <Button variant="outline" size="sm" className="group/link">
+                    Vai
+                    <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover/link:translate-x-0.5" />
                   </Button>
                 </Link>
               </CardContent>

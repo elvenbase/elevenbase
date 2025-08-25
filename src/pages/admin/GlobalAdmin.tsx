@@ -31,7 +31,7 @@ const GlobalAdmin: React.FC = () => {
         .maybeSingle()
       if (sysJersey?.image_url) setJerseyUrl(sysJersey.image_url)
 
-      // Avatar default (system)
+      // Avatar Persona default (system)
       const { data: sysAvatar } = await supabase
         .from('avatar_assets')
         .select('value')
@@ -43,7 +43,7 @@ const GlobalAdmin: React.FC = () => {
         .maybeSingle()
       if (sysAvatar?.value) setAvatarUrl(sysAvatar.value)
 
-      // Background default (system)
+      // Avatar Background default (system)
       const { data: sysBg } = await supabase
         .from('avatar_assets')
         .select('value')
@@ -89,9 +89,9 @@ const GlobalAdmin: React.FC = () => {
       if (upErr) throw upErr
       const { data: pub } = supabase.storage.from('avatars').getPublicUrl(filePath)
       setAvatarUrl(pub.publicUrl)
-      toast.success('Immagine avatar caricata')
+      toast.success('Immagine Avatar Persona caricata')
     } catch (e: any) {
-      toast.error(e.message || 'Errore upload avatar')
+      toast.error(e.message || 'Errore upload Avatar Persona')
     } finally {
       setUploadingAvatar(false)
     }
@@ -117,7 +117,7 @@ const GlobalAdmin: React.FC = () => {
   const saveSystemAvatar = async () => {
     try {
       await ensureGlobalAdmin()
-      if (!avatarUrl) throw new Error('Carica prima un\'immagine avatar')
+      if (!avatarUrl) throw new Error('Carica prima un\'immagine di Avatar Persona')
       await supabase.from('avatar_assets').delete().is('team_id', null).is('created_by', null).eq('name', 'default-avatar')
       const { error } = await supabase.from('avatar_assets').insert({
         name: 'default-avatar', type: 'image', value: avatarUrl,
@@ -125,9 +125,9 @@ const GlobalAdmin: React.FC = () => {
       })
       if (error) throw error
       await loadCurrentDefaults()
-      toast.success('Avatar di default globale salvato')
+      toast.success('Avatar Persona di default globale salvato')
     } catch (e: any) {
-      toast.error(e.message || 'Errore salvataggio avatar')
+      toast.error(e.message || 'Errore salvataggio Avatar Persona')
     }
   }
 
@@ -141,9 +141,9 @@ const GlobalAdmin: React.FC = () => {
       })
       if (error) throw error
       await loadCurrentDefaults()
-      toast.success('Sfondo di default globale salvato')
+      toast.success('Avatar Background di default globale salvato')
     } catch (e: any) {
-      toast.error(e.message || 'Errore salvataggio sfondo')
+      toast.error(e.message || 'Errore salvataggio Avatar Background')
     }
   }
 
@@ -151,7 +151,7 @@ const GlobalAdmin: React.FC = () => {
     <div className="container mx-auto py-8">
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Pannello Amministrazione Globale (provvisorio)</CardTitle>
+          <CardTitle>Pannello Amministrazione Globale (Avatar Persona, Avatar Background, Maglie)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-8">
           <div className="space-y-2">
@@ -161,15 +161,15 @@ const GlobalAdmin: React.FC = () => {
             <Button disabled={uploadingJersey} onClick={saveSystemJersey}>Salva maglia default</Button>
           </div>
           <div className="space-y-2">
-            <div className="font-semibold">Avatar di default (globale)</div>
+            <div className="font-semibold">Avatar Persona di default (globale)</div>
             <Input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatarImage(f) }} />
             {avatarUrl && <img src={avatarUrl} alt="avatar" className="h-24 w-24 rounded-full border" />}
-            <Button disabled={uploadingAvatar} onClick={saveSystemAvatar}>Salva avatar default</Button>
+            <Button disabled={uploadingAvatar} onClick={saveSystemAvatar}>Salva Avatar Persona default</Button>
           </div>
           <div className="space-y-2">
-            <div className="font-semibold">Sfondo avatar di default (globale)</div>
+            <div className="font-semibold">Avatar Background di default (globale)</div>
             <Input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} />
-            <Button onClick={saveSystemAvatarBackground}>Salva sfondo default</Button>
+            <Button onClick={saveSystemAvatarBackground}>Salva Avatar Background default</Button>
           </div>
         </CardContent>
       </Card>

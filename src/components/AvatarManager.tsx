@@ -59,8 +59,8 @@ export const AvatarManager: React.FC = () => {
       setUploading(true)
       const url = await uploadImage(file)
       setDefaultAvatarUrl(url)
-      toast({ title: 'Avatar di default caricato', description: 'Salvato come elemento "default-avatar".' })
-      // Salviamo come background speciale per compatibilità (nome convenzionale)
+      toast({ title: 'Avatar Persona di default caricato', description: 'Salvato come elemento "default-avatar".' })
+      // Per compatibilità usiamo nome convenzionale
       const existing = backgrounds.find(b => b.type==='image' && (b.name||'').toLowerCase()==='default-avatar')
       if (existing) {
         await updateBackground(existing.id, { value: url, type: 'image' })
@@ -125,7 +125,7 @@ export const AvatarManager: React.FC = () => {
           text_size: formData.text_size,
           text_weight: formData.text_weight,
           text_family: formData.text_family,
-          is_default: backgrounds.length === 0 // First one becomes default
+          is_default: backgrounds.length === 0
         })
         setIsCreating(false)
       }
@@ -197,7 +197,7 @@ export const AvatarManager: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            {editingBackground ? 'Modifica Sfondo Avatar' : 'Nuovo Elemento Avatar'}
+            {editingBackground ? 'Modifica Avatar Background' : 'Nuovo Elemento Avatar'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -212,7 +212,7 @@ export const AvatarManager: React.FC = () => {
           </div>
 
           <div>
-            <Label>Tipo di Sfondo</Label>
+            <Label>Tipo</Label>
             <div className="flex gap-4 mt-2">
               <Button
                 type="button"
@@ -221,7 +221,7 @@ export const AvatarManager: React.FC = () => {
                 className="flex items-center gap-2"
               >
                 <Palette className="w-4 h-4" />
-                Colore
+                Avatar Background (colore)
               </Button>
               <Button
                 type="button"
@@ -230,14 +230,14 @@ export const AvatarManager: React.FC = () => {
                 className="flex items-center gap-2"
               >
                 <ImageIcon className="w-4 h-4" />
-                Immagine
+                Avatar Persona (immagine)
               </Button>
             </div>
           </div>
 
           {formData.type === 'color' ? (
             <div>
-              <Label htmlFor="color">Colore</Label>
+              <Label htmlFor="color">Colore (Avatar Background)</Label>
               <div className="flex gap-2 mt-2">
                 <Input
                   id="color"
@@ -255,7 +255,7 @@ export const AvatarManager: React.FC = () => {
             </div>
           ) : (
             <div>
-              <Label>Immagine di Sfondo</Label>
+              <Label>Immagine (Avatar Persona)</Label>
               <div className="mt-2 space-y-2">
                 <Input
                   type="file"
@@ -393,7 +393,7 @@ export const AvatarManager: React.FC = () => {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Gestione Avatar</CardTitle>
+          <CardTitle>Avatar Persona & Avatar Background</CardTitle>
           <Button onClick={() => setIsCreating(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Nuovo Elemento
@@ -401,144 +401,55 @@ export const AvatarManager: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 p-4 border rounded-lg">
-          <h3 className="font-semibold mb-2">Avatar di Default</h3>
-          <p className="text-sm text-muted-foreground mb-3">Carica l'immagine usata quando un giocatore non ha un avatar proprio.</p>
-          <div className="flex items-center gap-3">
-            <Avatar className="w-12 h-12">
-              <AvatarImage src={defaultAvatarUrl} />
-              <AvatarFallback>DF</AvatarFallback>
-            </Avatar>
-            <Input type="file" accept="image/*" onChange={handleDefaultAvatarUpload} disabled={uploading} />
-          </div>
-        </div>
         {loading ? (
+          <div className="text-center py-8 text-muted-foreground">Caricamento…</div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-32 bg-muted rounded-lg mb-2" />
-                <div className="h-4 bg-muted rounded w-3/4" />
+            {backgrounds.map((bg) => (
+              <div key={bg.id} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-medium">{bg.name || (bg.type === 'image' ? 'Avatar Persona' : 'Avatar Background')}</div>
+                  {bg.is_default && (
+                    <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Default</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  {bg.type === 'image' ? (
+                    <div className="w-12 h-12 rounded-full overflow-hidden border">
+                      <img src={bg.value} alt="avatar" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-full border" style={{ backgroundColor: bg.value }} />
+                  )}
+                  <div className="text-sm text-muted-foreground">
+                    {bg.type === 'image' ? 'Avatar Persona' : 'Avatar Background'}
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(bg)}>
+                    <Edit className="w-4 h-4 mr-1" /> Modifica
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => setDefault(bg)}>
+                    Default
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(bg)}>
+                    <Trash2 className="w-4 h-4 mr-1" /> Elimina
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
-        ) : backgrounds.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Nessun elemento avatar configurato</p>
-            <p className="text-sm">Crea il tuo primo sfondo o avatar di default</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {backgrounds.map((background) => (
-              <Card key={background.id} className="overflow-hidden">
-                <div className="relative">
-                  <div 
-                    className="h-32 w-full relative"
-                    style={{
-                      backgroundColor: background.type === 'color' ? background.value : 'transparent',
-                      backgroundImage: background.type === 'image' ? `url(${background.value})` : 'none',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
-                  >
-                    {/* Text Preview on Background */}
-                    <div
-                      className="absolute inset-0 flex items-center justify-center"
-                      style={{
-                        color: background.text_color || '#ffffff',
-                        fontSize: background.text_size || '14px',
-                        fontWeight: background.text_weight || '600',
-                        fontFamily: background.text_family || 'Inter, system-ui, sans-serif',
-                        textShadow: background.text_shadow || '2px 2px 4px rgba(0,0,0,0.8)',
-                        textAlign: 'center'
-                      }}
-                    >
-                      Aa
-                    </div>
-                  </div>
-                  {background.is_default && (
-                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                      Predefinito
-                    </div>
-                  )}
-                </div>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">{background.name}</h3>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(background)}
-                      >
-                        <Edit className="w-3 h-3" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="outline">
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Elimina Elemento</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Sei sicuro di voler eliminare "{background.name}"?
-                              Questa azione non può essere annullata.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Annulla</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(background)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Elimina
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setDefault(background)}
-                      disabled={background.is_default}
-                    >
-                      Imposta Predefinito
-                    </Button>
-                  </div>
-
-                  {/* Preview with avatar */}
-                  <div className="mt-3 flex justify-center">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src="" />
-                      <AvatarFallback 
-                        className="font-bold"
-                        style={{
-                          backgroundColor: background.type === 'color' ? background.value : 'transparent',
-                          backgroundImage: background.type === 'image' ? `url(${background.value})` : 'none',
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          color: background.text_color || '#ffffff',
-                          fontSize: background.text_size || '14px',
-                          fontWeight: background.text_weight || '600',
-                          fontFamily: background.text_family || 'Inter, system-ui, sans-serif',
-                          textShadow: background.text_shadow || '2px 2px 4px rgba(0,0,0,0.8)'
-                        }}
-                      >
-                        JD
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         )}
+
+        <div className="mt-6 border-t pt-4">
+          <div className="font-semibold mb-2">Imposta Avatar Persona di Default</div>
+          <Input type="file" accept="image/*" onChange={handleDefaultAvatarUpload} />
+          {defaultAvatarUrl && (
+            <div className="mt-2 w-16 h-16 rounded-full overflow-hidden border">
+              <img src={defaultAvatarUrl} className="w-full h-full object-cover" />
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   )
