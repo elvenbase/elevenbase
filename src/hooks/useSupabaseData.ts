@@ -27,7 +27,25 @@ export const usePlayers = () => {
     queryKey: ['players'],
     queryFn: async () => {
       // Get current team from localStorage
-      const currentTeamId = localStorage.getItem('currentTeamId');
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store it for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+          }
+        }
+      }
       
       let query = supabase
         .from('players')
@@ -35,7 +53,10 @@ export const usePlayers = () => {
       
       // Filter by team if we have a team ID
       if (currentTeamId) {
+        console.log('Filtering players by team_id:', currentTeamId);
         query = query.eq('team_id', currentTeamId);
+      } else {
+        console.warn('No team_id found - showing all players!');
       }
       
       const { data, error } = await query.order('last_name');
@@ -347,7 +368,24 @@ export const useTrainingSessions = () => {
     queryKey: ['training-sessions'],
     queryFn: async () => {
       // Get current team from localStorage
-      const currentTeamId = localStorage.getItem('currentTeamId');
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            localStorage.setItem('currentTeamId', currentTeamId);
+          }
+        }
+      }
       
       let query = supabase
         .from('training_sessions')
@@ -1299,7 +1337,24 @@ export const useMatches = () => {
     queryKey: ['matches'],
     queryFn: async () => {
       // Get current team from localStorage
-      const currentTeamId = localStorage.getItem('currentTeamId');
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            localStorage.setItem('currentTeamId', currentTeamId);
+          }
+        }
+      }
       
       let query = supabase
         .from('matches')
