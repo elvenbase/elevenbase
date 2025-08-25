@@ -29,7 +29,7 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
           return;
         }
 
-        // 2) Admin di team: verifica permesso sul team corrente
+        // 2) Admin di team o Founder (owner): verifica permesso/ownership sul team corrente
         let teamId: string | null = null;
         if (typeof window !== 'undefined') {
           teamId = localStorage.getItem('currentTeamId');
@@ -49,6 +49,17 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
 
         if (!teamId) {
           setIsAdmin(false);
+          return;
+        }
+
+        // Founder: owner ha poteri equivalenti
+        const { data: teamData } = await supabase
+          .from('teams')
+          .select('owner_id')
+          .eq('id', teamId)
+          .maybeSingle();
+        if (teamData?.owner_id && teamData.owner_id === user.id) {
+          setIsAdmin(true);
           return;
         }
 

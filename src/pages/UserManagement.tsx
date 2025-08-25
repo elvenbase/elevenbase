@@ -48,6 +48,9 @@ const UserManagement = () => {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState<'superadmin' | 'admin' | 'coach' | 'player'>('player');
   const [showPassword, setShowPassword] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [inviteRole, setInviteRole] = useState<'admin' | 'coach' | 'player'>('player');
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   const { user: currentUser } = useAuth();
 
@@ -69,52 +72,136 @@ const UserManagement = () => {
 
   const checkUserPermissions = async () => {
     if (!currentUser) return;
-    
-    // Controlla se l'utente è superadmin o admin
-    const { data: isSuperAdmin } = await supabase
-      .rpc('has_role', { 
-        _user_id: currentUser.id, 
-        _role: 'superadmin' 
-      });
 
-    const { data: isAdmin } = await supabase
-      .rpc('has_role', { 
-        _user_id: currentUser.id, 
-        _role: 'admin' 
-      });
+    // Superadmin globale
+    const { data: isSuperAdmin } = await supabase.rpc('has_role', { _user_id: currentUser.id, _role: 'superadmin' });
+    if (isSuperAdmin) return;
 
-    if (!isSuperAdmin && !isAdmin) {
+    // Team corrente
+    let currentTeamId = localStorage.getItem('currentTeamId');
+    if (!currentTeamId) {
+      const { data: tm } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+      if (tm?.team_id) {
+        currentTeamId = tm.team_id;
+        localStorage.setItem('currentTeamId', currentTeamId);
+      }
+    }
+
+    if (!currentTeamId) {
+      toast.error('Nessun team corrente selezionato');
+      return;
+    }
+
+    // Founder = owner è admin
+    const { data: team } = await supabase
+      .from('teams')
+      .select('owner_id')
+      .eq('id', currentTeamId)
+      .maybeSingle();
+    if (team?.owner_id === currentUser.id) return;
+
+    // Permesso admin di team
+    const { data: canManage } = await supabase.rpc('has_team_permission', { _team_id: currentTeamId, _permission: 'manage_team' });
+    if (!canManage) {
       toast.error('Non hai i permessi per accedere a questa sezione');
       return;
+    }
+  };
+
+  const generateInvite = async () => {
+    try {
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: tm } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', authUser.id)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle();
+          if (tm?.team_id) {
+            currentTeamId = tm.team_id;
+            localStorage.setItem('currentTeamId', currentTeamId);
+          }
+        }
+      }
+
+      if (!currentTeamId) throw new Error('Nessun team selezionato');
+
+      // Genera un codice invito random locale, poi salva con RLS
+      const code = Math.random().toString(36).slice(2, 10).toUpperCase();
+      const { error } = await supabase
+        .from('team_invites')
+        .insert({ team_id: currentTeamId, code, role: inviteRole });
+      if (error) throw error;
+
+      setInviteCode(code);
+      toast.success('Codice invito generato');
+    } catch (err: any) {
+      console.error('Errore generazione invito:', err);
+      toast.error('Errore nella generazione del codice invito');
     }
   };
 
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      
-      // Recupero i profili esistenti con i ruoli
+
+      // Team corrente
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: tm } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', authUser.id)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle();
+          if (tm?.team_id) {
+            currentTeamId = tm.team_id;
+            localStorage.setItem('currentTeamId', currentTeamId);
+          }
+        }
+      }
+
+      if (!currentTeamId) throw new Error('Nessun team selezionato');
+
+      // Profili SOLO degli utenti del team corrente
+      const { data: teamUsers, error: teamUsersErr } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', currentTeamId)
+        .in('status', ['active', 'pending']);
+      if (teamUsersErr) throw teamUsersErr;
+
+      const userIds = (teamUsers || []).map(u => u.user_id);
+      if (userIds.length === 0) { setUsers([]); return; }
+
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          username,
-          first_name,
-          last_name,
-          phone,
-          status,
-          created_at
-        `);
-      
+        .select('id, username, first_name, last_name, phone, status, created_at')
+        .in('id', userIds);
       if (profilesError) throw profilesError;
-      
-      // Recupero i ruoli per ogni utente
+
       const usersWithRoles = await Promise.all(
         (profiles || []).map(async (profile) => {
-          const { data: userRoles } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', profile.id);
+          // Ruolo di team (se esiste) per il team corrente
+          const { data: teamRole } = await supabase
+            .from('team_members')
+            .select('role,status')
+            .eq('team_id', currentTeamId!)
+            .eq('user_id', profile.id)
+            .maybeSingle();
 
           return {
             id: profile.id,
@@ -127,11 +214,11 @@ const UserManagement = () => {
               phone: profile.phone,
               status: (profile.status as 'active' | 'inactive') || 'inactive'
             },
-            user_roles: userRoles || []
+            user_roles: teamRole?.role ? [{ role: (teamRole.role as any) }] : []
           };
         })
       );
-      
+
       setUsers(usersWithRoles);
     } catch (error: any) {
       console.error('Error fetching users:', error);
@@ -655,6 +742,48 @@ const UserManagement = () => {
                   <Button onClick={handleEditUser}>
                     Salva Modifiche
                   </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  Genera Invito
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Genera codice invito</DialogTitle>
+                  <DialogDescription>
+                    Crea un codice per unirsi alla squadra corrente con un ruolo specifico.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Ruolo assegnato</Label>
+                    <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="coach">Coach</SelectItem>
+                        <SelectItem value="player">Player</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {inviteCode && (
+                    <div className="p-3 rounded-md border">
+                      <div className="text-sm text-muted-foreground">Codice generato</div>
+                      <div className="font-mono text-lg">{inviteCode}</div>
+                      <div className="text-xs text-muted-foreground mt-1">Condividi con il nuovo membro per unirsi al team.</div>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsInviteModalOpen(false)}>Chiudi</Button>
+                  <Button onClick={generateInvite}>Genera</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
