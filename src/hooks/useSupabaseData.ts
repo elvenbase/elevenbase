@@ -976,10 +976,20 @@ export const useSetTrainingTrialistInvites = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ sessionId, trialistIds }: { sessionId: string; trialistIds: string[] }) => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
       // delete existing then insert new set
       await supabase.from('training_trialist_invites').delete().eq('session_id', sessionId)
       if (trialistIds.length > 0) {
-        const rows = trialistIds.map(id => ({ session_id: sessionId, trialist_id: id }))
+        const rows = trialistIds.map(id => ({ 
+          session_id: sessionId, 
+          trialist_id: id,
+          team_id: currentTeamId 
+        }))
         const { error } = await supabase.from('training_trialist_invites').insert(rows)
         if (error) throw error
       }
@@ -998,9 +1008,19 @@ export const useSetMatchTrialistInvites = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ matchId, trialistIds }: { matchId: string; trialistIds: string[] }) => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
       await supabase.from('match_trialist_invites').delete().eq('match_id', matchId)
       if (trialistIds.length > 0) {
-        const rows = trialistIds.map(id => ({ match_id: matchId, trialist_id: id }))
+        const rows = trialistIds.map(id => ({ 
+          match_id: matchId, 
+          trialist_id: id,
+          team_id: currentTeamId 
+        }))
         const { error } = await supabase.from('match_trialist_invites').insert(rows)
         if (error) throw error
       }
@@ -1035,9 +1055,15 @@ export const useUpdateTrainingTrialistInvite = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ session_id, trialist_id, status }: { session_id: string; trialist_id: string; status: 'present'|'absent'|'pending'|'uncertain' }) => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
       const { error } = await supabase
         .from('training_trialist_invites')
-        .upsert({ session_id, trialist_id, status }, { onConflict: 'session_id,trialist_id' })
+        .upsert({ session_id, trialist_id, status, team_id: currentTeamId }, { onConflict: 'session_id,trialist_id' })
       if (error) throw error
       return true
     },
@@ -1069,9 +1095,15 @@ export const useUpdateMatchTrialistInvite = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ match_id, trialist_id, status }: { match_id: string; trialist_id: string; status: 'present'|'absent'|'pending'|'uncertain' }) => {
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
       const { error } = await supabase
         .from('match_trialist_invites')
-        .upsert({ match_id, trialist_id, status }, { onConflict: 'match_id,trialist_id' })
+        .upsert({ match_id, trialist_id, status, team_id: currentTeamId }, { onConflict: 'match_id,trialist_id' })
       if (error) throw error
       return true
     },
