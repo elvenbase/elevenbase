@@ -9,9 +9,9 @@ Netlify Build
   @netlify/build 29.58.0
 ​
 ❯ Flags
-  deployId: 68acd3acf08b8911cf8c10c1
+  deployId: 68acd550b9d204176ed33ce0
   dir: dist
-  message: 'Production deploy: revert to simple avatar priority (player > default persona > initials) 2025-08-25T21:20:34Z'
+  message: 'Production deploy: dashboard leaders filtered to roster only 2025-08-25T21:27:33Z'
   open: false
   prod: true
   prodIfUnlocked: false
@@ -26,8 +26,8 @@ Netlify Build
 ❯ Context
   dev
 
-[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68acd3acf08b8911cf8c10c1
+[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68acd550b9d204176ed33ce0
 [32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions
 [32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions
-[32mUnique deploy URL: [39m https://68acd3acf08b8911cf8c10c1--gleaming-kleicha-dec5b4.netlify.app
+[32mUnique deploy URL: [39m https://68acd550b9d204176ed33ce0--gleaming-kleicha-dec5b4.netlify.app
 [32mWebsite URL: [39m       https://elevenbase.pro
