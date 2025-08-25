@@ -52,11 +52,22 @@ const ResetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>{mode === 'request' ? 'Recupero password' : 'Imposta nuova password'}</CardTitle>
-        </CardHeader>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <img
+            src="/assets/IMG_0055.png"
+            alt="Logo ElevenBase"
+            className="h-24 w-auto mx-auto"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
+          />
+        </div>
+
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle>{mode === 'request' ? 'Recupero password' : 'Imposta nuova password'}</CardTitle>
+          </CardHeader>
         <CardContent className="space-y-4">
           {mode === 'request' ? (
             <>
@@ -71,7 +82,8 @@ const ResetPassword: React.FC = () => {
             </>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }
