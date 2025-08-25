@@ -2230,20 +2230,56 @@ export const useUpdateOpponent = () => {
   })
 }
 
+export const useOpponentMatchesCount = (opponentId: string) => {
+  return useQuery({
+    queryKey: ['opponent-matches-count', opponentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('id', { count: 'exact' })
+        .eq('opponent_id', opponentId)
+      
+      if (error) throw error
+      return data?.length || 0
+    },
+    enabled: !!opponentId
+  })
+}
+
 export const useDeleteOpponent = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   return useMutation({
     mutationFn: async (id: string) => {
+      // Controlla se l'avversario è utilizzato in partite
+      const { data: matches, error: checkError } = await supabase
+        .from('matches')
+        .select('id')
+        .eq('opponent_id', id)
+        .limit(1)
+      
+      if (checkError) throw checkError
+      
+      if (matches && matches.length > 0) {
+        throw new Error('Impossibile eliminare l\'avversario: è ancora utilizzato in delle partite. Elimina prima le partite associate.')
+      }
+      
       const { error } = await supabase.from('opponents').delete().eq('id', id)
       if (error) throw error
       return true
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opponents'] })
-      toast({ title: 'Avversario eliminato' })
+      toast({ title: 'Avversario eliminato con successo' })
     },
-    onError: (e: any) => toast({ title: 'Errore eliminazione avversario', description: e?.message, variant: 'destructive' })
+    onError: (error: any) => {
+      console.error('Errore eliminazione avversario:', error)
+      toast({ 
+        title: 'Errore nell\'eliminazione', 
+        description: error.message || 'Impossibile eliminare l\'avversario',
+        variant: 'destructive' 
+      })
+    }
   })
 }
 
