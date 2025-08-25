@@ -22,7 +22,7 @@
 ​
 [36m$ npm ci && npm run build[39m
 
-added 501 packages, and audited 502 packages in 7s
+added 501 packages, and audited 502 packages in 6s
 
 99 packages are looking for funding
   run `npm fund` for details
@@ -113,9 +113,9 @@ dist/assets/supabase-vendor-BRpTi2uV.js             124.29 kB │ gzip: 34.07 kB
 dist/assets/react-vendor-B7B2bRhR.js                141.91 kB │ gzip: 45.63 kB │ map:   344.43 kB
 dist/assets/html2canvas.esm-BfYXEYrK.js             201.47 kB │ gzip: 48.08 kB │ map:   602.27 kB
 dist/assets/Dashboard-DW5kzxwo.js                   289.90 kB │ gzip: 94.71 kB │ map: 1,254.67 kB
-✓ built in 6.71s
+✓ built in 6.52s
 ​
-[90m(build.command completed in 13.7s)[39m
+[90m(build.command completed in 13s)[39m
 
 Deploying to Netlify
 ────────────────────────────────────────────────────────────────
