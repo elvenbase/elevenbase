@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateMatch, useCompetitions, useCreateCompetition, useOpponents, useTrialists, useSetMatchTrialistInvites } from '@/hooks/useSupabaseData';
-import { Plus, Image as ImageIcon } from 'lucide-react';
+import { Plus, Image as ImageIcon, ChevronDown, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
 
 interface MatchFormProps {
   children?: React.ReactNode;
@@ -35,6 +36,8 @@ export const MatchForm = ({ children }: MatchFormProps) => {
   });
   const [opponentLogoUrl, setOpponentLogoUrl] = useState<string>('');
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [showOpponentDropdown, setShowOpponentDropdown] = useState(false);
+  const opponentInputRef = useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
   const createMatch = useCreateMatch();
@@ -47,6 +50,14 @@ export const MatchForm = ({ children }: MatchFormProps) => {
   const [selectedTrialists, setSelectedTrialists] = useState<string[]>([]);
 
   const competitionNames = useMemo(() => competitions.map((c: any) => c.name), [competitions]);
+  
+  // Filtra gli avversari basandosi sull'input dell'utente
+  const filteredOpponents = useMemo(() => {
+    if (!formData.opponent_name) return opponents;
+    return opponents.filter((o: any) => 
+      o.name.toLowerCase().includes(formData.opponent_name.toLowerCase())
+    );
+  }, [opponents, formData.opponent_name]);
 
   useEffect(() => {
     if (open) {
@@ -57,6 +68,36 @@ export const MatchForm = ({ children }: MatchFormProps) => {
       }));
     }
   }, [open]);
+
+  // Gestisce la selezione di un avversario dal dropdown
+  const handleOpponentSelect = (opponentName: string) => {
+    setFormData({ ...formData, opponent_name: opponentName });
+    setShowOpponentDropdown(false);
+    
+    // Trova il logo dell'avversario selezionato
+    const selectedOpponent = opponents.find((o: any) => o.name === opponentName);
+    if (selectedOpponent?.logo_url) {
+      setOpponentLogoUrl(selectedOpponent.logo_url);
+    }
+  };
+
+  // Gestisce il cambio dell'input avversario
+  const handleOpponentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, opponent_name: e.target.value });
+    setShowOpponentDropdown(e.target.value.length > 0);
+  };
+
+  // Chiude il dropdown quando si clicca fuori
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (opponentInputRef.current && !opponentInputRef.current.contains(event.target as Node)) {
+        setShowOpponentDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleUploadLogo = async (file: File) => {
     if (!file || !file.type.startsWith('image/')) {
@@ -138,21 +179,64 @@ export const MatchForm = ({ children }: MatchFormProps) => {
           <DialogTitle>Nuova Partita</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="relative" ref={opponentInputRef}>
             <Label htmlFor="opponent_name">Avversario</Label>
-            <Input
-              id="opponent_name"
-              list="opponent-suggestions"
-              value={formData.opponent_name}
-              onChange={(e) => setFormData({ ...formData, opponent_name: e.target.value })}
-              placeholder="es. Team Alpha"
-              required
-            />
-            <datalist id="opponent-suggestions">
-              {opponents.map((o: any) => (
-                <option key={o.id} value={o.name} />
-              ))}
-            </datalist>
+            <div className="relative">
+              <Input
+                id="opponent_name"
+                value={formData.opponent_name}
+                onChange={handleOpponentInputChange}
+                onFocus={() => setShowOpponentDropdown(formData.opponent_name.length > 0)}
+                placeholder="Digita il nome dell'avversario..."
+                autoComplete="off"
+                required
+                className="pr-8"
+              />
+              <ChevronDown 
+                className={cn(
+                  "absolute right-2 top-1/2 h-4 w-4 transform -translate-y-1/2 transition-transform",
+                  showOpponentDropdown && "rotate-180"
+                )} 
+              />
+              
+              {/* Dropdown con suggerimenti avversari */}
+              {showOpponentDropdown && filteredOpponents.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <div className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">
+                    💡 Avversari già giocati (clicca per selezionare)
+                  </div>
+                  {filteredOpponents.map((opponent: any) => (
+                    <button
+                      key={opponent.id}
+                      type="button"
+                      onClick={() => handleOpponentSelect(opponent.name)}
+                      className="w-full px-3 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none flex items-center gap-2"
+                    >
+                      {opponent.logo_url && (
+                        <img 
+                          src={opponent.logo_url} 
+                          alt={opponent.name}
+                          className="w-5 h-5 rounded object-cover flex-shrink-0"
+                        />
+                      )}
+                      <span className="truncate">{opponent.name}</span>
+                      {formData.opponent_name.toLowerCase() === opponent.name.toLowerCase() && (
+                        <Check className="w-4 h-4 text-blue-600 ml-auto" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {/* Messaggio quando non ci sono risultati */}
+              {showOpponentDropdown && formData.opponent_name && filteredOpponents.length === 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  <div className="px-3 py-2 text-sm text-gray-500">
+                    ✨ Nuovo avversario "{formData.opponent_name}" - sarà aggiunto automaticamente
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
