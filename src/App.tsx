@@ -37,6 +37,7 @@ const PublicSession = lazy(() => import("@/pages/PublicSession"));
 const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 
 // Multi-team authentication system
 const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
@@ -49,6 +50,7 @@ const AvatarBackgroundManagement = lazy(() => import("@/pages/admin/AvatarBackgr
 const PngSettingsManagement = lazy(() => import("@/pages/admin/PngSettingsManagement"));
 const OpponentsManagement = lazy(() => import("@/pages/admin/OpponentsManagement"));
 const AttendanceScoreManagement = lazy(() => import("@/pages/admin/AttendanceScoreManagement"));
+const GlobalAdmin = lazy(() => import("@/pages/admin/GlobalAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -148,6 +150,7 @@ function App() {
                       <Route path="/register/:token" element={<PublicRegistration />} />
                       <Route path="/m/:token" element={<MatchPublicRegistration />} />
                       <Route path="/session/:token" element={<PublicSession />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/" element={
                         <ProtectedRoute>
                           <Navigation />
@@ -333,6 +336,15 @@ function App() {
                             <AttendanceScoreManagement />
                           </main>
                         </AdminRoute>
+                      } />
+                      {/* Global Admin (email-based) */}
+                      <Route path="/global-admin" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <GlobalAdmin />
+                          </main>
+                        </ProtectedRoute>
                       } />
                       <Route path="*" element={<NotFound />} />
                     </Routes>

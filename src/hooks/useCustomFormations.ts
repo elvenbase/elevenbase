@@ -30,10 +30,30 @@ export const useCustomFormations = () => {
   const loadFormations = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
+      // Scope by current team
+      let currentTeamId = localStorage.getItem('currentTeamId')
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: tm } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle()
+          if (tm?.team_id) {
+            currentTeamId = tm.team_id
+            localStorage.setItem('currentTeamId', currentTeamId)
+          }
+        }
+      }
+      let query = supabase
         .from('custom_formations')
         .select('*')
         .order('created_at', { ascending: false })
+      if (currentTeamId) query = query.eq('team_id', currentTeamId)
+      const { data, error } = await query
 
       if (error) throw error
       const normalized = (data || []).map((f: any) => ({
@@ -51,10 +71,28 @@ export const useCustomFormations = () => {
 
   const createFormation = async (formation: Omit<CustomFormation, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
     try {
+      // Attach team_id
+      let currentTeamId = localStorage.getItem('currentTeamId')
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: tm } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle()
+          if (tm?.team_id) {
+            currentTeamId = tm.team_id
+            localStorage.setItem('currentTeamId', currentTeamId)
+          }
+        }
+      }
       const payload = { ...formation, positions: formation.positions.map(p => withRoleCode(p)) }
       const { data, error } = await supabase
         .from('custom_formations')
-        .insert(payload)
+        .insert({ ...payload, team_id: currentTeamId })
         .select()
         .single()
 

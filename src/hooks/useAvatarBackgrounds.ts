@@ -24,56 +24,66 @@ let backgroundsPromise: Promise<AvatarBackground[]> | null = null
 
 async function fetchBackgroundsOnce(): Promise<AvatarBackground[]> {
   try {
-    // Tentativo completo (admin)
-    const { data: initialData, error, status } = await supabase
-      .from('avatar_assets')
-      .select('*')
-      .order('is_default', { ascending: false })
-      .order('created_at', { ascending: true })
-    let data = initialData
-
-    if (error) {
-      // Fallback pubblico: solo predefiniti e default-avatar
-      const results: AvatarBackground[] = []
-
-      const d1 = await supabase
-        .from('avatar_assets')
-        .select('*')
-        .eq('is_default', true)
-        .order('created_at', { ascending: true })
-        .limit(1)
-
-      if (!d1.error && d1.data) results.push(...(d1.data as any))
-
-      const d2 = await supabase
-        .from('avatar_assets')
-        .select('*')
-        .in('name', ['default-avatar', 'default_avatar', 'Default Avatar'])
-        .order('created_at', { ascending: true })
-        .limit(1)
-
-      if (!d2.error && d2.data) {
-        const ids = new Set(results.map(r => r.id))
-        for (const r of d2.data as any) if (!ids.has(r.id)) results.push(r)
-      }
-
-      if (results.length > 0) {
-        data = results
-      } else {
-        if (!hasLoggedLoadError) {
-          console.warn('[avatar] load fallback failed', { error, status, d1Err: d1.error, d2Err: d2.error })
-          hasLoggedLoadError = true
+    // Team-first, then personal, then system default
+    let currentTeamId: string | null = localStorage.getItem('currentTeamId')
+    if (!currentTeamId) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: tm } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle()
+        if (tm?.team_id) {
+          currentTeamId = tm.team_id
+          localStorage.setItem('currentTeamId', currentTeamId)
         }
-        data = []
       }
     }
 
-    const typed = (data || []).map(item => ({
-      ...item,
-      type: (item as any).type as 'color' | 'image'
-    })) as AvatarBackground[]
+    // 1) Team avatars (prefer a team default if any)
+    let teamRows: any[] = []
+    if (currentTeamId) {
+      const { data: teamData } = await supabase
+        .from('avatar_assets')
+        .select('*')
+        .eq('team_id', currentTeamId)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: true })
+      teamRows = teamData || []
+    }
 
-    return typed
+    // 2) Personal avatars (user-owned)
+    const { data: userData } = await supabase.auth.getUser()
+    let personalRows: any[] = []
+    if (userData.user) {
+      const { data: me } = await supabase
+        .from('avatar_assets')
+        .select('*')
+        .eq('created_by', userData.user.id)
+        .is('team_id', null)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: true })
+      personalRows = me || []
+    }
+
+    // 3) System default fallback (global)
+    const { data: systemDefault } = await supabase
+      .from('avatar_assets')
+      .select('*')
+      .is('team_id', null)
+      .is('created_by', null)
+      .eq('is_default', true)
+      .limit(1)
+    const systemRows = systemDefault || []
+
+    const combined = [...teamRows, ...personalRows]
+    if (combined.length === 0) {
+      return systemRows as any
+    }
+    return combined as any
   } catch (err) {
     if (!hasLoggedLoadError) {
       console.warn('[avatar] unexpected load error', err)
@@ -119,7 +129,13 @@ export const useAvatarBackgrounds = () => {
     try {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) throw new Error('User not authenticated')
-      const { error } = await supabase.from('avatar_assets').insert({ ...background, created_by: user.user.id })
+
+      // If a team-scoped creation is needed, attach team_id
+      let currentTeamId: string | null = localStorage.getItem('currentTeamId')
+      const payload: any = { ...background, created_by: user.user.id }
+      if (currentTeamId) payload.team_id = currentTeamId
+
+      const { error } = await supabase.from('avatar_assets').insert(payload)
       if (error) throw error
       toast.success('Elemento avatar creato con successo')
     } catch (error) {
@@ -158,9 +174,28 @@ export const useAvatarBackgrounds = () => {
 
   const setAsDefaultBackground = async (id: string) => {
     try {
-      await supabase.from('avatar_assets').update({ is_default: false }).neq('id', id)
-      const { error } = await supabase.from('avatar_assets').update({ is_default: true }).eq('id', id)
-      if (error) throw error
+      // Reset default for the scope: team if team-owned, else user-owned
+      // Determine scope of the selected asset
+      const { data: asset } = await supabase
+        .from('avatar_assets')
+        .select('id, team_id, created_by')
+        .eq('id', id)
+        .maybeSingle()
+      if (!asset) throw new Error('Elemento avatar non trovato')
+
+      if (asset.team_id) {
+        await supabase.from('avatar_assets').update({ is_default: false }).eq('team_id', asset.team_id).neq('id', id)
+        const { error } = await supabase.from('avatar_assets').update({ is_default: true }).eq('id', id)
+        if (error) throw error
+      } else if (asset.created_by) {
+        await supabase.from('avatar_assets').update({ is_default: false }).eq('created_by', asset.created_by).neq('id', id)
+        const { error } = await supabase.from('avatar_assets').update({ is_default: true }).eq('id', id).eq('created_by', asset.created_by)
+        if (error) throw error
+      } else {
+        // Global system default should not be toggled here
+        throw new Error('Non è possibile modificare il default di sistema')
+      }
+
       toast.success('Sfondo predefinito aggiornato')
     } catch (error) {
       console.error('Error setting default background:', error)

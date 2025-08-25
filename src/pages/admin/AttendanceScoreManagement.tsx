@@ -24,12 +24,33 @@ export default function AttendanceScoreManagement() {
   const [loading, setLoading] = useState(false)
 
   const load = async () => {
-    const { data, error } = await supabase
+    // Team scoping
+    let currentTeamId = localStorage.getItem('currentTeamId')
+    if (!currentTeamId) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: tm } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle()
+        if (tm?.team_id) {
+          currentTeamId = tm.team_id
+          localStorage.setItem('currentTeamId', currentTeamId)
+        }
+      }
+    }
+
+    let query = supabase
       .from('attendance_score_settings')
       .select('*')
       .eq('is_active', true)
       .order('created_at', { ascending: false })
       .limit(1)
+    if (currentTeamId) query = query.eq('team_id', currentTeamId)
+    const { data, error } = await query
     if (error) return
     const s = data && data[0]
     if (s) setWeights({
@@ -48,11 +69,30 @@ export default function AttendanceScoreManagement() {
 
   const save = async () => {
     setLoading(true)
+    let currentTeamId = localStorage.getItem('currentTeamId')
+    if (!currentTeamId) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: tm } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle()
+        if (tm?.team_id) {
+          currentTeamId = tm.team_id
+          localStorage.setItem('currentTeamId', currentTeamId)
+        }
+      }
+    }
     // Deactivate previous active presets to ensure we always load the latest
-    await supabase
+    let deact = supabase
       .from('attendance_score_settings')
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq('is_active', true)
+    if (currentTeamId) deact = deact.eq('team_id', currentTeamId)
+    await deact
 
     const { error } = await supabase.from('attendance_score_settings').insert({
       preset: 'simple',
@@ -67,6 +107,7 @@ export default function AttendanceScoreManagement() {
       mvp_bonus_once: weights.mvpBonusOnce,
       min_events: weights.minEvents,
       is_active: true,
+      team_id: currentTeamId || null,
     })
     setLoading(false)
     if (error) toast({ title: 'Errore', description: String(error.message), variant: 'destructive' })
