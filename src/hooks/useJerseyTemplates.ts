@@ -144,7 +144,17 @@ export const useJerseyTemplates = () => {
           .is('team_id', null)
           .eq('is_default', true)
           .maybeSingle()
-        setDefaultJersey(systemJersey || null)
+        setDefaultJersey(systemJersey || {
+          id: 'default',
+          name: 'Maglia Placeholder',
+          description: 'Segnaposto in assenza di template',
+          image_url: '/assets/jersey-example.png',
+          is_default: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          created_by: null,
+          team_id: null
+        } as any)
       } else {
         const defaultTemplate = data.find(t => t.is_default)
         setDefaultJersey(defaultTemplate || data[0] || null)

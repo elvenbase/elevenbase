@@ -9,14 +9,12 @@ Netlify Build
   @netlify/build 29.58.0
 ​
 ❯ Flags
-  auth: nfp_x5V2DU5J6pd9tWo2xEKuGnmD5Q83qPVie507
-  deployId: 68acabef8488ad2b5b64ab23
+  deployId: 68acbc0ccab04992df891e72
   dir: dist
-  message: 'Preview: team-scoped admin tables/hooks (feature/multi-team) 2025-08-25T18:31:08Z'
+  message: 'Preview: avatar priority user>team>system (feature/multi-team) 2025-08-25T19:39:46Z'
   open: false
   prod: false
   prodIfUnlocked: false
-  site: ff2374c2-19b7-4a4e-86fa-fcd44ff751bd
   skipFunctionsCache: false
 ​
 ❯ Current directory
@@ -28,10 +26,10 @@ Netlify Build
 ❯ Context
   dev
 
-[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68acabef8488ad2b5b64ab23
-[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68acabef8488ad2b5b64ab23
-[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68acabef8488ad2b5b64ab23
-[32mWebsite draft URL: [39m https://68acabef8488ad2b5b64ab23--gleaming-kleicha-dec5b4.netlify.app
+[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68acbc0ccab04992df891e72
+[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68acbc0ccab04992df891e72
+[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68acbc0ccab04992df891e72
+[32mWebsite draft URL: [39m https://68acbc0ccab04992df891e72--gleaming-kleicha-dec5b4.netlify.app
 
 If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.
 netlify deploy --prod
