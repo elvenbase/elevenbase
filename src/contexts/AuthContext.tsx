@@ -173,11 +173,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      // Clear team data from localStorage first
+      localStorage.removeItem('currentTeamId');
+      localStorage.removeItem('currentTeamName');
+      localStorage.removeItem('userRole');
+      
+      console.log('Attempting logout...');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Supabase logout error:', error);
+        
+        // If we get a 403 or similar auth error, force a local logout
+        if (error.message?.includes('403') || error.message?.includes('Forbidden') || error.status === 403) {
+          console.warn('Force logout due to auth error, clearing local session...');
+          
+          // Force clear local state
+          setUser(null);
+          setSession(null);
+          
+          toast({
+            title: "Logout completato",
+            description: "Sessione terminata (logout forzato)",
+          });
+          return;
+        }
+        
+        // For other errors, show error but still try to clear state
+        toast({
+          title: "Errore durante il logout",
+          description: error.message || "Errore sconosciuto",
+          variant: "destructive",
+        });
+        
+        // Clear local state anyway
+        setUser(null);
+        setSession(null);
+      } else {
+        console.log('Logout successful');
+        toast({
+          title: "Logout completato",
+          description: "Arrivederci!",
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected logout error:', err);
+      
+      // Force clear everything on any error
+      localStorage.removeItem('currentTeamId');
+      localStorage.removeItem('currentTeamName');
+      localStorage.removeItem('userRole');
+      setUser(null);
+      setSession(null);
+      
       toast({
-        title: "Errore",
-        description: "Errore durante il logout",
+        title: "Logout forzato",
+        description: "Sessione terminata a causa di un errore",
         variant: "destructive",
       });
     }
