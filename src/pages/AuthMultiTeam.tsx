@@ -84,7 +84,12 @@ const AuthMultiTeam = () => {
         toast.error('Non appartieni a nessuna squadra. Contatta un amministratore.');
         await supabase.auth.signOut();
       } else {
+        console.log('Team member found:', teamMember);
         toast.success(`Benvenuto in ${teamMember.teams.name}!`);
+        // Store team info in localStorage for the app to use
+        localStorage.setItem('currentTeamId', teamMember.team_id);
+        localStorage.setItem('currentTeamName', teamMember.teams.name);
+        localStorage.setItem('userRole', teamMember.role);
       }
     } catch (error: any) {
       toast.error(error.message || 'Errore durante il login');

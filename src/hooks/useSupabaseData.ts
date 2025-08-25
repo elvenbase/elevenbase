@@ -26,10 +26,19 @@ export const usePlayers = () => {
   return useQuery({
     queryKey: ['players'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get current team from localStorage
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      
+      let query = supabase
         .from('players')
-        .select('*')
-        .order('last_name');
+        .select('*');
+      
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        query = query.eq('team_id', currentTeamId);
+      }
+      
+      const { data, error } = await query.order('last_name');
       
       if (error) {
         console.error('Error fetching players:', error);
@@ -337,10 +346,19 @@ export const useTrainingSessions = () => {
   return useQuery({
     queryKey: ['training-sessions'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get current team from localStorage
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      
+      let query = supabase
         .from('training_sessions')
-        .select('*')
-        .order('session_date', { ascending: false });
+        .select('*');
+      
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        query = query.eq('team_id', currentTeamId);
+      }
+      
+      const { data, error } = await query.order('session_date', { ascending: false });
       
       if (error) throw error;
       return data;
@@ -1280,10 +1298,19 @@ export const useMatches = () => {
   return useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get current team from localStorage
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      
+      let query = supabase
         .from('matches')
-        .select('*, opponents:opponent_id(name, logo_url, jersey_template_id, jersey_shape, jersey_primary_color, jersey_secondary_color, jersey_accent_color, jersey_image_url)')
-        .order('match_date', { ascending: false });
+        .select('*, opponents:opponent_id(name, logo_url, jersey_template_id, jersey_shape, jersey_primary_color, jersey_secondary_color, jersey_accent_color, jersey_image_url)');
+      
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        query = query.eq('team_id', currentTeamId);
+      }
+      
+      const { data, error } = await query.order('match_date', { ascending: false });
       
       if (error) throw error;
       return data;
