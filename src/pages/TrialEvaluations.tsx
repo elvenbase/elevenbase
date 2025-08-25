@@ -95,15 +95,19 @@ const TrialEvaluations = () => {
         const trialist = trialists.find(t => t.id === trialistId);
         
         if (evaluation && trialist) {
-          await createEvaluation.mutateAsync({
+          const payload = {
             trialist_id: trialistId,
-            team_id: trialist.team_id,
-            personality_ratings: evaluation.personality_ratings,
-            ability_ratings: evaluation.ability_ratings,
-            flexibility_ratings: evaluation.flexibility_ratings,
+            // team_id: trialist.team_id || null, // Temporaneamente disabilitato - colonna non esiste in produzione
+            personality_ratings: evaluation.personality_ratings || [],
+            ability_ratings: evaluation.ability_ratings || [],
+            flexibility_ratings: evaluation.flexibility_ratings || [],
             final_decision: finalDecisions[trialistId] || 'in_prova',
             notes: evaluation.notes || null
-          });
+          };
+          console.log('Payload da inviare:', payload);
+          console.log('Trialist completo:', trialist);
+          
+          await createEvaluation.mutateAsync(payload);
         }
 
         // Aggiorna lo status se diverso da "in_prova"

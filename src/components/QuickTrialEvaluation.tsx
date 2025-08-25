@@ -111,7 +111,7 @@ const QuickTrialEvaluation = ({ sessionId, children }: QuickTrialEvaluationProps
           try {
             await createQuickEvaluation.mutateAsync({
               trialist_id: trialistId,
-              team_id: trialist.team_id,
+              // team_id: trialist.team_id, // Temporaneamente disabilitato - colonna non esiste in produzione
               session_id: sessionId,
               personality_ratings: evaluation.personality_ratings,
               ability_ratings: evaluation.ability_ratings,

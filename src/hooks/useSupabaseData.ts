@@ -2469,13 +2469,18 @@ export const useCreateQuickTrialEvaluation = () => {
       final_decision?: 'in_prova' | 'promosso' | 'archiviato';
       notes?: string;
     }) => {
+      console.log('Hook useCreateQuickTrialEvaluation - data ricevuti:', data);
+      
       const { data: result, error } = await supabase
         .from('quick_trial_evaluations')
         .insert(data)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Errore Supabase dettagliato:', error);
+        throw error;
+      }
       return result;
     },
     onSuccess: () => {
