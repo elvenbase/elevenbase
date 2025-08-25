@@ -67,31 +67,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
-      // Verifica se l'utente è attivo
+      // Verifica se l'utente appartiene a un team e salva le info
       if (data.user) {
-
-        
         try {
-          const { data: isActive, error: statusError } = await supabase.rpc('is_user_active', {
-            _user_id: data.user.id
-          });
+          // Get user's team membership
+          const { data: teamMember, error: teamError } = await supabase
+            .from('team_members')
+            .select('*, teams(*)')
+            .eq('user_id', data.user.id)
+            .single();
 
-          if (statusError) {
-            console.warn('Errore nel controllo dello status, permettendo login:', statusError);
-            // Se c'è un errore nel controllo status, permettiamo il login comunque
-          } else if (!isActive) {
-            // Fai logout immediato se l'utente non è attivo
+          if (teamError || !teamMember) {
+            // User doesn't belong to any team
             await supabase.auth.signOut();
-            const inactiveError = new Error("Account non attivo. Contatta l'amministratore.");
+            const noTeamError = new Error("Non appartieni a nessuna squadra.");
+            toast({
+              title: "Nessuna squadra",
+              description: "Non appartieni a nessuna squadra. Contatta un amministratore.",
+              variant: "destructive",
+            });
+            return { error: noTeamError };
+          }
+
+          // Check if user is owner (owners are always active)
+          const isOwner = teamMember.teams.owner_id === data.user.id;
+          
+          // Check if user is active (non-owners need to be active)
+          if (!isOwner && teamMember.status === 'pending') {
+            await supabase.auth.signOut();
+            const inactiveError = new Error("Account non attivo.");
             toast({
               title: "Account non attivo",
-              description: "Il tuo account non è ancora stato attivato. Contatta l'amministratore.",
+              description: "Il tuo account non è ancora stato attivato. Contatta l'amministratore del team.",
               variant: "destructive",
             });
             return { error: inactiveError };
           }
-        } catch (statusErr) {
-          console.warn('Errore nel controllo dello status, permettendo login:', statusErr);
+
+          // Store team info in localStorage
+          localStorage.setItem('currentTeamId', teamMember.team_id);
+          localStorage.setItem('currentTeamName', teamMember.teams.name);
+          localStorage.setItem('userRole', teamMember.role);
+          
+        } catch (err) {
+          console.warn('Errore nel controllo del team:', err);
           // Se c'è un errore, permettiamo comunque il login
         }
       }

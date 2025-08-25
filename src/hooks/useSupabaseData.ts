@@ -35,14 +35,16 @@ export const usePlayers = () => {
         if (user) {
           const { data: teamMember } = await supabase
             .from('team_members')
-            .select('team_id')
+            .select('team_id, role, teams(name, owner_id)')
             .eq('user_id', user.id)
             .single();
           
           if (teamMember) {
             currentTeamId = teamMember.team_id;
-            // Store it for future use
+            // Store team info for future use
             localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
           }
         }
       }
@@ -376,13 +378,15 @@ export const useTrainingSessions = () => {
         if (user) {
           const { data: teamMember } = await supabase
             .from('team_members')
-            .select('team_id')
+            .select('team_id, role, teams(name, owner_id)')
             .eq('user_id', user.id)
             .single();
           
           if (teamMember) {
             currentTeamId = teamMember.team_id;
             localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
           }
         }
       }
@@ -1345,13 +1349,15 @@ export const useMatches = () => {
         if (user) {
           const { data: teamMember } = await supabase
             .from('team_members')
-            .select('team_id')
+            .select('team_id, role, teams(name, owner_id)')
             .eq('user_id', user.id)
             .single();
           
           if (teamMember) {
             currentTeamId = teamMember.team_id;
             localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
           }
         }
       }
