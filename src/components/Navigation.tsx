@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { NavLink, useLocation, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [teamLogo, setTeamLogo] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
   const { user, signOut } = useAuth();
   const { pathname } = useLocation();
@@ -45,6 +47,29 @@ const Navigation = () => {
       };
     }
   }, [isMobileMenuOpen]);
+
+  // Load team logo
+  useEffect(() => {
+    const loadTeamData = async () => {
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('teams')
+          .select('logo_url')
+          .eq('id', currentTeamId)
+          .single();
+
+        if (error) throw error;
+        setTeamLogo(data?.logo_url || null);
+      } catch (error) {
+        console.error('Error loading team logo:', error);
+      }
+    };
+
+    loadTeamData();
+  }, []);
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: BarChart3 },
@@ -203,8 +228,18 @@ const Navigation = () => {
               to="/team/settings" 
               className="flex items-center space-x-2 px-3 py-1.5 bg-muted/50 rounded-lg border border-border/50 hover:bg-muted/70 transition-colors group"
             >
-              <div className="h-7 w-7 rounded-md bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm group-hover:scale-105 transition-transform">
-                {localStorage.getItem('currentTeamName')?.substring(0, 2).toUpperCase() || 'TM'}
+              <div className="h-7 w-7 rounded-md overflow-hidden group-hover:scale-105 transition-transform shadow-sm">
+                {teamLogo ? (
+                  <img
+                    src={teamLogo}
+                    alt="Team Logo"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-xs font-bold text-primary-foreground">
+                    {localStorage.getItem('currentTeamName')?.substring(0, 2).toUpperCase() || 'TM'}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
@@ -369,8 +404,18 @@ const Navigation = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground shadow-sm">
-                      {localStorage.getItem('currentTeamName')?.substring(0, 2).toUpperCase() || 'TM'}
+                    <div className="h-10 w-10 rounded-lg overflow-hidden shadow-sm">
+                      {teamLogo ? (
+                        <img
+                          src={teamLogo}
+                          alt="Team Logo"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground">
+                          {localStorage.getItem('currentTeamName')?.substring(0, 2).toUpperCase() || 'TM'}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <div className="font-semibold text-sm text-foreground">
