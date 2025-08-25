@@ -49,6 +49,7 @@ const AvatarBackgroundManagement = lazy(() => import("@/pages/admin/AvatarBackgr
 const PngSettingsManagement = lazy(() => import("@/pages/admin/PngSettingsManagement"));
 const OpponentsManagement = lazy(() => import("@/pages/admin/OpponentsManagement"));
 const AttendanceScoreManagement = lazy(() => import("@/pages/admin/AttendanceScoreManagement"));
+const GlobalAdmin = lazy(() => import("@/pages/admin/GlobalAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -333,6 +334,15 @@ function App() {
                             <AttendanceScoreManagement />
                           </main>
                         </AdminRoute>
+                      } />
+                      {/* Global Admin (email-based) */}
+                      <Route path="/global-admin" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <GlobalAdmin />
+                          </main>
+                        </ProtectedRoute>
                       } />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
