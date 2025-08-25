@@ -1995,12 +1995,24 @@ export const useCreateMatch = () => {
       notes?: string;
       opponent_logo_url?: string;
     }) => {
+      // Get current team ID first
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
       // Ensure opponent exists (by name), optionally setting logo_url, then attach opponent_id
       const opponentName = (match.opponent_name || '').trim()
       let opponent_id: string | undefined = undefined
       if (opponentName) {
         const lower = opponentName.toLowerCase()
-        const { data: existing } = await supabase.from('opponents').select('id, logo_url').ilike('name', lower)
+        // Search only within current team's opponents
+        const { data: existing } = await supabase
+          .from('opponents')
+          .select('id, logo_url')
+          .ilike('name', lower)
+          .eq('team_id', currentTeamId)
+        
         if (existing && existing.length > 0) {
           opponent_id = existing[0].id
           // Optionally update logo if provided and missing
@@ -2008,16 +2020,19 @@ export const useCreateMatch = () => {
             await supabase.from('opponents').update({ logo_url: match.opponent_logo_url }).eq('id', opponent_id)
           }
         } else {
-          const { data: inserted, error: oppErr } = await supabase.from('opponents').insert({ name: opponentName, logo_url: match.opponent_logo_url || null }).select().single()
+          // Create new opponent for current team
+          const { data: inserted, error: oppErr } = await supabase
+            .from('opponents')
+            .insert({ 
+              name: opponentName, 
+              logo_url: match.opponent_logo_url || null,
+              team_id: currentTeamId 
+            })
+            .select()
+            .single()
           if (oppErr) throw oppErr
           opponent_id = inserted?.id
         }
-      }
-
-      // Get current team ID
-      const currentTeamId = localStorage.getItem('currentTeamId');
-      if (!currentTeamId) {
-        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
       }
 
       const payload: any = { 
@@ -2050,7 +2065,36 @@ export const useOpponents = () => {
   return useQuery({
     queryKey: ['opponents'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('opponents').select('*').order('name', { ascending: true })
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      let query = supabase.from('opponents').select('*').order('name', { ascending: true });
+
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        query = query.eq('team_id', currentTeamId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error
       return data
     }
@@ -2062,7 +2106,17 @@ export const useCreateOpponent = () => {
   const { toast } = useToast()
   return useMutation({
     mutationFn: async (payload: { name: string; logo_url?: string|null; jersey_template_id?: string|null }) => {
-      const { data, error } = await supabase.from('opponents').insert(payload).select().single()
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        throw new Error('Nessun team selezionato. Effettua il logout e login di nuovo.');
+      }
+
+      const { data, error } = await supabase
+        .from('opponents')
+        .insert({ ...payload, team_id: currentTeamId })
+        .select()
+        .single()
       if (error) throw error
       return data
     },
