@@ -192,12 +192,39 @@ const UserManagement = () => {
 
         // Se il ruolo è "player", crea anche l'entry nella tabella players
         if (newUserRole === 'player') {
+          // Get current team ID for the player
+          let currentTeamId = localStorage.getItem('currentTeamId');
+          
+          // If no team in localStorage, try to get it from current user's team membership
+          if (!currentTeamId) {
+            const { data: { user: currentUser } } = await supabase.auth.getUser();
+            if (currentUser) {
+              const { data: teamMember } = await supabase
+                .from('team_members')
+                .select('team_id')
+                .eq('user_id', currentUser.id)
+                .single();
+              
+              if (teamMember) {
+                currentTeamId = teamMember.team_id;
+                localStorage.setItem('currentTeamId', currentTeamId);
+              }
+            }
+          }
+
+          if (!currentTeamId) {
+            throw new Error('No team found - cannot create player without team association');
+          }
+
+          console.log('Creating player in UserManagement with team_id:', currentTeamId);
+
           await supabase
             .from('players')
             .insert({
               first_name: newUserFirstName,
               last_name: newUserLastName,
-              phone: newUserPhone
+              phone: newUserPhone,
+              team_id: currentTeamId
             });
         }
       }

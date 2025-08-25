@@ -297,10 +297,44 @@ export const useCreatePlayer = () => {
       is_captain?: boolean;
       created_by?: string;
     }) => {
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      if (!currentTeamId) {
+        throw new Error('No team found - cannot create player without team association');
+      }
+
+      // Add team_id to player data
+      const playerWithTeam = {
+        ...player,
+        team_id: currentTeamId
+      };
+
+      console.log('Creating player with team_id:', currentTeamId);
 
       const { data, error } = await supabase
         .from('players')
-        .insert(player)
+        .insert(playerWithTeam)
         .select()
         .single();
       
@@ -712,11 +746,51 @@ export const useCreateCompetition = () => {
 // Trialists hooks
 export const useTrialists = () => {
   return useQuery({
-    queryKey: ['trialists'],
+    queryKey: ['trialists', localStorage.getItem('currentTeamId')],
     queryFn: async () => {
-      const { data, error } = await supabase.from('trialists').select('*').order('last_name')
-      if (error) throw error
-      return data
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+      
+      // Build query with team filter
+      let query = supabase
+        .from('trialists')
+        .select('*');
+      
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        console.log('Filtering trialists by team_id:', currentTeamId);
+        query = query.eq('team_id', currentTeamId);
+      } else {
+        console.warn('No team_id found in useTrialists - showing all trialists!');
+      }
+      
+      const { data, error } = await query.order('last_name');
+      
+      if (error) {
+        console.error('Error fetching trialists:', error);
+        throw error;
+      }
+      return data;
     }
   })
 }
@@ -847,10 +921,56 @@ export const useCreateTrialist = () => {
       position?: string;
       notes?: string;
       avatar_url?: string;
+      role_code?: string;
+      esperienza?: string;
+      jersey_number?: number;
+      ea_sport_id?: string;
+      gaming_platform?: string;
+      platform_id?: string;
+      is_captain?: boolean;
     }) => {
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+
+      if (!currentTeamId) {
+        throw new Error('No team found - cannot create trialist without team association');
+      }
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Add team_id to trialist data
+      const trialistWithTeam = {
+        ...trialist,
+        team_id: currentTeamId,
+        created_by: user?.id
+      };
+
+      console.log('Creating trialist with team_id:', currentTeamId);
+
       const { data, error } = await supabase
         .from('trialists')
-        .insert([{ ...trialist, created_by: (await supabase.auth.getUser()).data.user?.id }])
+        .insert([trialistWithTeam])
         .select()
         .single();
       
