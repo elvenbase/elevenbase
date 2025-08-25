@@ -24,7 +24,7 @@ let backgroundsPromise: Promise<AvatarBackground[]> | null = null
 
 async function fetchBackgroundsOnce(): Promise<AvatarBackground[]> {
   try {
-    // Team-first, then personal, then system default
+    // Team-first, then personal
     let currentTeamId: string | null = localStorage.getItem('currentTeamId')
     if (!currentTeamId) {
       const { data: { user } } = await supabase.auth.getUser()
@@ -69,20 +69,8 @@ async function fetchBackgroundsOnce(): Promise<AvatarBackground[]> {
       personalRows = me || []
     }
 
-    // 3) System default fallback (global)
-    const { data: systemDefault } = await supabase
-      .from('avatar_assets')
-      .select('*')
-      .is('team_id', null)
-      .is('created_by', null)
-      .eq('is_default', true)
-      .limit(1)
-    const systemRows = systemDefault || []
-
+    // Return only team/personal; system defaults will be used separately for fallback
     const combined = [...teamRows, ...personalRows]
-    if (combined.length === 0) {
-      return systemRows as any
-    }
     return combined as any
   } catch (err) {
     if (!hasLoggedLoadError) {
@@ -96,6 +84,8 @@ async function fetchBackgroundsOnce(): Promise<AvatarBackground[]> {
 export const useAvatarBackgrounds = () => {
   const [backgrounds, setBackgrounds] = useState<AvatarBackground[]>(cachedBackgrounds || [])
   const [loading, setLoading] = useState(!cachedBackgrounds)
+  const [effectiveDefaultBackground, setEffectiveDefaultBackground] = useState<AvatarBackground | null>(null)
+  const [effectiveDefaultAvatarUrl, setEffectiveDefaultAvatarUrl] = useState<string | null>(null)
 
   useEffect(() => {
     let canceled = false
@@ -124,6 +114,56 @@ export const useAvatarBackgrounds = () => {
     cachedBackgrounds = data
     setBackgrounds(data)
   }
+
+  // Compute effective defaults with system fallback when not present in team/personal
+  useEffect(() => {
+    let canceled = false
+    async function computeDefaults() {
+      try {
+        // Default background: prefer team/personal marked as default
+        const localDefaultBg = backgrounds.find(bg => bg.is_default) || null
+        if (localDefaultBg) {
+          if (!canceled) setEffectiveDefaultBackground(localDefaultBg)
+        } else {
+          // Fallback to system default background
+          const { data: sysBg } = await supabase
+            .from('avatar_assets')
+            .select('*')
+            .is('team_id', null)
+            .is('created_by', null)
+            .eq('type', 'color')
+            .eq('name', 'system-default-background')
+            .eq('is_default', true)
+            .maybeSingle()
+          if (!canceled) setEffectiveDefaultBackground((sysBg as any) || null)
+        }
+
+        // Default avatar persona image: prefer local image named default-avatar
+        const localDefaultAvatar = backgrounds.find(bg => bg.type === 'image' && (bg.name || '').toLowerCase() === 'default-avatar')
+        if (localDefaultAvatar?.value) {
+          if (!canceled) setEffectiveDefaultAvatarUrl(localDefaultAvatar.value)
+        } else {
+          const { data: sysAvatar } = await supabase
+            .from('avatar_assets')
+            .select('value')
+            .is('team_id', null)
+            .is('created_by', null)
+            .eq('type', 'image')
+            .eq('name', 'default-avatar')
+            .eq('is_default', true)
+            .maybeSingle()
+          if (!canceled) setEffectiveDefaultAvatarUrl((sysAvatar as any)?.value || null)
+        }
+      } catch (e) {
+        if (!canceled) {
+          setEffectiveDefaultBackground(null)
+          setEffectiveDefaultAvatarUrl(null)
+        }
+      }
+    }
+    computeDefaults()
+    return () => { canceled = true }
+  }, [backgrounds])
 
   const createBackground = async (background: Omit<AvatarBackground, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
     try {
@@ -183,13 +223,13 @@ export const useAvatarBackgrounds = () => {
         .maybeSingle()
       if (!asset) throw new Error('Elemento avatar non trovato')
 
-      if (asset.team_id) {
-        await supabase.from('avatar_assets').update({ is_default: false }).eq('team_id', asset.team_id).neq('id', id)
+      if ((asset as any).team_id) {
+        await supabase.from('avatar_assets').update({ is_default: false }).eq('team_id', (asset as any).team_id).neq('id', id)
         const { error } = await supabase.from('avatar_assets').update({ is_default: true }).eq('id', id)
         if (error) throw error
-      } else if (asset.created_by) {
-        await supabase.from('avatar_assets').update({ is_default: false }).eq('created_by', asset.created_by).neq('id', id)
-        const { error } = await supabase.from('avatar_assets').update({ is_default: true }).eq('id', id).eq('created_by', asset.created_by)
+      } else if ((asset as any).created_by) {
+        await supabase.from('avatar_assets').update({ is_default: false }).eq('created_by', (asset as any).created_by).neq('id', id)
+        const { error } = await supabase.from('avatar_assets').update({ is_default: true }).eq('id', id).eq('created_by', (asset as any).created_by)
         if (error) throw error
       } else {
         // Global system default should not be toggled here
@@ -220,17 +260,11 @@ export const useAvatarBackgrounds = () => {
     }
   }
 
-  const defaultBackground = backgrounds.find(bg => bg.is_default) || null
-  const defaultAvatarCandidate = backgrounds.find(bg =>
-    bg.type === 'image' && ['default-avatar', 'default_avatar', 'default avatar'].includes((bg.name || '').toLowerCase())
-  )
-  const defaultAvatarImageUrl = defaultAvatarCandidate?.value || (import.meta as any)?.env?.VITE_DEFAULT_AVATAR_URL || null
-
   return {
     backgrounds,
     loading,
-    defaultBackground,
-    defaultAvatarImageUrl,
+    defaultBackground: effectiveDefaultBackground,
+    defaultAvatarImageUrl: effectiveDefaultAvatarUrl,
     createBackground,
     updateBackground,
     deleteBackground,
