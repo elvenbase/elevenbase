@@ -196,25 +196,38 @@ const Navigation = () => {
             </DropdownMenu>
           </div>
 
-          {/* User Menu - with 20px gap from navigation */}
+          {/* User Menu - with Team Info */}
           <div className="hidden nav:flex items-center space-x-3 ml-5">
+            {/* Team Badge */}
+            <div className="flex items-center space-x-2 px-3 py-1.5 bg-muted/50 rounded-lg border border-border/50">
+              <div className="h-7 w-7 rounded-md bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm">
+                {localStorage.getItem('currentTeamName')?.substring(0, 2).toUpperCase() || 'TM'}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-foreground leading-tight">
+                  {localStorage.getItem('currentTeamName') || 'Team'}
+                </span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  {localStorage.getItem('userRole') || 'member'}
+                </span>
+              </div>
+            </div>
+            
+            {/* User Avatar */}
+            <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
+              {user?.email?.charAt(0).toUpperCase()}
+            </div>
+            
+            {/* Logout Button */}
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-muted-foreground"
+              className="text-muted-foreground hover:text-foreground"
               onClick={handleSignOut}
               title="Logout"
             >
               <LogOut className="h-4 w-4" />
             </Button>
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold shadow-glow">
-                {user?.email?.charAt(0).toUpperCase()}
-              </div>
-              <span className="text-sm font-medium text-foreground hidden xl:block">
-                {user?.email}
-              </span>
-            </div>
           </div>
 
           {/* Mobile menu button */}
