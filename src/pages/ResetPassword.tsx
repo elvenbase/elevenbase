@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -15,13 +16,15 @@ const ResetPassword: React.FC = () => {
   const [mode, setMode] = useState<'request'|'update'>('request')
 
   useEffect(() => {
-    // If a recovery token is present in URL, switch to update mode
-    const type = searchParams.get('type')
-    const token = searchParams.get('token')
-    if (type === 'recovery' && token) {
+    // Detect recovery via query (?type=recovery&token=...) or hash (#access_token=...&type=recovery)
+    const typeQ = searchParams.get('type')
+    const hash = (location.hash || '').replace(/^#/, '')
+    const hashParams = new URLSearchParams(hash)
+    const typeH = hashParams.get('type')
+    if (typeQ === 'recovery' || typeH === 'recovery' || hashParams.get('access_token')) {
       setMode('update')
     }
-  }, [searchParams])
+  }, [searchParams, location.hash])
 
   const sendResetEmail = async () => {
     try {
@@ -39,7 +42,6 @@ const ResetPassword: React.FC = () => {
   const updatePassword = async () => {
     try {
       if (!password || password !== confirm) return toast.error('Le password non coincidono')
-      // When opened from recovery link, Supabase stores session; update directly
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
       toast.success('Password aggiornata, effettua il login')
@@ -58,13 +60,13 @@ const ResetPassword: React.FC = () => {
         <CardContent className="space-y-4">
           {mode === 'request' ? (
             <>
-              <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+              <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
               <Button className="w-full" onClick={sendResetEmail}>Invia email di reset</Button>
             </>
           ) : (
             <>
-              <Input type="password" placeholder="Nuova password" value={password} onChange={e => setPassword(e.target.value)} />
-              <Input type="password" placeholder="Conferma password" value={confirm} onChange={e => setConfirm(e.target.value)} />
+              <Input type="password" placeholder="Nuova password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input type="password" placeholder="Conferma password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
               <Button className="w-full" onClick={updatePassword}>Aggiorna password</Button>
             </>
           )}
