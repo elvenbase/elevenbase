@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { useState, useEffect, Suspense, lazy } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import RecoveryRedirector from "@/components/RecoveryRedirector";
 
 // Import components
 import { AdminSetup } from "@/components/AdminSetup";
@@ -137,6 +138,7 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <BrowserRouter>
+              <RecoveryRedirector />
               <ErrorBoundary>
                 <div className="min-h-screen bg-background">
                   <Suspense fallback={
