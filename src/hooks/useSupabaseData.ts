@@ -81,13 +81,45 @@ export const usePlayers = () => {
 // Enhanced players hook with attendance stats
 export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
   return useQuery({
-    queryKey: ['players-with-attendance', startDate?.toISOString(), endDate?.toISOString()],
+    queryKey: ['players-with-attendance', startDate?.toISOString(), endDate?.toISOString(), localStorage.getItem('currentTeamId')],
     queryFn: async () => {
-      // First get all players
-      const { data: players, error: playersError } = await supabase
+      // Get current team from localStorage
+      let currentTeamId = localStorage.getItem('currentTeamId');
+      
+      // If no team in localStorage, try to get it from the user's team membership
+      if (!currentTeamId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('team_id, role, teams(name, owner_id)')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (teamMember) {
+            currentTeamId = teamMember.team_id;
+            // Store team info for future use
+            localStorage.setItem('currentTeamId', currentTeamId);
+            localStorage.setItem('currentTeamName', teamMember.teams?.name || 'Team');
+            localStorage.setItem('userRole', teamMember.role || 'member');
+          }
+        }
+      }
+      
+      // Build query with team filter
+      let query = supabase
         .from('players')
-        .select('*')
-        .order('last_name');
+        .select('*');
+      
+      // Filter by team if we have a team ID
+      if (currentTeamId) {
+        console.log('Filtering players with attendance by team_id:', currentTeamId);
+        query = query.eq('team_id', currentTeamId);
+      } else {
+        console.warn('No team_id found in usePlayersWithAttendance - showing all players!');
+      }
+      
+      const { data: players, error: playersError } = await query.order('last_name');
       
       if (playersError) {
         console.error('Error fetching players:', playersError);
@@ -116,11 +148,19 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
       const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
       const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
       
-      const { data: trainingSessions, error: sessionsError } = await supabase
+      // Build training sessions query with team filter
+      let trainingQuery = supabase
         .from('training_sessions')
         .select('id, session_date, is_closed, title')
         .gte('session_date', startDateStr)
         .lte('session_date', endDateStr);
+      
+      // Filter training sessions by team
+      if (currentTeamId) {
+        trainingQuery = trainingQuery.eq('team_id', currentTeamId);
+      }
+      
+      const { data: trainingSessions, error: sessionsError } = await trainingQuery;
       
       if (sessionsError) {
         console.error('Error fetching training sessions:', sessionsError);
@@ -146,32 +186,46 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
       }
       
 
-      // Get match attendance stats
-      const { data: matchAttendance, error: matchError } = await supabase
+      // Get match attendance stats with team filter
+      let matchAttendanceQuery = supabase
         .from('match_attendance')
         .select(`
           player_id,
           status,
           coach_confirmation_status,
           arrival_time,
-          matches!inner(match_date, live_state)
+          matches!inner(match_date, live_state, team_id)
         `)
         .gte('matches.match_date', startDate.toISOString().split('T')[0])
         .lte('matches.match_date', endDate.toISOString().split('T')[0])
         .eq('matches.live_state', 'ended');
+      
+      // Filter matches by team
+      if (currentTeamId) {
+        matchAttendanceQuery = matchAttendanceQuery.eq('matches.team_id', currentTeamId);
+      }
+      
+      const { data: matchAttendance, error: matchError } = await matchAttendanceQuery;
 
       if (matchError) {
         console.error('Error fetching match attendance:', matchError);
         throw matchError;
       }
 
-      // Total ended matches in period (team-level)
-      const { data: endedMatches, error: endedErr } = await supabase
+      // Total ended matches in period (team-level) with team filter
+      let endedMatchesQuery = supabase
         .from('matches')
         .select('id')
         .gte('match_date', startDate.toISOString().split('T')[0])
         .lte('match_date', endDate.toISOString().split('T')[0])
         .eq('live_state', 'ended');
+      
+      // Filter ended matches by team
+      if (currentTeamId) {
+        endedMatchesQuery = endedMatchesQuery.eq('team_id', currentTeamId);
+      }
+      
+      const { data: endedMatches, error: endedErr } = await endedMatchesQuery;
       if (endedErr) {
         console.error('Error fetching ended matches:', endedErr);
         throw endedErr;
