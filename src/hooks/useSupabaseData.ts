@@ -435,6 +435,7 @@ export const useUpdatePlayer = () => {
       }
 
       console.log('Team verification passed, proceeding with update...');
+      console.log('UPDATE payload:', JSON.stringify(updates, null, 2));
 
       // Since we've already verified the player belongs to the correct team,
       // we can update by ID only to avoid RLS policy conflicts
@@ -442,14 +443,28 @@ export const useUpdatePlayer = () => {
         .from('players')
         .update(updates)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
+        
+      console.log('UPDATE result (before single check):', { data, error });
       
       if (error) {
-        console.error('Error updating player:', error);
+        console.error('UPDATE failed with error:', error);
         throw error;
       }
-      return data;
+      
+      if (!data || data.length === 0) {
+        console.error('UPDATE returned no data - possible RLS policy issue');
+        throw new Error('Update failed: No rows affected. This may be due to database permissions.');
+      }
+      
+      if (data.length > 1) {
+        console.warn('UPDATE affected multiple rows:', data.length);
+      }
+      
+      const updatedPlayer = data[0];
+      console.log('Successfully updated player:', updatedPlayer);
+      
+      return updatedPlayer;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
