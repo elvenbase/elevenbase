@@ -174,64 +174,86 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Clear team data from localStorage first
+      console.log('Attempting logout...');
+      
+      // Try multiple logout strategies in sequence for maximum security
+      const strategies = [
+        { name: 'Standard logout', options: undefined },
+        { name: 'Local logout', options: { scope: 'local' as const } },
+        { name: 'Global logout', options: { scope: 'global' as const } }
+      ];
+      
+      let logoutSuccessful = false;
+      let lastError = null;
+      
+      for (let i = 0; i < strategies.length; i++) {
+        try {
+          const strategy = strategies[i];
+          console.log(`Logout attempt ${i + 1}/3: ${strategy.name}...`);
+          
+          const { error } = await supabase.auth.signOut(strategy.options);
+          
+          if (!error) {
+            console.log(`Logout successful with: ${strategy.name}`);
+            logoutSuccessful = true;
+            break;
+          } else {
+            console.warn(`${strategy.name} failed:`, error);
+            lastError = error;
+            
+            // If it's a 403, try next strategy immediately
+            if (error.status === 403 || error.message?.includes('403') || error.message?.includes('Forbidden')) {
+              console.log('403 error detected, trying next logout strategy...');
+              continue;
+            }
+          }
+        } catch (err) {
+          console.warn(`Strategy ${i + 1} threw error:`, err);
+          lastError = err as any;
+        }
+      }
+      
+      // Clear team data regardless of logout success
       localStorage.removeItem('currentTeamId');
       localStorage.removeItem('currentTeamName');
       localStorage.removeItem('userRole');
       
-      console.log('Attempting logout...');
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Supabase logout error:', error);
-        
-        // If we get a 403 or similar auth error, force a local logout
-        if (error.message?.includes('403') || error.message?.includes('Forbidden') || error.status === 403) {
-          console.warn('Force logout due to auth error, clearing local session...');
-          
-          // Force clear local state
-          setUser(null);
-          setSession(null);
-          
-          toast({
-            title: "Logout completato",
-            description: "Sessione terminata (logout forzato)",
-          });
-          return;
-        }
-        
-        // For other errors, show error but still try to clear state
-        toast({
-          title: "Errore durante il logout",
-          description: error.message || "Errore sconosciuto",
-          variant: "destructive",
-        });
-        
-        // Clear local state anyway
-        setUser(null);
-        setSession(null);
-      } else {
-        console.log('Logout successful');
+      if (logoutSuccessful) {
         toast({
           title: "Logout completato",
           description: "Arrivederci!",
         });
+      } else {
+        console.error('All logout strategies failed, last error:', lastError);
+        
+        // SECURITY: Show warning but don't clear local state
+        // The session might still be active on the server
+        toast({
+          title: "Errore di logout",
+          description: "Non è stato possibile disconnettersi dal server. Per sicurezza, chiudi il browser.",
+          variant: "destructive",
+        });
+        
+        // Don't clear user/session state to prevent false security
+        // The user should manually close the browser/tab
+        return;
       }
     } catch (err) {
       console.error('Unexpected logout error:', err);
       
-      // Force clear everything on any error
+      // Clear team data but keep warning about session
       localStorage.removeItem('currentTeamId');
       localStorage.removeItem('currentTeamName');
       localStorage.removeItem('userRole');
-      setUser(null);
-      setSession(null);
       
       toast({
-        title: "Logout forzato",
-        description: "Sessione terminata a causa di un errore",
+        title: "Errore di logout",
+        description: "Errore critico durante il logout. Chiudi il browser per sicurezza.",
         variant: "destructive",
       });
+      
+      // Don't clear session state for security
+      return;
     }
   };
 
