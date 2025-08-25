@@ -181,24 +181,8 @@ const AuthMultiTeam = () => {
         }
       }
       
-      // 4. Add user as team admin
-      console.log('Adding user as team admin...');
-      const { error: memberError } = await supabase
-        .from('team_members')
-        .insert({
-          team_id: team.id,
-          user_id: authData.user.id,
-          role: 'admin',
-          status: 'active',
-          joined_at: new Date().toISOString()
-        });
-      
-      if (memberError) {
-        console.error('Member creation error:', memberError);
-        throw memberError;
-      }
-      
-      console.log('User added to team as admin');
+      // 4. User is already added as admin by the database function
+      console.log('User already added to team as admin by database function');
       
       // Invite codes are created automatically by the database function
       
