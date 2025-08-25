@@ -77,20 +77,30 @@ const AuthMultiTeam = () => {
         .from('team_members')
         .select('*, teams(*)')
         .eq('user_id', data.user.id)
-        .eq('status', 'active')
         .single();
       
       if (!teamMember) {
         toast.error('Non appartieni a nessuna squadra. Contatta un amministratore.');
         await supabase.auth.signOut();
+      } else if (teamMember.status === 'pending') {
+        // Check if user is the team owner - owners should always be active
+        if (teamMember.teams.owner_id === data.user.id) {
+          console.log('User is team owner but status is pending - allowing access');
+          toast.success(`Benvenuto fondatore di ${teamMember.teams.name}!`);
+        } else {
+          toast.error('Il tuo account non è ancora stato attivato. Contatta un amministratore del team.');
+          await supabase.auth.signOut();
+          return;
+        }
       } else {
         console.log('Team member found:', teamMember);
         toast.success(`Benvenuto in ${teamMember.teams.name}!`);
-        // Store team info in localStorage for the app to use
-        localStorage.setItem('currentTeamId', teamMember.team_id);
-        localStorage.setItem('currentTeamName', teamMember.teams.name);
-        localStorage.setItem('userRole', teamMember.role);
       }
+      
+      // Store team info in localStorage for the app to use
+      localStorage.setItem('currentTeamId', teamMember.team_id);
+      localStorage.setItem('currentTeamName', teamMember.teams.name);
+      localStorage.setItem('userRole', teamMember.role);
     } catch (error: any) {
       toast.error(error.message || 'Errore durante il login');
     }
