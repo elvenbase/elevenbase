@@ -409,6 +409,33 @@ export const useUpdatePlayer = () => {
 
       console.log('Updating player with team_id filter:', currentTeamId, 'player_id:', id);
 
+      // First, let's check if the player exists and what team they belong to
+      const { data: existingPlayer, error: checkError } = await supabase
+        .from('players')
+        .select('id, first_name, last_name, team_id')
+        .eq('id', id)
+        .single();
+
+      if (checkError) {
+        console.error('Player check failed:', checkError);
+        throw new Error(`Player not found: ${checkError.message}`);
+      }
+
+      if (!existingPlayer) {
+        throw new Error('Player not found in database');
+      }
+
+      console.log('Existing player data:', existingPlayer);
+
+      if (existingPlayer.team_id !== currentTeamId) {
+        console.error('Team mismatch!');
+        console.error('Player team_id:', existingPlayer.team_id);
+        console.error('Current team_id:', currentTeamId);
+        throw new Error(`Access denied: Player belongs to different team (${existingPlayer.team_id} vs ${currentTeamId})`);
+      }
+
+      console.log('Team verification passed, proceeding with update...');
+
       const { data, error } = await supabase
         .from('players')
         .update(updates)
