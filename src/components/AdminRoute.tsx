@@ -19,6 +19,12 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
       }
 
       try {
+        // Global admin bypass (email-based, set at login)
+        if (typeof window !== 'undefined' && localStorage.getItem('isGlobalAdmin') === 'true') {
+          setIsAdmin(true);
+          return;
+        }
+
         // 1) Superadmin globale: bypassa controllo team
         const { data: isSuperAdmin } = await supabase.rpc('has_role', {
           _user_id: user.id,

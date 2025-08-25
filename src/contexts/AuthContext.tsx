@@ -67,6 +67,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
+      // Bypass team checks for global admin
+      const isGlobalAdmin = email.toLowerCase() === 'coach@elevenbase.pro';
+      if (isGlobalAdmin) {
+        localStorage.setItem('isGlobalAdmin', 'true');
+        return { error: null };
+      } else {
+        localStorage.removeItem('isGlobalAdmin');
+      }
+
       // Verifica se l'utente appartiene a un team e salva le info
       if (data.user) {
         try {
@@ -213,10 +222,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
       
-      // Clear team data regardless of logout success
+      // Clear team/global admin data regardless of logout success
       localStorage.removeItem('currentTeamId');
       localStorage.removeItem('currentTeamName');
       localStorage.removeItem('userRole');
+      localStorage.removeItem('isGlobalAdmin');
       
       if (logoutSuccessful) {
         toast({
@@ -225,34 +235,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       } else {
         console.error('All logout strategies failed, last error:', lastError);
-        
-        // SECURITY: Show warning but don't clear local state
-        // The session might still be active on the server
         toast({
           title: "Errore di logout",
           description: "Non è stato possibile disconnettersi dal server. Per sicurezza, chiudi il browser.",
           variant: "destructive",
         });
-        
-        // Don't clear user/session state to prevent false security
-        // The user should manually close the browser/tab
         return;
       }
     } catch (err) {
       console.error('Unexpected logout error:', err);
-      
-      // Clear team data but keep warning about session
       localStorage.removeItem('currentTeamId');
       localStorage.removeItem('currentTeamName');
       localStorage.removeItem('userRole');
-      
+      localStorage.removeItem('isGlobalAdmin');
       toast({
         title: "Errore di logout",
         description: "Errore critico durante il logout. Chiudi il browser per sicurezza.",
         variant: "destructive",
       });
-      
-      // Don't clear session state for security
       return;
     }
   };

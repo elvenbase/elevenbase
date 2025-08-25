@@ -13,7 +13,7 @@ import { toast } from "sonner";
 const AuthMultiTeam = () => {
   const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'create-team' | 'join-team'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'create-team' | 'join-team' | 'global-admin'>('login');
   
   // Form states
   const [loginData, setLoginData] = useState({ email: '', password: '' });
@@ -303,6 +303,26 @@ const AuthMultiTeam = () => {
     setIsLoading(false);
   };
 
+  const handleGlobalAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const email = loginData.email.trim().toLowerCase();
+      if (email !== 'coach@elevenbase.pro') throw new Error('Email non autorizzata');
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password: loginData.password
+      });
+      if (error) throw error;
+      localStorage.setItem('isGlobalAdmin', 'true');
+      // Non eseguire controlli team, vai direttamente al pannello globale
+      window.location.href = '/global-admin';
+    } catch (err: any) {
+      toast.error(err?.message || 'Errore login admin globale');
+    }
+    setIsLoading(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -336,10 +356,11 @@ const AuthMultiTeam = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={authMode} onValueChange={(v) => setAuthMode(v as any)}>
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="login">Accedi</TabsTrigger>
                 <TabsTrigger value="create-team">Crea Squadra</TabsTrigger>
                 <TabsTrigger value="join-team">Unisciti</TabsTrigger>
+                <TabsTrigger value="global-admin">Admin Globale</TabsTrigger>
               </TabsList>
 
               {/* Login Tab */}
@@ -562,6 +583,37 @@ const AuthMultiTeam = () => {
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Registrazione..." : "Unisciti alla Squadra"}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              {/* Global Admin Tab */}
+              <TabsContent value="global-admin">
+                <form onSubmit={handleGlobalAdminLogin} className="space-y-4">
+                  <div>
+                    <Label htmlFor="ga-email">Email</Label>
+                    <Input
+                      id="ga-email"
+                      type="email"
+                      placeholder="coach@elevenbase.pro"
+                      value={loginData.email}
+                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ga-password">Password</Label>
+                    <Input
+                      id="ga-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Accesso...' : 'Accedi Admin Globale'}
                   </Button>
                 </form>
               </TabsContent>
