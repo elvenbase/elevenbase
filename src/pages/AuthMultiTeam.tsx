@@ -241,16 +241,15 @@ const AuthMultiTeam = () => {
     setIsLoading(true);
     
     try {
-      // 1. Verify invite code exists and is valid
-      const { data: invite, error: inviteError } = await supabase
-        .from('team_invites')
-        .select('*, teams(*)')
-        .eq('code', joinTeamData.inviteCode.toUpperCase())
-        .eq('is_active', true)
-        .gte('expires_at', new Date().toISOString())
+      // 1. Verify invite code exists in teams table
+      const { data: team, error: teamError } = await supabase
+        .from('teams')
+        .select('id, name, invite_code')
+        .eq('invite_code', joinTeamData.inviteCode.toUpperCase())
         .single();
       
-      if (inviteError || !invite) {
+      if (teamError || !team) {
+        console.error('Team verification error:', teamError);
         throw new Error('Codice invito non valido o scaduto');
       }
       
@@ -270,33 +269,24 @@ const AuthMultiTeam = () => {
         throw authError;
       }
       
-      // 3. Add user to team
+      // 3. Add user to team with default 'player' role
       const { error: memberError } = await supabase
         .from('team_members')
         .insert({
-          team_id: invite.team_id,
+          team_id: team.id,
           user_id: authData.user?.id,
-          role: invite.role,
+          role: 'player', // Default role for invite code joins
           status: 'pending', // Will be activated after email confirmation
-          joined_at: new Date().toISOString(),
-          invited_by: invite.created_by
+          joined_at: new Date().toISOString()
         });
       
       if (memberError) throw memberError;
       
-      // 4. Update invite usage
-      await supabase
-        .from('team_invites')
-        .update({
-          used_count: invite.used_count + 1,
-          last_used_at: new Date().toISOString(),
-          last_used_by: authData.user?.id
-        })
-        .eq('id', invite.id);
-      
-      toast.success(`Registrazione completata! Controlla la tua email per confermare l'account e unirti a ${invite.teams.name}.`);
+      console.log('✅ Join team successful:', { teamId: team.id, teamName: team.name, userId: authData.user?.id });
+      toast.success(`Registrazione completata! Controlla la tua email per confermare l'account e unirti a ${team.name}.`);
       
     } catch (error: any) {
+      console.error('❌ Join team error:', error);
       toast.error(error.message || 'Errore durante la registrazione');
     }
     
