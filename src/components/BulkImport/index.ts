@@ -2,8 +2,10 @@
 export { default as TemplateExporter } from './TemplateExporter';
 export { default as FileUploader } from './FileUploader';
 export { default as ImportPreview } from './ImportPreview';
+export { default as ImportResults } from './ImportResults';
 
 // Export types
 export type { TemplateMetadata, PlayerTemplateRow } from '@/services/bulkImportTemplateService';
 export type { ParsedFileData, FileValidationResult, FileSecurityCheck } from '@/services/bulkImportFileParser';
 export type { BusinessValidationResult, PlayerPreview, PlayerConflict, ExistingTeamData } from '@/services/bulkImportBusinessValidator';
+export type { ImportProgress, ImportResult, ImportExecutorOptions } from '@/services/bulkImportExecutor';

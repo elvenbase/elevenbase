@@ -3606,3 +3606,60 @@ export const useMatchPresenceSeries = (limit: number = 10) => {
     }
   })
 }
+
+// ========================
+// BULK IMPORT HOOKS
+// ========================
+
+/**
+ * Hook per import bulk giocatori con progress tracking
+ */
+export const useBulkImportPlayers = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (options: {
+      teamId: string;
+      teamName: string;
+      validationResult: import('../services/bulkImportBusinessValidator').BusinessValidationResult;
+      onProgress?: (progress: import('../services/bulkImportExecutor').ImportProgress) => void;
+    }) => {
+      const { bulkImportExecutor } = await import('../services/bulkImportExecutor');
+      
+      return bulkImportExecutor.executeImport({
+        teamId: options.teamId,
+        teamName: options.teamName,
+        validationResult: options.validationResult,
+        onProgress: options.onProgress,
+        batchSize: 5 // Batch size ottimizzato per Supabase
+      });
+    },
+    onSuccess: (result) => {
+      // Invalida cache giocatori per refresh UI
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      queryClient.invalidateQueries({ queryKey: ['players-with-attendance'] });
+      
+      if (result.success) {
+        toast({
+          title: "Import completato con successo",
+          description: `${result.totalSuccessful} giocatori importati`,
+        });
+      } else {
+        toast({
+          title: "Import completato con errori",
+          description: `${result.totalSuccessful} successi, ${result.totalFailed} fallimenti`,
+          variant: "destructive"
+        });
+      }
+    },
+    onError: (error) => {
+      console.error('Errore hook import:', error);
+      toast({
+        title: "Errore import",
+        description: error instanceof Error ? error.message : "Errore sconosciuto",
+        variant: "destructive"
+      });
+    }
+  });
+};
