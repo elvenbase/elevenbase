@@ -42,6 +42,7 @@ type WizardStep = 'template' | 'upload' | 'preview' | 'import' | 'results';
 
 interface WizardState {
   currentStep: WizardStep;
+  templateDownloaded: boolean;
   fileData: ParsedFileData | null;
   validationResult: BusinessValidationResult | null;
   importResult: ImportResult | null;
@@ -58,6 +59,7 @@ const BulkImportWizard: React.FC<BulkImportWizardProps> = ({
 }) => {
   const [wizardState, setWizardState] = useState<WizardState>({
     currentStep: 'template',
+    templateDownloaded: false,
     fileData: null,
     validationResult: null,
     importResult: null,
@@ -183,9 +185,17 @@ const BulkImportWizard: React.FC<BulkImportWizardProps> = ({
     setWizardState(prev => ({
       ...prev,
       currentStep: 'template',
+      templateDownloaded: false,
       fileData: null,
       validationResult: null,
       importResult: null
+    }));
+  }, []);
+
+  const handleTemplateDownloaded = useCallback(() => {
+    setWizardState(prev => ({
+      ...prev,
+      templateDownloaded: true
     }));
   }, []);
 
@@ -209,7 +219,7 @@ const BulkImportWizard: React.FC<BulkImportWizardProps> = ({
   const isStepCompleted = (step: WizardStep): boolean => {
     switch (step) {
       case 'template':
-        return wizardState.currentStep !== 'template';
+        return wizardState.templateDownloaded;
       case 'upload':
         return wizardState.fileData !== null && wizardState.fileData.validation.valid;
       case 'preview':
@@ -292,6 +302,7 @@ const BulkImportWizard: React.FC<BulkImportWizardProps> = ({
           <TemplateExporter
             teamId={teamId}
             teamName={teamName}
+            onTemplateDownloaded={handleTemplateDownloaded}
             className="border-0"
           />
         );
@@ -413,7 +424,22 @@ const BulkImportWizard: React.FC<BulkImportWizardProps> = ({
    */
   const renderNavigation = () => {
     const canGoBack = wizardState.currentStep !== 'template' && wizardState.currentStep !== 'import' && wizardState.currentStep !== 'results';
-    const canGoNext = false; // Navigazione automatica tra step
+    
+    // Determina se si può andare avanti in base allo step corrente
+    const canGoNext = (() => {
+      switch (wizardState.currentStep) {
+        case 'template':
+          return wizardState.templateDownloaded;
+        case 'upload':
+          return false; // Navigazione automatica dopo upload
+        case 'preview':
+          return false; // Navigazione automatica dopo conferma import
+        case 'import':
+          return false; // Navigazione automatica dopo import
+        default:
+          return false;
+      }
+    })();
     
     return (
       <div className="flex justify-between items-center pt-4 border-t">
@@ -431,16 +457,17 @@ const BulkImportWizard: React.FC<BulkImportWizardProps> = ({
           <span className="text-sm text-muted-foreground">
             Step {['template', 'upload', 'preview', 'import', 'results'].indexOf(wizardState.currentStep) + 1} di 5
           </span>
+          
+          {canGoNext && (
+            <Button
+              onClick={goToNextStep}
+              className="flex items-center gap-2"
+            >
+              Avanti
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        
-        <Button
-          onClick={goToNextStep}
-          disabled={!canGoNext}
-          className="flex items-center gap-2"
-        >
-          Avanti
-          <ArrowRight className="h-4 w-4" />
-        </Button>
       </div>
     );
   };
