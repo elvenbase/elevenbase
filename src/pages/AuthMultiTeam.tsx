@@ -614,15 +614,15 @@ const AuthMultiTeam = () => {
                       <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="invite-code"
-                        placeholder="Es: cdrplay720c0"
-                        className="pl-10 lowercase"
+                        placeholder="Es: CDRPLAY720c0"
+                        className="pl-10 font-mono tracking-wider"
                         value={joinTeamData.inviteCode}
                         onChange={(e) => setJoinTeamData({ ...joinTeamData, inviteCode: e.target.value })}
                         required
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Chiedi il codice all'amministratore della squadra
+                      Chiedi il codice all'amministratore della squadra (non case-sensitive)
                     </p>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
