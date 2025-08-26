@@ -242,12 +242,12 @@ const AuthMultiTeam = () => {
     
     try {
       // 1. Verify invite code exists and is valid in team_invites table
-      console.log('🔍 Verifying invite code:', joinTeamData.inviteCode.toUpperCase());
+      console.log('🔍 Verifying invite code:', joinTeamData.inviteCode);
       
       const { data: invite, error: inviteError } = await supabase
         .from('team_invites')
         .select('*, teams(id, name)')
-        .eq('code', joinTeamData.inviteCode.toUpperCase())
+        .eq('code', joinTeamData.inviteCode) // Rimuovo toUpperCase() per mantenere case originale
         .eq('is_active', true)
         .gte('expires_at', new Date().toISOString())
         .single();
@@ -258,7 +258,7 @@ const AuthMultiTeam = () => {
       
       if (inviteError || !invite) {
         console.error('❌ Invite verification failed:');
-        console.log('- Input code:', joinTeamData.inviteCode.toUpperCase());
+        console.log('- Input code:', joinTeamData.inviteCode);
         console.log('- Error details:', inviteError);
         
         // Debug: Let's check what invite codes exist
