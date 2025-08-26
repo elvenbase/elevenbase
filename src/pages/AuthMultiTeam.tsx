@@ -246,8 +246,14 @@ const AuthMultiTeam = () => {
       
       const { data: invite, error: inviteError } = await supabase
         .from('team_invites')
-        .select('*, teams(id, name)')
-        .eq('code', joinTeamData.inviteCode) // Rimuovo toUpperCase() per mantenere case originale
+        .select(`
+          *,
+          teams!inner(
+            id,
+            name
+          )
+        `)
+        .eq('code', joinTeamData.inviteCode.toLowerCase()) // Normalizza a lowercase
         .eq('is_active', true)
         .gte('expires_at', new Date().toISOString())
         .single();
@@ -608,8 +614,8 @@ const AuthMultiTeam = () => {
                       <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="invite-code"
-                        placeholder="Es: CDRPLAY720c0"
-                        className="pl-10 uppercase"
+                        placeholder="Es: cdrplay720c0"
+                        className="pl-10 lowercase"
                         value={joinTeamData.inviteCode}
                         onChange={(e) => setJoinTeamData({ ...joinTeamData, inviteCode: e.target.value })}
                         required
