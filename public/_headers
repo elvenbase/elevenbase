@@ -11,6 +11,5 @@
 # Security hardening (optional)
 /*
   X-Content-Type-Options: nosniff
-  Permissions-Policy: ""
 
 # Ensure fresh logo after updates
