@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface TemplateMetadata {
   teamId: string;
@@ -20,11 +21,38 @@ export interface PlayerTemplateRow {
   email?: string;
   esperienza?: string;
   notes?: string;
+  // Campi Gaming
+  ea_sport_id?: string;
+  gaming_platform?: string;
+  platform_id?: string;
 }
 
 class BulkImportTemplateService {
   private readonly TEMPLATE_VERSION = 'v1.0';
   private readonly MAX_PLAYERS = 30;
+
+  /**
+   * Fetch ruoli validi dal sistema centralizzato
+   */
+  private async fetchValidRoles(): Promise<string[]> {
+    try {
+      const { data: rolesData, error } = await supabase
+        .from('field_options')
+        .select('option_value, option_label')
+        .eq('field_name', 'player_role')
+        .order('sort_order');
+
+      if (error) {
+        console.error('Errore nel fetch ruoli:', error);
+        return [];
+      }
+
+      return rolesData?.map(r => r.option_value) || [];
+    } catch (error) {
+      console.error('Errore nel fetch ruoli:', error);
+      return [];
+    }
+  }
 
   /**
    * Genera template Excel (.xlsx) per l'import bulk giocatori
@@ -47,7 +75,14 @@ class BulkImportTemplateService {
     // Riga 4: Vuota (separatore)
     worksheetData.push([]);
     
-    // Riga 5: Header colonne
+    // Riga 5: Istruzioni ruoli
+    worksheetData.push(['RUOLI VALIDI:', 'difensore_centrale, terzino_destro, terzino_sinistro, esterno_destro_basso, esterno_sinistro_basso,']);
+    worksheetData.push(['', 'mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti']);
+    
+    // Riga 7: Vuota (separatore)
+    worksheetData.push([]);
+    
+    // Riga 8: Header colonne
     worksheetData.push([
       'first_name*',
       'last_name*', 
@@ -62,13 +97,13 @@ class BulkImportTemplateService {
       'notes'
     ]);
     
-    // Riga 6-7: Esempi
+    // Riga 9-10: Esempi
     worksheetData.push([
       'Mario',
       'Rossi',
       10,
       'Centrocampo',
-      'CAM',
+      'regista',
       'active',
       '+39123456789',
       '1995-03-15',
@@ -82,7 +117,7 @@ class BulkImportTemplateService {
       'Bianchi',
       7,
       'Attacco',
-      'CF',
+      'centravanti',
       'active',
       '',
       '',
@@ -128,15 +163,163 @@ class BulkImportTemplateService {
     lines.push(`# TEAM_ID,${metadata.teamId},GENERATED_AT,${metadata.generatedAt}`);
     lines.push(`# MAX_PLAYERS,${this.MAX_PLAYERS},FORMAT,CSV`);
     lines.push('#');
+    lines.push('# RUOLI VALIDI: difensore_centrale, terzino_destro, terzino_sinistro, esterno_destro_basso, esterno_sinistro_basso,');
+    lines.push('# mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti');
+    lines.push('#');
     
     // Header
     lines.push('first_name*,last_name*,jersey_number*,position,player_role,status*,phone,birth_date,email,esperienza,notes');
     
     // Esempi
-    lines.push('Mario,Rossi,10,Centrocampo,CAM,active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra"');
-    lines.push('Luigi,Bianchi,7,Attacco,CF,active,,,,,');
+    lines.push('Mario,Rossi,10,Centrocampo,regista,active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra"');
+    lines.push('Luigi,Bianchi,7,Attacco,centravanti,active,,,,,');
     
     return lines.join('\n');
+  }
+
+  /**
+   * Costruisce il contenuto del CSV con ruoli dinamici
+   */
+  private async buildCSVContentDynamic(metadata: TemplateMetadata): Promise<string> {
+    const lines: string[] = [];
+    
+    // Fetch ruoli dinamici
+    const validRoles = await this.fetchValidRoles();
+    const rolesText = validRoles.length > 0 ? validRoles.join(', ') : 'Caricamento ruoli fallito';
+    
+    // Metadata come commenti
+    lines.push(`# ELEVENBASE_TEMPLATE,${this.TEMPLATE_VERSION},PLAYERS_IMPORT`);
+    lines.push(`# TEAM_ID,${metadata.teamId},GENERATED_AT,${metadata.generatedAt}`);
+    lines.push(`# MAX_PLAYERS,${this.MAX_PLAYERS},FORMAT,CSV`);
+    lines.push('#');
+    lines.push(`# RUOLI VALIDI: ${rolesText}`);
+    lines.push('#');
+    lines.push('# GAMING PLATFORMS: PC, PS5, Xbox, Nintendo Switch');
+    lines.push('#');
+    
+    // Header
+    lines.push('first_name*,last_name*,jersey_number*,position,player_role,status*,phone,birth_date,email,esperienza,notes,ea_sport_id,gaming_platform,platform_id');
+    
+    // Esempi con ruoli dinamici
+    const exampleRole1 = validRoles.includes('regista') ? 'regista' : (validRoles[0] || 'ruolo_esempio');
+    const exampleRole2 = validRoles.includes('centravanti') ? 'centravanti' : (validRoles[1] || 'ruolo_esempio_2');
+    
+    lines.push(`Mario,Rossi,10,Centrocampo,${exampleRole1},active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra",MarioRossi_EA,PS5,PSNMarioRossi`);
+    lines.push(`Luigi,Bianchi,7,Attacco,${exampleRole2},active,,,,,,,PC,`);
+    
+    return lines.join('\n');
+  }
+
+  /**
+   * Genera template Excel (.xlsx) con ruoli dinamici - VERSIONE ASINCRONA
+   */
+  async generateExcelTemplateAsync(metadata: TemplateMetadata): Promise<void> {
+    const workbook = XLSX.utils.book_new();
+    
+    // Fetch ruoli dinamici
+    const validRoles = await this.fetchValidRoles();
+    const rolesText = validRoles.length > 0 ? validRoles.join(', ') : 'Caricamento ruoli fallito';
+    
+    const worksheetData: any[][] = [];
+    
+    // Riga 1: Template metadata
+    worksheetData.push(['ELEVENBASE_TEMPLATE', this.TEMPLATE_VERSION, 'PLAYERS_IMPORT']);
+    
+    // Riga 2: Team info
+    worksheetData.push(['TEAM_ID', metadata.teamId, 'GENERATED_AT', metadata.generatedAt]);
+    
+    // Riga 3: Limiti
+    worksheetData.push(['MAX_PLAYERS', this.MAX_PLAYERS, 'FORMAT', 'XLSX']);
+    
+    // Riga 4: Vuota (separatore)
+    worksheetData.push([]);
+    
+    // Riga 5: Istruzioni ruoli
+    worksheetData.push(['RUOLI VALIDI:', rolesText]);
+    
+    // Riga 6: Vuota (separatore)
+    worksheetData.push([]);
+    
+    // Riga 7: Header colonne
+    worksheetData.push([
+      'first_name*',
+      'last_name*', 
+      'jersey_number*',
+      'position',
+      'player_role',
+      'status*',
+      'phone',
+      'birth_date',
+      'email',
+      'esperienza',
+      'notes',
+      'ea_sport_id',
+      'gaming_platform',
+      'platform_id'
+    ]);
+    
+    // Riga 8-9: Esempi con ruoli dinamici
+    const exampleRole1 = validRoles.includes('regista') ? 'regista' : (validRoles[0] || 'ruolo_esempio');
+    const exampleRole2 = validRoles.includes('centravanti') ? 'centravanti' : (validRoles[1] || 'ruolo_esempio_2');
+    
+    worksheetData.push([
+      'Mario',
+      'Rossi',
+      10,
+      'Centrocampo',
+      exampleRole1,
+      'active',
+      '+39123456789',
+      '1995-03-15',
+      'mario.rossi@email.com',
+      'Professionale',
+      'Capitano squadra',
+      'MarioRossi_EA',
+      'PS5',
+      'PSNMarioRossi'
+    ]);
+    
+    worksheetData.push([
+      'Luigi',
+      'Bianchi',
+      7,
+      'Attacco',
+      exampleRole2,
+      'active',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'PC',
+      ''
+    ]);
+    
+    // Crea worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    
+    // Styling e protezioni
+    this.styleExcelWorksheet(worksheet);
+    
+    // Aggiungi worksheet al workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Giocatori');
+    
+    // Genera e scarica file
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+    saveAs(blob, `template_giocatori_${metadata.teamName}_${this.formatDate(new Date())}.xlsx`);
+  }
+
+  /**
+   * Genera template CSV con ruoli dinamici - VERSIONE ASINCRONA
+   */
+  async generateCSVTemplateAsync(metadata: TemplateMetadata): Promise<void> {
+    const csvContent = await this.buildCSVContentDynamic(metadata);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    saveAs(blob, `template_giocatori_${metadata.teamName}_${this.formatDate(new Date())}.csv`);
   }
 
   /**
@@ -155,12 +338,15 @@ class BulkImportTemplateService {
       { wch: 12 }, // birth_date
       { wch: 20 }, // email
       { wch: 12 }, // esperienza
-      { wch: 20 }  // notes
+      { wch: 20 }, // notes
+      { wch: 15 }, // ea_sport_id
+      { wch: 12 }, // gaming_platform
+      { wch: 15 }  // platform_id
     ];
 
-    // Proteggi le prime 3 righe (metadata)
+    // Proteggi le prime 6 righe (metadata e istruzioni)
     const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-    for (let row = 0; row < 3; row++) {
+    for (let row = 0; row < 6; row++) {
       for (let col = 0; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (worksheet[cellAddress]) {

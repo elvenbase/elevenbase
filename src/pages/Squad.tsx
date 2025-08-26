@@ -24,11 +24,13 @@ import { useRoles } from '@/hooks/useRoles';
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X, Eye, Info } from 'lucide-react'
+import { Search, LayoutGrid, Rows, SlidersHorizontal, Plus, X, Eye, Info, Users } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useAvatarBackgrounds } from '@/hooks/useAvatarBackgrounds'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { useQueryClient } from '@tanstack/react-query'
+import { BulkImportWizard } from '@/components/BulkImport'
+import { ImportResult } from '@/services/bulkImportExecutor'
 
 type SortField = 'name' | 'jersey_number' | 'role_code' | 'phone' | 'presences' | 'tardiness' | 'attendanceRate' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -571,6 +573,9 @@ const Squad = () => {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [captainDialogOpen, setCaptainDialogOpen] = useState(false)
   
+  // Stato per bulk import wizard
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
+  
   // Stato per la modale dell'immagine del giocatore
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedPlayerImage, setSelectedPlayerImage] = useState<{
@@ -583,6 +588,10 @@ const Squad = () => {
   const { data: roles = [] } = useRoles();
   const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
   const { defaultAvatarImageUrl } = useAvatarBackgrounds()
+  
+  // Team info per bulk import
+  const teamId = localStorage.getItem('currentTeamId') || '';
+  const teamName = localStorage.getItem('currentTeamName') || 'Team';
 
   // Squad Score computed like Dashboard using leaders + settings within the selected dateRange
   const { data: scoreSettings } = useAttendanceScoreSettings()
@@ -712,24 +721,30 @@ const Squad = () => {
   const updateCaptain = async (newCaptainId: string) => {
     try {
       const paramId = (!newCaptainId || newCaptainId === 'none') ? null : newCaptainId
+      const teamId = localStorage.getItem('teamId')
+      
       // Try RPC first (atomic)
       const rpcRes = await supabase.rpc('set_captain', { new_captain_id: paramId as any })
       if (rpcRes.error) {
         // If RPC is missing, fallback to direct updates
         const notFound = (rpcRes.error.message || '').toLowerCase().includes('could not find the function')
         if (!notFound) throw rpcRes.error
-        // Fallback: unset previous captain(s)
+        
+        // Fallback: unset previous captain(s) ONLY FOR THIS TEAM
         const { error: unsetErr } = await supabase
           .from('players')
           .update({ is_captain: false })
           .eq('is_captain', true)
+          .eq('team_id', teamId) // 🔧 AGGIUNTO: Filtra per team
         if (unsetErr) throw unsetErr
+        
         // Set new captain if provided
         if (paramId) {
           const { error: setErr } = await supabase
             .from('players')
             .update({ is_captain: true })
             .eq('id', paramId)
+            .eq('team_id', teamId) // 🔧 AGGIUNTO: Sicurezza extra
           if (setErr) throw setErr
         }
       }
@@ -870,6 +885,13 @@ const Squad = () => {
     }
   };
 
+  // Handler per bulk import success
+  const handleBulkImportSuccess = (result: ImportResult) => {
+    setBulkImportOpen(false);
+    toast(`Import completato: ${result.totalSuccessful} giocatori importati`);
+    // I dati verranno aggiornati automaticamente tramite React Query
+  };
+
   // Group players by role
   const groupPlayersByRole = (players: Player[]) => {
     // Tactical progression: Goalkeeper FIRST → Defense → Midfield → Attack  
@@ -947,14 +969,23 @@ const Squad = () => {
       <div className="flex items-center justify-between mb-2">
         <div className="text-base sm:text-lg font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
         <div className="flex items-center gap-2">
-          {/* Add Player Button - Desktop only */}
-          <div className="hidden sm:block">
+          {/* Add Player Buttons - Desktop only */}
+          <div className="hidden sm:flex gap-2">
             <PlayerForm>
               <Button variant="default" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
                 Aggiungi Giocatore
               </Button>
             </PlayerForm>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setBulkImportOpen(true)}
+              disabled={!teamId}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Import Bulk
+            </Button>
           </div>
           <Dialog open={captainDialogOpen} onOpenChange={setCaptainDialogOpen}>
             <DialogTrigger asChild>
@@ -1433,6 +1464,15 @@ const Squad = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Import Wizard */}
+      <BulkImportWizard
+        teamId={teamId}
+        teamName={teamName}
+        isOpen={bulkImportOpen}
+        onClose={() => setBulkImportOpen(false)}
+        onSuccess={handleBulkImportSuccess}
+      />
       </div>
     </div>
   );
