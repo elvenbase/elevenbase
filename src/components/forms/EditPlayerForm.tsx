@@ -1,16 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
-import { useUpdatePlayer } from "@/hooks/useSupabaseData";
+import { useUpdatePlayer, useDeletePlayer } from "@/hooks/useSupabaseData";
 import { useFieldOptions } from "@/hooks/useFieldOptions";
 import { useRoles } from "@/hooks/useRoles";
 import { supabase } from "@/integrations/supabase/client";
-import { Edit, Upload, X } from "lucide-react";
+import { Edit, Upload, X, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PlayerEvaluationDisplay from "@/components/PlayerEvaluationDisplay";
 import PlayerSessionCounter from "@/components/PlayerSessionCounter";
@@ -83,6 +84,7 @@ const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updatePlayer = useUpdatePlayer();
+  const deletePlayer = useDeletePlayer();
   const { toast } = useToast();
 
   const { getOptionsForField, loadOptions } = useFieldOptions();
@@ -217,6 +219,15 @@ const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica
         description: "Si è verificato un errore durante l'aggiornamento.",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deletePlayer.mutateAsync(player.id);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error deleting player:', error);
     }
   };
 
@@ -524,6 +535,33 @@ const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annulla
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="destructive" size="sm" className="px-3">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Elimina Giocatore</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Sei sicuro di voler eliminare <strong>{player.first_name} {player.last_name}</strong>?
+                    <br />
+                    Questa azione non può essere annullata e rimuoverà tutti i dati associati al giocatore.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDelete}
+                    disabled={deletePlayer.isPending}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {deletePlayer.isPending ? 'Eliminazione...' : 'Elimina'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </form>
       </DialogContent>
