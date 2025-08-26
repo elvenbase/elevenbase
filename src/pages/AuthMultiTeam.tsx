@@ -241,38 +241,48 @@ const AuthMultiTeam = () => {
     setIsLoading(true);
     
     try {
-      // 1. Verify invite code exists in teams table
+      // 1. Verify invite code exists and is valid in team_invites table
       console.log('🔍 Verifying invite code:', joinTeamData.inviteCode.toUpperCase());
-      console.log('🔍 Current user session:', await supabase.auth.getSession());
       
-      const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .select('id, name, invite_code')
-        .eq('invite_code', joinTeamData.inviteCode.toUpperCase())
+      const { data: invite, error: inviteError } = await supabase
+        .from('team_invites')
+        .select('*, teams(id, name)')
+        .eq('code', joinTeamData.inviteCode.toUpperCase())
+        .eq('is_active', true)
+        .gte('expires_at', new Date().toISOString())
         .single();
       
-      console.log('🔍 Team query result:');
-      console.log('- Team found:', team);
-      console.log('- Error:', teamError);
+      console.log('🔍 Invite query result:');
+      console.log('- Invite found:', invite);
+      console.log('- Error:', inviteError);
       
-      if (teamError || !team) {
-        console.error('❌ Team verification failed:');
+      if (inviteError || !invite) {
+        console.error('❌ Invite verification failed:');
         console.log('- Input code:', joinTeamData.inviteCode.toUpperCase());
-        console.log('- Error details:', teamError);
-        console.log('- Team result:', team);
+        console.log('- Error details:', inviteError);
         
-        // Debug: Let's also check what teams exist
-        const { data: allTeams } = await supabase
-          .from('teams')
-          .select('id, name, invite_code')
-          .limit(5);
-        console.log('🔍 Available teams for debug:');
-        console.table(allTeams);
+        // Debug: Let's check what invite codes exist
+        const { data: allInvites } = await supabase
+          .from('team_invites')
+          .select('code, role, expires_at, is_active, teams(name)')
+          .eq('is_active', true)
+          .gte('expires_at', new Date().toISOString())
+          .limit(10);
+        console.log('🔍 Available invite codes:');
+        console.table(allInvites);
         
         throw new Error('Codice invito non valido o scaduto');
       }
       
-      console.log('✅ Team found:', { teamId: team.id, teamName: team.name });
+      if (invite.used_count >= invite.max_uses) {
+        throw new Error('Questo codice invito ha raggiunto il limite di utilizzi');
+      }
+      
+      console.log('✅ Valid invite found:', { 
+        teamId: invite.teams.id, 
+        teamName: invite.teams.name, 
+        role: invite.role 
+      });
       
       // 2. Sign up the user - Simplified
       console.log('Attempting signup for team join:', joinTeamData.email);
@@ -286,21 +296,37 @@ const AuthMultiTeam = () => {
         throw authError;
       }
       
-      // 3. Add user to team with default 'player' role
+      // 3. Add user to team with role from invite
       const { error: memberError } = await supabase
         .from('team_members')
         .insert({
-          team_id: team.id,
+          team_id: invite.team_id,
           user_id: authData.user?.id,
-          role: 'player', // Default role for invite code joins
+          role: invite.role,
           status: 'pending', // Will be activated after email confirmation
-          joined_at: new Date().toISOString()
+          joined_at: new Date().toISOString(),
+          invited_by: invite.created_by
         });
       
       if (memberError) throw memberError;
       
-      console.log('✅ Join team successful:', { teamId: team.id, teamName: team.name, userId: authData.user?.id });
-      toast.success(`Registrazione completata! Controlla la tua email per confermare l'account e unirti a ${team.name}.`);
+      // 4. Update invite usage
+      await supabase
+        .from('team_invites')
+        .update({
+          used_count: invite.used_count + 1,
+          last_used_at: new Date().toISOString(),
+          last_used_by: authData.user?.id
+        })
+        .eq('id', invite.id);
+      
+      console.log('✅ Join team successful:', { 
+        teamId: invite.team_id, 
+        teamName: invite.teams.name, 
+        userId: authData.user?.id,
+        role: invite.role 
+      });
+      toast.success(`Registrazione completata! Controlla la tua email per confermare l'account e unirti a ${invite.teams.name}.`);
       
     } catch (error: any) {
       console.error('❌ Join team error:', error);

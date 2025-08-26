@@ -20,8 +20,19 @@ interface TeamData {
   invite_code?: string;
 }
 
+interface TeamInvite {
+  id: string;
+  code: string;
+  role: string;
+  expires_at: string;
+  is_active: boolean;
+  max_uses: number;
+  used_count: number;
+}
+
 export default function TeamSettings() {
   const [teamData, setTeamData] = useState<TeamData | null>(null);
+  const [teamInvites, setTeamInvites] = useState<TeamInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -74,6 +85,21 @@ export default function TeamSettings() {
         primary_color: data.primary_color || '#3b82f6',
         secondary_color: data.secondary_color || '#ef4444'
       });
+
+      // Load team invites
+      const { data: invites, error: invitesError } = await supabase
+        .from('team_invites')
+        .select('id, code, role, expires_at, is_active, max_uses, used_count')
+        .eq('team_id', currentTeamId)
+        .eq('is_active', true)
+        .gte('expires_at', new Date().toISOString())
+        .order('role');
+
+      if (invitesError) {
+        console.error('Error loading team invites:', invitesError);
+      } else {
+        setTeamInvites(invites || []);
+      }
     } catch (error: any) {
       console.error('Error loading team data:', error);
       toast({
@@ -126,11 +152,11 @@ export default function TeamSettings() {
     }
   };
 
-  const copyInviteCode = async () => {
-    if (!teamData?.invite_code) return;
+  const copyInviteCode = async (code: string) => {
+    if (!code) return;
     
     try {
-      await navigator.clipboard.writeText(teamData.invite_code);
+      await navigator.clipboard.writeText(code);
       toast({
         title: 'Codice copiato!',
         description: 'Il codice di invito è stato copiato negli appunti.'
@@ -138,7 +164,7 @@ export default function TeamSettings() {
     } catch (error) {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
-      textArea.value = teamData.invite_code;
+      textArea.value = code;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
@@ -331,45 +357,66 @@ export default function TeamSettings() {
           </CardContent>
         </Card>
 
-        {/* Team Invite Code */}
+        {/* Team Invite Codes */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Codice di Invito
+              Codici di Invito
             </CardTitle>
             <CardDescription>
-              Condividi questo codice per invitare nuovi membri al team
+              Condividi questi codici per invitare nuovi membri con ruoli specifici
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  value={teamData?.invite_code || 'Caricamento...'}
-                  readOnly
-                  className="pl-10 font-mono text-lg tracking-wider bg-muted/50"
-                />
+            {teamInvites.length > 0 ? (
+              teamInvites.map((invite) => (
+                <div key={invite.id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium capitalize">{invite.role}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Utilizzi: {invite.used_count}/{invite.max_uses} • 
+                        Scade: {new Date(invite.expires_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                      <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        value={invite.code}
+                        readOnly
+                        className="pl-10 font-mono text-lg tracking-wider bg-muted/50"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => copyInviteCode(invite.code)}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 shrink-0"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copia
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Nessun codice di invito attivo trovato</p>
+                <p className="text-sm">I codici potrebbero essere scaduti o non ancora creati</p>
               </div>
-              <Button
-                onClick={copyInviteCode}
-                variant="outline"
-                size="sm"
-                className="gap-2 shrink-0"
-                disabled={!teamData?.invite_code}
-              >
-                <Copy className="h-4 w-4" />
-                Copia
-              </Button>
-            </div>
+            )}
             
             <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
               <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
                 Come invitare nuovi membri:
               </h4>
               <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                <li>1. Copia il codice di invito qui sopra</li>
+                <li>1. Copia il codice per il ruolo desiderato</li>
                 <li>2. Condividilo con il nuovo membro</li>
                 <li>3. Il membro dovrà andare su <span className="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">elevenbase.pro</span></li>
                 <li>4. Selezionare "Unisciti" e inserire il codice</li>
