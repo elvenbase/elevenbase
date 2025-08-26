@@ -26,6 +26,12 @@ NODE_VERSION = "20"
 [build.services]
 
 [[headers]]
+for = "/*"
+
+[headers.values]
+X-Content-Type-Options = "nosniff"
+
+[[headers]]
 for = "/index.html"
 
 [headers.values]
@@ -44,6 +50,7 @@ for = "/*"
 
 [headers.values]
 X-Content-Type-Options = "nosniff"
+Permissions-Policy = "\"\""
 
 [[redirects]]
 from = "/*"

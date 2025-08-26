@@ -475,7 +475,7 @@ const PublicSession = () => {
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
         {/* Team Header */}
         {session?.teams && (
-          <div className="text-center py-4 border-b border-border/20">
+          <div className="text-center border-b border-border/20">
             <div className="flex items-center justify-center gap-4 mb-2">
               {session.teams.logo_url && (
                 <img
@@ -493,7 +493,7 @@ const PublicSession = () => {
         )}
         
         {/* Header */}
-        <div className="text-center py-4 sm:py-8">
+        <div className="text-center py-[15px]">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Registrazione Allenamento</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Conferma la tua presenza per la sessione</p>
         </div>
@@ -862,48 +862,7 @@ const PublicSession = () => {
           </Card>
         )}
          
-        {/* Convocati già spostati sopra */}
- 
-        <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-          {/* Riepilogo Registrazioni */}
-          <Card className="shadow-lg">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-lg sm:text-xl">Riepilogo Registrazioni</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              {(() => {
-                const playerPresent = existingAttendance.filter(a => a.status === 'present').length
-                const playerAbsent = existingAttendance.filter(a => a.status === 'absent').length
-                const playerNoResponse = existingAttendance.filter(a => a.status === 'no_response').length
-                const trialistPresent = trialistsInvited.filter(t => t.status === 'present').length
-                const trialistAbsent = trialistsInvited.filter(t => t.status === 'absent').length
-                const trialistNoResponse = trialistsInvited.filter(t => (t.status || '') === 'no_response').length
-                const presentTotal = playerPresent + trialistPresent
-                const absentTotal = playerAbsent + trialistAbsent
-                const totalNoResponse = playerNoResponse + trialistNoResponse
-                return (
-                  <>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div><div className="text-2xl font-bold text-green-600">{presentTotal}</div><div className="text-sm text-muted-foreground">Presenti</div></div>
-                      <div><div className="text-2xl font-bold text-red-600">{absentTotal}</div><div className="text-sm text-muted-foreground">Assenti</div></div>
-                      <div><div className="text-2xl font-bold text-muted-foreground">{totalNoResponse}</div><div className="text-sm text-muted-foreground">Non risposto</div></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-blue-600">Giocatori</div>
-                        <div className="text-sm text-muted-foreground">Presenti: {playerPresent} | Assenti: {playerAbsent} | Non risposto: {playerNoResponse}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-orange-600">Provinanti</div>
-                        <div className="text-sm text-muted-foreground">Presenti: {trialistPresent} | Assenti: {trialistAbsent} | Non risposto: {trialistNoResponse}</div>
-                      </div>
-                    </div>
-                  </>
-                )
-              })()}
-            </CardContent>
-          </Card>
-        </div>
+        
       </div>
     </div>
   )
