@@ -721,24 +721,30 @@ const Squad = () => {
   const updateCaptain = async (newCaptainId: string) => {
     try {
       const paramId = (!newCaptainId || newCaptainId === 'none') ? null : newCaptainId
+      const teamId = localStorage.getItem('teamId')
+      
       // Try RPC first (atomic)
       const rpcRes = await supabase.rpc('set_captain', { new_captain_id: paramId as any })
       if (rpcRes.error) {
         // If RPC is missing, fallback to direct updates
         const notFound = (rpcRes.error.message || '').toLowerCase().includes('could not find the function')
         if (!notFound) throw rpcRes.error
-        // Fallback: unset previous captain(s)
+        
+        // Fallback: unset previous captain(s) ONLY FOR THIS TEAM
         const { error: unsetErr } = await supabase
           .from('players')
           .update({ is_captain: false })
           .eq('is_captain', true)
+          .eq('team_id', teamId) // 🔧 AGGIUNTO: Filtra per team
         if (unsetErr) throw unsetErr
+        
         // Set new captain if provided
         if (paramId) {
           const { error: setErr } = await supabase
             .from('players')
             .update({ is_captain: true })
             .eq('id', paramId)
+            .eq('team_id', teamId) // 🔧 AGGIUNTO: Sicurezza extra
           if (setErr) throw setErr
         }
       }
