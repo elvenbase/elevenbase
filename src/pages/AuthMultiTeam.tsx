@@ -251,9 +251,10 @@ const AuthMultiTeam = () => {
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
       // FIX FINALE: Database ha codici in UPPERCASE + aggiungi filtri
-      console.log('🔧 FINAL FIX: Using UPPERCASE code with filters...');
+      console.log('🔧 FINAL FIX: Using case-insensitive ILIKE query...');
       const currentTime = new Date().toISOString();
-      const response = await fetch(`${supabaseUrl}/rest/v1/team_invites?code=eq.${encodeURIComponent(joinTeamData.inviteCode.toUpperCase())}&is_active=eq.true&expires_at=gte.${encodeURIComponent(currentTime)}&select=*`, {
+      // FIX FINALE: Use case-insensitive query (ilike)
+      const response = await fetch(`${supabaseUrl}/rest/v1/team_invites?code=ilike.${encodeURIComponent(joinTeamData.inviteCode)}&is_active=eq.true&expires_at=gte.${encodeURIComponent(currentTime)}&select=*`, {
         method: 'GET',
         headers: {
           'apikey': supabaseKey,
