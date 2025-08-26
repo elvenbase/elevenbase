@@ -3,6 +3,7 @@ export { default as TemplateExporter } from './TemplateExporter';
 export { default as FileUploader } from './FileUploader';
 export { default as ImportPreview } from './ImportPreview';
 export { default as ImportResults } from './ImportResults';
+export { default as BulkImportWizard } from './BulkImportWizard';
 
 // Export types
 export type { TemplateMetadata, PlayerTemplateRow } from '@/services/bulkImportTemplateService';
