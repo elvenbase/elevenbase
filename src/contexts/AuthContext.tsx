@@ -129,13 +129,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         { name: 'Global logout', options: { scope: 'global' as const } }
       ];
       for (let i = 0; i < strategies.length; i++) {
-        try { await supabase.auth.signOut(strategies[i].options); break; } catch {}
+        try { await supabase.auth.signOut(strategies[i].options); break; } catch (e) { void e }
       }
       localStorage.removeItem('currentTeamId');
       localStorage.removeItem('currentTeamName');
       localStorage.removeItem('userRole');
       localStorage.removeItem('isGlobalAdmin');
-    } catch {}
+    } catch (e) { void e }
   };
 
   const value = { user, session, loading, signIn, signUp, signOut };

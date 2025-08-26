@@ -168,7 +168,7 @@ export default function TeamSettings() {
       // Optimistic update with cache-busting query param
       setTeamData(td => td ? { ...td, logo_url: `${publicUrl}?v=${Date.now()}` } : td)
       // Broadcast a storage update via localStorage to refresh Navigation without hard reload
-      try { localStorage.setItem('teamLogoUpdatedAt', String(Date.now())) } catch {}
+      try { localStorage.setItem('teamLogoUpdatedAt', String(Date.now())) } catch (e) { void e }
       await loadTeamData();
     } catch (error: any) {
       console.error('Error uploading logo:', error);

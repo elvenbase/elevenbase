@@ -183,7 +183,7 @@ export const useAvatarBackgrounds = () => {
       if (!user.user) throw new Error('User not authenticated')
 
       // If a team-scoped creation is needed, attach team_id
-      let currentTeamId: string | null = localStorage.getItem('currentTeamId')
+      const currentTeamId: string | null = localStorage.getItem('currentTeamId')
       const payload: any = { ...background, created_by: user.user.id }
       if (currentTeamId) payload.team_id = currentTeamId
 

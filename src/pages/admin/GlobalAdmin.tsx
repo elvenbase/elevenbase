@@ -50,7 +50,7 @@ const GlobalAdmin: React.FC = () => {
         .eq('is_default', true)
         .maybeSingle()
       if (sysBg?.value) setBgColor(sysBg.value)
-    } catch {}
+    } catch (e) { void e }
   }
 
   useEffect(() => { loadCurrentDefaults() }, [])
