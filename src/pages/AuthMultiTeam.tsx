@@ -244,14 +244,36 @@ const AuthMultiTeam = () => {
       // 1. Verify invite code exists and is valid in team_invites table
       console.log('🔍 Verifying invite code:', joinTeamData.inviteCode);
       
-      // Prima trova l'invite senza join
-      const { data: invite, error: inviteError } = await supabase
-        .from('team_invites')
-        .select('*')
-        .eq('code', joinTeamData.inviteCode.toLowerCase()) // Normalizza a lowercase
-        .eq('is_active', true)
-        .gte('expires_at', new Date().toISOString())
-        .single();
+      // BYPASS SUPABASE CLIENT - usa fetch diretta per debugging
+      console.log('🔧 Trying direct fetch to bypass client issues...');
+      
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      const response = await fetch(`${supabaseUrl}/rest/v1/team_invites?code=eq.${encodeURIComponent(joinTeamData.inviteCode.toLowerCase())}&is_active=eq.true&select=*`, {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('🔧 Direct fetch response status:', response.status);
+      console.log('🔧 Direct fetch response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔧 Direct fetch error:', errorText);
+        throw new Error(`Direct fetch failed: ${response.status} ${errorText}`);
+      }
+      
+      const inviteData = await response.json();
+      console.log('🔧 Direct fetch data:', inviteData);
+      
+      const invite = inviteData && inviteData.length > 0 ? inviteData[0] : null;
+      const inviteError = invite ? null : { message: 'No invite found' };
       
       console.log('🔍 Invite found (step 1):', invite);
       
