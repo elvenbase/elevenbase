@@ -314,7 +314,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
               </div>
             )}
             {/* Right content padding to accommodate avatar */}
-            <div className="pl-[110px] min-h-[88px] md:min-h-[122px] pr-2">
+            <div className="pl-[125px] min-h-[88px] md:min-h-[142px] pr-2">
               <div className="space-y-2">
                 {/* Two-line name: Nome, a capo Cognome */}
                 <div className="font-semibold text-lg md:text-xl leading-tight">
