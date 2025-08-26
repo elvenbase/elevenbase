@@ -1073,10 +1073,24 @@ const Squad = () => {
         </DrawerContent>
       </Drawer>
 
-      {/* FAB Aggiungi */}
-      <div className="fixed bottom-4 right-4 sm:hidden z-20">
+      {/* FAB Mobile Actions */}
+      <div className="fixed bottom-4 right-4 sm:hidden z-20 flex flex-col gap-3">
+        {/* FAB Import Bulk */}
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="h-12 w-12 rounded-full shadow-lg bg-white border-2"
+          onClick={() => setBulkImportOpen(true)}
+          disabled={!teamId}
+        >
+          <Users className="h-5 w-5" />
+        </Button>
+        
+        {/* FAB Aggiungi Giocatore */}
         <PlayerForm>
-          <Button variant="default" size="icon" className="h-12 w-12 rounded-full shadow-lg"><Plus className="h-5 w-5" /></Button>
+          <Button variant="default" size="icon" className="h-12 w-12 rounded-full shadow-lg">
+            <Plus className="h-5 w-5" />
+          </Button>
         </PlayerForm>
       </div>
 
