@@ -48,6 +48,7 @@ serve(async (req) => {
       mvpBonusOnce: ws?.mvp_bonus_once ?? 5.0,
     }
     const minEvents = ws?.min_events ?? 10
+    const perAward = !!ws?.mvp_bonus_per_award
 
     // Monthly window from targetDate
     const d = new Date(targetDate)
@@ -140,7 +141,9 @@ serve(async (req) => {
         -2.0 * c.M_A +
         -2.5 * c.M_NR
       )
-      const withBonus = POINTS + ((c.mvpAwards || 0) > 0 ? (weights.mvpBonusOnce || 0) : 0)
+      const awards = Math.max(0, c.mvpAwards || 0)
+      const bonusMultiplier = perAward ? awards : (awards > 0 ? 1 : 0)
+      const withBonus = POINTS + (bonusMultiplier * (weights.mvpBonusOnce || 0))
       const MAX = 1.0 * T_total + 2.5 * M_total
       const MIN = -1.0 * T_total - 2.5 * M_total
       const range = MAX - MIN

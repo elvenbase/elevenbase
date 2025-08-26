@@ -20,6 +20,7 @@ export default function AttendanceScoreManagement() {
     matchNoResponse: -2.5,
     mvpBonusOnce: 5.0,
     minEvents: 10,
+    mvpBonusPerAward: false,
   })
   const [loading, setLoading] = useState(false)
 
@@ -64,6 +65,7 @@ export default function AttendanceScoreManagement() {
       matchNoResponse: s.match_no_response,
       mvpBonusOnce: s.mvp_bonus_once ?? 5.0,
       minEvents: s.min_events,
+      mvpBonusPerAward: !!s.mvp_bonus_per_award,
     })
   }
 
@@ -106,6 +108,7 @@ export default function AttendanceScoreManagement() {
       match_no_response: weights.matchNoResponse,
       mvp_bonus_once: weights.mvpBonusOnce,
       min_events: weights.minEvents,
+      mvp_bonus_per_award: weights.mvpBonusPerAward,
       is_active: true,
       team_id: currentTeamId || null,
     })
@@ -169,7 +172,7 @@ export default function AttendanceScoreManagement() {
                 ['matchAbsent', 'Partite — Assente'],
                 ['matchNoResponse', 'Partite — No response'],
                 ['minEvents', 'Minimo eventi per entrare in classifica'],
-                ['mvpBonusOnce', 'Bonus MVP (una sola volta)'],
+                ['mvpBonusOnce', 'Bonus MVP (per premio) / una sola volta'],
               ] as const).map(([key, label]) => (
                 <label key={key} className="text-sm space-y-1">
                   <span className="block font-medium text-foreground/90">{label}</span>
@@ -187,6 +190,12 @@ export default function AttendanceScoreManagement() {
                   />
                 </label>
               ))}
+            <div className="flex items-center gap-3 pt-2">
+              <input id="mvp_per_award" type="checkbox" className="h-4 w-4" checked={weights.mvpBonusPerAward} onChange={(e)=> setWeights(w=>({ ...w, mvpBonusPerAward: e.target.checked }))} />
+              <label htmlFor="mvp_per_award" className="text-sm">
+                Applica il bonus MVP <strong>per ogni premio</strong> (anziché una sola volta)
+              </label>
+            </div>
             </div>
             <Separator />
             <div className="flex flex-wrap gap-2">

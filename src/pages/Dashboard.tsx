@@ -241,7 +241,7 @@ const Dashboard = () => {
       matchNoResponse: scoreSettings.match_no_response ?? -2.5,
       mvpBonusOnce: scoreSettings.mvp_bonus_once ?? 5.0,
     } : undefined
-    const scores = inputs.map(it => ({ ...computeAttendanceScore(it.counters, weights as any, scoreSettings?.min_events || 10), player_id: it.player_id, first_name: it.first_name, last_name: it.last_name }))
+    const scores = inputs.map(it => ({ ...computeAttendanceScore(it.counters, weights as any, scoreSettings?.min_events || 10, { mvpBonusPerAward: !!(scoreSettings as any)?.mvp_bonus_per_award }), player_id: it.player_id, first_name: it.first_name, last_name: it.last_name }))
     const minEv = (scoreSettings?.min_events || 10)
     const eligible = scores.filter(s => s.opportunities >= minEv)
     const ineligible = scores.filter(s => s.opportunities < minEv && s.opportunities > 0)
