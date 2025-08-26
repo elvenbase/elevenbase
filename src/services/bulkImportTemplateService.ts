@@ -47,7 +47,14 @@ class BulkImportTemplateService {
     // Riga 4: Vuota (separatore)
     worksheetData.push([]);
     
-    // Riga 5: Header colonne
+    // Riga 5: Istruzioni ruoli
+    worksheetData.push(['RUOLI VALIDI:', 'difensore_centrale, terzino_destro, terzino_sinistro, esterno_destro_basso, esterno_sinistro_basso,']);
+    worksheetData.push(['', 'mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti']);
+    
+    // Riga 7: Vuota (separatore)
+    worksheetData.push([]);
+    
+    // Riga 8: Header colonne
     worksheetData.push([
       'first_name*',
       'last_name*', 
@@ -62,13 +69,13 @@ class BulkImportTemplateService {
       'notes'
     ]);
     
-    // Riga 6-7: Esempi
+    // Riga 9-10: Esempi
     worksheetData.push([
       'Mario',
       'Rossi',
       10,
       'Centrocampo',
-      'CAM',
+      'regista',
       'active',
       '+39123456789',
       '1995-03-15',
@@ -82,7 +89,7 @@ class BulkImportTemplateService {
       'Bianchi',
       7,
       'Attacco',
-      'CF',
+      'centravanti',
       'active',
       '',
       '',
@@ -128,13 +135,16 @@ class BulkImportTemplateService {
     lines.push(`# TEAM_ID,${metadata.teamId},GENERATED_AT,${metadata.generatedAt}`);
     lines.push(`# MAX_PLAYERS,${this.MAX_PLAYERS},FORMAT,CSV`);
     lines.push('#');
+    lines.push('# RUOLI VALIDI: difensore_centrale, terzino_destro, terzino_sinistro, esterno_destro_basso, esterno_sinistro_basso,');
+    lines.push('# mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti');
+    lines.push('#');
     
     // Header
     lines.push('first_name*,last_name*,jersey_number*,position,player_role,status*,phone,birth_date,email,esperienza,notes');
     
     // Esempi
-    lines.push('Mario,Rossi,10,Centrocampo,CAM,active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra"');
-    lines.push('Luigi,Bianchi,7,Attacco,CF,active,,,,,');
+    lines.push('Mario,Rossi,10,Centrocampo,regista,active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra"');
+    lines.push('Luigi,Bianchi,7,Attacco,centravanti,active,,,,,');
     
     return lines.join('\n');
   }
@@ -158,9 +168,9 @@ class BulkImportTemplateService {
       { wch: 20 }  // notes
     ];
 
-    // Proteggi le prime 3 righe (metadata)
+    // Proteggi le prime 6 righe (metadata e istruzioni)
     const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-    for (let row = 0; row < 3; row++) {
+    for (let row = 0; row < 6; row++) {
       for (let col = 0; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (worksheet[cellAddress]) {
