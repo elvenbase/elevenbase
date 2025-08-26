@@ -350,22 +350,10 @@ const AuthMultiTeam = () => {
           />
         </div>
 
-        <Card className="shadow-lg">
-          <CardHeader className="text-center pb-2 pt-2 relative">
-            {/* Admin Icon - Top Right */}
-            {authMode !== 'global-admin' && (
-              <button
-                onClick={() => setAuthMode('global-admin')}
-                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted"
-              >
-                <Settings className="h-5 w-5" />
-              </button>
-            )}
-            
-            <CardTitle>Gestione Squadre</CardTitle>
-            <CardDescription>
-              Accedi, crea una nuova squadra o unisciti a una esistente
-            </CardDescription>
+        <Card className="shadow-lg mt-2 sm:mt-4">
+          <CardHeader className="text-center pt-6 pb-4 sm:pt-8 sm:pb-6">
+            <CardTitle className="text-xl sm:text-2xl font-semibold tracking-tight mb-2 sm:mb-3">Gestione Squadre</CardTitle>
+            <CardDescription className="mt-2 sm:mt-3 mb-5 sm:mb-6 px-6 leading-relaxed">Accedi, crea una nuova squadra o unisciti a una esistente</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={authMode} onValueChange={(v) => setAuthMode(v as any)}>
