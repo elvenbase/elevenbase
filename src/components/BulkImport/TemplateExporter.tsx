@@ -40,18 +40,18 @@ const TemplateExporter: React.FC<TemplateExporterProps> = ({
         throw new Error(`Metadati non validi: ${validation.errors.join(', ')}`);
       }
 
-      // Genera template
+      // Genera template con ruoli dinamici
       if (format === 'excel') {
-        bulkImportTemplateService.generateExcelTemplate(metadata);
+        await bulkImportTemplateService.generateExcelTemplateAsync(metadata);
         toast({
           title: "Template Excel generato",
-          description: `File template_giocatori_${metadata.teamName}_${new Date().toISOString().split('T')[0].replace(/-/g, '')}.xlsx scaricato`,
+          description: `File template_giocatori_${metadata.teamName}_${new Date().toISOString().split('T')[0].replace(/-/g, '')}.xlsx scaricato con ruoli aggiornati`,
         });
       } else {
-        bulkImportTemplateService.generateCSVTemplate(metadata);
+        await bulkImportTemplateService.generateCSVTemplateAsync(metadata);
         toast({
           title: "Template CSV generato", 
-          description: `File template_giocatori_${metadata.teamName}_${new Date().toISOString().split('T')[0].replace(/-/g, '')}.csv scaricato`,
+          description: `File template_giocatori_${metadata.teamName}_${new Date().toISOString().split('T')[0].replace(/-/g, '')}.csv scaricato con ruoli aggiornati`,
         });
       }
 

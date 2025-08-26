@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { PlayerTemplateRow, TemplateMetadata } from './bulkImportTemplateService';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface FileValidationResult {
   valid: boolean;
@@ -146,7 +147,7 @@ class BulkImportFileParser {
           // Converti in array di array
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false }) as any[][];
           
-          resolve(this.processWorksheetData(jsonData, expectedTeamId, 'XLSX'));
+          this.processWorksheetData(jsonData, expectedTeamId, 'XLSX').then(resolve);
         } catch (error) {
           resolve({
             metadata: {} as TemplateMetadata,
@@ -205,7 +206,7 @@ class BulkImportFileParser {
           const lines = csvContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
           const jsonData = this.parseCSVLines(lines);
           
-          resolve(this.processWorksheetData(jsonData, expectedTeamId, 'CSV'));
+          this.processWorksheetData(jsonData, expectedTeamId, 'CSV').then(resolve);
         } catch (error) {
           resolve({
             metadata: {} as TemplateMetadata,
@@ -290,7 +291,7 @@ class BulkImportFileParser {
   /**
    * Processa dati worksheet (comune per Excel e CSV)
    */
-  private processWorksheetData(data: any[][], expectedTeamId: string, format: 'XLSX' | 'CSV'): ParsedFileData {
+  private async processWorksheetData(data: any[][], expectedTeamId: string, format: 'XLSX' | 'CSV'): Promise<ParsedFileData> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -327,7 +328,7 @@ class BulkImportFileParser {
 
     // Estrai dati giocatori
     const players = this.extractPlayerData(data);
-    const playersValidation = this.validatePlayersData(players);
+    const playersValidation = await this.validatePlayersData(players);
     
     errors.push(...playersValidation.errors);
     warnings.push(...playersValidation.warnings);
@@ -458,7 +459,7 @@ class BulkImportFileParser {
   /**
    * Validazione dati giocatori
    */
-  private validatePlayersData(players: PlayerTemplateRow[]): FileValidationResult {
+  private async validatePlayersData(players: PlayerTemplateRow[]): Promise<FileValidationResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -469,6 +470,23 @@ class BulkImportFileParser {
 
     if (players.length > this.MAX_PLAYERS) {
       errors.push(`Troppi giocatori: ${players.length} (max ${this.MAX_PLAYERS})`);
+    }
+
+    // Fetch ruoli validi dal sistema centralizzato
+    let validRoles: string[] = [];
+    try {
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('field_options')
+        .select('option_value')
+        .eq('field_name', 'player_role');
+
+      if (rolesError) {
+        warnings.push('Impossibile validare ruoli: ' + rolesError.message);
+      } else {
+        validRoles = rolesData?.map(r => r.option_value) || [];
+      }
+    } catch (error) {
+      warnings.push('Errore nel fetch ruoli validi');
     }
 
     // Validazione per ogni giocatore
@@ -504,6 +522,14 @@ class BulkImportFileParser {
 
       if (player.birth_date && !/^\d{4}-\d{2}-\d{2}$/.test(player.birth_date)) {
         errors.push(`Riga ${rowNum}: Data nascita deve essere formato YYYY-MM-DD`);
+      }
+
+      // Validazione ruolo contro sistema centralizzato
+      if (player.player_role && player.player_role.trim()) {
+        const role = player.player_role.trim();
+        if (validRoles.length > 0 && !validRoles.includes(role)) {
+          errors.push(`Riga ${rowNum}: Ruolo non valido "${role}". Ruoli ammessi: ${validRoles.join(', ')}`);
+        }
       }
 
       // Controllo injection CSV
