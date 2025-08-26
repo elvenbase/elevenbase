@@ -158,7 +158,8 @@ const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica
         .from(bucketName)
         .getPublicUrl(fileName);
 
-      setAvatarUrl(publicUrl);
+      setAvatarUrl(`${publicUrl}?v=${Date.now()}`);
+      try { localStorage.setItem('playerAvatarUpdatedAt', `${player.id}:${Date.now()}`) } catch {}
 
       toast({
         title: "Avatar caricato",

@@ -233,6 +233,9 @@ export const useJerseyTemplates = () => {
 
       if (error) throw error
 
+      // Cache-bust image URL and optimistically update list
+      const withBusted = { ...data, image_url: `${data.image_url}${data.image_url.includes('?') ? '&' : '?'}v=${Date.now()}` }
+      setJerseyTemplates(prev => [withBusted, ...prev])
       await loadJerseyTemplates()
       toast.success(`Maglia creata con successo${isFirstJersey ? ' e impostata come default' : ''}!`)
       return data
@@ -332,7 +335,7 @@ export const useJerseyTemplates = () => {
         .from('jerseys')
         .getPublicUrl(filePath)
 
-      return publicUrl
+      return `${publicUrl}?v=${Date.now()}`
     } catch (error) {
       console.error('Errore nell\'upload dell\'immagine:', error)
       toast.error('Errore nell\'upload dell\'immagine')
@@ -351,6 +354,8 @@ export const useJerseyTemplates = () => {
     } else {
       // Imposta una maglia come default
       await updateJerseyTemplate(id, { is_default: true })
+      // Optimistic: mark in local state immediately
+      setJerseyTemplates(prev => prev.map(j => ({ ...j, is_default: j.id === id })))
     }
   }
 

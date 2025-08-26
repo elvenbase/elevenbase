@@ -4,11 +4,13 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useQueryClient } from '@tanstack/react-query'
 import { Separator } from '@/components/ui/separator'
 import { Info } from 'lucide-react'
 
 export default function AttendanceScoreManagement() {
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   const [weights, setWeights] = useState({
     trainingPresentOnTime: 1.0,
     trainingPresentLate: 0.6,
@@ -118,6 +120,9 @@ export default function AttendanceScoreManagement() {
       toast({ title: 'Salvato', description: 'Impostazioni aggiornate' })
       // Reload to reflect persisted values
       await load()
+      // Invalidate cached consumers so UI reflects immediately
+      queryClient.invalidateQueries({ queryKey: ['attendance-score-settings'] })
+      queryClient.invalidateQueries({ queryKey: ['leaders'] })
     }
   }
 
@@ -138,6 +143,9 @@ export default function AttendanceScoreManagement() {
       if (!res.ok) throw new Error(j?.error || `HTTP ${res.status}: ${text || 'unknown error'}`)
       console.error('attendance-scores run:', { status: res.status, body: j })
       toast({ title: 'Eseguito', description: `Calcolati ${j.inserted ?? 0} punteggi` })
+      // Invalidate cached data after server-side recompute
+      queryClient.invalidateQueries({ queryKey: ['leaders'] })
+      queryClient.invalidateQueries({ queryKey: ['attendance-score-settings'] })
     } catch (e: any) {
       console.error('attendance-scores error:', e)
       toast({ title: 'Errore', description: String(e.message || e), variant: 'destructive' })
