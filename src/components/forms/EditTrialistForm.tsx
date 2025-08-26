@@ -270,7 +270,7 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[950px] lg:max-w-[1100px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <span>Modifica Trialist</span>
@@ -612,14 +612,13 @@ const EditTrialistForm = ({ trialist }: EditTrialistFormProps) => {
                   rows={3}
                 />
               </div>
-
-              {/* Valutazioni Section */}
-              <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">⚡ Valutazioni</span>
-                </div>
-                <QuickEvaluationDisplay trialistId={trialist.id} />
+            </div>
+            {/* Valutazioni Section - full width on desktop */}
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/20 lg:col-span-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold">⚡ Valutazioni</span>
               </div>
+              <QuickEvaluationDisplay trialistId={trialist.id} />
             </div>
           </div>
 
