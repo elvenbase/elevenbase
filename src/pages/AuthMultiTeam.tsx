@@ -344,7 +344,17 @@ const AuthMultiTeam = () => {
         </div>
 
         <Card className="shadow-lg">
-          <CardHeader className="text-center pb-2">
+          <CardHeader className="text-center pb-2 relative">
+            {/* Admin Icon - Top Right */}
+            {authMode !== 'global-admin' && (
+              <button
+                onClick={() => setAuthMode('global-admin')}
+                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted"
+              >
+                <Settings className="h-5 w-5" />
+              </button>
+            )}
+            
             <CardTitle>Gestione Squadre</CardTitle>
             <CardDescription>
               Accedi, crea una nuova squadra o unisciti a una esistente
@@ -628,16 +638,15 @@ const AuthMultiTeam = () => {
               </TabsContent>
             </Tabs>
             
-            {/* Admin Link Separato - nascosto quando già in admin */}
+            {/* Password Recovery Link */}
             {authMode !== 'global-admin' && (
-              <div className="pt-4 border-t">
-                <button
-                  onClick={() => setAuthMode('global-admin')}
-                  className="flex items-center justify-center gap-2 w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              <div className="pt-4 border-t text-center">
+                <a
+                  href="/reset-password"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <Settings className="h-4 w-4" />
-                  <span>Amministrazione</span>
-                </button>
+                  Password dimenticata?
+                </a>
               </div>
             )}
           </CardContent>
