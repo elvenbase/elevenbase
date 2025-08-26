@@ -62,13 +62,22 @@ const Navigation = () => {
           .single();
 
         if (error) throw error;
-        setTeamLogo(data?.logo_url || null);
+        const base = data?.logo_url || null
+        setTeamLogo(base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
       } catch (error) {
         console.error('Error loading team logo:', error);
       }
     };
 
     loadTeamData();
+    // React to logo updates broadcast via localStorage
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'teamLogoUpdatedAt') {
+        loadTeamData()
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, []);
 
   const navigationItems = [

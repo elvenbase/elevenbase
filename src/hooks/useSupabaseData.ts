@@ -17,7 +17,9 @@ export const useAttendanceScoreSettings = () => {
       if (error) throw error
       return (data && data[0]) || { min_events: 10 }
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 }
 
