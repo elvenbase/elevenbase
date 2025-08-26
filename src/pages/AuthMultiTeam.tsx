@@ -299,12 +299,31 @@ const AuthMultiTeam = () => {
         throw new Error('Codice invito non valido o scaduto');
       }
       
-      // Poi recupera i dati del team
-      const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .select('id, name')
-        .eq('id', invite.team_id)
-        .single();
+      // DIRECT FETCH anche per teams (stesso problema del client)
+      console.log('🔧 Direct fetch for teams data...');
+      const teamResponse = await fetch(`${supabaseUrl}/rest/v1/teams?id=eq.${invite.team_id}&select=id,name`, {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('🔧 Teams direct fetch status:', teamResponse.status);
+      
+      if (!teamResponse.ok) {
+        const teamErrorText = await teamResponse.text();
+        console.error('🔧 Teams direct fetch error:', teamErrorText);
+        throw new Error(`Teams fetch failed: ${teamResponse.status} ${teamErrorText}`);
+      }
+      
+      const teamData = await teamResponse.json();
+      console.log('🔧 Teams direct fetch data:', teamData);
+      
+      const team = teamData && teamData.length > 0 ? teamData[0] : null;
+      const teamError = team ? null : { message: 'Team not found' };
       
       if (teamError || !team) {
         console.error('❌ Team not found:', teamError);
