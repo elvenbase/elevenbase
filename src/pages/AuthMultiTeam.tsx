@@ -334,7 +334,7 @@ const AuthMultiTeam = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-2">
           <img
             src="/assets/IMG_0055.png"
             alt="Logo"
@@ -344,7 +344,7 @@ const AuthMultiTeam = () => {
         </div>
 
         <Card className="shadow-lg">
-          <CardHeader className="text-center pb-2 relative">
+          <CardHeader className="text-center pb-2 pt-4 relative">
             {/* Admin Icon - Top Right */}
             {authMode !== 'global-admin' && (
               <button
