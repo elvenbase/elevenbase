@@ -15,9 +15,9 @@ const AvatarBackgroundManagement = () => {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold">Gestione Avatar</h1>
+          <h1 className="text-3xl font-bold">Avatar Persona & Avatar Background</h1>
           <p className="text-muted-foreground">
-            Carica l'avatar di default e personalizza gli sfondi per gli avatar dei giocatori
+            Carica l'Avatar Persona di default e personalizza gli Avatar Background dei giocatori
           </p>
         </div>
       </div>

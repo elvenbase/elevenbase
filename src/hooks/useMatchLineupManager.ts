@@ -34,9 +34,9 @@ export const useMatchLineupManager = (matchId: string) => {
         .from('match_lineups')
         .select('*')
         .eq('match_id', matchId)
-        .single()
+        .maybeSingle()
 
-      if (error && (error as any).code !== 'PGRST116') throw error
+      if (error) throw error
 
       if (data) {
         const typed: MatchLineup = {
@@ -44,6 +44,8 @@ export const useMatchLineupManager = (matchId: string) => {
           players_data: typeof data.players_data === 'string' ? JSON.parse(data.players_data) : (data.players_data as any) || { positions: {} }
         }
         setLineup(typed)
+      } else {
+        setLineup(null)
       }
     } catch (error) {
       console.error('Errore nel caricare la formazione match:', error)

@@ -2230,20 +2230,56 @@ export const useUpdateOpponent = () => {
   })
 }
 
+export const useOpponentMatchesCount = (opponentId: string) => {
+  return useQuery({
+    queryKey: ['opponent-matches-count', opponentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('id', { count: 'exact' })
+        .eq('opponent_id', opponentId)
+      
+      if (error) throw error
+      return data?.length || 0
+    },
+    enabled: !!opponentId
+  })
+}
+
 export const useDeleteOpponent = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   return useMutation({
     mutationFn: async (id: string) => {
+      // Controlla se l'avversario è utilizzato in partite
+      const { data: matches, error: checkError } = await supabase
+        .from('matches')
+        .select('id')
+        .eq('opponent_id', id)
+        .limit(1)
+      
+      if (checkError) throw checkError
+      
+      if (matches && matches.length > 0) {
+        throw new Error('Impossibile eliminare l\'avversario: è ancora utilizzato in delle partite. Elimina prima le partite associate.')
+      }
+      
       const { error } = await supabase.from('opponents').delete().eq('id', id)
       if (error) throw error
       return true
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opponents'] })
-      toast({ title: 'Avversario eliminato' })
+      toast({ title: 'Avversario eliminato con successo' })
     },
-    onError: (e: any) => toast({ title: 'Errore eliminazione avversario', description: e?.message, variant: 'destructive' })
+    onError: (error: any) => {
+      console.error('Errore eliminazione avversario:', error)
+      toast({ 
+        title: 'Errore nell\'eliminazione', 
+        description: error.message || 'Impossibile eliminare l\'avversario',
+        variant: 'destructive' 
+      })
+    }
   })
 }
 
@@ -2461,6 +2497,7 @@ export const useCreateQuickTrialEvaluation = () => {
   return useMutation({
     mutationFn: async (data: {
       trialist_id: string;
+      team_id?: string;
       session_id?: string;
       personality_ratings?: number[];
       ability_ratings?: number[];
@@ -2468,13 +2505,18 @@ export const useCreateQuickTrialEvaluation = () => {
       final_decision?: 'in_prova' | 'promosso' | 'archiviato';
       notes?: string;
     }) => {
+      console.log('Hook useCreateQuickTrialEvaluation - data ricevuti:', data);
+      
       const { data: result, error } = await supabase
         .from('quick_trial_evaluations')
         .insert(data)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Errore Supabase dettagliato:', error);
+        throw error;
+      }
       return result;
     },
     onSuccess: () => {
@@ -3031,12 +3073,18 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       const startStr = fmt(opts?.startDate)
       const endStr = fmt(opts?.endDate)
 
-      // Fetch players to map names later
-      const { data: players, error: playersErr } = await supabase
+      // Fetch players for the CURRENT TEAM to map names later
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      let playersQuery = supabase
         .from('players')
-        .select('id, first_name, last_name, status')
+        .select('id, first_name, last_name, status, team_id')
+      if (currentTeamId) {
+        playersQuery = playersQuery.eq('team_id', currentTeamId) as any
+      }
+      const { data: players, error: playersErr } = await playersQuery
       if (playersErr) throw playersErr
       const playersById = new Map<string, any>((players || []).map(p => [p.id, p]))
+      const teamPlayerIds = new Set<string>((players || []).map(p => p.id))
 
       // Training attendance joined with sessions for date filters
       let trSel = supabase
@@ -3046,7 +3094,9 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       if (endStr) trSel = trSel.lte('training_sessions.session_date', endStr) as any
       const trRes = await trSel
       if (trRes.error) throw trRes.error
-      const trainingRows = (trRes.data || []) as any[]
+      let trainingRows = (trRes.data || []) as any[]
+      // Restrict to roster players
+      trainingRows = trainingRows.filter(r => r.player_id && teamPlayerIds.has(r.player_id))
 
       // Training convocations joined with sessions to compute totals consistently with PlayerDetail
       let tcSel = supabase
@@ -3056,7 +3106,8 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       if (endStr) tcSel = tcSel.lte('training_sessions.session_date', endStr) as any
       const tcRes = await tcSel
       if (tcRes.error) throw tcRes.error
-      const trainingConvRows = (tcRes.data || []) as any[]
+      let trainingConvRows = (tcRes.data || []) as any[]
+      trainingConvRows = trainingConvRows.filter(r => r.player_id && teamPlayerIds.has(r.player_id))
 
       // Match attendance joined with matches for date filters and state
       let mtSel = supabase
@@ -3067,7 +3118,8 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       if (endStr) mtSel = mtSel.lte('matches.match_date', endStr) as any
       const mtRes = await mtSel
       if (mtRes.error) throw mtRes.error
-      const matchAttRows = (mtRes.data || []) as any[]
+      let matchAttRows = (mtRes.data || []) as any[]
+      matchAttRows = matchAttRows.filter(r => r.player_id && teamPlayerIds.has(r.player_id))
 
       // Match player stats for goals/assists/minutes/cards/saves; include ended matches only
       let mpsSel = supabase
@@ -3079,11 +3131,10 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       if (endStr) mpsSel = mpsSel.lte('matches.match_date', endStr) as any
       const mpsRes = await mpsSel
       if (mpsRes.error) throw mpsRes.error
-      const statsRows = (mpsRes.data || []) as any[]
-      // Get current team ID
-      const currentTeamId = localStorage.getItem('currentTeamId');
+      let statsRows = (mpsRes.data || []) as any[]
+      statsRows = statsRows.filter(r => r.player_id && teamPlayerIds.has(r.player_id))
 
-      // MVP awards (ended matches only)
+      // MVP awards (ended matches only), filtered by team when available
       let mvpSel = supabase
         .from('matches')
         .select('mvp_player_id, match_date, live_state')
@@ -3102,7 +3153,9 @@ export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
       for (const r of (mvpRes.data || []) as any[]) {
         const pid = r.mvp_player_id as string | null
         if (!pid) continue
-        mvpCounts.set(pid, (mvpCounts.get(pid) || 0) + 1)
+        if (!teamPlayerIds.size || teamPlayerIds.has(pid)) {
+          mvpCounts.set(pid, (mvpCounts.get(pid) || 0) + 1)
+        }
       }
 
       // Helpers

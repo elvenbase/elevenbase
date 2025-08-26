@@ -30,17 +30,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -53,76 +50,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        toast({
-          title: "Errore di accesso",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast({ title: "Errore di accesso", description: error.message, variant: "destructive" });
         return { error };
       }
 
-      // Verifica se l'utente appartiene a un team e salva le info
       if (data.user) {
         try {
-          // Get user's team membership
-          const { data: teamMember, error: teamError } = await supabase
+          const { data: teamMember } = await supabase
             .from('team_members')
             .select('*, teams(*)')
             .eq('user_id', data.user.id)
             .single();
 
-          if (teamError || !teamMember) {
-            // User doesn't belong to any team
+          if (!teamMember) {
             await supabase.auth.signOut();
             const noTeamError = new Error("Non appartieni a nessuna squadra.");
-            toast({
-              title: "Nessuna squadra",
-              description: "Non appartieni a nessuna squadra. Contatta un amministratore.",
-              variant: "destructive",
-            });
+            toast({ title: "Nessuna squadra", description: "Non appartieni a nessuna squadra. Contatta un amministratore.", variant: "destructive" });
             return { error: noTeamError };
           }
 
-          // Check if user is owner (owners are always active)
           const isOwner = teamMember.teams.owner_id === data.user.id;
-          
-          // Check if user is active (non-owners need to be active)
           if (!isOwner && teamMember.status === 'pending') {
             await supabase.auth.signOut();
             const inactiveError = new Error("Account non attivo.");
-            toast({
-              title: "Account non attivo",
-              description: "Il tuo account non è ancora stato attivato. Contatta l'amministratore del team.",
-              variant: "destructive",
-            });
+            toast({ title: "Account non attivo", description: "Il tuo account non è ancora stato attivato. Contatta l'amministratore del team.", variant: "destructive" });
             return { error: inactiveError };
           }
 
-          // Store team info in localStorage
           localStorage.setItem('currentTeamId', teamMember.team_id);
           localStorage.setItem('currentTeamName', teamMember.teams.name);
           localStorage.setItem('userRole', teamMember.role);
-          
         } catch (err) {
           console.warn('Errore nel controllo del team:', err);
-          // Se c'è un errore, permettiamo comunque il login
         }
       }
       
       return { error: null };
     } catch (err) {
       const error = err as Error;
-      toast({
-        title: "Errore di accesso",
-        description: "Si è verificato un errore imprevisto",
-        variant: "destructive",
-      });
+      toast({ title: "Errore di accesso", description: "Si è verificato un errore imprevisto", variant: "destructive" });
       return { error };
     } finally {
       setLoading(false);
@@ -133,39 +101,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoading(true);
       const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            username: username,
-          }
-        }
+        options: { emailRedirectTo: redirectUrl, data: { username } }
       });
-      
       if (error) {
-        toast({
-          title: "Errore di registrazione",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast({ title: "Errore di registrazione", description: error.message, variant: "destructive" });
       } else {
-        toast({
-          title: "Registrazione completata",
-          description: "Controlla la tua email per confermare l'account",
-        });
+        toast({ title: "Registrazione completata", description: "Controlla la tua email per confermare l'account" });
       }
-      
       return { error };
     } catch (err) {
       const error = err as Error;
-      toast({
-        title: "Errore di registrazione",
-        description: "Si è verificato un errore imprevisto",
-        variant: "destructive",
-      });
+      toast({ title: "Errore di registrazione", description: "Si è verificato un errore imprevisto", variant: "destructive" });
       return { error };
     } finally {
       setLoading(false);
@@ -174,97 +123,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      console.log('Attempting logout...');
-      
-      // Try multiple logout strategies in sequence for maximum security
       const strategies = [
         { name: 'Standard logout', options: undefined },
         { name: 'Local logout', options: { scope: 'local' as const } },
         { name: 'Global logout', options: { scope: 'global' as const } }
       ];
-      
-      let logoutSuccessful = false;
-      let lastError = null;
-      
       for (let i = 0; i < strategies.length; i++) {
-        try {
-          const strategy = strategies[i];
-          console.log(`Logout attempt ${i + 1}/3: ${strategy.name}...`);
-          
-          const { error } = await supabase.auth.signOut(strategy.options);
-          
-          if (!error) {
-            console.log(`Logout successful with: ${strategy.name}`);
-            logoutSuccessful = true;
-            break;
-          } else {
-            console.warn(`${strategy.name} failed:`, error);
-            lastError = error;
-            
-            // If it's a 403, try next strategy immediately
-            if (error.status === 403 || error.message?.includes('403') || error.message?.includes('Forbidden')) {
-              console.log('403 error detected, trying next logout strategy...');
-              continue;
-            }
-          }
-        } catch (err) {
-          console.warn(`Strategy ${i + 1} threw error:`, err);
-          lastError = err as any;
-        }
+        try { await supabase.auth.signOut(strategies[i].options); break; } catch {}
       }
-      
-      // Clear team data regardless of logout success
       localStorage.removeItem('currentTeamId');
       localStorage.removeItem('currentTeamName');
       localStorage.removeItem('userRole');
-      
-      if (logoutSuccessful) {
-        toast({
-          title: "Logout completato",
-          description: "Arrivederci!",
-        });
-      } else {
-        console.error('All logout strategies failed, last error:', lastError);
-        
-        // SECURITY: Show warning but don't clear local state
-        // The session might still be active on the server
-        toast({
-          title: "Errore di logout",
-          description: "Non è stato possibile disconnettersi dal server. Per sicurezza, chiudi il browser.",
-          variant: "destructive",
-        });
-        
-        // Don't clear user/session state to prevent false security
-        // The user should manually close the browser/tab
-        return;
-      }
-    } catch (err) {
-      console.error('Unexpected logout error:', err);
-      
-      // Clear team data but keep warning about session
-      localStorage.removeItem('currentTeamId');
-      localStorage.removeItem('currentTeamName');
-      localStorage.removeItem('userRole');
-      
-      toast({
-        title: "Errore di logout",
-        description: "Errore critico durante il logout. Chiudi il browser per sicurezza.",
-        variant: "destructive",
-      });
-      
-      // Don't clear session state for security
-      return;
-    }
+      localStorage.removeItem('isGlobalAdmin');
+    } catch {}
   };
 
-  const value = {
-    user,
-    session,
-    loading,
-    signIn,
-    signUp,
-    signOut,
-  };
-
+  const value = { user, session, loading, signIn, signUp, signOut };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

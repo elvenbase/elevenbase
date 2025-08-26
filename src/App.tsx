@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { useState, useEffect, Suspense, lazy } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import RecoveryRedirector from "@/components/RecoveryRedirector";
 
 // Import components
 import { AdminSetup } from "@/components/AdminSetup";
@@ -38,6 +39,7 @@ const EmailConfirm = lazy(() => import("@/pages/EmailConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const TeamSettings = lazy(() => import("@/pages/TeamSettings"));
 
 // Multi-team authentication system
 const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
@@ -137,6 +139,7 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <BrowserRouter>
+              <RecoveryRedirector />
               <ErrorBoundary>
                 <div className="min-h-screen bg-background">
                   <Suspense fallback={
@@ -268,6 +271,14 @@ function App() {
                           <Navigation />
                           <main className="ml-0 transition-all duration-200">
                             <PlayerDetail />
+                          </main>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/team/settings" element={
+                        <ProtectedRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <TeamSettings />
                           </main>
                         </ProtectedRoute>
                       } />

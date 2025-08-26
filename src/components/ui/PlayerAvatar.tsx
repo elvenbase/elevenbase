@@ -43,6 +43,8 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   const safeLast = lastName || '';
   // Chiave stabile per il colore: entityId se presente
   const fullName = entityId ? `${entityId}:${safeFirst}${safeLast}` : ((style && (style as any).__id) ? `${(style as any).__id}:${safeFirst}${safeLast}` : (safeFirst + safeLast));
+
+  // Se player non ha avatar, usa sempre l'Avatar Persona di default (se presente)
   const resolvedAvatarUrl = avatarUrl || defaultAvatarImageUrl || undefined;
   const hasAvatar = !!resolvedAvatarUrl;
   const initials = (safeFirst.charAt(0) || '?') + (safeLast.charAt(0) || '');
@@ -50,8 +52,7 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   // Combina le classi di dimensione con quelle personalizzate
   const avatarClasses = `${sizeClasses[size]} ${className}`.trim();
   
-  // Logica per lo style del componente Avatar
-  // Applica sempre lo sfondo configurato, sia per avatar che per fallback
+  // Background: sempre applicare Avatar Background (colore o immagine)
   const avatarStyle = { ...getAvatarBackground(fullName, hasAvatar), ...style };
 
   return (
@@ -60,15 +61,17 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
       onClick={onClick}
       style={avatarStyle}
     >
-      <AvatarImage 
-        src={resolvedAvatarUrl} 
-        alt={`${safeFirst} ${safeLast}`} 
-      />
+      {hasAvatar && (
+        <AvatarImage 
+          src={resolvedAvatarUrl} 
+          alt={`${safeFirst} ${safeLast}`} 
+        />
+      )}
       <AvatarFallback 
         className="font-bold"
         style={getAvatarFallbackStyle(fullName, hasAvatar)}
       >
-        {initials}
+        {!hasAvatar ? initials : ''}
       </AvatarFallback>
     </Avatar>
   );
