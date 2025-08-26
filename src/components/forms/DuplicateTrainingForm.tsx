@@ -19,6 +19,7 @@ interface TrainingSession {
   end_time: string;
   location?: string;
   max_participants?: number;
+  team_id: string;
 }
 
 interface DuplicateTrainingFormProps {
@@ -39,6 +40,12 @@ export const DuplicateTrainingForm = ({ session }: DuplicateTrainingFormProps) =
 
   const duplicateSession = useMutation({
     mutationFn: async () => {
+      console.log('🔄 Duplicating session:', { 
+        title, 
+        team_id: session.team_id, 
+        session_date: sessionDate 
+      });
+      
       const { data, error } = await supabase
         .from('training_sessions')
         .insert([{
@@ -49,12 +56,18 @@ export const DuplicateTrainingForm = ({ session }: DuplicateTrainingFormProps) =
           end_time: endTime,
           location,
           max_participants: session.max_participants,
+          team_id: session.team_id,
           created_by: (await supabase.auth.getUser()).data.user?.id
         }])
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Duplicate session error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Session duplicated successfully:', data);
       return data;
     },
     onSuccess: () => {
@@ -62,8 +75,13 @@ export const DuplicateTrainingForm = ({ session }: DuplicateTrainingFormProps) =
       toast({ title: "Sessione duplicata con successo" });
       setOpen(false);
     },
-    onError: () => {
-      toast({ title: "Errore durante la duplicazione della sessione", variant: "destructive" });
+    onError: (error: any) => {
+      console.error('❌ Duplicate session mutation error:', error);
+      toast({ 
+        title: "Errore durante la duplicazione della sessione", 
+        description: error?.message || "Errore sconosciuto",
+        variant: "destructive" 
+      });
     }
   });
 
