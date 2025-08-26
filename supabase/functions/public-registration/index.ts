@@ -126,10 +126,19 @@ serve(async (req) => {
         })
       }
 
-      // Trova la sessione con questo token
+      // Trova la sessione con questo token e carica i dati del team
       const { data: session, error: sessionError } = await supabase
         .from('training_sessions')
-        .select('*')
+        .select(`
+          *,
+          teams (
+            id,
+            name,
+            logo_url,
+            primary_color,
+            secondary_color
+          )
+        `)
         .eq('public_link_token', token)
         .single()
 
@@ -153,12 +162,13 @@ serve(async (req) => {
       const deadline = session.allow_responses_until ? new Date(session.allow_responses_until) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       const isRegistrationExpired = now > deadline
 
-      // Prendi tutti i giocatori attivi
-      console.log('Fetching active players...')
+      // Prendi tutti i giocatori attivi del team della sessione
+      console.log('Fetching active players for team:', session.team_id)
       const { data: players, error: playersError } = await supabase
         .from('players')
         .select('id, first_name, last_name, jersey_number, avatar_url')
         .eq('status', 'active')
+        .eq('team_id', session.team_id)
         .order('last_name')
 
       console.log('Players query result:', { players, error: playersError })

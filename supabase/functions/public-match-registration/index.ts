@@ -31,7 +31,20 @@ serve(async (req) => {
     if (method === 'GET') {
       if (!token) return new Response(JSON.stringify({ error: 'Token mancante' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
-      const { data: match, error: matchError } = await supabase.from('matches').select('*').eq('public_link_token', token).single()
+      const { data: match, error: matchError } = await supabase
+        .from('matches')
+        .select(`
+          *,
+          teams (
+            id,
+            name,
+            logo_url,
+            primary_color,
+            secondary_color
+          )
+        `)
+        .eq('public_link_token', token)
+        .single()
       if (matchError || !match) return new Response(JSON.stringify({ error: 'Token non valido' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       if ((match as { is_closed?: boolean }).is_closed) return new Response(JSON.stringify({ error: 'La partita è stata chiusa' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
@@ -42,6 +55,7 @@ serve(async (req) => {
         .from('players')
         .select('id, first_name, last_name, jersey_number, position, avatar_url')
         .eq('status', 'active')
+        .eq('team_id', match.team_id)
         .order('last_name')
       if (playersError) throw playersError
 

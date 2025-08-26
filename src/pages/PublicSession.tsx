@@ -37,6 +37,13 @@ interface Session {
   start_time: string
   end_time: string
   location?: string
+  teams?: {
+    id: string
+    name: string
+    logo_url?: string
+    primary_color?: string
+    secondary_color?: string
+  }
 }
 
 interface AttendanceRecord {
@@ -466,6 +473,25 @@ const PublicSession = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-2 sm:p-4">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        {/* Team Header */}
+        {session?.teams && (
+          <div className="text-center py-4 border-b border-border/20">
+            <div className="flex items-center justify-center gap-4 mb-2">
+              {session.teams.logo_url && (
+                <img
+                  src={session.teams.logo_url}
+                  alt={`Logo ${session.teams.name}`}
+                  className="h-12 w-12 sm:h-16 sm:w-16 object-contain"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                />
+              )}
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold" style={{ color: session.teams.primary_color || undefined }}>
+                {session.teams.name}
+              </h2>
+            </div>
+          </div>
+        )}
+        
         {/* Header */}
         <div className="text-center py-4 sm:py-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Registrazione Allenamento</h1>
