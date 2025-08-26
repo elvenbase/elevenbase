@@ -219,7 +219,7 @@ const BulkImportWizard: React.FC<BulkImportWizardProps> = ({
   const isStepCompleted = (step: WizardStep): boolean => {
     switch (step) {
       case 'template':
-        return wizardState.templateDownloaded;
+        return true; // Step template sempre navigabile
       case 'upload':
         return wizardState.fileData !== null && wizardState.fileData.validation.valid;
       case 'preview':
@@ -429,7 +429,7 @@ const BulkImportWizard: React.FC<BulkImportWizardProps> = ({
     const canGoNext = (() => {
       switch (wizardState.currentStep) {
         case 'template':
-          return wizardState.templateDownloaded;
+          return true; // Step template sempre navigabile
         case 'upload':
           return false; // Navigazione automatica dopo upload
         case 'preview':
