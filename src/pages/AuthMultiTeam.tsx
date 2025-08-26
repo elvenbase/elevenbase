@@ -250,9 +250,10 @@ const AuthMultiTeam = () => {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
-      // Test senza expires_at filter per debug
-      console.log('🔧 Testing without expires_at filter...');
-      const response = await fetch(`${supabaseUrl}/rest/v1/team_invites?code=eq.${encodeURIComponent(joinTeamData.inviteCode.toLowerCase())}&select=*`, {
+      // FIX FINALE: Database ha codici in UPPERCASE + aggiungi filtri
+      console.log('🔧 FINAL FIX: Using UPPERCASE code with filters...');
+      const currentTime = new Date().toISOString();
+      const response = await fetch(`${supabaseUrl}/rest/v1/team_invites?code=eq.${encodeURIComponent(joinTeamData.inviteCode.toUpperCase())}&is_active=eq.true&expires_at=gte.${encodeURIComponent(currentTime)}&select=*`, {
         method: 'GET',
         headers: {
           'apikey': supabaseKey,
