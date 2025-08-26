@@ -21,6 +21,10 @@ export interface PlayerTemplateRow {
   email?: string;
   esperienza?: string;
   notes?: string;
+  // Campi Gaming
+  ea_sport_id?: string;
+  gaming_platform?: string;
+  platform_id?: string;
 }
 
 class BulkImportTemplateService {
@@ -190,16 +194,18 @@ class BulkImportTemplateService {
     lines.push('#');
     lines.push(`# RUOLI VALIDI: ${rolesText}`);
     lines.push('#');
+    lines.push('# GAMING PLATFORMS: PC, PS5, Xbox, Nintendo Switch');
+    lines.push('#');
     
     // Header
-    lines.push('first_name*,last_name*,jersey_number*,position,player_role,status*,phone,birth_date,email,esperienza,notes');
+    lines.push('first_name*,last_name*,jersey_number*,position,player_role,status*,phone,birth_date,email,esperienza,notes,ea_sport_id,gaming_platform,platform_id');
     
     // Esempi con ruoli dinamici
     const exampleRole1 = validRoles.includes('regista') ? 'regista' : (validRoles[0] || 'ruolo_esempio');
     const exampleRole2 = validRoles.includes('centravanti') ? 'centravanti' : (validRoles[1] || 'ruolo_esempio_2');
     
-    lines.push(`Mario,Rossi,10,Centrocampo,${exampleRole1},active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra"`);
-    lines.push(`Luigi,Bianchi,7,Attacco,${exampleRole2},active,,,,,`);
+    lines.push(`Mario,Rossi,10,Centrocampo,${exampleRole1},active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra",MarioRossi_EA,PS5,PSNMarioRossi`);
+    lines.push(`Luigi,Bianchi,7,Attacco,${exampleRole2},active,,,,,,,PC,`);
     
     return lines.join('\n');
   }
@@ -246,7 +252,10 @@ class BulkImportTemplateService {
       'birth_date',
       'email',
       'esperienza',
-      'notes'
+      'notes',
+      'ea_sport_id',
+      'gaming_platform',
+      'platform_id'
     ]);
     
     // Riga 8-9: Esempi con ruoli dinamici
@@ -264,7 +273,10 @@ class BulkImportTemplateService {
       '1995-03-15',
       'mario.rossi@email.com',
       'Professionale',
-      'Capitano squadra'
+      'Capitano squadra',
+      'MarioRossi_EA',
+      'PS5',
+      'PSNMarioRossi'
     ]);
     
     worksheetData.push([
@@ -278,6 +290,9 @@ class BulkImportTemplateService {
       '',
       '',
       '',
+      '',
+      '',
+      'PC',
       ''
     ]);
     
@@ -323,7 +338,10 @@ class BulkImportTemplateService {
       { wch: 12 }, // birth_date
       { wch: 20 }, // email
       { wch: 12 }, // esperienza
-      { wch: 20 }  // notes
+      { wch: 20 }, // notes
+      { wch: 15 }, // ea_sport_id
+      { wch: 12 }, // gaming_platform
+      { wch: 15 }  // platform_id
     ];
 
     // Proteggi le prime 6 righe (metadata e istruzioni)

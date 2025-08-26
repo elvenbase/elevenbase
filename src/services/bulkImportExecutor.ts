@@ -304,13 +304,15 @@ class BulkImportExecutor {
       esperienza: player.esperienza?.trim() || null,
       notes: player.notes?.trim() || null,
       
+      // Campi gaming
+      ea_sport_id: player.ea_sport_id?.trim() || null,
+      gaming_platform: player.gaming_platform?.trim() || null,
+      platform_id: player.platform_id?.trim() || null,
+      
       // Campi automatici
       created_at: new Date().toISOString(),
       avatar_url: null, // Non supportiamo avatar import
-      is_captain: false,
-      ea_sport_id: null,
-      gaming_platform: null,
-      platform_id: null
+      is_captain: false
     };
   }
 

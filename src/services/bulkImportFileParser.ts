@@ -401,7 +401,7 @@ class BulkImportFileParser {
     const expectedHeaders = [
       'first_name*', 'last_name*', 'jersey_number*', 'position', 
       'player_role', 'status*', 'phone', 'birth_date', 'email', 
-      'esperienza', 'notes'
+      'esperienza', 'notes', 'ea_sport_id', 'gaming_platform', 'platform_id'
     ];
 
     const actualHeaders = data[4] || []; // Riga 5 (indice 4)
@@ -447,7 +447,11 @@ class BulkImportFileParser {
         birth_date: row[7]?.toString().trim() || '',
         email: row[8]?.toString().trim() || '',
         esperienza: row[9]?.toString().trim() || '',
-        notes: row[10]?.toString().trim() || ''
+        notes: row[10]?.toString().trim() || '',
+        // Campi Gaming
+        ea_sport_id: row[11]?.toString().trim() || '',
+        gaming_platform: row[12]?.toString().trim() || '',
+        platform_id: row[13]?.toString().trim() || ''
       };
 
       players.push(player);
@@ -529,6 +533,20 @@ class BulkImportFileParser {
         const role = player.player_role.trim();
         if (validRoles.length > 0 && !validRoles.includes(role)) {
           errors.push(`Riga ${rowNum}: Ruolo non valido "${role}". Ruoli ammessi: ${validRoles.join(', ')}`);
+        }
+      }
+
+      // Validazione gaming platform
+      if (player.gaming_platform && player.gaming_platform.trim()) {
+        const platform = player.gaming_platform.trim();
+        const validPlatforms = ['PC', 'PS5', 'Xbox', 'Nintendo Switch'];
+        if (!validPlatforms.includes(platform)) {
+          errors.push(`Riga ${rowNum}: Piattaforma gaming non valida "${platform}". Piattaforme ammesse: ${validPlatforms.join(', ')}`);
+        }
+        
+        // Validazione Platform ID per console
+        if ((platform === 'PS5' || platform === 'Xbox') && (!player.platform_id || !player.platform_id.trim())) {
+          errors.push(`Riga ${rowNum}: Platform ID obbligatorio per ${platform}`);
         }
       }
 
