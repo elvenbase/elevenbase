@@ -334,11 +334,11 @@ const AuthMultiTeam = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <img
             src="/assets/IMG_0055.png"
             alt="Logo"
-            className="h-24 w-auto mx-auto"
+            className="h-48 w-auto mx-auto"
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
           />
         </div>
