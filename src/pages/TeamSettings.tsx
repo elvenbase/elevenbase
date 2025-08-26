@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowLeft, Upload, Palette, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, Palette, Save, Loader2, Copy, Users, Hash } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TeamData {
@@ -17,6 +17,7 @@ interface TeamData {
   primary_color: string;
   secondary_color: string;
   logo_url?: string;
+  invite_code?: string;
 }
 
 export default function TeamSettings() {
@@ -122,6 +123,31 @@ export default function TeamSettings() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const copyInviteCode = async () => {
+    if (!teamData?.invite_code) return;
+    
+    try {
+      await navigator.clipboard.writeText(teamData.invite_code);
+      toast({
+        title: 'Codice copiato!',
+        description: 'Il codice di invito è stato copiato negli appunti.'
+      });
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = teamData.invite_code;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      toast({
+        title: 'Codice copiato!',
+        description: 'Il codice di invito è stato copiato negli appunti.'
+      });
     }
   };
 
@@ -301,6 +327,53 @@ export default function TeamSettings() {
                   </Label>
                 </div>
               )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Team Invite Code */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Codice di Invito
+            </CardTitle>
+            <CardDescription>
+              Condividi questo codice per invitare nuovi membri al team
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={teamData?.invite_code || 'Caricamento...'}
+                  readOnly
+                  className="pl-10 font-mono text-lg tracking-wider bg-muted/50"
+                />
+              </div>
+              <Button
+                onClick={copyInviteCode}
+                variant="outline"
+                size="sm"
+                className="gap-2 shrink-0"
+                disabled={!teamData?.invite_code}
+              >
+                <Copy className="h-4 w-4" />
+                Copia
+              </Button>
+            </div>
+            
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                Come invitare nuovi membri:
+              </h4>
+              <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <li>1. Copia il codice di invito qui sopra</li>
+                <li>2. Condividilo con il nuovo membro</li>
+                <li>3. Il membro dovrà andare su <span className="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">elevenbase.pro</span></li>
+                <li>4. Selezionare "Unisciti" e inserire il codice</li>
+              </ol>
             </div>
           </CardContent>
         </Card>
