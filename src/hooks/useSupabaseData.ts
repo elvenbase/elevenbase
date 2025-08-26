@@ -10,7 +10,7 @@ export const useAttendanceScoreSettings = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('attendance_score_settings')
-        .select('preset, training_present_on_time, training_present_late, training_absent, training_no_response, match_present_on_time, match_present_late, match_absent, match_no_response, min_events, mvp_bonus_once, created_at')
+        .select('preset, training_present_on_time, training_present_late, training_absent, training_no_response, match_present_on_time, match_present_late, match_absent, match_no_response, min_events, mvp_bonus_once, mvp_bonus_per_award, created_at')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(1)

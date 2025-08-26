@@ -47,6 +47,7 @@ export function computeAttendanceScore(
   c: AttendanceCounters,
   weights: AttendanceWeights = SIMPLE_WEIGHTS,
   minEvents: number = 10,
+  opts?: { mvpBonusPerAward?: boolean }
 ): ScoreOutput {
   const T_onTime = Math.max(0, c.T_P - c.T_L)
   const M_onTime = Math.max(0, c.M_P - c.M_L)
@@ -65,11 +66,10 @@ export function computeAttendanceScore(
     weights.matchAbsent * c.M_A +
     weights.matchNoResponse * c.M_NR
   )
-  const hasMvp = (c.mvpAwards || 0) > 0
-  const POINTS_WITH_BONUS = POINTS + (hasMvp ? weights.mvpBonusOnce : 0)
+  const awards = Math.max(0, c.mvpAwards || 0)
+  const bonusMultiplier = opts?.mvpBonusPerAward ? awards : (awards > 0 ? 1 : 0)
+  const POINTS_WITH_BONUS = POINTS + (bonusMultiplier * weights.mvpBonusOnce)
 
-  const MAX = (weights.trainingPresentOnTime * 1.0) * T_total + (weights.matchPresentOnTime * 1.5 / 1.5) * 2.5 / 2.5 * M_total
-  // Above line ensures use of 1.0 and 2.5 explicitly; rewrite for clarity
   const MAX_clean = 1.0 * T_total + 2.5 * M_total
   const MIN_clean = -1.0 * T_total - 2.5 * M_total
 
@@ -117,9 +117,10 @@ export function computeScoresForPlayers(
   items: PlayerScoreInput[],
   weights: AttendanceWeights = SIMPLE_WEIGHTS,
   minEvents: number = 10,
+  opts?: { mvpBonusPerAward?: boolean }
 ): PlayerScore[] {
   return items.map(it => {
-    const s = computeAttendanceScore(it.counters, weights, minEvents)
+    const s = computeAttendanceScore(it.counters, weights, minEvents, opts)
     const eligible = s.opportunities >= minEvents
     return { player_id: it.player_id, first_name: it.first_name, last_name: it.last_name, eligible, ...s }
   })
