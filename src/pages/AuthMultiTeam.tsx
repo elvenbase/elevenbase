@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, User, Lock, Users, Hash, Mail, Palette, FileText, Upload, Image, Settings } from "lucide-react";
+import { Shield, User, Lock, Users, Hash, Mail, Palette, FileText, Upload, Image, Settings, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -352,13 +352,10 @@ const AuthMultiTeam = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={authMode} onValueChange={(v) => setAuthMode(v as any)}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="login">Accedi</TabsTrigger>
                 <TabsTrigger value="create-team">Crea Squadra</TabsTrigger>
                 <TabsTrigger value="join-team">Unisciti</TabsTrigger>
-                <TabsTrigger value="global-admin" className="flex items-center justify-center">
-                  <Settings className="h-4 w-4" />
-                </TabsTrigger>
               </TabsList>
 
               {/* Login Tab */}
@@ -587,6 +584,20 @@ const AuthMultiTeam = () => {
 
               {/* Global Admin Tab */}
               <TabsContent value="global-admin">
+                {/* Torna Indietro */}
+                <div className="flex items-center gap-2 mb-4">
+                  <button
+                    onClick={() => setAuthMode('login')}
+                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Indietro
+                  </button>
+                  <div className="flex-1 text-center">
+                    <h3 className="text-sm font-medium">Amministrazione</h3>
+                  </div>
+                </div>
+                
                 <form onSubmit={handleGlobalAdminLogin} className="space-y-4">
                   <div>
                     <Label htmlFor="ga-email">Email</Label>
@@ -616,6 +627,19 @@ const AuthMultiTeam = () => {
                 </form>
               </TabsContent>
             </Tabs>
+            
+            {/* Admin Link Separato - nascosto quando già in admin */}
+            {authMode !== 'global-admin' && (
+              <div className="pt-4 border-t">
+                <button
+                  onClick={() => setAuthMode('global-admin')}
+                  className="flex items-center justify-center gap-2 w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Amministrazione</span>
+                </button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
