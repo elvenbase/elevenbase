@@ -98,7 +98,7 @@ export default function PlayersStatsTable() {
         matchAbsent: scoreSettings.match_absent ?? -2.0,
         matchNoResponse: scoreSettings.match_no_response ?? -2.5,
         mvpBonusOnce: scoreSettings.mvp_bonus_once ?? 5.0,
-      } : undefined, scoreSettings?.min_events || 10)
+      } : undefined, scoreSettings?.min_events || 10, { mvpBonusPerAward: !!(scoreSettings as any)?.mvp_bonus_per_award })
 
       const totalEvents = tPres + tAbs + tNr + mPres + mAbs + mNr
       const minEvents = scoreSettings?.min_events || 10
