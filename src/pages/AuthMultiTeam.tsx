@@ -250,7 +250,9 @@ const AuthMultiTeam = () => {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
-      const response = await fetch(`${supabaseUrl}/rest/v1/team_invites?code=eq.${encodeURIComponent(joinTeamData.inviteCode.toLowerCase())}&is_active=eq.true&select=*`, {
+      // Test senza expires_at filter per debug
+      console.log('🔧 Testing without expires_at filter...');
+      const response = await fetch(`${supabaseUrl}/rest/v1/team_invites?code=eq.${encodeURIComponent(joinTeamData.inviteCode.toLowerCase())}&select=*`, {
         method: 'GET',
         headers: {
           'apikey': supabaseKey,
