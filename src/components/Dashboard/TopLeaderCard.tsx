@@ -281,7 +281,7 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
           <div className="relative p-[0.9rem]">
             {/* Avatar overflowing left - Clean square with no background */}
             {imageSrc ? (
-              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[150px] md:h-[150px] overflow-hidden">
+              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[130px] md:h-[130px] overflow-hidden">
                 <img
                   src={imageSrc}
                   alt={`${p.first_name} ${p.last_name}`}
@@ -307,14 +307,14 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 />
               </div>
             ) : (
-              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[150px] md:h-[150px] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center avatar-initials-fallback">
+              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[130px] md:h-[130px] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center avatar-initials-fallback">
                 <span className="text-lg md:text-2xl font-semibold text-blue-600">
                   {p.first_name?.[0]}{p.last_name?.[0]}
                 </span>
               </div>
             )}
             {/* Right content padding to accommodate avatar */}
-            <div className="pl-[125px] min-h-[88px] md:min-h-[142px] pr-2">
+            <div className="pl-[110px] min-h-[88px] md:min-h-[122px] pr-2">
               <div className="space-y-2">
                 {/* Two-line name: Nome, a capo Cognome */}
                 <div className="font-semibold text-lg md:text-xl leading-tight">
