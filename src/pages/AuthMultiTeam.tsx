@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, User, Lock, Users, Hash, Mail, Palette, FileText, Upload, Image } from "lucide-react";
+import { Shield, User, Lock, Users, Hash, Mail, Palette, FileText, Upload, Image, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -356,7 +356,9 @@ const AuthMultiTeam = () => {
                 <TabsTrigger value="login">Accedi</TabsTrigger>
                 <TabsTrigger value="create-team">Crea Squadra</TabsTrigger>
                 <TabsTrigger value="join-team">Unisciti</TabsTrigger>
-                <TabsTrigger value="global-admin">Admin Globale</TabsTrigger>
+                <TabsTrigger value="global-admin" className="flex items-center justify-center">
+                  <Settings className="h-4 w-4" />
+                </TabsTrigger>
               </TabsList>
 
               {/* Login Tab */}
