@@ -243,6 +243,7 @@ const AuthMultiTeam = () => {
     try {
       // 1. Verify invite code exists in teams table
       console.log('🔍 Verifying invite code:', joinTeamData.inviteCode.toUpperCase());
+      console.log('🔍 Current user session:', await supabase.auth.getSession());
       
       const { data: team, error: teamError } = await supabase
         .from('teams')
@@ -250,21 +251,23 @@ const AuthMultiTeam = () => {
         .eq('invite_code', joinTeamData.inviteCode.toUpperCase())
         .single();
       
-      console.log('🔍 Team query result:', { team, teamError });
+      console.log('🔍 Team query result:');
+      console.log('- Team found:', team);
+      console.log('- Error:', teamError);
       
       if (teamError || !team) {
-        console.error('❌ Team verification failed:', {
-          inputCode: joinTeamData.inviteCode.toUpperCase(),
-          error: teamError,
-          team: team
-        });
+        console.error('❌ Team verification failed:');
+        console.log('- Input code:', joinTeamData.inviteCode.toUpperCase());
+        console.log('- Error details:', teamError);
+        console.log('- Team result:', team);
         
         // Debug: Let's also check what teams exist
         const { data: allTeams } = await supabase
           .from('teams')
           .select('id, name, invite_code')
           .limit(5);
-        console.log('🔍 Available teams for debug:', allTeams);
+        console.log('🔍 Available teams for debug:');
+        console.table(allTeams);
         
         throw new Error('Codice invito non valido o scaduto');
       }
