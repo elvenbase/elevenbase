@@ -9,6 +9,7 @@ import { Shield, User, Lock, Users, Hash, Mail, Palette, FileText, Upload, Image
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import GDPRConsent from "@/components/forms/GDPRConsent";
 
 const AuthMultiTeam = () => {
   const { user, loading } = useAuth();
@@ -33,6 +34,10 @@ const AuthMultiTeam = () => {
     password: '',
     inviteCode: ''
   });
+
+  // GDPR Consent states
+  const [gdprConsent, setGdprConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   // Redirect if already authenticated
   if (!loading && user) {
@@ -113,16 +118,30 @@ const AuthMultiTeam = () => {
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate GDPR consent
+    if (!gdprConsent) {
+      toast.error('È necessario accettare il trattamento dei dati personali per procedere.');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       console.log('Starting team creation...', createTeamData);
       
-      // 1. Sign up the user - Simplified without redirect
+      // 1. Sign up the user with GDPR consent in metadata
       console.log('Attempting signup for:', createTeamData.email);
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: createTeamData.email,
-        password: createTeamData.password
+        password: createTeamData.password,
+        options: {
+          data: {
+            gdpr_consent: gdprConsent,
+            marketing_consent: marketingConsent,
+            consent_date: new Date().toISOString()
+          }
+        }
       });
       
       if (authError) {
@@ -136,6 +155,31 @@ const AuthMultiTeam = () => {
       if (!authData.user?.id) {
         console.error('No user ID available after signup');
         throw new Error('Registrazione utente non completata. Riprova.');
+      }
+
+      // Wait for profile to be created by trigger, then save GDPR consent
+      console.log('Waiting for profile creation and saving GDPR consent...');
+      
+      // Small delay to ensure trigger has processed
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { error: consentError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authData.user.id,
+          gdpr_consent: gdprConsent,
+          marketing_consent: marketingConsent,
+          consent_date: new Date().toISOString(),
+          consent_ip: null // Will be set by server if needed
+        }, {
+          onConflict: 'id'
+        });
+
+      if (consentError) {
+        console.error('Error saving consent:', consentError);
+        // Don't fail the entire process for consent saving issues
+      } else {
+        console.log('✅ GDPR consent saved successfully');
       }
       
       // 2. Check if team name or abbreviation already exists
@@ -238,6 +282,13 @@ const AuthMultiTeam = () => {
 
   const handleJoinTeam = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate GDPR consent
+    if (!gdprConsent) {
+      toast.error('È necessario accettare il trattamento dei dati personali per procedere.');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -352,7 +403,14 @@ const AuthMultiTeam = () => {
       console.log('Attempting signup for team join:', joinTeamData.email);
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: joinTeamData.email,
-        password: joinTeamData.password
+        password: joinTeamData.password,
+        options: {
+          data: {
+            gdpr_consent: gdprConsent,
+            marketing_consent: marketingConsent,
+            consent_date: new Date().toISOString()
+          }
+        }
       });
       
       if (authError) {
@@ -389,6 +447,31 @@ const AuthMultiTeam = () => {
         // Non bloccare la registrazione ma logga l'errore
       } else {
         console.log('✅ Profile created successfully');
+      }
+
+      // Save GDPR consent to user profile (after profile creation)
+      console.log('Saving GDPR consent preferences...');
+      
+      // Small delay to ensure profile exists
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const { error: consentError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authData.user?.id,
+          gdpr_consent: gdprConsent,
+          marketing_consent: marketingConsent,
+          consent_date: new Date().toISOString(),
+          consent_ip: null // Will be set by server if needed
+        }, {
+          onConflict: 'id'
+        });
+
+      if (consentError) {
+        console.error('Error saving consent:', consentError);
+        // Don't fail the entire process for consent saving issues
+      } else {
+        console.log('✅ GDPR consent saved successfully');
       }
       
       // 4. Update invite usage
@@ -651,7 +734,18 @@ const AuthMultiTeam = () => {
                       </div>
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  
+                  {/* GDPR Consent */}
+                  <GDPRConsent
+                    required={true}
+                    value={gdprConsent}
+                    onChange={setGdprConsent}
+                    marketingValue={marketingConsent}
+                    onMarketingChange={setMarketingConsent}
+                    compact={true}
+                  />
+                  
+                  <Button type="submit" className="w-full" disabled={isLoading || !gdprConsent}>
                     {isLoading ? "Creazione..." : "Crea Squadra"}
                   </Button>
                 </form>
@@ -700,7 +794,18 @@ const AuthMultiTeam = () => {
                       Chiedi il codice all'amministratore della squadra (non case-sensitive)
                     </p>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  
+                  {/* GDPR Consent */}
+                  <GDPRConsent
+                    required={true}
+                    value={gdprConsent}
+                    onChange={setGdprConsent}
+                    marketingValue={marketingConsent}
+                    onMarketingChange={setMarketingConsent}
+                    compact={true}
+                  />
+                  
+                  <Button type="submit" className="w-full" disabled={isLoading || !gdprConsent}>
                     {isLoading ? "Registrazione..." : "Unisciti alla Squadra"}
                   </Button>
                 </form>
@@ -754,13 +859,23 @@ const AuthMultiTeam = () => {
             
             {/* Password Recovery Link */}
             {authMode !== 'global-admin' && (
-              <div className="pt-4 border-t text-center">
+              <div className="pt-4 border-t text-center space-y-2">
                 <a
                   href="/reset-password"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Password dimenticata?
                 </a>
+                <div className="text-xs text-muted-foreground">
+                  Registrandoti accetti la nostra{' '}
+                  <a
+                    href="/privacy-policy"
+                    target="_blank"
+                    className="text-primary hover:underline"
+                  >
+                    Privacy Policy
+                  </a>
+                </div>
               </div>
             )}
           </CardContent>
