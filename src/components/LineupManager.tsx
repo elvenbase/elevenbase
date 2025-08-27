@@ -467,9 +467,9 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
   const loadGuestPool = useCallback(async () => {
     if (mode !== 'match' || !currentTeamId) return []
     
-    await refetchGuests()
-    return guestPlayers
-  }, [mode, currentTeamId, guestPlayers, refetchGuests])
+    const { data: refreshedGuests } = await refetchGuests()
+    return refreshedGuests || []
+  }, [mode, currentTeamId, refetchGuests])
 
   const addGuestToLineup = useCallback(async () => {
     if (mode !== 'match' || !currentTeamId) return
@@ -480,9 +480,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       
       // If no guests available, try to seed them (respecting 11 limit)
       if (availableGuests.length === 0) {
-        console.log('No guests available, seeding all 11 guests...')
+        console.log('🎯 [GUEST DEBUG] No guests available, seeding all 11 guests...')
         await seedGuests.mutateAsync({ teamId: currentTeamId, count: 11 })
         availableGuests = await loadGuestPool()
+        console.log('🎯 [GUEST DEBUG] After seeding, loaded:', availableGuests.length, 'guests')
       }
       
       // Find first guest not already in lineup
@@ -491,9 +492,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       
       // If no available guest and we haven't reached 11 limit, create one more
       if (!availableGuest && availableGuests.length < 11) {
-        console.log('Creating one more guest (within 11 limit)...')
+        console.log('🎯 [GUEST DEBUG] Creating one more guest (within 11 limit)...')
         await seedGuests.mutateAsync({ teamId: currentTeamId, count: 1 })
         availableGuests = await loadGuestPool()
+        console.log('🎯 [GUEST DEBUG] After creating one more, loaded:', availableGuests.length, 'guests')
         availableGuest = availableGuests.find(guest => !playersInLineup.includes(guest.id))
       }
       
@@ -550,9 +552,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       
       // If no guests exist, create all 11 immediately for better UX
       if (availableGuests.length === 0) {
-        console.log('No guests in team, creating all 11 for optimal experience...')
+        console.log('🎯 [FILL DEBUG] No guests in team, creating all 11 for optimal experience...')
         await seedGuests.mutateAsync({ teamId: currentTeamId, count: 11 })
         availableGuests = await loadGuestPool()
+        console.log('🎯 [FILL DEBUG] After creating all 11, loaded:', availableGuests.length, 'guests')
         availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
       } else {
         // Check if we need to create more guests (max 11 total)
@@ -566,13 +569,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
           const guestsToCreate = Math.min(guestsNeeded - guestsAvailable, maxAdditionalGuests)
           
           if (guestsToCreate > 0) {
-            console.log(`Creating ${guestsToCreate} more guests (max 11 total)`)
+            console.log(`🎯 [FILL DEBUG] Creating ${guestsToCreate} more guests (max 11 total)`)
             await seedGuests.mutateAsync({ teamId: currentTeamId, count: guestsToCreate })
             availableGuests = await loadGuestPool()
+            console.log('🎯 [FILL DEBUG] After creating additional guests, loaded:', availableGuests.length, 'guests')
             availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
           } else if (maxAdditionalGuests === 0) {
             // We've reached the 11 guests limit
-            console.log('Maximum 11 guests reached for team')
+            console.log('🎯 [FILL DEBUG] Maximum 11 guests reached for team')
           }
         }
       }

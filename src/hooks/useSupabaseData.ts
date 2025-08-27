@@ -3808,8 +3808,9 @@ export const useSeedTeamGuests = () => {
       return data;
     },
     onSuccess: () => {
-      // Invalidate players query to refresh the list
+      // Invalidate both players and guest-players queries to refresh the list
       queryClient.invalidateQueries({ queryKey: ['players'] });
+      queryClient.invalidateQueries({ queryKey: ['guest-players'] });
       toast({
         title: "Ospiti creati",
         description: "Giocatori ospite aggiunti con successo"
