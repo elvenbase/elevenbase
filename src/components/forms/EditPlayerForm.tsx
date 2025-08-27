@@ -265,7 +265,7 @@ const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica
           )
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto [&>button]:hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <span>Modifica Giocatore</span>
