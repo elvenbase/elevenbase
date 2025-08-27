@@ -405,12 +405,31 @@ class BulkImportFileParser {
       'esperienza', 'notes', 'ea_sport_id', 'gaming_platform', 'platform_id'
     ];
 
-    const actualHeaders = data[4] || []; // Riga 5 (indice 4)
+    // Cerca dinamicamente la riga degli headers
+    let headerRowIndex = -1;
+    for (let i = 0; i < Math.min(data.length, 10); i++) {
+      const row = data[i] || [];
+      const firstCell = row[0]?.toString().trim() || '';
+      if (firstCell === 'first_name*') {
+        headerRowIndex = i;
+        break;
+      }
+    }
+
+    if (headerRowIndex === -1) {
+      errors.push('Riga headers non trovata. Assicurati che la prima colonna sia "first_name*"');
+      return { valid: false, errors, warnings };
+    }
+
+    const actualHeaders = data[headerRowIndex] || [];
 
     // Controllo header obbligatori
     for (let i = 0; i < expectedHeaders.length; i++) {
-      if (actualHeaders[i] !== expectedHeaders[i]) {
-        errors.push(`Header colonna ${i + 1} errato: trovato "${actualHeaders[i]}", atteso "${expectedHeaders[i]}"`);
+      const actualHeader = actualHeaders[i]?.toString().trim() || '';
+      const expectedHeader = expectedHeaders[i];
+      
+      if (actualHeader !== expectedHeader) {
+        errors.push(`Header colonna ${i + 1} errato: trovato "${actualHeader}", atteso "${expectedHeader}"`);
       }
     }
 
@@ -428,8 +447,24 @@ class BulkImportFileParser {
   private extractPlayerData(data: any[][]): PlayerTemplateRow[] {
     const players: PlayerTemplateRow[] = [];
     
-    // Inizia dalla riga 6 (indice 5) - dopo header
-    for (let i = 5; i < data.length && i < 5 + this.MAX_PLAYERS; i++) {
+    // Trova dinamicamente la riga degli headers
+    let headerRowIndex = -1;
+    for (let i = 0; i < Math.min(data.length, 10); i++) {
+      const row = data[i] || [];
+      const firstCell = row[0]?.toString().trim() || '';
+      if (firstCell === 'first_name*') {
+        headerRowIndex = i;
+        break;
+      }
+    }
+
+    if (headerRowIndex === -1) {
+      return []; // Nessun header trovato
+    }
+    
+    // Inizia dalla riga dopo gli headers
+    const startRowIndex = headerRowIndex + 1;
+    for (let i = startRowIndex; i < data.length && i < startRowIndex + this.MAX_PLAYERS; i++) {
       const row = data[i];
       
       // Salta righe vuote
@@ -494,9 +529,20 @@ class BulkImportFileParser {
       warnings.push('Errore nel fetch ruoli validi');
     }
 
+    // Trova dinamicamente la riga degli headers per calcolare i numeri di riga corretti
+    let headerRowIndex = -1;
+    for (let i = 0; i < Math.min(data.length, 10); i++) {
+      const row = data[i] || [];
+      const firstCell = row[0]?.toString().trim() || '';
+      if (firstCell === 'first_name*') {
+        headerRowIndex = i;
+        break;
+      }
+    }
+
     // Validazione per ogni giocatore
     players.forEach((player, index) => {
-      const rowNum = index + 6; // Riga reale nel file
+      const rowNum = (headerRowIndex !== -1) ? headerRowIndex + 2 + index : index + 6; // Riga reale nel file
 
       // Campi obbligatori
       if (!player.first_name) {
