@@ -704,6 +704,21 @@ const Squad = () => {
   const updatePlayer = useUpdatePlayer();
   const [editingRolePlayerId, setEditingRolePlayerId] = useState<string|null>(null);
 
+  // Funzione per cambiare il ruolo di un player
+  const onChangeRole = async (playerId: string, roleCode: string) => {
+    try {
+      await updatePlayer.mutateAsync({
+        id: playerId,
+        role_code: roleCode
+      });
+      toast.success('Ruolo aggiornato con successo');
+      setEditingRolePlayerId(null);
+    } catch (error) {
+      console.error('Errore nell\'aggiornamento del ruolo:', error);
+      toast.error('Errore nell\'aggiornamento del ruolo');
+    }
+  };
+
   // Carica capitano attuale al mount e quando cambiano i players
   React.useEffect(() => {
     const currentCaptain = players.find(p => p.is_captain);
@@ -1361,7 +1376,38 @@ const Squad = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          <span>{rolesByCode[(player as any).role_code || '']?.abbreviation || (player as any).role_code || '-'}</span>
+                          {editingRolePlayerId === player.id ? (
+                            <Select
+                              value={(player as any).role_code || ''}
+                              onValueChange={async (value) => {
+                                await onChangeRole(player.id, value);
+                              }}
+                              onOpenChange={(open) => {
+                                if (!open) {
+                                  setEditingRolePlayerId(null);
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-[140px]">
+                                <SelectValue placeholder="Seleziona ruolo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {roles.map(r => (
+                                  <SelectItem key={r.code} value={r.code}>
+                                    {r.label} ({r.abbreviation})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div 
+                              className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1 rounded group"
+                              onClick={() => setEditingRolePlayerId(player.id)}
+                            >
+                              <span>{rolesByCode[(player as any).role_code || '']?.abbreviation || (player as any).role_code || '-'}</span>
+                              <Edit className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
