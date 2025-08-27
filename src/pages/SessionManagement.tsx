@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share } from 'lucide-react'
+import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share, Archive, RotateCcw } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { useTrainingSessions, useTrainingAttendance, usePlayers, useTrainingTrialistInvites } from '@/hooks/useSupabaseData'
+import { useTrainingSessions, useTrainingAttendance, usePlayers, useTrainingTrialistInvites, useArchiveTrainingSession, useReopenTrainingSession } from '@/hooks/useSupabaseData'
 
 import { useLineupManager } from '@/hooks/useLineupManager'
 import { AttendanceForm } from '@/components/forms/AttendanceForm'
@@ -50,6 +50,8 @@ const SessionManagement = () => {
   const { data: attendance, isLoading: loadingAttendance } = useTrainingAttendance(sessionId!)
   const { data: trialistInvites = [] } = useTrainingTrialistInvites(sessionId!)
   const { data: players, error: playersError, isLoading: loadingPlayers } = usePlayers()
+  const archiveSession = useArchiveTrainingSession()
+  const reopenSession = useReopenTrainingSession()
 
 
   const session = sessions?.find(s => s.id === sessionId) as TrainingSession | undefined
@@ -239,15 +241,36 @@ const SessionManagement = () => {
                   Torna agli Allenamenti
                 </Link>
               </Button>
-              <TrainingForm 
-                session={session} 
-                mode="edit"
-              >
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Modifica
-                </Button>
-              </TrainingForm>
+              <div className="flex items-center gap-2">
+                <TrainingForm 
+                  session={session} 
+                  mode="edit"
+                >
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Modifica
+                  </Button>
+                </TrainingForm>
+                {session.is_closed ? (
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => reopenSession.mutate(session.id)}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Riapri
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => archiveSession.mutate(session.id)}
+                  >
+                    <Archive className="h-4 w-4 mr-2" />
+                    Chiudi
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -288,6 +311,25 @@ const SessionManagement = () => {
                   Modifica Sessione
                 </Button>
               </TrainingForm>
+              {session.is_closed ? (
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => reopenSession.mutate(session.id)}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Riapri Sessione
+                </Button>
+              ) : (
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={() => archiveSession.mutate(session.id)}
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  Chiudi Sessione
+                </Button>
+              )}
             </div>
           </div>
         </div>
