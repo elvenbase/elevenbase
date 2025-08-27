@@ -150,21 +150,29 @@ const AuthMultiTeam = () => {
         throw new Error('Registrazione utente non completata. Riprova.');
       }
 
-      // Save GDPR consent to user profile
-      console.log('Saving GDPR consent preferences...');
+      // Wait for profile to be created by trigger, then save GDPR consent
+      console.log('Waiting for profile creation and saving GDPR consent...');
+      
+      // Small delay to ensure trigger has processed
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const { error: consentError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: authData.user.id,
           gdpr_consent: gdprConsent,
           marketing_consent: marketingConsent,
           consent_date: new Date().toISOString(),
           consent_ip: null // Will be set by server if needed
-        })
-        .eq('id', authData.user.id);
+        }, {
+          onConflict: 'id'
+        });
 
       if (consentError) {
         console.error('Error saving consent:', consentError);
         // Don't fail the entire process for consent saving issues
+      } else {
+        console.log('✅ GDPR consent saved successfully');
       }
       
       // 2. Check if team name or abbreviation already exists
@@ -427,21 +435,29 @@ const AuthMultiTeam = () => {
         console.log('✅ Profile created successfully');
       }
 
-      // Save GDPR consent to user profile
+      // Save GDPR consent to user profile (after profile creation)
       console.log('Saving GDPR consent preferences...');
+      
+      // Small delay to ensure profile exists
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const { error: consentError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: authData.user?.id,
           gdpr_consent: gdprConsent,
           marketing_consent: marketingConsent,
           consent_date: new Date().toISOString(),
           consent_ip: null // Will be set by server if needed
-        })
-        .eq('id', authData.user?.id);
+        }, {
+          onConflict: 'id'
+        });
 
       if (consentError) {
         console.error('Error saving consent:', consentError);
         // Don't fail the entire process for consent saving issues
+      } else {
+        console.log('✅ GDPR consent saved successfully');
       }
       
       // 4. Update invite usage
