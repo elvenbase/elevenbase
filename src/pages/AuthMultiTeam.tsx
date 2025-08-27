@@ -130,11 +130,18 @@ const AuthMultiTeam = () => {
     try {
       console.log('Starting team creation...', createTeamData);
       
-      // 1. Sign up the user - Simplified without redirect
+      // 1. Sign up the user with GDPR consent in metadata
       console.log('Attempting signup for:', createTeamData.email);
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: createTeamData.email,
-        password: createTeamData.password
+        password: createTeamData.password,
+        options: {
+          data: {
+            gdpr_consent: gdprConsent,
+            marketing_consent: marketingConsent,
+            consent_date: new Date().toISOString()
+          }
+        }
       });
       
       if (authError) {
@@ -396,7 +403,14 @@ const AuthMultiTeam = () => {
       console.log('Attempting signup for team join:', joinTeamData.email);
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: joinTeamData.email,
-        password: joinTeamData.password
+        password: joinTeamData.password,
+        options: {
+          data: {
+            gdpr_consent: gdprConsent,
+            marketing_consent: marketingConsent,
+            consent_date: new Date().toISOString()
+          }
+        }
       });
       
       if (authError) {
