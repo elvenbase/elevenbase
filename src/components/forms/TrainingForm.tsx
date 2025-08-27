@@ -114,8 +114,8 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
       session_date: formData.session_date,
       start_time: formData.start_time,
       end_time: formData.end_time,
-      communication_type: communicationType || null,
-      communication_details: communicationDetails || null,
+      communication_type: communicationType && communicationType.trim() !== '' ? communicationType : null,
+      communication_details: communicationDetails && communicationDetails.trim() !== '' ? communicationDetails : null,
       max_participants: formData.max_participants
     };
 
