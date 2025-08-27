@@ -9,7 +9,7 @@ interface MatchLineupSectionProps {
 }
 
 const MatchLineupSection = ({ matchId }: MatchLineupSectionProps) => {
-  const { data: allPlayers = [] } = usePlayers()
+  const { data: allPlayers = [] } = usePlayers({ includeGuests: true })
   const { data: attendance = [] } = useMatchAttendance(matchId)
   const { data: trialistInvites = [] } = useMatchTrialistInvites(matchId)
   const { loadLineup } = useMatchLineupManager(matchId)

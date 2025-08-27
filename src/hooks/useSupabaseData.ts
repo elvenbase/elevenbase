@@ -3,6 +3,29 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { startOfDay, endOfDay, subMonths } from 'date-fns';
 
+// Guest players detection and support
+export const detectPlayersIsGuestSupported = async (): Promise<boolean> => {
+  // Check cache first
+  const cached = localStorage.getItem('schema.players.is_guest');
+  if (cached === 'true') return true;
+  if (cached === 'false') return false;
+  
+  try {
+    // Single probe query to check if is_guest column exists
+    const { error } = await supabase
+      .from('players')
+      .select('is_guest')
+      .limit(1);
+      
+    const supported = !error;
+    localStorage.setItem('schema.players.is_guest', supported ? 'true' : 'false');
+    return supported;
+  } catch (error) {
+    localStorage.setItem('schema.players.is_guest', 'false');
+    return false;
+  }
+};
+
 // Attendance Score settings
 export const useAttendanceScoreSettings = () => {
   return useQuery({
@@ -24,9 +47,15 @@ export const useAttendanceScoreSettings = () => {
 }
 
 // Players hooks
-export const usePlayers = () => {
+interface UsePlayersOptions {
+  includeGuests?: boolean;
+}
+
+export const usePlayers = (options: UsePlayersOptions = {}) => {
+  const { includeGuests = false } = options;
+  
   return useQuery({
-    queryKey: ['players'],
+    queryKey: ['players', includeGuests, localStorage.getItem('currentTeamId')],
     queryFn: async () => {
       // Get current team from localStorage
       let currentTeamId = localStorage.getItem('currentTeamId');
@@ -61,6 +90,21 @@ export const usePlayers = () => {
         query = query.eq('team_id', currentTeamId);
       } else {
         console.warn('No team_id found - showing all players!');
+      }
+      
+      // Handle guest filtering with detection
+      if (!includeGuests) {
+        const isGuestSupported = await detectPlayersIsGuestSupported();
+        if (isGuestSupported) {
+          query = query.eq('is_guest', false);
+          console.log('Filtering out guest players (is_guest = false)');
+        } else {
+          // Fallback: filter by name pattern for older instances
+          console.log('Using fallback guest filtering by name pattern');
+          // No guest filtering on old instances
+        }
+      } else {
+        console.log('Including guest players in query');
       }
       
       const { data, error } = await query.order('last_name');
@@ -119,6 +163,13 @@ export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
         query = query.eq('team_id', currentTeamId);
       } else {
         console.warn('No team_id found in usePlayersWithAttendance - showing all players!');
+      }
+      
+      // Exclude guest players from attendance calculations
+      const isGuestSupported = await detectPlayersIsGuestSupported();
+      if (isGuestSupported) {
+        query = query.eq('is_guest', false);
+        console.log('Excluding guest players from attendance stats');
       }
       
       const { data: players, error: playersError } = await query.order('last_name');
@@ -3712,5 +3763,69 @@ export const useUpdateUserStatus = (onSuccessCallback?: () => void) => {
         variant: "destructive"
       });
     }
+  });
+};
+
+// Hook for guest players management
+export const useSeedTeamGuests = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ teamId, count = 5 }: { teamId: string; count?: number }) => {
+      const { data, error } = await supabase.rpc('seed_team_guests', {
+        _team: teamId,
+        _count: count
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate players query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      toast({
+        title: "Ospiti creati",
+        description: "Giocatori ospite aggiunti con successo"
+      });
+    },
+    onError: (error) => {
+      console.error('Errore creazione ospiti:', error);
+      toast({
+        title: "Errore",
+        description: error instanceof Error ? error.message : "Errore nella creazione degli ospiti",
+        variant: "destructive"
+      });
+    }
+  });
+};
+
+// Hook to load guest players pool
+export const useGuestPlayers = (teamId?: string) => {
+  return useQuery({
+    queryKey: ['guest-players', teamId],
+    queryFn: async () => {
+      if (!teamId) return [];
+      
+      const isGuestSupported = await detectPlayersIsGuestSupported();
+      
+      let query = supabase
+        .from('players')
+        .select('*')
+        .eq('team_id', teamId);
+        
+      if (isGuestSupported) {
+        query = query.eq('is_guest', true);
+      } else {
+        // Fallback: filter by name pattern
+        query = query.ilike('first_name', 'Ospite%');
+      }
+      
+      const { data, error } = await query.order('last_name');
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!teamId
   });
 };

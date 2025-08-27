@@ -43,7 +43,7 @@ const MatchDetail = () => {
   const { data: events = [] } = useMatchEvents(id || '')
   const { data: matchAttendance = [] } = useMatchAttendance(id || '')
   const { data: trialistInvites = [] } = useMatchTrialistInvites(id || '')
-  const { data: allPlayers = [] } = usePlayers()
+  const { data: allPlayers = [] } = usePlayers({ includeGuests: true })
   const ensurePublic = useEnsureMatchPublicSettings()
   const updateMatch = useUpdateMatch()
   const setMatchTrialistInvites = useSetMatchTrialistInvites()

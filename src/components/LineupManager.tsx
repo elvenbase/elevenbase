@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Trash2, Save, Users, Download, ChevronDown, ChevronUp } from 'lucide-react'
+import { Trash2, Save, Users, Download, ChevronDown, ChevronUp, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLineupManager } from '@/hooks/useLineupManager'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
@@ -17,6 +17,7 @@ import html2canvas from 'html2canvas'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 import { useRoles } from '@/hooks/useRoles'
 import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
+import { useGuestPlayers, useSeedTeamGuests } from '@/hooks/useSupabaseData'
 
 // Stili CSS personalizzati per il range slider
 const rangeSliderStyles = `
@@ -140,6 +141,11 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
   const { defaultJersey } = useJerseyTemplates()
   const { defaultSetting } = usePngExportSettings()
   const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor()
+  
+  // Guest players management (only for match mode)
+  const currentTeamId = localStorage.getItem('currentTeamId')
+  const { data: guestPlayers = [], refetch: refetchGuests } = useGuestPlayers(mode === 'match' ? currentTeamId : undefined)
+  const seedGuests = useSeedTeamGuests()
   
   // Stati per la personalizzazione PNG - inizializzati dopo l'hook
   const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
@@ -326,14 +332,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
   }
 
   const getPlayerById = (playerId: string) => {
-    return presentPlayers.find(p => p.id === playerId)
+    return allAvailablePlayers.find(p => p.id === playerId)
   }
 
   const getAvailablePlayers = (currentPositionId: string) => {
     const assignedPlayerIds = new Set(Object.values(playerPositions))
     const currentPlayer = playerPositions[currentPositionId]
     
-    return presentPlayers.filter(p => 
+    return allAvailablePlayers.filter(p => 
       !assignedPlayerIds.has(p.id) || p.id === currentPlayer
     )
   }
@@ -451,6 +457,59 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
     }
   }
 
+  // Guest players management functions
+  const loadGuestPool = useCallback(async () => {
+    if (mode !== 'match' || !currentTeamId) return []
+    
+    await refetchGuests()
+    return guestPlayers
+  }, [mode, currentTeamId, guestPlayers, refetchGuests])
+
+  const addGuestToLineup = useCallback(async () => {
+    if (mode !== 'match' || !currentTeamId) return
+
+    try {
+      // Load current guest pool
+      let availableGuests = await loadGuestPool()
+      
+      // If no guests available, seed them
+      if (availableGuests.length === 0) {
+        console.log('No guests available, seeding...')
+        await seedGuests.mutateAsync({ teamId: currentTeamId, count: 5 })
+        availableGuests = await loadGuestPool()
+      }
+      
+      // Find first guest not already in lineup
+      const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
+      const availableGuest = availableGuests.find(guest => !playersInLineup.includes(guest.id))
+      
+      if (!availableGuest) {
+        toast.error('Nessun ospite disponibile')
+        return
+      }
+      
+      // Find first empty position
+      const currentFormation = getCurrentFormation()
+      const emptyPosition = currentFormation.positions.find(pos => !playerPositions[pos.id] || playerPositions[pos.id] === 'none')
+      
+      if (!emptyPosition) {
+        toast.error('Nessuna posizione libera nella formazione')
+        return
+      }
+      
+      // Add guest to lineup
+      const newPositions = { ...playerPositions, [emptyPosition.id]: availableGuest.id }
+      setPlayerPositions(newPositions)
+      setIsDirty(true)
+      
+      toast.success(`Ospite ${availableGuest.first_name} ${availableGuest.last_name} aggiunto in ${emptyPosition.name}`)
+      
+    } catch (error) {
+      console.error('Error adding guest:', error)
+      toast.error('Errore nell\'aggiunta dell\'ospite')
+    }
+  }, [mode, currentTeamId, playerPositions, seedGuests, loadGuestPool, getCurrentFormation])
+
   // QUINTO: Variabili calcolate che non dipendono da 'lineup'
   const currentFormation = getCurrentFormation()
   const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none').length
@@ -466,6 +525,24 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
 
   const { data: roles = [] } = useRoles()
   const roleMap = new Map<string, { label: string; abbreviation: string }>(roles.map(r => [r.code, { label: r.label, abbreviation: r.abbreviation }]))
+  
+  // Create combined player list (present players + guests already in lineup)
+  const allAvailablePlayers = useMemo(() => {
+    if (mode !== 'match') return presentPlayers
+    
+    const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
+    const guestsInLineup = guestPlayers.filter(guest => playersInLineup.includes(guest.id))
+    
+    // Merge present players with guests already in lineup (avoid duplicates)
+    const combined = [...presentPlayers]
+    guestsInLineup.forEach(guest => {
+      if (!combined.find(p => p.id === guest.id)) {
+        combined.push(guest)
+      }
+    })
+    
+    return combined
+  }, [mode, presentPlayers, guestPlayers, playerPositions])
 
   return (
     <Card>
@@ -928,6 +1005,17 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
             <Trash2 className="mr-2 h-4 w-4" />
             Cancella Tutto
           </Button>
+          {mode === 'match' && (
+            <Button 
+              variant="outline" 
+              className="w-full sm:w-auto bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" 
+              onClick={addGuestToLineup}
+              disabled={loading || seedGuests.isPending}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              {seedGuests.isPending ? 'Creando Ospite...' : 'Aggiungi Ospite'}
+            </Button>
+          )}
         </div>
 
         {/* Personalizzazione Export PNG */}
