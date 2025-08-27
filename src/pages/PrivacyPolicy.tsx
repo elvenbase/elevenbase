@@ -56,7 +56,7 @@ const PrivacyPolicy = () => {
               </p>
               <p>
                 <strong>Titolare del Trattamento:</strong> ElevenBase<br />
-                <strong>Email di contatto:</strong> privacy@elevenbase.pro<br />
+                <strong>Email di contatto:</strong> coach@elevenbase.pro<br />
                 <strong>Sito web:</strong> https://elevenbase.pro
               </p>
             </CardContent>
@@ -269,7 +269,7 @@ const PrivacyPolicy = () => {
               <div className="bg-green-50 p-4 rounded-lg border border-green-200 mt-4">
                 <h4 className="font-semibold text-green-900 mb-2">📞 Come Esercitare i Tuoi Diritti</h4>
                 <p className="text-sm text-green-800">
-                  <strong>Email:</strong> privacy@elevenbase.pro<br />
+                  <strong>Email:</strong> coach@elevenbase.pro<br />
                   <strong>Risposta garantita:</strong> Entro 30 giorni dalla richiesta<br />
                   <strong>Gratuito:</strong> L'esercizio dei diritti è sempre gratuito
                 </p>
@@ -330,7 +330,7 @@ const PrivacyPolicy = () => {
               <div>
                 <h4 className="font-semibold text-blue-900 mb-2">📧 Contatta il Responsabile Privacy</h4>
                 <p className="text-sm text-blue-800">
-                  <strong>Email:</strong> privacy@elevenbase.pro<br />
+                  <strong>Email:</strong> coach@elevenbase.pro<br />
                   <strong>Oggetto:</strong> [PRIVACY] La tua richiesta<br />
                   <strong>Risposta:</strong> Entro 30 giorni
                 </p>

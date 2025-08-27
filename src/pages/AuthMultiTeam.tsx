@@ -26,8 +26,7 @@ const AuthMultiTeam = () => {
     abbreviation: 'TST',
     primaryColor: '#DC2626',
     secondaryColor: '#1E40AF',
-    logoFile: null as File | null,
-    logoPreview: ''
+
   });
   const [joinTeamData, setJoinTeamData] = useState({
     email: '',
@@ -44,26 +43,7 @@ const AuthMultiTeam = () => {
     return <Navigate to="/" replace />;
   }
 
-  // Handle logo file selection
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Il logo non può superare i 5MB');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCreateTeamData({
-          ...createTeamData,
-          logoFile: file,
-          logoPreview: reader.result as string
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,43 +208,7 @@ const AuthMultiTeam = () => {
       
       console.log('Team created:', team);
       
-      // 3. Upload logo if provided (optional, don't fail if it doesn't work)
-      let logoUrl = null;
-      if (createTeamData.logoFile && team.id) {
-        try {
-          console.log('Uploading logo...');
-          const fileExt = createTeamData.logoFile.name.split('.').pop();
-          const fileName = `logo.${fileExt}`;
-          const filePath = `${team.id}/${fileName}`;
-          
-          const { error: uploadError, data: uploadData } = await supabase.storage
-            .from('team-logos')
-            .upload(filePath, createTeamData.logoFile, {
-              upsert: true
-            });
-          
-          if (uploadError) {
-            console.error('Logo upload error:', uploadError);
-            // Don't throw, just continue without logo
-          } else if (uploadData) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('team-logos')
-              .getPublicUrl(filePath);
-            
-            logoUrl = publicUrl;
-            console.log('Logo uploaded:', logoUrl);
-            
-            // Update team with logo URL
-            await supabase
-              .from('teams')
-              .update({ logo_url: logoUrl })
-              .eq('id', team.id);
-          }
-        } catch (logoError) {
-          console.error('Logo processing error:', logoError);
-          // Continue without logo
-        }
-      }
+
       
       // 4. User is already added as admin by the database function
       console.log('User already added to team as admin by database function');
@@ -697,42 +641,7 @@ const AuthMultiTeam = () => {
                         />
                       </div>
                     </div>
-                    <div className="col-span-2">
-                      <Label htmlFor="team-logo">Logo Squadra (opzionale)</Label>
-                      <div className="space-y-2">
-                        {createTeamData.logoPreview && (
-                          <div className="flex justify-center p-4 border rounded-lg bg-muted/50">
-                            <img 
-                              src={createTeamData.logoPreview} 
-                              alt="Logo preview" 
-                              className="h-24 w-24 object-contain"
-                            />
-                          </div>
-                        )}
-                        <div className="flex gap-2">
-                          <Input
-                            id="team-logo"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoChange}
-                            className="flex-1"
-                          />
-                          {createTeamData.logoFile && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => setCreateTeamData({ ...createTeamData, logoFile: null, logoPreview: '' })}
-                            >
-                              <Upload className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Max 5MB - JPG, PNG, GIF, WebP, SVG
-                        </p>
-                      </div>
-                    </div>
+
                   </div>
                   
                   {/* GDPR Consent */}
