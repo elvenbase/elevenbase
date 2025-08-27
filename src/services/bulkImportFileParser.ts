@@ -1,4 +1,4 @@
-import * as XLSX from 'sheetjs-style';
+import * as XLSX from 'xlsx';
 import { PlayerTemplateRow, TemplateMetadata } from './bulkImportTemplateService';
 import { supabase } from '@/integrations/supabase/client';
 
