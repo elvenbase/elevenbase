@@ -5,12 +5,29 @@ import { startOfDay, endOfDay, subMonths } from 'date-fns';
 
 // Guest players detection and support
 export const detectPlayersIsGuestSupported = async (): Promise<boolean> => {
+  // Auto force enable for testing (remove in production)
+  const autoForce = !localStorage.getItem('schema.players.is_guest') || localStorage.getItem('schema.players.is_guest') === 'false';
+  if (autoForce) {
+    console.log('🚀 [GUEST DEBUG] AUTO-FORCING guests support for testing!');
+    localStorage.setItem('schema.players.is_guest', 'true');
+    return true;
+  }
+  
   // Check cache first
   const cached = localStorage.getItem('schema.players.is_guest');
-  if (cached === 'true') return true;
-  if (cached === 'false') return false;
+  console.log('🔍 [GUEST DEBUG] Cache check:', cached);
+  
+  if (cached === 'true') {
+    console.log('✅ [GUEST DEBUG] Using cached TRUE - guests supported');
+    return true;
+  }
+  if (cached === 'false') {
+    console.log('❌ [GUEST DEBUG] Using cached FALSE - guests not supported');
+    return false;
+  }
   
   try {
+    console.log('🔍 [GUEST DEBUG] Running detection probe...');
     // Single probe query to check if is_guest column exists
     const { error } = await supabase
       .from('players')
@@ -18,9 +35,18 @@ export const detectPlayersIsGuestSupported = async (): Promise<boolean> => {
       .limit(1);
       
     const supported = !error;
+    console.log('🔍 [GUEST DEBUG] Probe result:', { error: error?.message, supported });
     localStorage.setItem('schema.players.is_guest', supported ? 'true' : 'false');
+    
+    if (supported) {
+      console.log('✅ [GUEST DEBUG] Detection SUCCESS - guests are supported!');
+    } else {
+      console.log('❌ [GUEST DEBUG] Detection FAILED - guests not supported');
+    }
+    
     return supported;
   } catch (error) {
+    console.log('💥 [GUEST DEBUG] Detection error:', error);
     localStorage.setItem('schema.players.is_guest', 'false');
     return false;
   }
@@ -94,17 +120,16 @@ export const usePlayers = (options: UsePlayersOptions = {}) => {
       
       // Handle guest filtering with detection
       if (!includeGuests) {
+        console.log('🚫 [GUEST DEBUG] includeGuests=false, checking support...');
         const isGuestSupported = await detectPlayersIsGuestSupported();
         if (isGuestSupported) {
           query = query.eq('is_guest', false);
-          console.log('Filtering out guest players (is_guest = false)');
+          console.log('🚫 [GUEST DEBUG] Filtering out guest players (is_guest = false)');
         } else {
-          // Fallback: filter by name pattern for older instances
-          console.log('Using fallback guest filtering by name pattern');
-          // No guest filtering on old instances
+          console.log('🚫 [GUEST DEBUG] No guest support - no filtering applied');
         }
       } else {
-        console.log('Including guest players in query');
+        console.log('✅ [GUEST DEBUG] includeGuests=true - including ALL players');
       }
       
       const { data, error } = await query.order('last_name');
