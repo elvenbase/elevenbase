@@ -176,22 +176,36 @@ const UserManagement = () => {
 
       if (!currentTeamId) throw new Error('Nessun team selezionato');
 
+      console.log('🔍 UserManagement: Loading users for team:', currentTeamId);
+
       // Profili SOLO degli utenti del team corrente
       const { data: teamUsers, error: teamUsersErr } = await supabase
         .from('team_members')
         .select('user_id')
         .eq('team_id', currentTeamId)
         .in('status', ['active', 'pending']);
-      if (teamUsersErr) throw teamUsersErr;
+      
+      console.log('🔍 UserManagement: Team users found:', teamUsers);
+      if (teamUsersErr) {
+        console.error('🔍 UserManagement: Team users error:', teamUsersErr);
+        throw teamUsersErr;
+      }
 
       const userIds = (teamUsers || []).map(u => u.user_id);
       if (userIds.length === 0) { setUsers([]); return; }
+
+      console.log('🔍 UserManagement: Looking for profiles with IDs:', userIds);
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, username, first_name, last_name, phone, status, created_at')
         .in('id', userIds);
-      if (profilesError) throw profilesError;
+      
+      console.log('🔍 UserManagement: Profiles found:', profiles);
+      if (profilesError) {
+        console.error('🔍 UserManagement: Profiles error:', profilesError);
+        throw profilesError;
+      }
 
       const usersWithRoles = await Promise.all(
         (profiles || []).map(async (profile) => {
