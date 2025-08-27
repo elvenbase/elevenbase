@@ -186,6 +186,8 @@ const UserManagement = () => {
         .in('status', ['active', 'pending']);
       
       console.log('🔍 UserManagement: Team users found:', teamUsers);
+      console.log('🔍 UserManagement: Expected users: active + pending');
+      console.log('🔍 UserManagement: Query was: team_id =', currentTeamId, 'status IN [active, pending]');
       if (teamUsersErr) {
         console.error('🔍 UserManagement: Team users error:', teamUsersErr);
         throw teamUsersErr;
@@ -226,9 +228,10 @@ const UserManagement = () => {
               first_name: profile.first_name,
               last_name: profile.last_name,
               phone: profile.phone,
-              status: (profile.status as 'active' | 'inactive') || 'inactive'
+              status: (teamRole?.status as 'active' | 'inactive' | 'pending') || 'inactive'
             },
-            user_roles: teamRole?.role ? [{ role: (teamRole.role as any) }] : []
+            user_roles: teamRole?.role ? [{ role: (teamRole.role as any) }] : [],
+            team_status: teamRole?.status || 'inactive'
           };
         })
       );
@@ -844,8 +847,12 @@ const UserManagement = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.profiles?.status === 'active' ? 'default' : 'secondary'}>
-                          {user.profiles?.status === 'active' ? 'Attivo' : 'Inattivo'}
+                        <Badge variant={
+                          user.profiles?.status === 'active' ? 'default' : 
+                          user.profiles?.status === 'pending' ? 'outline' : 'secondary'
+                        }>
+                          {user.profiles?.status === 'active' ? 'Attivo' : 
+                           user.profiles?.status === 'pending' ? 'In Attesa' : 'Inattivo'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -858,7 +865,8 @@ const UserManagement = () => {
                              size="sm"
                              onClick={() => handleToggleUserStatus(user.id, user.profiles?.status || 'inactive')}
                            >
-                             {user.profiles?.status === 'active' ? 'Disattiva' : 'Attiva'}
+                             {user.profiles?.status === 'active' ? 'Disattiva' : 
+                              user.profiles?.status === 'pending' ? 'Approva' : 'Attiva'}
                            </Button>
                            
                            <Button
