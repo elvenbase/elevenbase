@@ -56,7 +56,7 @@ serve(async (req) => {
         .select('id, first_name, last_name, jersey_number, position, avatar_url')
         .eq('status', 'active')
         .eq('team_id', match.team_id)
-        .eq('is_guest', false) // CRITICAL: Exclude guests from public registration links
+        .or('is_guest.is.null,is_guest.eq.false') // CRITICAL: Exclude guests (handle null values)
         .order('last_name')
       if (playersError) throw playersError
 
