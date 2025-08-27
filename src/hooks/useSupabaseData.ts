@@ -1608,6 +1608,7 @@ export const usePromoteTrialist = () => {
         platform_id: trialist.platform_id,
         is_captain: trialist.is_captain || false,
         status: 'active' as const, // Convert from 'promosso' to 'active'
+        team_id: trialist.team_id, // CRITICAL: Include team_id for RLS policy
         created_by: currentUserId
       };
 
