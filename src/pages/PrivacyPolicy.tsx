@@ -7,7 +7,7 @@ const PrivacyPolicy = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate(-1);
+    navigate('/');
   };
 
   return (
