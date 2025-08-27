@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share, Archive, RotateCcw } from 'lucide-react'
+import { Loader2, Calendar, Clock, MapPin, Users, Target, ArrowLeft, Settings, Share, Archive, RotateCcw, Lock } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useTrainingSessions, useTrainingAttendance, usePlayers, useTrainingTrialistInvites, useArchiveTrainingSession, useReopenTrainingSession } from '@/hooks/useSupabaseData'
@@ -20,6 +20,8 @@ import PublicLinkSharing from '@/components/PublicLinkSharing'
 import { Checkbox } from '@/components/ui/checkbox'
 
 import { toast } from 'sonner'
+import { supabase } from '@/integrations/supabase/client'
+import { useQueryClient } from '@tanstack/react-query'
 
 
 
@@ -52,6 +54,8 @@ const SessionManagement = () => {
   const { data: players, error: playersError, isLoading: loadingPlayers } = usePlayers()
   const archiveSession = useArchiveTrainingSession()
   const reopenSession = useReopenTrainingSession()
+  const queryClient = useQueryClient()
+  const [isSessionLoading, setIsSessionLoading] = useState(false)
 
 
   const session = sessions?.find(s => s.id === sessionId) as TrainingSession | undefined
@@ -79,6 +83,49 @@ const SessionManagement = () => {
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1)
   }
+
+  const handleCloseSession = async () => {
+    try {
+      setIsSessionLoading(true);
+      
+      const { error } = await supabase
+        .from('training_sessions')
+        .update({ is_closed: true })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      // Invoca la funzione che marca i non rispondenti come "no_response" per questa sessione
+      try {
+        await supabase.rpc('mark_training_session_no_response', { sid: sessionId });
+      } catch (e) {
+        // Non bloccare la chiusura se la RPC fallisce: segnala solo
+        console.warn('RPC mark_training_session_no_response failed:', e);
+        toast.warning('Sessione chiusa, ma non è stato possibile aggiornare automaticamente i non rispondenti. Verifica manualmente le presenze.');
+      }
+
+      toast.success('Sessione chiusa con successo');
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
+      handleRefresh();
+    } catch (error: any) {
+      toast.error('Errore nella chiusura della sessione: ' + error.message);
+    } finally {
+      setIsSessionLoading(false);
+    }
+  };
+
+  const handleReopenSession = async () => {
+    try {
+      setIsSessionLoading(true);
+      reopenSession.mutate(sessionId!);
+      handleRefresh();
+    } catch (error: any) {
+      toast.error('Errore nella riapertura della sessione: ' + error.message);
+    } finally {
+      setIsSessionLoading(false);
+    }
+  };
 
   const handleLineupChange = useCallback((playerIds: string[]) => {
     setPlayersInLineup(playerIds)
@@ -255,18 +302,20 @@ const SessionManagement = () => {
                   <Button 
                     variant="default" 
                     size="sm"
-                    onClick={() => reopenSession.mutate(session.id)}
+                    onClick={handleReopenSession}
+                    disabled={isSessionLoading}
                   >
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Riapri
                   </Button>
                 ) : (
                   <Button 
-                    variant="destructive" 
+                    variant="outline" 
                     size="sm"
-                    onClick={() => archiveSession.mutate(session.id)}
+                    onClick={handleCloseSession}
+                    disabled={isSessionLoading}
                   >
-                    <Archive className="h-4 w-4 mr-2" />
+                    <Lock className="h-4 w-4 mr-2" />
                     Chiudi
                   </Button>
                 )}
@@ -315,18 +364,20 @@ const SessionManagement = () => {
                 <Button 
                   variant="default" 
                   size="sm"
-                  onClick={() => reopenSession.mutate(session.id)}
+                  onClick={handleReopenSession}
+                  disabled={isSessionLoading}
                 >
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Riapri Sessione
                 </Button>
               ) : (
                 <Button 
-                  variant="destructive" 
+                  variant="outline" 
                   size="sm"
-                  onClick={() => archiveSession.mutate(session.id)}
+                  onClick={handleCloseSession}
+                  disabled={isSessionLoading}
                 >
-                  <Archive className="h-4 w-4 mr-2" />
+                  <Lock className="h-4 w-4 mr-2" />
                   Chiudi Sessione
                 </Button>
               )}
