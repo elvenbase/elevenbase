@@ -75,14 +75,7 @@ class BulkImportTemplateService {
     // Riga 4: Vuota (separatore)
     worksheetData.push([]);
     
-    // Riga 5: Istruzioni ruoli
-    worksheetData.push(['RUOLI VALIDI:', 'difensore_centrale, terzino_destro, terzino_sinistro, esterno_destro_basso, esterno_sinistro_basso,']);
-    worksheetData.push(['', 'mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti']);
-    
-    // Riga 7: Vuota (separatore)
-    worksheetData.push([]);
-    
-    // Riga 8: Header colonne
+    // Riga 5: Header colonne
     worksheetData.push([
       'first_name*',
       'last_name*', 
@@ -125,6 +118,12 @@ class BulkImportTemplateService {
       '',
       ''
     ]);
+    
+    // Riga vuota + info ruoli
+    worksheetData.push([]);
+    worksheetData.push(['=== RUOLI VALIDI ===']);
+    worksheetData.push(['difensore_centrale, terzino_destro, terzino_sinistro, esterno_destro_basso, esterno_sinistro_basso,']);
+    worksheetData.push(['mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti']);
     
     // Crea worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -234,13 +233,7 @@ class BulkImportTemplateService {
     // Riga 4: Vuota (separatore)
     worksheetData.push([]);
     
-    // Riga 5: Istruzioni ruoli
-    worksheetData.push(['RUOLI VALIDI:', rolesText]);
-    
-    // Riga 6: Vuota (separatore)
-    worksheetData.push([]);
-    
-    // Riga 7: Header colonne
+    // Riga 5: Header colonne
     worksheetData.push([
       'first_name*',
       'last_name*', 
@@ -295,6 +288,14 @@ class BulkImportTemplateService {
       'PC',
       ''
     ]);
+    
+    // Riga vuota + info ruoli e gaming
+    worksheetData.push([]);
+    worksheetData.push(['=== RUOLI VALIDI ===']);
+    worksheetData.push([rolesText]);
+    worksheetData.push([]);
+    worksheetData.push(['=== GAMING PLATFORMS ===']);
+    worksheetData.push(['PC, PS5, Xbox, Nintendo Switch']);
     
     // Crea worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
