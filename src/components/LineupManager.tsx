@@ -478,19 +478,31 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       // Load current guest pool
       let availableGuests = await loadGuestPool()
       
-      // If no guests available, seed them
+      // If no guests available, try to seed them (respecting 11 limit)
       if (availableGuests.length === 0) {
-        console.log('No guests available, seeding...')
+        console.log('No guests available, seeding initial guests...')
         await seedGuests.mutateAsync({ teamId: currentTeamId, count: 5 })
         availableGuests = await loadGuestPool()
       }
       
       // Find first guest not already in lineup
       const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
-      const availableGuest = availableGuests.find(guest => !playersInLineup.includes(guest.id))
+      let availableGuest = availableGuests.find(guest => !playersInLineup.includes(guest.id))
+      
+      // If no available guest and we haven't reached 11 limit, create one more
+      if (!availableGuest && availableGuests.length < 11) {
+        console.log('Creating one more guest (within 11 limit)...')
+        await seedGuests.mutateAsync({ teamId: currentTeamId, count: 1 })
+        availableGuests = await loadGuestPool()
+        availableGuest = availableGuests.find(guest => !playersInLineup.includes(guest.id))
+      }
       
       if (!availableGuest) {
-        toast.error('Nessun ospite disponibile')
+        if (availableGuests.length >= 11) {
+          toast.error('Tutti gli 11 ospiti sono già in formazione')
+        } else {
+          toast.error('Nessun ospite disponibile')
+        }
         return
       }
       
@@ -536,16 +548,25 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
       let availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
       
-      // If we need more guests than available, seed them
+      // Check if we need to create more guests (max 11 total)
       const guestsNeeded = emptyPositions.length
       const guestsAvailable = availableGuestsForFill.length
+      const totalGuestsInTeam = availableGuests.length
       
       if (guestsNeeded > guestsAvailable) {
-        const additionalGuestsNeeded = guestsNeeded - guestsAvailable
-        console.log(`Need ${additionalGuestsNeeded} more guests, seeding...`)
-        await seedGuests.mutateAsync({ teamId: currentTeamId, count: additionalGuestsNeeded + 2 }) // +2 buffer
-        availableGuests = await loadGuestPool()
-        availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+        // Calculate how many more guests we can create (max 11 total)
+        const maxAdditionalGuests = Math.max(0, 11 - totalGuestsInTeam)
+        const guestsToCreate = Math.min(guestsNeeded - guestsAvailable, maxAdditionalGuests)
+        
+        if (guestsToCreate > 0) {
+          console.log(`Creating ${guestsToCreate} more guests (max 11 total)`)
+          await seedGuests.mutateAsync({ teamId: currentTeamId, count: guestsToCreate })
+          availableGuests = await loadGuestPool()
+          availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+        } else if (maxAdditionalGuests === 0) {
+          // We've reached the 11 guests limit
+          console.log('Maximum 11 guests reached for team')
+        }
       }
       
       // Fill empty positions with available guests
@@ -563,7 +584,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       setIsDirty(true)
       
       const guestsAdded = Math.min(emptyPositions.length, availableGuestsForFill.length)
-      toast.success(`${guestsAdded} ospiti aggiunti alla formazione`)
+      
+      if (guestsAdded === emptyPositions.length) {
+        toast.success(`${guestsAdded} ospiti aggiunti alla formazione`)
+      } else if (guestsAdded > 0) {
+        toast.success(`${guestsAdded} ospiti aggiunti. Pool massimo di 11 ospiti raggiunto per la squadra.`)
+      } else {
+        toast.error('Nessun ospite disponibile. Pool massimo di 11 ospiti raggiunto.')
+      }
     } catch (error) {
       console.error('Error filling formation with guests:', error)
       toast.error('Errore nel riempire la formazione con ospiti')
