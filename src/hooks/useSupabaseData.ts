@@ -836,7 +836,6 @@ export const useUpdateTrainingSession = () => {
         max_participants?: number;
         allow_responses_until?: string | null;
         is_closed?: boolean;
-        archived_at?: string | null;
       };
     }) => {
       const { data: result, error } = await supabase
@@ -893,10 +892,9 @@ export const useArchiveTrainingSession = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('training_sessions')
-        .update({ is_closed: true, archived_at: now })
+        .update({ is_closed: true })
         .eq('id', id)
         .select()
         .single();

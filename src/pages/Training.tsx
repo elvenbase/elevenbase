@@ -23,7 +23,7 @@ interface TrainingSession {
   start_time: string;
   end_time: string;
   is_closed: boolean;
-  archived_at?: string | null;
+  // archived_at?: string | null; // Temporarily disabled due to schema issue
   description?: string;
   location?: string;
   max_participants?: number;
@@ -67,7 +67,8 @@ const Training = () => {
   // Funzione per determinare se una sessione è archiviata (nuova regola):
   // deve essere chiusa e devono essere passate >48h dalla fine
   const isSessionArchived = (session: TrainingSession) => {
-    if (session.archived_at) return true
+    // Temporarily disabled archived_at check due to schema issue
+    // if (session.archived_at) return true
     const end = new Date(session.session_date + 'T' + session.end_time)
     const now = new Date()
     const hoursSinceEnd = (now.getTime() - end.getTime()) / (1000 * 60 * 60)
@@ -101,7 +102,7 @@ const Training = () => {
       return hours > 48
     }
     const active = trainingSessions
-      .filter(s => !s.is_closed && !olderThan48h(s) && !s.archived_at)
+      .filter(s => !s.is_closed && !olderThan48h(s))
       .sort((a, b) => {
         const ta = toTime(a), tb = toTime(b);
         const fa = ta >= now.getTime();
@@ -111,8 +112,8 @@ const Training = () => {
         return fa ? -1 : 1;
       });
     const closed = trainingSessions
-      // Chiuse: (is_closed e non ancora >48h) OPPURE (non chiuse ma già >48h → richiedono chiusura) e non già archiviata
-      .filter(s => !s.archived_at && ((s.is_closed && !olderThan48h(s)) || (!s.is_closed && olderThan48h(s))))
+      // Chiuse: (is_closed e non ancora >48h) OPPURE (non chiuse ma già >48h → richiedono chiusura)
+      .filter(s => ((s.is_closed && !olderThan48h(s)) || (!s.is_closed && olderThan48h(s))))
       .sort((a, b) => toTime(b) - toTime(a));
     const archived = trainingSessions
       .filter(s => isSessionArchived(s))

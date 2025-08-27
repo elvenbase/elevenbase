@@ -40,11 +40,10 @@ export const ReactivateTrainingForm = ({ session }: ReactivateTrainingFormProps)
 
   const reactivate = useMutation({
     mutationFn: async () => {
-      // 1) Archive original (ensure closed and archived_at)
-      const nowIso = new Date().toISOString()
+      // 1) Archive original (ensure closed) - archived_at temporarily disabled due to schema
       const { error: updErr } = await supabase
         .from('training_sessions')
-        .update({ is_closed: true, archived_at: nowIso })
+        .update({ is_closed: true })
         .eq('id', session.id)
       if (updErr) throw updErr
 
