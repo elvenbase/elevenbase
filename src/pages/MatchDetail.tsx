@@ -44,6 +44,7 @@ const MatchDetail = () => {
   const { data: matchAttendance = [] } = useMatchAttendance(id || '')
   const { data: trialistInvites = [] } = useMatchTrialistInvites(id || '')
   const { data: allPlayers = [] } = usePlayers({ includeGuests: true })
+  const { data: playersOnly = [] } = usePlayers({ includeGuests: false })
   const ensurePublic = useEnsureMatchPublicSettings()
   const updateMatch = useUpdateMatch()
   const setMatchTrialistInvites = useSetMatchTrialistInvites()
@@ -64,11 +65,11 @@ const MatchDetail = () => {
     const trialistAbsent = trialistInvites.filter((t: any) => t.status === 'absent').length
     const present = playerPresent + trialistPresent
     const absent = playerAbsent + trialistAbsent
-    const totalEntities = (allPlayers?.length || 0) + (trialistInvites?.length || 0)
+    const totalEntities = (playersOnly?.length || 0) + (trialistInvites?.length || 0)
     const responded = matchAttendance.length + trialistPresent + trialistAbsent
     const noResponse = Math.max(0, totalEntities - responded)
     return { present, absent, noResponse, totalPlayers: totalEntities }
-  }, [matchAttendance, trialistInvites, allPlayers])
+  }, [matchAttendance, trialistInvites, playersOnly])
 
   useEffect(() => {
     // future: subscribe realtime
