@@ -467,9 +467,11 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
   const loadGuestPool = useCallback(async () => {
     if (mode !== 'match' || !currentTeamId) return []
     
+    console.log('🎯 [LOAD DEBUG] Before refetch - current guests:', guestPlayers?.length || 0)
     const { data: refreshedGuests } = await refetchGuests()
+    console.log('🎯 [LOAD DEBUG] After refetch - refreshed guests:', refreshedGuests?.length || 0)
     return refreshedGuests || []
-  }, [mode, currentTeamId, refetchGuests])
+  }, [mode, currentTeamId, refetchGuests, guestPlayers])
 
   const addGuestToLineup = useCallback(async () => {
     if (mode !== 'match' || !currentTeamId) return
@@ -482,8 +484,20 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       if (availableGuests.length === 0) {
         console.log('🎯 [GUEST DEBUG] No guests available, seeding all 11 guests...')
         await seedGuests.mutateAsync({ teamId: currentTeamId, count: 11 })
+        
+        // Wait a bit for database changes to propagate
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
         availableGuests = await loadGuestPool()
         console.log('🎯 [GUEST DEBUG] After seeding, loaded:', availableGuests.length, 'guests')
+        
+        // If still not working, try a second refetch
+        if (availableGuests.length === 0) {
+          console.log('🎯 [GUEST DEBUG] First refetch failed, trying again...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          availableGuests = await loadGuestPool()
+          console.log('🎯 [GUEST DEBUG] After second refetch, loaded:', availableGuests.length, 'guests')
+        }
       }
       
       // Find first guest not already in lineup
@@ -494,6 +508,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       if (!availableGuest && availableGuests.length < 11) {
         console.log('🎯 [GUEST DEBUG] Creating one more guest (within 11 limit)...')
         await seedGuests.mutateAsync({ teamId: currentTeamId, count: 1 })
+        
+        // Wait for database changes
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
         availableGuests = await loadGuestPool()
         console.log('🎯 [GUEST DEBUG] After creating one more, loaded:', availableGuests.length, 'guests')
         availableGuest = availableGuests.find(guest => !playersInLineup.includes(guest.id))
@@ -554,8 +572,21 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       if (availableGuests.length === 0) {
         console.log('🎯 [FILL DEBUG] No guests in team, creating all 11 for optimal experience...')
         await seedGuests.mutateAsync({ teamId: currentTeamId, count: 11 })
+        
+        // Wait for database changes
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
         availableGuests = await loadGuestPool()
         console.log('🎯 [FILL DEBUG] After creating all 11, loaded:', availableGuests.length, 'guests')
+        
+        // If still not working, try again
+        if (availableGuests.length === 0) {
+          console.log('🎯 [FILL DEBUG] First refetch failed, trying again...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          availableGuests = await loadGuestPool()
+          console.log('🎯 [FILL DEBUG] After second refetch, loaded:', availableGuests.length, 'guests')
+        }
+        
         availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
       } else {
         // Check if we need to create more guests (max 11 total)
@@ -571,6 +602,10 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
           if (guestsToCreate > 0) {
             console.log(`🎯 [FILL DEBUG] Creating ${guestsToCreate} more guests (max 11 total)`)
             await seedGuests.mutateAsync({ teamId: currentTeamId, count: guestsToCreate })
+            
+            // Wait for database changes
+            await new Promise(resolve => setTimeout(resolve, 500))
+            
             availableGuests = await loadGuestPool()
             console.log('🎯 [FILL DEBUG] After creating additional guests, loaded:', availableGuests.length, 'guests')
             availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
