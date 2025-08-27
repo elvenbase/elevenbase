@@ -54,7 +54,15 @@ const UserManagement = () => {
   const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   const { user: currentUser } = useAuth();
-  const updateUserStatus = useUpdateUserStatus(fetchUsers);
+  
+  // Usare ref per la funzione fetchUsers
+  const fetchUsersRef = React.useRef<(() => void) | null>(null);
+  
+  const updateUserStatus = useUpdateUserStatus(() => {
+    if (fetchUsersRef.current) {
+      fetchUsersRef.current();
+    }
+  });
 
   const roles: Array<{
     value: 'superadmin' | 'admin' | 'coach' | 'player';
@@ -246,6 +254,9 @@ const UserManagement = () => {
       setIsLoading(false);
     }
   };
+
+  // Assegna la funzione al ref dopo la definizione
+  fetchUsersRef.current = fetchUsers;
 
   const handleCreateUser = async () => {
     try {
