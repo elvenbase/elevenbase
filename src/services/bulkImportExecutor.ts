@@ -55,8 +55,8 @@ class BulkImportExecutor {
       batchSize = this.DEFAULT_BATCH_SIZE
     } = options;
 
-    let importedPlayers: ImportResult['importedPlayers'] = [];
-    let failedPlayers: ImportResult['failedPlayers'] = [];
+    const importedPlayers: ImportResult['importedPlayers'] = [];
+    const failedPlayers: ImportResult['failedPlayers'] = [];
 
     try {
       // Validazione preliminare

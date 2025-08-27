@@ -67,6 +67,7 @@ class BulkImportFileParser {
     }
 
     // Controllo nome file per caratteri pericolosi
+    // eslint-disable-next-line no-control-regex
     if (/[<>:"/\\|?*\x00-\x1f]/.test(file.name)) {
       threats.push('Nome file contiene caratteri non sicuri');
     }
