@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,9 +38,10 @@ interface EditPlayerFormProps {
   triggerAs?: 'button' | 'link';
   triggerLabel?: string;
   triggerClassName?: string;
+  children?: React.ReactNode;
 }
 
-const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica', triggerClassName = '' }: EditPlayerFormProps) => {
+const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica', triggerClassName = '', children }: EditPlayerFormProps) => {
   const [open, setOpen] = useState(false);
   
   // Parse existing phone number to extract prefix and number
@@ -254,20 +255,33 @@ const EditPlayerForm = ({ player, triggerAs = 'button', triggerLabel = 'Modifica
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {triggerAs === 'link' ? (
-          <span className={`cursor-pointer ${triggerClassName}`}>{triggerLabel}</span>
-        ) : (
-          <Button variant="outline" size="sm">
-            <Edit className="h-4 w-4" />
-          </Button>
+        {children ? children : (
+          triggerAs === 'link' ? (
+            <span className={`cursor-pointer ${triggerClassName}`}>{triggerLabel}</span>
+          ) : (
+            <Button variant="outline" size="sm">
+              <Edit className="h-4 w-4" />
+            </Button>
+          )
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto [&>button]:hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <span>Modifica Giocatore</span>
             <PlayerSessionCounter playerId={player.id} />
           </DialogTitle>
+          <DialogClose asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Button>
+          </DialogClose>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

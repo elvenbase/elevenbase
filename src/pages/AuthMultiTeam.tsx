@@ -241,38 +241,112 @@ const AuthMultiTeam = () => {
     setIsLoading(true);
     
     try {
-      // 1. Verify invite code exists in teams table
-      console.log('🔍 Verifying invite code:', joinTeamData.inviteCode.toUpperCase());
-      console.log('🔍 Current user session:', await supabase.auth.getSession());
+      // 1. Verify invite code exists and is valid in team_invites table
+      console.log('🔍 Verifying invite code:', joinTeamData.inviteCode);
       
-      const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .select('id, name, invite_code')
-        .eq('invite_code', joinTeamData.inviteCode.toUpperCase())
-        .single();
+      // BYPASS SUPABASE CLIENT - usa fetch diretta per debugging
+      console.log('🔧 Trying direct fetch to bypass client issues...');
       
-      console.log('🔍 Team query result:');
-      console.log('- Team found:', team);
-      console.log('- Error:', teamError);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
-      if (teamError || !team) {
-        console.error('❌ Team verification failed:');
-        console.log('- Input code:', joinTeamData.inviteCode.toUpperCase());
-        console.log('- Error details:', teamError);
-        console.log('- Team result:', team);
+      // FIX FINALE: Database ha codici in UPPERCASE + aggiungi filtri
+      console.log('🔧 FINAL FIX: Using case-insensitive ILIKE query...');
+      const currentTime = new Date().toISOString();
+      // FIX FINALE: Use case-insensitive query (ilike)
+      const response = await fetch(`${supabaseUrl}/rest/v1/team_invites?code=ilike.${encodeURIComponent(joinTeamData.inviteCode)}&is_active=eq.true&expires_at=gte.${encodeURIComponent(currentTime)}&select=*`, {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('🔧 Direct fetch response status:', response.status);
+      console.log('🔧 Direct fetch response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔧 Direct fetch error:', errorText);
+        throw new Error(`Direct fetch failed: ${response.status} ${errorText}`);
+      }
+      
+      const inviteData = await response.json();
+      console.log('🔧 Direct fetch data:', inviteData);
+      
+      const invite = inviteData && inviteData.length > 0 ? inviteData[0] : null;
+      const inviteError = invite ? null : { message: 'No invite found' };
+      
+      console.log('🔍 Invite found (step 1):', invite);
+      
+      if (inviteError || !invite) {
+        console.error('❌ Invite verification failed:');
+        console.log('- Input code:', joinTeamData.inviteCode);
+        console.log('- Error details:', inviteError);
         
-        // Debug: Let's also check what teams exist
-        const { data: allTeams } = await supabase
-          .from('teams')
-          .select('id, name, invite_code')
-          .limit(5);
-        console.log('🔍 Available teams for debug:');
-        console.table(allTeams);
+        // Debug: Let's check what invite codes exist
+        const { data: allInvites } = await supabase
+          .from('team_invites')
+          .select('code, role, expires_at, is_active')
+          .eq('is_active', true)
+          .gte('expires_at', new Date().toISOString())
+          .limit(10);
         
+        console.log('🔍 Available invite codes:');
+        console.table(allInvites);
         throw new Error('Codice invito non valido o scaduto');
       }
       
-      console.log('✅ Team found:', { teamId: team.id, teamName: team.name });
+      // DIRECT FETCH anche per teams (stesso problema del client)
+      console.log('🔧 Direct fetch for teams data...');
+      const teamResponse = await fetch(`${supabaseUrl}/rest/v1/teams?id=eq.${invite.team_id}&select=id,name`, {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('🔧 Teams direct fetch status:', teamResponse.status);
+      
+      if (!teamResponse.ok) {
+        const teamErrorText = await teamResponse.text();
+        console.error('🔧 Teams direct fetch error:', teamErrorText);
+        throw new Error(`Teams fetch failed: ${teamResponse.status} ${teamErrorText}`);
+      }
+      
+      const teamData = await teamResponse.json();
+      console.log('🔧 Teams direct fetch data:', teamData);
+      
+      const team = teamData && teamData.length > 0 ? teamData[0] : null;
+      const teamError = team ? null : { message: 'Team not found' };
+      
+      if (teamError || !team) {
+        console.error('❌ Team not found:', teamError);
+        throw new Error('Team associato al codice non trovato');
+      }
+      
+      // Combina i dati
+      const inviteWithTeam = {
+        ...invite,
+        teams: team
+      };
+      
+      console.log('🔍 Invite with team data:', inviteWithTeam);
+      
+      if (inviteWithTeam.used_count >= inviteWithTeam.max_uses) {
+        throw new Error('Questo codice invito ha raggiunto il limite di utilizzi');
+      }
+      
+      console.log('✅ Valid invite found:', { 
+        teamId: inviteWithTeam.teams.id, 
+        teamName: inviteWithTeam.teams.name, 
+        role: inviteWithTeam.role 
+      });
       
       // 2. Sign up the user - Simplified
       console.log('Attempting signup for team join:', joinTeamData.email);
@@ -286,21 +360,54 @@ const AuthMultiTeam = () => {
         throw authError;
       }
       
-      // 3. Add user to team with default 'player' role
+      // 3. Add user to team with role from invite
       const { error: memberError } = await supabase
         .from('team_members')
         .insert({
-          team_id: team.id,
+          team_id: inviteWithTeam.team_id,
           user_id: authData.user?.id,
-          role: 'player', // Default role for invite code joins
+          role: inviteWithTeam.role,
           status: 'pending', // Will be activated after email confirmation
-          joined_at: new Date().toISOString()
+          joined_at: new Date().toISOString(),
+          invited_by: inviteWithTeam.created_by
         });
       
       if (memberError) throw memberError;
       
-      console.log('✅ Join team successful:', { teamId: team.id, teamName: team.name, userId: authData.user?.id });
-      toast.success(`Registrazione completata! Controlla la tua email per confermare l'account e unirti a ${team.name}.`);
+      // 3.5. Create profile (now allowed by signup policy)
+      console.log('🔧 Creating profile for new user...');
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user?.id,
+          username: joinTeamData.email,
+          status: 'active'
+        });
+      
+      if (profileError) {
+        console.error('❌ Profile creation failed:', profileError);
+        // Non bloccare la registrazione ma logga l'errore
+      } else {
+        console.log('✅ Profile created successfully');
+      }
+      
+      // 4. Update invite usage
+      await supabase
+        .from('team_invites')
+        .update({
+          used_count: inviteWithTeam.used_count + 1,
+          last_used_at: new Date().toISOString(),
+          last_used_by: authData.user?.id
+        })
+        .eq('id', inviteWithTeam.id);
+      
+      console.log('✅ Join team successful:', { 
+        teamId: inviteWithTeam.team_id, 
+        teamName: inviteWithTeam.teams.name, 
+        userId: authData.user?.id,
+        role: inviteWithTeam.role 
+      });
+      toast.success(`Registrazione completata! Controlla la tua email per confermare l'account e unirti a ${inviteWithTeam.teams.name}.`);
       
     } catch (error: any) {
       console.error('❌ Join team error:', error);
@@ -571,14 +678,14 @@ const AuthMultiTeam = () => {
                       <Input
                         id="invite-code"
                         placeholder="Es: CDRPLAY720c0"
-                        className="pl-10 uppercase"
+                        className="pl-10 font-mono tracking-wider"
                         value={joinTeamData.inviteCode}
                         onChange={(e) => setJoinTeamData({ ...joinTeamData, inviteCode: e.target.value })}
                         required
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Chiedi il codice all'amministratore della squadra
+                      Chiedi il codice all'amministratore della squadra (non case-sensitive)
                     </p>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>

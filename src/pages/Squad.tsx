@@ -1197,7 +1197,7 @@ const Squad = () => {
                       role="link"
                       tabIndex={0}
                       onClick={() => (window.location.href = `/player/${p.id}?ref=/squad`)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') (window.location.href = `/player/${p.id}`) }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') (window.location.href = `/player/${p.id}?ref=/squad`) }}
                       className={`relative rounded-lg border border-border/40 shadow-sm bg-white hover:shadow-md transition hover:-translate-y-0.5 overflow-visible bg-gradient-to-r ${sectorHeroBgClass[sectorFromRoleCode((p as any).role_code)]}`}
                     >
                       <div className="relative p-4 md:p-2">

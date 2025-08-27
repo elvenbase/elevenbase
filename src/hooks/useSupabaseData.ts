@@ -3663,3 +3663,54 @@ export const useBulkImportPlayers = () => {
     }
   });
 };
+
+// Hook per aggiornare status utente in team_members
+export const useUpdateUserStatus = (onSuccessCallback?: () => void) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      userId, 
+      newStatus, 
+      teamId 
+    }: { 
+      userId: string; 
+      newStatus: 'active' | 'pending' | 'inactive';
+      teamId: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('team_members')
+        .update({ 
+          status: newStatus,
+          status_changed_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .eq('team_id', teamId)
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data, variables) => {
+      // Call the callback to refresh users list
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+      
+      toast({
+        title: "Status aggiornato",
+        description: `Utente ${variables.newStatus === 'active' ? 'attivato' : 
+                     variables.newStatus === 'pending' ? 'messo in attesa' : 'disattivato'} con successo`,
+      });
+    },
+    onError: (error) => {
+      console.error('Errore aggiornamento status:', error);
+      toast({
+        title: "Errore",
+        description: error instanceof Error ? error.message : "Errore nell'aggiornamento status",
+        variant: "destructive"
+      });
+    }
+  });
+};

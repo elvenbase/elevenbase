@@ -12,6 +12,7 @@ import { UserPlus, Edit, Trash2, Shield, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUpdateUserStatus } from '@/hooks/useSupabaseData';
 
 interface User {
   id: string;
@@ -53,6 +54,15 @@ const UserManagement = () => {
   const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   const { user: currentUser } = useAuth();
+  
+  // Usare ref per la funzione fetchUsers
+  const fetchUsersRef = React.useRef<(() => void) | null>(null);
+  
+  const updateUserStatus = useUpdateUserStatus(() => {
+    if (fetchUsersRef.current) {
+      fetchUsersRef.current();
+    }
+  });
 
   const roles: Array<{
     value: 'superadmin' | 'admin' | 'coach' | 'player';
@@ -176,22 +186,38 @@ const UserManagement = () => {
 
       if (!currentTeamId) throw new Error('Nessun team selezionato');
 
+      console.log('🔍 UserManagement: Loading users for team:', currentTeamId);
+
       // Profili SOLO degli utenti del team corrente
       const { data: teamUsers, error: teamUsersErr } = await supabase
         .from('team_members')
         .select('user_id')
         .eq('team_id', currentTeamId)
         .in('status', ['active', 'pending']);
-      if (teamUsersErr) throw teamUsersErr;
+      
+      console.log('🔍 UserManagement: Team users found:', teamUsers);
+      console.log('🔍 UserManagement: Expected users: active + pending');
+      console.log('🔍 UserManagement: Query was: team_id =', currentTeamId, 'status IN [active, pending]');
+      if (teamUsersErr) {
+        console.error('🔍 UserManagement: Team users error:', teamUsersErr);
+        throw teamUsersErr;
+      }
 
       const userIds = (teamUsers || []).map(u => u.user_id);
       if (userIds.length === 0) { setUsers([]); return; }
+
+      console.log('🔍 UserManagement: Looking for profiles with IDs:', userIds);
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, username, first_name, last_name, phone, status, created_at')
         .in('id', userIds);
-      if (profilesError) throw profilesError;
+      
+      console.log('🔍 UserManagement: Profiles found:', profiles);
+      if (profilesError) {
+        console.error('🔍 UserManagement: Profiles error:', profilesError);
+        throw profilesError;
+      }
 
       const usersWithRoles = await Promise.all(
         (profiles || []).map(async (profile) => {
@@ -212,9 +238,10 @@ const UserManagement = () => {
               first_name: profile.first_name,
               last_name: profile.last_name,
               phone: profile.phone,
-              status: (profile.status as 'active' | 'inactive') || 'inactive'
+              status: (teamRole?.status as 'active' | 'inactive' | 'pending') || 'inactive'
             },
-            user_roles: teamRole?.role ? [{ role: (teamRole.role as any) }] : []
+            user_roles: teamRole?.role ? [{ role: (teamRole.role as any) }] : [],
+            team_status: teamRole?.status || 'inactive'
           };
         })
       );
@@ -227,6 +254,9 @@ const UserManagement = () => {
       setIsLoading(false);
     }
   };
+
+  // Assegna la funzione al ref dopo la definizione
+  fetchUsersRef.current = fetchUsers;
 
   const handleCreateUser = async () => {
     try {
@@ -459,29 +489,32 @@ const UserManagement = () => {
     setShowPassword(false);
   };
 
-  const handleToggleUserStatus = async (userId: string, currentStatus: 'active' | 'inactive') => {
+  const handleToggleUserStatus = async (userId: string, currentStatus: 'active' | 'inactive' | 'pending') => {
     try {
-      const activate = currentStatus === 'inactive';
-      
-      // Call edge function to activate/deactivate user
-      const { data, error } = await supabase.functions.invoke('activate-user', {
-        body: {
-          userId,
-          activate
-        }
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        throw new Error(data.error);
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        toast.error('Errore: Team non trovato');
+        return;
       }
 
-      toast.success(data.message);
-      fetchUsers();
+      let newStatus: 'active' | 'pending' | 'inactive';
+      
+      // Logica toggle: pending/inactive → active, active → inactive
+      if (currentStatus === 'pending' || currentStatus === 'inactive') {
+        newStatus = 'active';
+      } else {
+        newStatus = 'inactive';
+      }
+
+      await updateUserStatus.mutateAsync({
+        userId,
+        newStatus,
+        teamId: currentTeamId
+      });
+
+      // Il refresh viene fatto automaticamente dall'hook
     } catch (error: any) {
       console.error('Error toggling user status:', error);
-      toast.error('Errore nel cambiamento dello stato utente: ' + error.message);
     }
   };
 
@@ -830,8 +863,12 @@ const UserManagement = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.profiles?.status === 'active' ? 'default' : 'secondary'}>
-                          {user.profiles?.status === 'active' ? 'Attivo' : 'Inattivo'}
+                        <Badge variant={
+                          user.profiles?.status === 'active' ? 'default' : 
+                          user.profiles?.status === 'pending' ? 'outline' : 'secondary'
+                        }>
+                          {user.profiles?.status === 'active' ? 'Attivo' : 
+                           user.profiles?.status === 'pending' ? 'In Attesa' : 'Inattivo'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -842,9 +879,10 @@ const UserManagement = () => {
                            <Button
                              variant="outline"
                              size="sm"
-                             onClick={() => handleToggleUserStatus(user.id, user.profiles?.status || 'inactive')}
+                             onClick={() => handleToggleUserStatus(user.id, user.profiles?.status as 'active' | 'inactive' | 'pending' || 'inactive')}
                            >
-                             {user.profiles?.status === 'active' ? 'Disattiva' : 'Attiva'}
+                             {user.profiles?.status === 'active' ? 'Disattiva' : 
+                              user.profiles?.status === 'pending' ? 'Approva' : 'Attiva'}
                            </Button>
                            
                            <Button
