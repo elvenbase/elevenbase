@@ -329,7 +329,7 @@ class BulkImportFileParser {
 
     // Estrai dati giocatori
     const players = this.extractPlayerData(data);
-    const playersValidation = await this.validatePlayersData(players);
+    const playersValidation = await this.validatePlayersData(players, data);
     
     errors.push(...playersValidation.errors);
     warnings.push(...playersValidation.warnings);
@@ -499,7 +499,7 @@ class BulkImportFileParser {
   /**
    * Validazione dati giocatori
    */
-  private async validatePlayersData(players: PlayerTemplateRow[]): Promise<FileValidationResult> {
+  private async validatePlayersData(players: PlayerTemplateRow[], data: any[][]): Promise<FileValidationResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
