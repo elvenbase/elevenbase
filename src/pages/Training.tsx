@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, Clock, Users, Eye, Copy, Trash2, MoreHorizontal, ChevronDown, ChevronUp, Settings } from 'lucide-react';
+import { Plus, Calendar, Clock, Users, Eye, Copy, Trash2, MoreHorizontal, ChevronDown, ChevronUp, Settings, RotateCcw } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
@@ -14,7 +14,7 @@ import { TrainingSessionModal } from '@/components/forms/TrainingSessionModal';
 import { DuplicateTrainingForm } from '@/components/forms/DuplicateTrainingForm';
 import { ReactivateTrainingForm } from '@/components/forms/ReactivateTrainingForm';
 import StatsCard from '@/components/StatsCard';
-import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSession, useArchiveTrainingSession } from '@/hooks/useSupabaseData';
+import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSession, useArchiveTrainingSession, useReopenTrainingSession } from '@/hooks/useSupabaseData';
 
 interface TrainingSession {
   id: string;
@@ -40,6 +40,7 @@ const Training = () => {
   const { data: players } = usePlayers();
   const deleteSession = useDeleteTrainingSession();
   const archiveSession = useArchiveTrainingSession();
+  const reopenSession = useReopenTrainingSession();
 
   const handleSessionClosed = () => {
     refetchSessions();
@@ -491,6 +492,11 @@ const Training = () => {
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => reopenSession.mutate(session.id)}>
+                                        <RotateCcw className="mr-2 h-4 w-4" />
+                                        Riapri Sessione
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
                                       <DropdownMenuItem asChild>
                                         <Link to={`/training/session/${session.id}`} className="flex items-center">
                                           <Eye className="mr-2 h-4 w-4" />

@@ -911,6 +911,31 @@ export const useArchiveTrainingSession = () => {
   });
 };
 
+export const useReopenTrainingSession = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('training_sessions')
+        .update({ is_closed: false })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      toast({ title: 'Sessione riaperta con successo' });
+    },
+    onError: () => {
+      toast({ title: "Errore durante la riapertura della sessione", variant: 'destructive' });
+    }
+  });
+};
+
 // Competitions hooks
 export const useCompetitions = () => {
   return useQuery({
