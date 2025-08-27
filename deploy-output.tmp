@@ -121,9 +121,9 @@ dist/assets/react-vendor-DetSAscD.js                141.92 kB │ gzip:  45.64 k
 dist/assets/html2canvas.esm-BfYXEYrK.js             201.47 kB │ gzip:  48.08 kB │ map:   602.27 kB
 dist/assets/Dashboard-B2FRQbuA.js                   290.02 kB │ gzip:  94.76 kB │ map: 1,254.90 kB
 dist/assets/Squad-CTraQPbj.js                       652.40 kB │ gzip: 206.80 kB │ map: 2,473.72 kB
-✓ built in 8.98s
+✓ built in 8.23s
 ​
-[90m(build.command completed in 15.5s)[39m
+[90m(build.command completed in 14.3s)[39m
 
 Deploying to Netlify
 ────────────────────────────────────────────────────────────────
@@ -135,7 +135,7 @@ Deploying to Netlify
 [96m[1mNetlify Build Complete                                        [22m[39m
 [96m[1m────────────────────────────────────────────────────────────────[22m[39m
 ​
-[90m(Netlify Build completed in 20.5s)[39m
+[90m(Netlify Build completed in 16.1s)[39m
 
 🚀 Deploy complete
 ────────────────────────────────────────────────────────────────
@@ -143,13 +143,13 @@ Deploying to Netlify
  ╭─────────────────────── ⬥  Draft deploy is live ⬥  ────────────────────────╮
  │                                                                           │
  │                             Deployed draft to                             │
- │   https://68af84fc5131403523276f07--gleaming-kleicha-dec5b4.netlify.app   │
+ │   https://68af863308886a3427faef9a--gleaming-kleicha-dec5b4.netlify.app   │
  │                                                                           │
  ╰───────────────────────────────────────────────────────────────────────────╯
 
-[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68af84fc5131403523276f07
-[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68af84fc5131403523276f07
-[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68af84fc5131403523276f07
+[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68af863308886a3427faef9a
+[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68af863308886a3427faef9a
+[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68af863308886a3427faef9a
 
 If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:
 netlify deploy --prod
