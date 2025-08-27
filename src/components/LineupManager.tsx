@@ -516,6 +516,60 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
     }
   }, [mode, currentTeamId, playerPositions, seedGuests, loadGuestPool, getCurrentFormation])
 
+  const fillFormationWithGuests = useCallback(async () => {
+    if (mode !== 'match' || !currentTeamId) return
+
+    try {
+      // Load current guest pool
+      let availableGuests = await loadGuestPool()
+      
+      // Find empty positions
+      const currentFormation = getCurrentFormation()
+      const emptyPositions = currentFormation.positions.filter(pos => !playerPositions[pos.id] || playerPositions[pos.id] === 'none')
+      
+      if (emptyPositions.length === 0) {
+        toast.error('Nessuna posizione libera nella formazione')
+        return
+      }
+      
+      // Find guests not already in lineup
+      const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
+      let availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+      
+      // If we need more guests than available, seed them
+      const guestsNeeded = emptyPositions.length
+      const guestsAvailable = availableGuestsForFill.length
+      
+      if (guestsNeeded > guestsAvailable) {
+        const additionalGuestsNeeded = guestsNeeded - guestsAvailable
+        console.log(`Need ${additionalGuestsNeeded} more guests, seeding...`)
+        await seedGuests.mutateAsync({ teamId: currentTeamId, count: additionalGuestsNeeded + 2 }) // +2 buffer
+        availableGuests = await loadGuestPool()
+        availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+      }
+      
+      // Fill empty positions with available guests
+      const newPositions = { ...playerPositions }
+      let guestIndex = 0
+      
+      for (const position of emptyPositions) {
+        if (guestIndex < availableGuestsForFill.length) {
+          newPositions[position.id] = availableGuestsForFill[guestIndex].id
+          guestIndex++
+        }
+      }
+      
+      setPlayerPositions(newPositions)
+      setIsDirty(true)
+      
+      const guestsAdded = Math.min(emptyPositions.length, availableGuestsForFill.length)
+      toast.success(`${guestsAdded} ospiti aggiunti alla formazione`)
+    } catch (error) {
+      console.error('Error filling formation with guests:', error)
+      toast.error('Errore nel riempire la formazione con ospiti')
+    }
+  }, [mode, currentTeamId, playerPositions, loadGuestPool, seedGuests, getCurrentFormation])
+
   // QUINTO: Variabili calcolate che non dipendono da 'lineup'
   const currentFormation = getCurrentFormation()
   const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none').length
@@ -1012,19 +1066,35 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
             Cancella Tutto
           </Button>
           {mode === 'match' && (
-            <Button 
-              variant="outline" 
-              className="w-full sm:w-auto bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" 
-              onClick={() => {
-                console.log('🎯 [LINEUP DEBUG] Guest button clicked!');
-                addGuestToLineup();
-              }}
-              disabled={loading || seedGuests.isPending}
-              data-testid="guest-button"
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              {seedGuests.isPending ? 'Creando Ospite...' : 'Aggiungi Ospite'}
-            </Button>
+            <>
+              <Button 
+                variant="outline" 
+                className="w-full sm:w-auto bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" 
+                onClick={() => {
+                  console.log('🎯 [LINEUP DEBUG] Guest button clicked!');
+                  addGuestToLineup();
+                }}
+                disabled={loading || seedGuests.isPending}
+                data-testid="guest-button"
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                {seedGuests.isPending ? 'Creando Ospite...' : 'Aggiungi Ospite'}
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full sm:w-auto bg-green-50 hover:bg-green-100 border-green-200 text-green-700" 
+                onClick={() => {
+                  console.log('🎯 [LINEUP DEBUG] Fill formation button clicked!');
+                  fillFormationWithGuests();
+                }}
+                disabled={loading || seedGuests.isPending || isFormationComplete}
+                data-testid="fill-guests-button"
+              >
+                <Users className="mr-2 h-4 w-4" />
+                {seedGuests.isPending ? 'Preparando...' : 'Riempi con Ospiti'}
+              </Button>
+            </>
           )}
           {mode !== 'match' && console.log('🎯 [LINEUP DEBUG] Guest button NOT rendered - mode is:', mode)}
         </div>
