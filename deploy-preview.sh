@@ -25,10 +25,8 @@ echo ""
 
 # 1. Pull delle ultime modifiche
 echo -e "${YELLOW}1. Aggiornamento del repository...${NC}"
-git pull --rebase origin main || {
-    echo -e "${RED}Errore durante il pull. Risolvi i conflitti e riprova.${NC}"
-    exit 1
-}
+# Skip git pull for feature branch deploy
+echo -e "${YELLOW}Skipping git pull - using current branch$(NC)"
 
 # 2. Verifica che il file .env.production esista
 if [ ! -f ".env.production" ]; then
