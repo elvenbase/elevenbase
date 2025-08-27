@@ -480,8 +480,8 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       
       // If no guests available, try to seed them (respecting 11 limit)
       if (availableGuests.length === 0) {
-        console.log('No guests available, seeding initial guests...')
-        await seedGuests.mutateAsync({ teamId: currentTeamId, count: 5 })
+        console.log('No guests available, seeding all 11 guests...')
+        await seedGuests.mutateAsync({ teamId: currentTeamId, count: 11 })
         availableGuests = await loadGuestPool()
       }
       
@@ -548,24 +548,32 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
       let availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
       
-      // Check if we need to create more guests (max 11 total)
-      const guestsNeeded = emptyPositions.length
-      const guestsAvailable = availableGuestsForFill.length
-      const totalGuestsInTeam = availableGuests.length
-      
-      if (guestsNeeded > guestsAvailable) {
-        // Calculate how many more guests we can create (max 11 total)
-        const maxAdditionalGuests = Math.max(0, 11 - totalGuestsInTeam)
-        const guestsToCreate = Math.min(guestsNeeded - guestsAvailable, maxAdditionalGuests)
+      // If no guests exist, create all 11 immediately for better UX
+      if (availableGuests.length === 0) {
+        console.log('No guests in team, creating all 11 for optimal experience...')
+        await seedGuests.mutateAsync({ teamId: currentTeamId, count: 11 })
+        availableGuests = await loadGuestPool()
+        availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+      } else {
+        // Check if we need to create more guests (max 11 total)
+        const guestsNeeded = emptyPositions.length
+        const guestsAvailable = availableGuestsForFill.length
+        const totalGuestsInTeam = availableGuests.length
         
-        if (guestsToCreate > 0) {
-          console.log(`Creating ${guestsToCreate} more guests (max 11 total)`)
-          await seedGuests.mutateAsync({ teamId: currentTeamId, count: guestsToCreate })
-          availableGuests = await loadGuestPool()
-          availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
-        } else if (maxAdditionalGuests === 0) {
-          // We've reached the 11 guests limit
-          console.log('Maximum 11 guests reached for team')
+        if (guestsNeeded > guestsAvailable) {
+          // Calculate how many more guests we can create (max 11 total)
+          const maxAdditionalGuests = Math.max(0, 11 - totalGuestsInTeam)
+          const guestsToCreate = Math.min(guestsNeeded - guestsAvailable, maxAdditionalGuests)
+          
+          if (guestsToCreate > 0) {
+            console.log(`Creating ${guestsToCreate} more guests (max 11 total)`)
+            await seedGuests.mutateAsync({ teamId: currentTeamId, count: guestsToCreate })
+            availableGuests = await loadGuestPool()
+            availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+          } else if (maxAdditionalGuests === 0) {
+            // We've reached the 11 guests limit
+            console.log('Maximum 11 guests reached for team')
+          }
         }
       }
       
