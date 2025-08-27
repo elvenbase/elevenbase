@@ -305,7 +305,14 @@ const MatchPublicRegistration = () => {
                           <div className="flex items-center gap-3 w-full">
                             <PlayerAvatar entityId={`player:${p.id}`} firstName={p.first_name} lastName={p.last_name} size="sm" />
                             <span className="font-medium">{p.first_name} {p.last_name}</span>
-                            {p.jersey_number && (<Badge variant="outline">#{p.jersey_number}</Badge>)}
+                            <div className="flex items-center gap-2 ml-auto">
+                              {p.jersey_number && (<Badge variant="outline">#{p.jersey_number}</Badge>)}
+                              {registration && (
+                                <Badge variant="default" className="text-xs">
+                                  Ha votato
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </SelectItem>
                       )
@@ -322,8 +329,8 @@ const MatchPublicRegistration = () => {
                             <PlayerAvatar entityId={`trialist:${t.id}`} firstName={t.first_name} lastName={t.last_name} size="sm" />
                             <span className="font-medium">{t.first_name} {t.last_name}</span>
                             {registration && (
-                              <Badge variant={registration.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
-                                {registration.status === 'present' ? 'Presente' : 'Assente'}
+                              <Badge variant="default" className="ml-auto text-xs">
+                                Ha votato
                               </Badge>
                             )}
                           </div>

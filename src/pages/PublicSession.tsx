@@ -574,8 +574,8 @@ const PublicSession = () => {
                               <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" />
                               <span className="font-medium">{player.first_name} {player.last_name}</span>
                               {registration && (
-                                <Badge variant={registration.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
-                                  {registration.status === 'present' ? 'Presente' : 'Assente'}
+                                <Badge variant="default" className="ml-auto text-xs">
+                                  Ha votato
                                 </Badge>
                               )}
                             </div>
@@ -589,8 +589,8 @@ const PublicSession = () => {
                             <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
                             <span className="font-medium">{t.first_name} {t.last_name}</span>
                             {t.status && (
-                              <Badge variant={t.status === 'present' ? 'default' : 'secondary'} className="ml-auto text-xs">
-                                {t.status === 'present' ? 'Presente' : 'Assente'}
+                              <Badge variant="default" className="ml-auto text-xs">
+                                Ha votato
                               </Badge>
                             )}
                           </div>
