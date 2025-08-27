@@ -9,6 +9,7 @@ import { Shield, User, Lock, Users, Hash, Mail, Palette, FileText, Upload, Image
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import GDPRConsent from "@/components/forms/GDPRConsent";
 
 const AuthMultiTeam = () => {
   const { user, loading } = useAuth();
@@ -33,6 +34,10 @@ const AuthMultiTeam = () => {
     password: '',
     inviteCode: ''
   });
+
+  // GDPR Consent states
+  const [gdprConsent, setGdprConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   // Redirect if already authenticated
   if (!loading && user) {
@@ -113,6 +118,13 @@ const AuthMultiTeam = () => {
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate GDPR consent
+    if (!gdprConsent) {
+      toast.error('È necessario accettare il trattamento dei dati personali per procedere.');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -238,6 +250,13 @@ const AuthMultiTeam = () => {
 
   const handleJoinTeam = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate GDPR consent
+    if (!gdprConsent) {
+      toast.error('È necessario accettare il trattamento dei dati personali per procedere.');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -651,7 +670,18 @@ const AuthMultiTeam = () => {
                       </div>
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  
+                  {/* GDPR Consent */}
+                  <GDPRConsent
+                    required={true}
+                    value={gdprConsent}
+                    onChange={setGdprConsent}
+                    marketingValue={marketingConsent}
+                    onMarketingChange={setMarketingConsent}
+                    compact={true}
+                  />
+                  
+                  <Button type="submit" className="w-full" disabled={isLoading || !gdprConsent}>
                     {isLoading ? "Creazione..." : "Crea Squadra"}
                   </Button>
                 </form>
@@ -700,7 +730,18 @@ const AuthMultiTeam = () => {
                       Chiedi il codice all'amministratore della squadra (non case-sensitive)
                     </p>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  
+                  {/* GDPR Consent */}
+                  <GDPRConsent
+                    required={true}
+                    value={gdprConsent}
+                    onChange={setGdprConsent}
+                    marketingValue={marketingConsent}
+                    onMarketingChange={setMarketingConsent}
+                    compact={true}
+                  />
+                  
+                  <Button type="submit" className="w-full" disabled={isLoading || !gdprConsent}>
                     {isLoading ? "Registrazione..." : "Unisciti alla Squadra"}
                   </Button>
                 </form>
@@ -754,13 +795,23 @@ const AuthMultiTeam = () => {
             
             {/* Password Recovery Link */}
             {authMode !== 'global-admin' && (
-              <div className="pt-4 border-t text-center">
+              <div className="pt-4 border-t text-center space-y-2">
                 <a
                   href="/reset-password"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Password dimenticata?
                 </a>
+                <div className="text-xs text-muted-foreground">
+                  Registrandoti accetti la nostra{' '}
+                  <a
+                    href="/privacy-policy"
+                    target="_blank"
+                    className="text-primary hover:underline"
+                  >
+                    Privacy Policy
+                  </a>
+                </div>
               </div>
             )}
           </CardContent>
