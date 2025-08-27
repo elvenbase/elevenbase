@@ -149,6 +149,23 @@ const AuthMultiTeam = () => {
         console.error('No user ID available after signup');
         throw new Error('Registrazione utente non completata. Riprova.');
       }
+
+      // Save GDPR consent to user profile
+      console.log('Saving GDPR consent preferences...');
+      const { error: consentError } = await supabase
+        .from('profiles')
+        .update({
+          gdpr_consent: gdprConsent,
+          marketing_consent: marketingConsent,
+          consent_date: new Date().toISOString(),
+          consent_ip: null // Will be set by server if needed
+        })
+        .eq('id', authData.user.id);
+
+      if (consentError) {
+        console.error('Error saving consent:', consentError);
+        // Don't fail the entire process for consent saving issues
+      }
       
       // 2. Check if team name or abbreviation already exists
       console.log('Checking if team name and abbreviation are available...');
@@ -408,6 +425,23 @@ const AuthMultiTeam = () => {
         // Non bloccare la registrazione ma logga l'errore
       } else {
         console.log('✅ Profile created successfully');
+      }
+
+      // Save GDPR consent to user profile
+      console.log('Saving GDPR consent preferences...');
+      const { error: consentError } = await supabase
+        .from('profiles')
+        .update({
+          gdpr_consent: gdprConsent,
+          marketing_consent: marketingConsent,
+          consent_date: new Date().toISOString(),
+          consent_ip: null // Will be set by server if needed
+        })
+        .eq('id', authData.user?.id);
+
+      if (consentError) {
+        console.error('Error saving consent:', consentError);
+        // Don't fail the entire process for consent saving issues
       }
       
       // 4. Update invite usage
