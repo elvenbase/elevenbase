@@ -227,7 +227,7 @@ const MatchDetail = () => {
                   Formazione
                 </CardTitle>
                 <CardDescription>
-                  Copia logiche di LineupManager e ConvocatiManager con export PNG
+                  Gestisci la tua formazione
                 </CardDescription>
               </CardHeader>
               <CardContent>
