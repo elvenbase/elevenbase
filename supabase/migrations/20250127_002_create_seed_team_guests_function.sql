@@ -35,9 +35,8 @@ BEGIN
         RETURN;
     END IF;
     
-    -- Create guest players if they don't exist (up to 11 total)
-    -- Simple logic: create guests from 1 to min(11, existing_count + requested_count)
-    FOR i IN 1..LEAST(11, existing_guests_count + max_guests_to_create) LOOP
+    -- Create missing guest players in sequence from 1 to 11
+    FOR i IN 1..11 LOOP
         -- Check if guest already exists
         SELECT * INTO guest_record
         FROM players 
@@ -46,8 +45,8 @@ BEGIN
           AND first_name = 'Ospite'
           AND last_name = i::text;
           
-        -- If guest doesn't exist, create it
-        IF NOT FOUND THEN
+        -- If guest doesn't exist, create it (unless we've hit the limit)
+        IF NOT FOUND AND existing_guests_count < 11 THEN
             INSERT INTO players (
                 team_id,
                 first_name,
@@ -65,12 +64,20 @@ BEGIN
                 NOW(),
                 NOW()
             ) RETURNING * INTO guest_record;
+            
+            -- Update counter
+            existing_guests_count := existing_guests_count + 1;
         END IF;
         
         -- Return the guest if it exists (either found or just created)
         IF guest_record.id IS NOT NULL THEN
             RETURN NEXT guest_record;
             guest_record.id := NULL; -- Reset for next iteration
+        END IF;
+        
+        -- Stop if we have enough guests
+        IF existing_guests_count >= 11 THEN
+            EXIT;
         END IF;
     END LOOP;
     
