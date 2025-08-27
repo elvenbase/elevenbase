@@ -374,6 +374,22 @@ const AuthMultiTeam = () => {
       
       if (memberError) throw memberError;
       
+      // 3.5. Create profile for the new user (required for UserManagement to show them)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user?.id,
+          username: joinTeamData.email,
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      
+      if (profileError) {
+        console.warn('⚠️ Profile creation failed (might already exist):', profileError);
+        // Non bloccare la registrazione se il profilo già esiste
+      }
+      
       // 4. Update invite usage
       await supabase
         .from('team_invites')
