@@ -227,7 +227,7 @@ const MatchDetail = () => {
                   Formazione
                 </CardTitle>
                 <CardDescription>
-                  Gestisci la tua formazione
+                  Gestisci la tua formazione [FORCED REBUILD 13:30]
                 </CardDescription>
               </CardHeader>
               <CardContent>

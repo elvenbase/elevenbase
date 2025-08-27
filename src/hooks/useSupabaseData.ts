@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { startOfDay, endOfDay, subMonths } from 'date-fns';
 
 // Guest players detection and support
+// FORCE BUILD HASH CHANGE: 2025-08-27-13:30
 export const detectPlayersIsGuestSupported = async (): Promise<boolean> => {
   // Auto force enable for testing (remove in production)
   const autoForce = !localStorage.getItem('schema.players.is_guest') || localStorage.getItem('schema.players.is_guest') === 'false';
