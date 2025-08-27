@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Trash2, Save, Users, Download, ChevronDown, ChevronUp } from 'lucide-react'
+import { Trash2, Save, Users, Download, ChevronDown, ChevronUp, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLineupManager } from '@/hooks/useLineupManager'
 import { useCustomFormations } from '@/hooks/useCustomFormations'
@@ -17,6 +17,7 @@ import html2canvas from 'html2canvas'
 import { useMatchLineupManager } from '@/hooks/useMatchLineupManager'
 import { useRoles } from '@/hooks/useRoles'
 import { normalizeRoleCodeFrom } from '@/utils/roleNormalization'
+import { useGuestPlayers, useSeedTeamGuests } from '@/hooks/useSupabaseData'
 
 // Stili CSS personalizzati per il range slider
 const rangeSliderStyles = `
@@ -123,6 +124,8 @@ const formations = {
 }
 
 const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'training' }: LineupManagerProps) => {
+  console.log('🎯 [LINEUP DEBUG] LineupManager rendered with mode:', mode, 'sessionId:', sessionId);
+  
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
   
@@ -140,6 +143,15 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
   const { defaultJersey } = useJerseyTemplates()
   const { defaultSetting } = usePngExportSettings()
   const { getAvatarBackground, getAvatarFallbackStyle } = useAvatarColor()
+  
+  // Guest players management (only for match mode)
+  const currentTeamId = localStorage.getItem('currentTeamId')
+  console.log('🎯 [LINEUP DEBUG] Guest management setup:', { mode, currentTeamId, isMatch: mode === 'match' });
+  
+  const { data: guestPlayers = [], refetch: refetchGuests } = useGuestPlayers(mode === 'match' ? currentTeamId : undefined)
+  const seedGuests = useSeedTeamGuests()
+  
+  console.log('🎯 [LINEUP DEBUG] Guest players loaded:', guestPlayers.length, 'guests');
   
   // Stati per la personalizzazione PNG - inizializzati dopo l'hook
   const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
@@ -326,14 +338,14 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
   }
 
   const getPlayerById = (playerId: string) => {
-    return presentPlayers.find(p => p.id === playerId)
+    return allAvailablePlayers.find(p => p.id === playerId)
   }
 
   const getAvailablePlayers = (currentPositionId: string) => {
     const assignedPlayerIds = new Set(Object.values(playerPositions))
     const currentPlayer = playerPositions[currentPositionId]
     
-    return presentPlayers.filter(p => 
+    return allAvailablePlayers.filter(p => 
       !assignedPlayerIds.has(p.id) || p.id === currentPlayer
     )
   }
@@ -451,6 +463,188 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
     }
   }
 
+  // Guest players management functions
+  const loadGuestPool = useCallback(async () => {
+    if (mode !== 'match' || !currentTeamId) return []
+    
+    console.log('🎯 [LOAD DEBUG] Before refetch - current guests:', guestPlayers?.length || 0)
+    const { data: refreshedGuests } = await refetchGuests()
+    console.log('🎯 [LOAD DEBUG] After refetch - refreshed guests:', refreshedGuests?.length || 0)
+    return refreshedGuests || []
+  }, [mode, currentTeamId, refetchGuests, guestPlayers])
+
+  const addGuestToLineup = useCallback(async () => {
+    if (mode !== 'match' || !currentTeamId) return
+
+    try {
+      // Load current guest pool
+      let availableGuests = await loadGuestPool()
+      
+      // If no guests available, try to seed them (respecting 11 limit)
+      if (availableGuests.length === 0) {
+        console.log('🎯 [GUEST DEBUG] No guests available, seeding all 11 guests...')
+        await seedGuests.mutateAsync({ teamId: currentTeamId, count: 11 })
+        
+        // Wait a bit for database changes to propagate
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        availableGuests = await loadGuestPool()
+        console.log('🎯 [GUEST DEBUG] After seeding, loaded:', availableGuests.length, 'guests')
+        
+        // If still not working, try a second refetch
+        if (availableGuests.length === 0) {
+          console.log('🎯 [GUEST DEBUG] First refetch failed, trying again...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          availableGuests = await loadGuestPool()
+          console.log('🎯 [GUEST DEBUG] After second refetch, loaded:', availableGuests.length, 'guests')
+        }
+      }
+      
+      // Find first guest not already in lineup
+      const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
+      let availableGuest = availableGuests.find(guest => !playersInLineup.includes(guest.id))
+      
+      // If no available guest and we haven't reached 11 limit, create one more
+      if (!availableGuest && availableGuests.length < 11) {
+        console.log('🎯 [GUEST DEBUG] Creating one more guest (within 11 limit)...')
+        await seedGuests.mutateAsync({ teamId: currentTeamId, count: 1 })
+        
+        // Wait for database changes
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        availableGuests = await loadGuestPool()
+        console.log('🎯 [GUEST DEBUG] After creating one more, loaded:', availableGuests.length, 'guests')
+        availableGuest = availableGuests.find(guest => !playersInLineup.includes(guest.id))
+      }
+      
+      if (!availableGuest) {
+        if (availableGuests.length >= 11) {
+          toast.error('Tutti gli 11 ospiti sono già in formazione')
+        } else {
+          toast.error('Nessun ospite disponibile')
+        }
+        return
+      }
+      
+      // Find first empty position
+      const currentFormation = getCurrentFormation()
+      const emptyPosition = currentFormation.positions.find(pos => !playerPositions[pos.id] || playerPositions[pos.id] === 'none')
+      
+      if (!emptyPosition) {
+        toast.error('Nessuna posizione libera nella formazione')
+        return
+      }
+      
+      // Add guest to lineup
+      const newPositions = { ...playerPositions, [emptyPosition.id]: availableGuest.id }
+      setPlayerPositions(newPositions)
+      setIsDirty(true)
+      
+      toast.success(`Ospite ${availableGuest.first_name} ${availableGuest.last_name} aggiunto in ${emptyPosition.name}`)
+      
+    } catch (error) {
+      console.error('Error adding guest:', error)
+      toast.error('Errore nell\'aggiunta dell\'ospite')
+    }
+  }, [mode, currentTeamId, playerPositions, seedGuests, loadGuestPool, getCurrentFormation])
+
+  const fillFormationWithGuests = useCallback(async () => {
+    if (mode !== 'match' || !currentTeamId) return
+
+    try {
+      // Load current guest pool
+      let availableGuests = await loadGuestPool()
+      
+      // Find empty positions
+      const currentFormation = getCurrentFormation()
+      const emptyPositions = currentFormation.positions.filter(pos => !playerPositions[pos.id] || playerPositions[pos.id] === 'none')
+      
+      if (emptyPositions.length === 0) {
+        toast.error('Nessuna posizione libera nella formazione')
+        return
+      }
+      
+      // Find guests not already in lineup
+      const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
+      let availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+      
+      // If no guests exist, create all 11 immediately for better UX
+      if (availableGuests.length === 0) {
+        console.log('🎯 [FILL DEBUG] No guests in team, creating all 11 for optimal experience...')
+        await seedGuests.mutateAsync({ teamId: currentTeamId, count: 11 })
+        
+        // Wait for database changes
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        availableGuests = await loadGuestPool()
+        console.log('🎯 [FILL DEBUG] After creating all 11, loaded:', availableGuests.length, 'guests')
+        
+        // If still not working, try again
+        if (availableGuests.length === 0) {
+          console.log('🎯 [FILL DEBUG] First refetch failed, trying again...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          availableGuests = await loadGuestPool()
+          console.log('🎯 [FILL DEBUG] After second refetch, loaded:', availableGuests.length, 'guests')
+        }
+        
+        availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+      } else {
+        // Check if we need to create more guests (max 11 total)
+        const guestsNeeded = emptyPositions.length
+        const guestsAvailable = availableGuestsForFill.length
+        const totalGuestsInTeam = availableGuests.length
+        
+        if (guestsNeeded > guestsAvailable) {
+          // Calculate how many more guests we can create (max 11 total)
+          const maxAdditionalGuests = Math.max(0, 11 - totalGuestsInTeam)
+          const guestsToCreate = Math.min(guestsNeeded - guestsAvailable, maxAdditionalGuests)
+          
+          if (guestsToCreate > 0) {
+            console.log(`🎯 [FILL DEBUG] Creating ${guestsToCreate} more guests (max 11 total)`)
+            await seedGuests.mutateAsync({ teamId: currentTeamId, count: guestsToCreate })
+            
+            // Wait for database changes
+            await new Promise(resolve => setTimeout(resolve, 500))
+            
+            availableGuests = await loadGuestPool()
+            console.log('🎯 [FILL DEBUG] After creating additional guests, loaded:', availableGuests.length, 'guests')
+            availableGuestsForFill = availableGuests.filter(guest => !playersInLineup.includes(guest.id))
+          } else if (maxAdditionalGuests === 0) {
+            // We've reached the 11 guests limit
+            console.log('🎯 [FILL DEBUG] Maximum 11 guests reached for team')
+          }
+        }
+      }
+      
+      // Fill empty positions with available guests
+      const newPositions = { ...playerPositions }
+      let guestIndex = 0
+      
+      for (const position of emptyPositions) {
+        if (guestIndex < availableGuestsForFill.length) {
+          newPositions[position.id] = availableGuestsForFill[guestIndex].id
+          guestIndex++
+        }
+      }
+      
+      setPlayerPositions(newPositions)
+      setIsDirty(true)
+      
+      const guestsAdded = Math.min(emptyPositions.length, availableGuestsForFill.length)
+      
+      if (guestsAdded === emptyPositions.length) {
+        toast.success(`${guestsAdded} ospiti aggiunti alla formazione`)
+      } else if (guestsAdded > 0) {
+        toast.success(`${guestsAdded} ospiti aggiunti. Pool massimo di 11 ospiti raggiunto per la squadra.`)
+      } else {
+        toast.error('Nessun ospite disponibile. Pool massimo di 11 ospiti raggiunto.')
+      }
+    } catch (error) {
+      console.error('Error filling formation with guests:', error)
+      toast.error('Errore nel riempire la formazione con ospiti')
+    }
+  }, [mode, currentTeamId, playerPositions, loadGuestPool, seedGuests, getCurrentFormation])
+
   // QUINTO: Variabili calcolate che non dipendono da 'lineup'
   const currentFormation = getCurrentFormation()
   const playersInFormation = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none').length
@@ -466,6 +660,24 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
 
   const { data: roles = [] } = useRoles()
   const roleMap = new Map<string, { label: string; abbreviation: string }>(roles.map(r => [r.code, { label: r.label, abbreviation: r.abbreviation }]))
+  
+  // Create combined player list (present players + guests already in lineup)
+  const allAvailablePlayers = useMemo(() => {
+    if (mode !== 'match') return presentPlayers
+    
+    const playersInLineup = Object.values(playerPositions).filter(id => id && id !== 'none')
+    const guestsInLineup = guestPlayers.filter(guest => playersInLineup.includes(guest.id))
+    
+    // Merge present players with guests already in lineup (avoid duplicates)
+    const combined = [...presentPlayers]
+    guestsInLineup.forEach(guest => {
+      if (!combined.find(p => p.id === guest.id)) {
+        combined.push(guest)
+      }
+    })
+    
+    return combined
+  }, [mode, presentPlayers, guestPlayers, playerPositions])
 
   return (
     <Card>
@@ -928,6 +1140,38 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
             <Trash2 className="mr-2 h-4 w-4" />
             Cancella Tutto
           </Button>
+          {mode === 'match' && (
+            <>
+              <Button 
+                variant="outline" 
+                className="w-full sm:w-auto bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" 
+                onClick={() => {
+                  console.log('🎯 [LINEUP DEBUG] Guest button clicked!');
+                  addGuestToLineup();
+                }}
+                disabled={loading || seedGuests.isPending}
+                data-testid="guest-button"
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                {seedGuests.isPending ? 'Creando Ospite...' : 'Aggiungi Ospite'}
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full sm:w-auto bg-green-50 hover:bg-green-100 border-green-200 text-green-700" 
+                onClick={() => {
+                  console.log('🎯 [LINEUP DEBUG] Fill formation button clicked!');
+                  fillFormationWithGuests();
+                }}
+                disabled={loading || seedGuests.isPending || isFormationComplete}
+                data-testid="fill-guests-button"
+              >
+                <Users className="mr-2 h-4 w-4" />
+                {seedGuests.isPending ? 'Preparando...' : 'Riempi con Ospiti'}
+              </Button>
+            </>
+          )}
+          {mode !== 'match' && console.log('🎯 [LINEUP DEBUG] Guest button NOT rendered - mode is:', mode)}
         </div>
 
         {/* Personalizzazione Export PNG */}

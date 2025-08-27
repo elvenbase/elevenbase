@@ -89,7 +89,7 @@ const MatchLive = () => {
 	const { data: events = [] } = useMatchEvents(id || '')
 	const { data: attendance = [] } = useMatchAttendance(id || '')
 	const { data: trialistInvites = [] } = useMatchTrialistInvites(id || '')
-	const { data: players = [] } = usePlayers()
+	const { data: players = [] } = usePlayers({ includeGuests: true })
 	const { lineup, loadLineup } = useMatchLineupManager(id || '')
 	useEffect(() => { if (id) loadLineup() }, [id])
 	const updateMatch = useUpdateMatch()
