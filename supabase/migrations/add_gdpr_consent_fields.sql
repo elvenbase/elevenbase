@@ -18,8 +18,9 @@ COMMENT ON COLUMN public.profiles.marketing_consent IS 'Optional consent for mar
 COMMENT ON COLUMN public.profiles.consent_date IS 'When the user last updated their consent preferences';
 COMMENT ON COLUMN public.profiles.consent_ip IS 'IP address when consent was given (for audit trail)';
 
--- Update RLS policies to allow users to update their own consent
-CREATE POLICY IF NOT EXISTS "Users can update own consent" 
+-- Drop and recreate policy for consent updates (safe approach)
+DROP POLICY IF EXISTS "Users can update own consent" ON public.profiles;
+CREATE POLICY "Users can update own consent" 
   ON public.profiles 
   FOR UPDATE 
   TO authenticated
