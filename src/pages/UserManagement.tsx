@@ -12,6 +12,7 @@ import { UserPlus, Edit, Trash2, Shield, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUpdateUserStatus } from '@/hooks/useSupabaseData';
 
 interface User {
   id: string;
@@ -53,6 +54,7 @@ const UserManagement = () => {
   const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   const { user: currentUser } = useAuth();
+  const updateUserStatus = useUpdateUserStatus(fetchUsers);
 
   const roles: Array<{
     value: 'superadmin' | 'admin' | 'coach' | 'player';
@@ -476,29 +478,32 @@ const UserManagement = () => {
     setShowPassword(false);
   };
 
-  const handleToggleUserStatus = async (userId: string, currentStatus: 'active' | 'inactive') => {
+  const handleToggleUserStatus = async (userId: string, currentStatus: 'active' | 'inactive' | 'pending') => {
     try {
-      const activate = currentStatus === 'inactive';
-      
-      // Call edge function to activate/deactivate user
-      const { data, error } = await supabase.functions.invoke('activate-user', {
-        body: {
-          userId,
-          activate
-        }
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        throw new Error(data.error);
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) {
+        toast.error('Errore: Team non trovato');
+        return;
       }
 
-      toast.success(data.message);
-      fetchUsers();
+      let newStatus: 'active' | 'pending' | 'inactive';
+      
+      // Logica toggle: pending/inactive → active, active → inactive
+      if (currentStatus === 'pending' || currentStatus === 'inactive') {
+        newStatus = 'active';
+      } else {
+        newStatus = 'inactive';
+      }
+
+      await updateUserStatus.mutateAsync({
+        userId,
+        newStatus,
+        teamId: currentTeamId
+      });
+
+      // Il refresh viene fatto automaticamente dall'hook
     } catch (error: any) {
       console.error('Error toggling user status:', error);
-      toast.error('Errore nel cambiamento dello stato utente: ' + error.message);
     }
   };
 
@@ -863,7 +868,7 @@ const UserManagement = () => {
                            <Button
                              variant="outline"
                              size="sm"
-                             onClick={() => handleToggleUserStatus(user.id, user.profiles?.status || 'inactive')}
+                             onClick={() => handleToggleUserStatus(user.id, user.profiles?.status as 'active' | 'inactive' | 'pending' || 'inactive')}
                            >
                              {user.profiles?.status === 'active' ? 'Disattiva' : 
                               user.profiles?.status === 'pending' ? 'Approva' : 'Attiva'}
