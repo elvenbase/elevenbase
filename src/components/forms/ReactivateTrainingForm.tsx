@@ -59,6 +59,9 @@ export const ReactivateTrainingForm = ({ session }: ReactivateTrainingFormProps)
         public_link_token = Math.random().toString(36).slice(2) + Date.now().toString(36)
       }
 
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+
       const { data: newSession, error: insErr } = await supabase
         .from('training_sessions')
         .insert([
@@ -73,6 +76,7 @@ export const ReactivateTrainingForm = ({ session }: ReactivateTrainingFormProps)
             is_closed: false,
             allow_responses_until: null,
             public_link_token,
+            team_id: currentTeamId, // CRITICAL: Include team_id for visibility
             created_by: (await supabase.auth.getUser()).data.user?.id,
           },
         ])
