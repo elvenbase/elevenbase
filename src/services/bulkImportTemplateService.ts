@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import * as XLSX from 'sheetjs-style';
 import { saveAs } from 'file-saver';
 import { supabase } from '@/integrations/supabase/client';
 

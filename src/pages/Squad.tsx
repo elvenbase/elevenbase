@@ -934,7 +934,7 @@ const Squad = () => {
 
   const groupedPlayers = useMemo(() => {
     return groupPlayersByRole(filteredAndSortedPlayers);
-  }, [filteredAndSortedPlayers, roles, rolesByCode]);
+  }, [filteredAndSortedPlayers, roles, rolesByCode, groupPlayersByRole]);
 
   // Helpers for the new card
   const computeAge = (birthDate?: string): number | null => {

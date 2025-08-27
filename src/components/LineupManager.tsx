@@ -173,7 +173,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
   useEffect(() => {
     const playersInLineup = Object.values(playerPositions).filter(playerId => playerId && playerId !== 'none')
     onLineupChange?.(playersInLineup)
-  }, [playerPositions])
+  }, [playerPositions, onLineupChange])
   
   useEffect(() => {
     loadLineup()
@@ -268,7 +268,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
     }, 1500) // Debounce più breve, visto che salviamo meno spesso
 
     return () => clearTimeout(timeoutId)
-  }, [isDirty, selectedFormation, fieldLinesColor, fieldLinesThickness, jerseyNumbersColor, jerseyNumbersShadow, usePlayerAvatars, nameBoxColor, nameTextColor, avatarBackgroundColor, saveLineup, isAutoSaving])
+  }, [isDirty, selectedFormation, fieldLinesColor, fieldLinesThickness, jerseyNumbersColor, jerseyNumbersShadow, usePlayerAvatars, nameBoxColor, nameTextColor, avatarBackgroundColor, saveLineup, isAutoSaving, getCurrentFormation, playerPositions])
   
   // TERZO: Tutte le funzioni helper che NON usano 'lineup'
   const handleFormationChange = async (formation: string) => {
@@ -300,7 +300,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
     }
   }
 
-  const getCurrentFormation = () => {
+  const getCurrentFormation = useCallback(() => {
     const customFormation = customFormations.find(f => f.id === selectedFormation)
     if (customFormation) {
       return {
@@ -315,7 +315,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
     }
     
     return formations['4-4-2']
-  }
+  }, [customFormations, selectedFormation])
 
   const handlePlayerAssignment = (positionId: string, playerId: string) => {
     setPlayerPositions(prev => {
