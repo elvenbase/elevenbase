@@ -19,7 +19,9 @@ const RegisterFounder = () => {
     teamName: '',
     teamAbbreviation: '',
     primaryColor: '#3B82F6',
-    secondaryColor: '#1E40AF'
+    secondaryColor: '#1E40AF',
+    acceptPrivacy: false,
+    acceptNewsletter: false
   });
 
   const navigate = useNavigate();
@@ -41,6 +43,15 @@ const RegisterFounder = () => {
       toast({
         title: "Errore",
         description: "La password deve essere di almeno 6 caratteri",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.acceptPrivacy) {
+      toast({
+        title: "Errore",
+        description: "Devi accettare la Privacy Policy per continuare",
         variant: "destructive"
       });
       return;
@@ -290,7 +301,39 @@ const RegisterFounder = () => {
                 </div>
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full text-lg py-6">
+              <Separator />
+
+              {/* Privacy e Newsletter */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="acceptPrivacy"
+                    checked={formData.acceptPrivacy}
+                    onChange={(e) => handleInputChange('acceptPrivacy', e.target.checked.toString())}
+                    className="rounded border-gray-300"
+                    required
+                  />
+                  <Label htmlFor="acceptPrivacy" className="text-sm">
+                    Accetto la <Link to="/privacy-policy" className="text-blue-600 hover:underline" target="_blank">Privacy Policy</Link> *
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="acceptNewsletter"
+                    checked={formData.acceptNewsletter}
+                    onChange={(e) => handleInputChange('acceptNewsletter', e.target.checked.toString())}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor="acceptNewsletter" className="text-sm">
+                    Accetto di ricevere newsletter e aggiornamenti
+                  </Label>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={loading || !formData.acceptPrivacy} className="w-full text-lg py-6">
                 {loading ? "Creazione team in corso..." : "🚀 Crea Team e Registrati"}
               </Button>
             </form>
