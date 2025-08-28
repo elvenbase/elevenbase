@@ -156,21 +156,19 @@ function App() {
                     </div>
                   }>
                     <Routes>
+                      {/* PUBLIC ROUTES - No authentication required */}
+                      <Route path="/" element={<Index />} />
                       <Route path="/auth" element={<AuthMultiTeam />} />
+                      <Route path="/auth/register-founder" element={<RegisterFounder />} />
+                      <Route path="/auth/register-invite" element={<RegisterInvite />} />
+                      <Route path="/email-sent" element={<EmailSent />} />
+                      <Route path="/pending-approval" element={<PendingApproval />} />
                       <Route path="/confirm" element={<EmailConfirm />} />
                       <Route path="/register/:token" element={<PublicRegistration />} />
                       <Route path="/m/:token" element={<MatchPublicRegistration />} />
                       <Route path="/session/:token" element={<PublicSession />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                      <Route path="/" element={
-                        <ProtectedRoute>
-                          <Navigation />
-                          <main className="ml-0 transition-all duration-200">
-                            <Dashboard />
-                          </main>
-                        </ProtectedRoute>
-                      } />
                       <Route path="/dashboard" element={
                         <ProtectedRoute>
                           <Navigation />
@@ -368,10 +366,6 @@ function App() {
                       } />
                       
                       {/* New Registration System Routes */}
-                      <Route path="/register-founder" element={<RegisterFounder />} />
-                      <Route path="/register-invite" element={<RegisterInvite />} />
-                      <Route path="/email-sent" element={<EmailSent />} />
-                      <Route path="/pending-approval" element={<PendingApproval />} />
                       <Route path="/pending-approvals" element={
                         <AdminRoute>
                           <Navigation />
