@@ -18,6 +18,7 @@ import AdminRoute from "@/components/AdminRoute";
 import Navigation from "@/components/Navigation";
 
 // Lazy load pages for better performance
+const Welcome = lazy(() => import("@/pages/Welcome"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Squad = lazy(() => import("@/pages/Squad"));
 const Training = lazy(() => import("@/pages/Training"));
@@ -155,6 +156,8 @@ function App() {
                     </div>
                   }>
                     <Routes>
+                      {/* Public Routes */}
+                      <Route path="/welcome" element={<Welcome />} />
                       <Route path="/auth" element={<AuthMultiTeam />} />
                       <Route path="/confirm" element={<EmailConfirm />} />
                       <Route path="/register/:token" element={<PublicRegistration />} />

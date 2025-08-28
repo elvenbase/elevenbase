@@ -756,6 +756,35 @@ const AuthMultiTeam = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Additional Options */}
+        <div className="mt-6 text-center">
+          <div className="text-sm text-muted-foreground mb-3">
+            Nuovi alla piattaforma?
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <a 
+              href="/welcome"
+              className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              🏠 Scopri ElevenBase
+            </a>
+            <span className="hidden sm:inline text-muted-foreground">•</span>
+            <a 
+              href="/register-founder"
+              className="text-sm text-yellow-600 hover:text-yellow-800 hover:underline"
+            >
+              👑 Registrazione Founder
+            </a>
+            <span className="hidden sm:inline text-muted-foreground">•</span>
+            <a 
+              href="/register-invite"
+              className="text-sm text-green-600 hover:text-green-800 hover:underline"
+            >
+              🎫 Registrazione con Invito
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
