@@ -48,9 +48,9 @@ export default function TeamSettings() {
     secondary_color: '#ef4444'
   });
 
-  // Check if user can edit (admin or owner)
+  // Check if user can edit (admin, founder or owner)
   const userRole = localStorage.getItem('userRole');
-  const canEdit = userRole === 'admin' || userRole === 'owner';
+  const canEdit = userRole === 'admin' || userRole === 'owner' || userRole === 'founder';
 
   useEffect(() => {
     loadTeamData();
@@ -290,7 +290,7 @@ export default function TeamSettings() {
       {!canEdit && (
         <div className="bg-muted/50 border border-border rounded-lg p-4 mb-6">
           <p className="text-sm text-muted-foreground">
-            ⚠️ Solo gli amministratori del team possono modificare queste impostazioni.
+            ⚠️ Solo gli amministratori e founder del team possono modificare queste impostazioni.
           </p>
         </div>
       )}
