@@ -93,19 +93,34 @@ const UserManagement = () => {
     console.log('🔄 Fetching team members for team:', currentTeamId);
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch team members first (without JOIN)
+      const { data: membersData, error: membersError } = await supabase
         .from('team_members')
-        .select(`
-          *,
-          user_profile:profiles!user_id(first_name, last_name)
-        `)
+        .select('*')
         .eq('team_id', currentTeamId)
         .order('joined_at', { ascending: false });
 
-      console.log('📨 Team members response:', { data, error });
-      if (error) throw error;
-      setTeamMembers(data || []);
-      console.log('✅ Team members set:', data?.length || 0, 'members');
+      console.log('📨 Team members response:', { data: membersData, error: membersError });
+      if (membersError) throw membersError;
+
+      // Fetch profiles separately for each member
+      const membersWithProfiles = await Promise.all(
+        (membersData || []).map(async (member) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', member.user_id)
+            .single();
+          
+          return {
+            ...member,
+            user_profile: profileData
+          };
+        })
+      );
+
+      setTeamMembers(membersWithProfiles);
+      console.log('✅ Team members set:', membersWithProfiles?.length || 0, 'members');
     } catch (error: any) {
       console.error('❌ Error fetching team members:', error);
       toast.error('Errore nel caricamento membri del team');
@@ -118,12 +133,10 @@ const UserManagement = () => {
     if (!currentTeamId) return;
     
     try {
+      // Fetch team invites without JOIN (simpler approach)
       const { data, error } = await supabase
         .from('team_invites')
-        .select(`
-          *,
-          creator_profile:profiles!created_by(first_name, last_name)
-        `)
+        .select('*')
         .eq('team_id', currentTeamId)
         .order('created_at', { ascending: false });
 
