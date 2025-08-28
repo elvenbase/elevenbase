@@ -45,6 +45,11 @@ const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 // Multi-team authentication system
 const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
 
+// New Registration System
+const RegisterFounder = lazy(() => import("@/pages/RegisterFounder"));
+const RegisterInvite = lazy(() => import("@/pages/RegisterInvite"));
+const PendingApprovals = lazy(() => import("@/pages/PendingApprovals"));
+
 // Admin pages
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const FormationManagement = lazy(() => import("@/pages/admin/FormationManagement"));
@@ -359,6 +364,19 @@ function App() {
                           </main>
                         </ProtectedRoute>
                       } />
+                      
+                      {/* New Registration System Routes */}
+                      <Route path="/register-founder" element={<RegisterFounder />} />
+                      <Route path="/register-invite" element={<RegisterInvite />} />
+                      <Route path="/pending-approvals" element={
+                        <AdminRoute>
+                          <Navigation />
+                          <main className="ml-0 transition-all duration-200">
+                            <PendingApprovals />
+                          </main>
+                        </AdminRoute>
+                      } />
+                      
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
