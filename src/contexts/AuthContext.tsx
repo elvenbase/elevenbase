@@ -55,16 +55,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
+      console.log('🔄 Calling get_user_registration_status for user:', currentUser.id);
+      
       const { data, error } = await supabase.rpc('get_user_registration_status', {
         _user_id: currentUser.id
       });
 
+      console.log('📨 RPC Response:', { data, error });
+
       if (error) {
-        console.error('Errore nel caricamento status registrazione:', error);
+        console.error('❌ Errore nel caricamento status registrazione:', error);
         setRegistrationStatus(null);
         return;
       }
 
+      console.log('✅ Setting registrationStatus:', data);
       setRegistrationStatus(data);
 
       // Aggiorna localStorage per compatibilità
