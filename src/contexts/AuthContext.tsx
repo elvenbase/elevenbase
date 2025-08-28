@@ -93,7 +93,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Inizializza con la sessione corrente
     const initializeAuth = async () => {
+      console.log('🔥 AuthContext STARTING initialization...');
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔥 Got session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -101,9 +103,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('🚀 Initial session found, calling refreshRegistrationStatus');
         await refreshRegistrationStatus();
       } else {
+        console.log('❌ No session found');
         setRegistrationStatus(null);
       }
       
+      console.log('🔥 AuthContext initialization COMPLETE');
       setLoading(false);
     };
 
