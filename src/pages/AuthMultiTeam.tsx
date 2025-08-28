@@ -138,40 +138,41 @@ const AuthMultiTeam = () => {
         throw new Error('Registrazione utente non completata. Riprova.');
       }
 
-      // Attendi che il profilo sia creato dal trigger, poi salva consenso GDPR
-      console.log('Waiting for profile creation and saving GDPR consent...');
+      // Crea profilo manualmente (senza trigger che fallisce)
+      console.log('🔧 Creating profile manually...');
       
-      // Delay per assicurarsi che il trigger abbia processato
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      try {
-        const { error: consentError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: authData.user.id,
-            username: createTeamData.email.split('@')[0],
-            status: 'active',
-            gdpr_consent: gdprConsent,
-            marketing_consent: marketingConsent,
-            consent_date: new Date().toISOString(),
-            consent_ip: null
-          }, {
-            onConflict: 'id',
-            ignoreDuplicates: false
-          });
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          username: createTeamData.email.split('@')[0],
+          status: 'active',
+          gdpr_consent: gdprConsent,
+          marketing_consent: marketingConsent,
+          consent_date: new Date().toISOString(),
+          consent_ip: null
+        });
 
-        if (consentError) {
-          console.error('❌ Error saving consent:', consentError);
-          // Non fallire l'intero processo - continua comunque
-          console.log('⚠️ Continuing despite consent error...');
-        } else {
-          console.log('✅ GDPR consent saved successfully');
-        }
-      } catch (error) {
-        console.error('❌ Profile upsert failed:', error);
-        // Continua comunque - il trigger dovrebbe aver creato il profilo base
-        console.log('⚠️ Continuing despite profile error - trigger should handle it...');
+      if (profileError) {
+        console.error('❌ Profile creation failed:', profileError);
+        throw new Error('Errore durante la creazione del profilo. Riprova.');
       }
+
+      // Crea ruolo utente manualmente
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authData.user.id,
+          role: 'player'
+        });
+
+      if (roleError) {
+        console.error('❌ Role creation failed:', roleError);
+        // Non bloccare per questo - continua
+        console.log('⚠️ Continuing without role...');
+      }
+
+      console.log('✅ Profile and role created successfully');
       
       // 2. Check if team name or abbreviation already exists
       console.log('Checking if team name and abbreviation are available...');
