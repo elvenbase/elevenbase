@@ -22,7 +22,7 @@
 ​
 [36m$ npm ci && npm run build[39m
 
-added 518 packages, and audited 519 packages in 4s
+added 518 packages, and audited 519 packages in 5s
 
 99 packages are looking for funding
   run `npm fund` for details
@@ -118,9 +118,9 @@ dist/assets/react-vendor-Ckhrjn13.js                142.43 kB │ gzip:  45.71 k
 dist/assets/html2canvas.esm-BJZKwT5v.js             202.41 kB │ gzip:  48.08 kB │ map:   603.19 kB
 dist/assets/Dashboard-Bh3Zq22J.js                   287.47 kB │ gzip:  94.18 kB │ map: 1,252.54 kB
 dist/assets/Squad-Bijfn5Z-.js                       652.69 kB │ gzip: 206.83 kB │ map: 2,478.35 kB
-✓ built in 7.73s
+✓ built in 7.52s
 ​
-[90m(build.command completed in 12.4s)[39m
+[90m(build.command completed in 12.5s)[39m
 
 Deploying to Netlify
 ────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ Deploying to Netlify
 [96m[1mNetlify Build Complete                                        [22m[39m
 [96m[1m────────────────────────────────────────────────────────────────[22m[39m
 ​
-[90m(Netlify Build completed in 17.1s)[39m
+[90m(Netlify Build completed in 14.2s)[39m
 
 🚀 Deploy complete
 ────────────────────────────────────────────────────────────────
@@ -140,13 +140,13 @@ Deploying to Netlify
  ╭─────────────────────── ⬥  Draft deploy is live ⬥  ────────────────────────╮
  │                                                                           │
  │                             Deployed draft to                             │
- │   https://68b0420f084f7d007f405799--gleaming-kleicha-dec5b4.netlify.app   │
+ │   https://68b043dfdccd290508c5408c--gleaming-kleicha-dec5b4.netlify.app   │
  │                                                                           │
  ╰───────────────────────────────────────────────────────────────────────────╯
 
-[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68b0420f084f7d007f405799
-[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68b0420f084f7d007f405799
-[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68b0420f084f7d007f405799
+[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68b043dfdccd290508c5408c
+[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68b043dfdccd290508c5408c
+[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68b043dfdccd290508c5408c
 
 If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:
 netlify deploy --prod
