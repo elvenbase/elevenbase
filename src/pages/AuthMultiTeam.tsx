@@ -138,27 +138,30 @@ const AuthMultiTeam = () => {
         throw new Error('Registrazione utente non completata. Riprova.');
       }
 
-      // Wait for profile to be created by trigger, then save GDPR consent
+      // Attendi che il profilo sia creato dal trigger, poi salva consenso GDPR
       console.log('Waiting for profile creation and saving GDPR consent...');
       
-      // Small delay to ensure trigger has processed
+      // Delay per assicurarsi che il trigger abbia processato
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const { error: consentError } = await supabase
         .from('profiles')
         .upsert({
           id: authData.user.id,
+          username: createTeamData.email.split('@')[0], // Assicurati che username sia settato
           gdpr_consent: gdprConsent,
           marketing_consent: marketingConsent,
           consent_date: new Date().toISOString(),
-          consent_ip: null // Will be set by server if needed
+          consent_ip: null // Sarà impostato dal server se necessario
         }, {
-          onConflict: 'id'
+          onConflict: 'id',
+          ignoreDuplicates: false // Permetti aggiornamenti
         });
 
       if (consentError) {
-        console.error('Error saving consent:', consentError);
-        // Don't fail the entire process for consent saving issues
+        console.error('❌ Error saving consent:', consentError);
+        // Non fallire l'intero processo per problemi di salvataggio consensi
+        toast.error('Consenso GDPR non salvato correttamente, ma puoi procedere.');
       } else {
         console.log('✅ GDPR consent saved successfully');
       }
@@ -378,46 +381,30 @@ const AuthMultiTeam = () => {
       
       if (memberError) throw memberError;
       
-      // 3.5. Create profile (now allowed by signup policy)
-      console.log('🔧 Creating profile for new user...');
+      // 3.5. Crea/aggiorna profilo con GDPR in un'unica operazione
+      console.log('🔧 Creating/updating profile with GDPR consent...');
+      
       const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user?.id,
-          username: joinTeamData.email,
-          status: 'active'
-        });
-      
-      if (profileError) {
-        console.error('❌ Profile creation failed:', profileError);
-        // Non bloccare la registrazione ma logga l'errore
-      } else {
-        console.log('✅ Profile created successfully');
-      }
-
-      // Save GDPR consent to user profile (after profile creation)
-      console.log('Saving GDPR consent preferences...');
-      
-      // Small delay to ensure profile exists
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const { error: consentError } = await supabase
         .from('profiles')
         .upsert({
           id: authData.user?.id,
+          username: joinTeamData.email.split('@')[0], // Usa solo parte prima @
+          status: 'active',
           gdpr_consent: gdprConsent,
           marketing_consent: marketingConsent,
           consent_date: new Date().toISOString(),
-          consent_ip: null // Will be set by server if needed
+          consent_ip: null // Sarà impostato dal server se necessario
         }, {
-          onConflict: 'id'
+          onConflict: 'id',
+          ignoreDuplicates: false // Permetti aggiornamenti
         });
 
-      if (consentError) {
-        console.error('Error saving consent:', consentError);
-        // Don't fail the entire process for consent saving issues
+      if (profileError) {
+        console.error('❌ Profile creation/update failed:', profileError);
+        // Non bloccare la registrazione ma logga l'errore
+        toast.error('Profilo creato ma si è verificato un errore minore. Puoi procedere.');
       } else {
-        console.log('✅ GDPR consent saved successfully');
+        console.log('✅ Profile created/updated successfully with GDPR consent');
       }
       
       // 4. Update invite usage
