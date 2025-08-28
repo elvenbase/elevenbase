@@ -24,11 +24,12 @@ const EmailConfirm = () => {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const hashAccessToken = hashParams.get('access_token');
 
-        // Se abbiamo un access_token (da query params o hash), significa che l'utente è già autenticato
+        // Se abbiamo un access_token (da query params o hash), Supabase ha creato una sessione temporanea
+        // In questo flusso NON vogliamo mantenere l'utente loggato automaticamente dopo la conferma
         if (accessToken || hashAccessToken) {
-
+          try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
           setStatus('success');
-          setMessage('Email confermata con successo! Ora puoi accedere.');
+          setMessage('Email confermata con successo! Ora puoi accedere dal login.');
           return;
         }
 
@@ -55,8 +56,10 @@ const EmailConfirm = () => {
             return;
           }
 
+          // Non mantenere sessione attiva dopo la conferma dell'email
+          try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
           setStatus('success');
-          setMessage('Email confermata con successo! Ora puoi accedere.');
+          setMessage('Email confermata con successo! Ora puoi accedere dal login.');
         } else if (type === 'recovery') {
           // Reset password
           const { error } = await supabase.auth.verifyOtp({
@@ -94,9 +97,9 @@ const EmailConfirm = () => {
       const hashAccessToken = hashParams.get('access_token');
       
       if (hashAccessToken) {
-
+        try { void supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
         setStatus('success');
-        setMessage('Email confermata con successo! Ora puoi accedere.');
+        setMessage('Email confermata con successo! Ora puoi accedere dal login.');
       }
     };
 

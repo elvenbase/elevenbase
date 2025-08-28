@@ -100,7 +100,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, username: string) => {
     try {
       setLoading(true);
-      const redirectUrl = `${window.location.origin}/`;
+      // Reindirizza esplicitamente alla pagina di conferma per gestire cleanup sessione
+      const redirectUrl = `${window.location.origin}/confirm?type=signup`;
       const { error } = await supabase.auth.signUp({
         email,
         password,
