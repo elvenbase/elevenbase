@@ -197,19 +197,20 @@ const AuthMultiTeam = () => {
         throw new Error(`La sigla "${createTeamData.abbreviation.toUpperCase()}" è già in uso. Scegli una sigla diversa.`);
       }
       
-      // 3. Create the team using our database function (works with anon key!)
-      console.log('Creating team via database function...');
+      // 3. Create the team directly (bypass problematic RPC function)
+      console.log('Creating team directly...');
       
       const { data: team, error: teamError } = await supabase
-        .rpc('create_team_for_new_user', {
-          p_name: createTeamData.teamName,
-          p_fc_name: createTeamData.fcName || createTeamData.teamName,
-          p_abbreviation: createTeamData.abbreviation.toUpperCase(),
-          p_primary_color: createTeamData.primaryColor,
-          p_secondary_color: createTeamData.secondaryColor,
-          p_owner_id: authData.user.id,
-          p_invite_code: createTeamData.abbreviation.toUpperCase() + Math.random().toString(36).substring(2, 7).toUpperCase()
-        });
+        .from('teams')
+        .insert({
+          name: createTeamData.teamName,
+          abbreviation: createTeamData.abbreviation.toUpperCase(),
+          primary_color: createTeamData.primaryColor,
+          secondary_color: createTeamData.secondaryColor,
+          owner_id: authData.user.id
+        })
+        .select()
+        .single();
       
       console.log('Team creation result:', team, 'Error:', teamError);
       
