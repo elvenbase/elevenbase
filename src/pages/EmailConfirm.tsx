@@ -77,6 +77,12 @@ const EmailConfirm = () => {
             <p className="text-sm text-muted-foreground mb-6">
               {message}
             </p>
+            {status === 'success' && (
+              <div className="text-xs text-muted-foreground mb-4 space-y-1">
+                <p>Se sei un <strong>giocatore</strong>, il tuo accesso verrà abilitato dall’amministratore del team.</p>
+                <p>Se sei un <strong>admin/owner</strong>, effettua l’accesso ora.</p>
+              </div>
+            )}
             
             {status === 'success' && (
               <Button onClick={handleContinue} className="w-full">
