@@ -144,26 +144,33 @@ const AuthMultiTeam = () => {
       // Delay per assicurarsi che il trigger abbia processato
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const { error: consentError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: authData.user.id,
-          username: createTeamData.email.split('@')[0], // Assicurati che username sia settato
-          gdpr_consent: gdprConsent,
-          marketing_consent: marketingConsent,
-          consent_date: new Date().toISOString(),
-          consent_ip: null // Sarà impostato dal server se necessario
-        }, {
-          onConflict: 'id',
-          ignoreDuplicates: false // Permetti aggiornamenti
-        });
+      try {
+        const { error: consentError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: authData.user.id,
+            username: createTeamData.email.split('@')[0],
+            status: 'active',
+            gdpr_consent: gdprConsent,
+            marketing_consent: marketingConsent,
+            consent_date: new Date().toISOString(),
+            consent_ip: null
+          }, {
+            onConflict: 'id',
+            ignoreDuplicates: false
+          });
 
-      if (consentError) {
-        console.error('❌ Error saving consent:', consentError);
-        // Non fallire l'intero processo per problemi di salvataggio consensi
-        toast.error('Consenso GDPR non salvato correttamente, ma puoi procedere.');
-      } else {
-        console.log('✅ GDPR consent saved successfully');
+        if (consentError) {
+          console.error('❌ Error saving consent:', consentError);
+          // Non fallire l'intero processo - continua comunque
+          console.log('⚠️ Continuing despite consent error...');
+        } else {
+          console.log('✅ GDPR consent saved successfully');
+        }
+      } catch (error) {
+        console.error('❌ Profile upsert failed:', error);
+        // Continua comunque - il trigger dovrebbe aver creato il profilo base
+        console.log('⚠️ Continuing despite profile error - trigger should handle it...');
       }
       
       // 2. Check if team name or abbreviation already exists
@@ -384,27 +391,32 @@ const AuthMultiTeam = () => {
       // 3.5. Crea/aggiorna profilo con GDPR in un'unica operazione
       console.log('🔧 Creating/updating profile with GDPR consent...');
       
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: authData.user?.id,
-          username: joinTeamData.email.split('@')[0], // Usa solo parte prima @
-          status: 'active',
-          gdpr_consent: gdprConsent,
-          marketing_consent: marketingConsent,
-          consent_date: new Date().toISOString(),
-          consent_ip: null // Sarà impostato dal server se necessario
-        }, {
-          onConflict: 'id',
-          ignoreDuplicates: false // Permetti aggiornamenti
-        });
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: authData.user?.id,
+            username: joinTeamData.email.split('@')[0],
+            status: 'active',
+            gdpr_consent: gdprConsent,
+            marketing_consent: marketingConsent,
+            consent_date: new Date().toISOString(),
+            consent_ip: null
+          }, {
+            onConflict: 'id',
+            ignoreDuplicates: false
+          });
 
-      if (profileError) {
-        console.error('❌ Profile creation/update failed:', profileError);
-        // Non bloccare la registrazione ma logga l'errore
-        toast.error('Profilo creato ma si è verificato un errore minore. Puoi procedere.');
-      } else {
-        console.log('✅ Profile created/updated successfully with GDPR consent');
+        if (profileError) {
+          console.error('❌ Profile creation/update failed:', profileError);
+          console.log('⚠️ Continuing despite profile error - trigger should handle it...');
+        } else {
+          console.log('✅ Profile created/updated successfully with GDPR consent');
+        }
+      } catch (error) {
+        console.error('❌ Profile operation failed:', error);
+        // Continua comunque - il trigger dovrebbe gestire la creazione base
+        console.log('⚠️ Continuing despite profile error...');
       }
       
       // 4. Update invite usage
