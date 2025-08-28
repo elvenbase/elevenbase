@@ -77,15 +77,20 @@ const UserManagement = () => {
   const currentTeamId = registrationStatus?.team_id;
 
   useEffect(() => {
+    console.log('🔥 UserManagement useEffect:', { currentTeamId, registrationStatus, currentUser });
     if (currentTeamId) {
+      console.log('✅ Has teamId, fetching data...');
       fetchTeamMembers();
       fetchTeamInvites();
+    } else {
+      console.log('❌ No teamId, cannot fetch data');
     }
   }, [currentTeamId]);
 
   const fetchTeamMembers = async () => {
     if (!currentTeamId) return;
     
+    console.log('🔄 Fetching team members for team:', currentTeamId);
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -99,10 +104,12 @@ const UserManagement = () => {
         .eq('team_id', currentTeamId)
         .order('joined_at', { ascending: false });
 
+      console.log('📨 Team members response:', { data, error });
       if (error) throw error;
       setTeamMembers(data || []);
+      console.log('✅ Team members set:', data?.length || 0, 'members');
     } catch (error: any) {
-      console.error('Error fetching team members:', error);
+      console.error('❌ Error fetching team members:', error);
       toast.error('Errore nel caricamento membri del team');
     } finally {
       setIsLoading(false);
