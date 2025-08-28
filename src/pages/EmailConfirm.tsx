@@ -12,6 +12,27 @@ const EmailConfirm = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
+  // Best-effort event logger: ignora errori se tabella/policy non disponibili
+  const logConfirmEvent = async (params: {
+    outcome: 'privileged' | 'non_privileged' | 'error';
+    source: 'access_token' | 'verify_otp' | 'hash_listener';
+    note?: string;
+  }) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id ?? null;
+      await supabase.from('app_events').insert({
+        event_type: 'email_confirm',
+        source: params.source,
+        outcome: params.outcome,
+        note: params.note ?? null,
+        user_id: userId,
+        created_at: new Date().toISOString(),
+        metadata: { location: window.location.href }
+      } as any);
+    } catch { /* no-op */ }
+  };
+
   useEffect(() => {
     const confirmEmail = async () => {
       try {
@@ -65,11 +86,13 @@ const EmailConfirm = () => {
         if (accessToken || hashAccessToken) {
           const isPrivileged = await allowSessionForPrivilegedUser();
           if (!isPrivileged) {
+            void logConfirmEvent({ outcome: 'non_privileged', source: 'access_token' });
             try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
             setStatus('success');
             setMessage('Email confermata con successo! Ora puoi accedere dal login.');
             return;
           }
+          void logConfirmEvent({ outcome: 'privileged', source: 'access_token' });
           setStatus('success');
           setMessage('Email confermata con successo! Benvenuto.');
           return;
@@ -93,6 +116,7 @@ const EmailConfirm = () => {
 
           if (error) {
             console.error('Errore conferma email:', error);
+            void logConfirmEvent({ outcome: 'error', source: 'verify_otp', note: 'verifyOtp error' });
             setStatus('error');
             setMessage('Link di conferma scaduto o non valido. Richiedi una nuova email di conferma.');
             return;
@@ -101,10 +125,12 @@ const EmailConfirm = () => {
           // Dopo verifyOtp, potrebbe essere stata creata una sessione: mantienila solo per utenti privilegiati
           const isPrivileged = await allowSessionForPrivilegedUser();
           if (!isPrivileged) {
+            void logConfirmEvent({ outcome: 'non_privileged', source: 'verify_otp' });
             try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
             setStatus('success');
             setMessage('Email confermata con successo! Ora puoi accedere dal login.');
           } else {
+            void logConfirmEvent({ outcome: 'privileged', source: 'verify_otp' });
             setStatus('success');
             setMessage('Email confermata con successo! Benvenuto.');
           }
@@ -167,10 +193,12 @@ const EmailConfirm = () => {
             } catch { return false; }
           })();
           if (!isPrivileged) {
+            void logConfirmEvent({ outcome: 'non_privileged', source: 'hash_listener' });
             try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
             setStatus('success');
             setMessage('Email confermata con successo! Ora puoi accedere dal login.');
           } else {
+            void logConfirmEvent({ outcome: 'privileged', source: 'hash_listener' });
             setStatus('success');
             setMessage('Email confermata con successo! Benvenuto.');
           }

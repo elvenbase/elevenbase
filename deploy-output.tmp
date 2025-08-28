@@ -22,7 +22,7 @@
 ​
 [36m$ npm ci && npm run build[39m
 
-added 518 packages, and audited 519 packages in 5s
+added 518 packages, and audited 519 packages in 4s
 
 99 packages are looking for funding
   run `npm fund` for details
@@ -42,85 +42,85 @@ transforming...
 ✓ 2776 modules transformed.
 rendering chunks...
 computing gzip size...
-dist/index.html                                       2.78 kB │ gzip:   1.00 kB
+dist/index.html                                       2.78 kB │ gzip:   1.01 kB
 dist/assets/index-CxR_2CVP.css                      101.88 kB │ gzip:  16.72 kB
 dist/assets/forms-vendor-CFHEmY_4.js                  0.08 kB │ gzip:   0.10 kB │ map:     0.11 kB
-dist/assets/useRoles-BY5sCa2L.js                      0.37 kB │ gzip:   0.29 kB │ map:     1.09 kB
+dist/assets/useRoles-vQ6Echf9.js                      0.37 kB │ gzip:   0.29 kB │ map:     1.09 kB
 dist/assets/Index-Bqb0T9Ja.js                         0.50 kB │ gzip:   0.34 kB │ map:     0.86 kB
-dist/assets/textarea-Ds4TZ6Ym.js                      0.58 kB │ gzip:   0.38 kB │ map:     1.29 kB
-dist/assets/label-Cjl6zQH0.js                         0.64 kB │ gzip:   0.43 kB │ map:     2.37 kB
-dist/assets/input-C_uxE93O.js                         0.66 kB │ gzip:   0.41 kB │ map:     1.22 kB
-dist/assets/PlayerAvatar-B5QHS-nX.js                  0.76 kB │ gzip:   0.52 kB │ map:     3.69 kB
-dist/assets/badge-CXqfeKUe.js                         0.83 kB │ gzip:   0.44 kB │ map:     1.69 kB
+dist/assets/textarea-D8w_6RIA.js                      0.58 kB │ gzip:   0.38 kB │ map:     1.29 kB
+dist/assets/label-DRqN0byG.js                         0.64 kB │ gzip:   0.43 kB │ map:     2.37 kB
+dist/assets/input-B75IpbWS.js                         0.66 kB │ gzip:   0.41 kB │ map:     1.22 kB
+dist/assets/PlayerAvatar-A8eruhjA.js                  0.76 kB │ gzip:   0.52 kB │ map:     3.69 kB
+dist/assets/badge-i5uWWGFe.js                         0.83 kB │ gzip:   0.44 kB │ map:     1.69 kB
 dist/assets/charts-vendor-D97ugPS2.js                 1.02 kB │ gzip:   0.62 kB │ map:     3.97 kB
-dist/assets/card-qFSqhFqT.js                          1.07 kB │ gzip:   0.43 kB │ map:     3.27 kB
-dist/assets/tabs-DNUNsCW5.js                          1.15 kB │ gzip:   0.50 kB │ map:     2.82 kB
-dist/assets/NotFound-BEWGJhmO.js                      1.27 kB │ gzip:   0.67 kB │ map:     1.92 kB
-dist/assets/StatsCard-CWyfea9t.js                     1.34 kB │ gzip:   0.62 kB │ map:     2.89 kB
-dist/assets/table-DW8x4jsL.js                         1.57 kB │ gzip:   0.57 kB │ map:     4.61 kB
-dist/assets/useMatchLineupManager-DYQqt3E1.js         1.67 kB │ gzip:   0.67 kB │ map:     5.50 kB
-dist/assets/dialog-DsdBv-84.js                        2.27 kB │ gzip:   0.91 kB │ map:     5.86 kB
-dist/assets/ResetPassword-C58dVExy.js                 2.42 kB │ gzip:   1.15 kB │ map:     6.29 kB
-dist/assets/useFieldOptions-Dz71icu0.js               2.48 kB │ gzip:   1.01 kB │ map:     9.94 kB
-dist/assets/select-DgLsZS2U.js                        3.05 kB │ gzip:   1.13 kB │ map:     8.56 kB
-dist/assets/checkbox-qs2TMEr2.js                      3.94 kB │ gzip:   1.76 kB │ map:    16.12 kB
-dist/assets/useCustomFormations-Bmgb6Blm.js           4.14 kB │ gzip:   1.40 kB │ map:    13.44 kB
-dist/assets/usePngExportSettings-9i7q7VmZ.js          4.28 kB │ gzip:   1.43 kB │ map:    13.86 kB
-dist/assets/AdminDashboard-D6StgOWI.js                4.41 kB │ gzip:   1.55 kB │ map:     8.99 kB
-dist/assets/EmailConfirm-DzvOIQ-J.js                  4.46 kB │ gzip:   1.59 kB │ map:    12.19 kB
-dist/assets/useAvatarBackgrounds-CQO4wuBS.js          4.52 kB │ gzip:   1.52 kB │ map:    16.52 kB
-dist/assets/OpponentsManagement-D3iSdK66.js           4.56 kB │ gzip:   1.84 kB │ map:    12.73 kB
-dist/assets/GlobalAdmin-BJ9rccC-.js                   4.64 kB │ gzip:   1.48 kB │ map:    12.84 kB
-dist/assets/useAvatarColor-Deb0oO8D.js                4.72 kB │ gzip:   2.09 kB │ map:    19.09 kB
-dist/assets/alert-dialog-Cl_Rw6_c.js                  4.78 kB │ gzip:   1.77 kB │ map:    18.69 kB
-dist/assets/Formations-_KJhkcbM.js                    4.96 kB │ gzip:   1.80 kB │ map:    12.62 kB
-dist/assets/popover-BMgpfnfC.js                       5.26 kB │ gzip:   1.94 kB │ map:    21.51 kB
-dist/assets/useJerseyTemplates-D9AJHucx.js            5.27 kB │ gzip:   1.71 kB │ map:    18.27 kB
-dist/assets/FormationManagement-CZPDmCdK.js           5.30 kB │ gzip:   1.83 kB │ map:    13.44 kB
-dist/assets/FormationExporter-BFI-2d79.js             5.53 kB │ gzip:   1.59 kB │ map:    19.62 kB
-dist/assets/bulkImportExecutor-AEFJPRPy.js            5.61 kB │ gzip:   2.19 kB │ map:    20.33 kB
+dist/assets/card-BnmoDZ0i.js                          1.07 kB │ gzip:   0.44 kB │ map:     3.27 kB
+dist/assets/tabs-D63YC_51.js                          1.15 kB │ gzip:   0.50 kB │ map:     2.82 kB
+dist/assets/NotFound-ClA7woJo.js                      1.27 kB │ gzip:   0.67 kB │ map:     1.92 kB
+dist/assets/StatsCard-nXH1XbE4.js                     1.34 kB │ gzip:   0.62 kB │ map:     2.89 kB
+dist/assets/table-Do7EGV1C.js                         1.57 kB │ gzip:   0.57 kB │ map:     4.61 kB
+dist/assets/useMatchLineupManager-D2B4roJL.js         1.67 kB │ gzip:   0.67 kB │ map:     5.50 kB
+dist/assets/dialog-CxhXrGKr.js                        2.27 kB │ gzip:   0.92 kB │ map:     5.86 kB
+dist/assets/ResetPassword-CAI6E2lB.js                 2.42 kB │ gzip:   1.15 kB │ map:     6.29 kB
+dist/assets/useFieldOptions-Bfxo5UHh.js               2.48 kB │ gzip:   1.01 kB │ map:     9.94 kB
+dist/assets/select-DHJfeMeq.js                        3.05 kB │ gzip:   1.13 kB │ map:     8.56 kB
+dist/assets/checkbox-O85vsO76.js                      3.94 kB │ gzip:   1.76 kB │ map:    16.12 kB
+dist/assets/useCustomFormations-DkAE-zuQ.js           4.14 kB │ gzip:   1.40 kB │ map:    13.44 kB
+dist/assets/usePngExportSettings-BzHnnPnh.js          4.28 kB │ gzip:   1.43 kB │ map:    13.86 kB
+dist/assets/AdminDashboard-BtBAsaku.js                4.41 kB │ gzip:   1.55 kB │ map:     8.99 kB
+dist/assets/useAvatarBackgrounds-CQZmNEvm.js          4.52 kB │ gzip:   1.52 kB │ map:    16.52 kB
+dist/assets/OpponentsManagement-9BobBRaR.js           4.56 kB │ gzip:   1.84 kB │ map:    12.73 kB
+dist/assets/GlobalAdmin-UeodPuC0.js                   4.64 kB │ gzip:   1.47 kB │ map:    12.84 kB
+dist/assets/useAvatarColor-DJGqpC2X.js                4.72 kB │ gzip:   2.09 kB │ map:    19.09 kB
+dist/assets/alert-dialog-F-YgixYV.js                  4.78 kB │ gzip:   1.77 kB │ map:    18.69 kB
+dist/assets/Formations-D2vZGzLE.js                    4.96 kB │ gzip:   1.80 kB │ map:    12.62 kB
+dist/assets/popover-CUhGJgG-.js                       5.26 kB │ gzip:   1.94 kB │ map:    21.51 kB
+dist/assets/useJerseyTemplates-CZC8Fwbm.js            5.27 kB │ gzip:   1.72 kB │ map:    18.27 kB
+dist/assets/FormationManagement-DGNSqPl3.js           5.30 kB │ gzip:   1.84 kB │ map:    13.44 kB
+dist/assets/FormationExporter-fgh7La3u.js             5.53 kB │ gzip:   1.60 kB │ map:    19.62 kB
+dist/assets/bulkImportExecutor-DWEyB7PY.js            5.61 kB │ gzip:   2.19 kB │ map:    20.33 kB
 dist/assets/it-C1mur7Gk.js                            6.20 kB │ gzip:   2.10 kB │ map:    18.55 kB
-dist/assets/TrainingForm-B2dY7byb.js                  6.68 kB │ gzip:   2.42 kB │ map:    20.68 kB
-dist/assets/JerseyManagement-C18okhNh.js              7.59 kB │ gzip:   2.64 kB │ map:    21.86 kB
-dist/assets/MatchForm-4O_k4U82.js                     7.73 kB │ gzip:   2.90 kB │ map:    23.85 kB
-dist/assets/PlayerForm-DDraDWIp.js                    8.47 kB │ gzip:   2.68 kB │ map:    25.32 kB
-dist/assets/PublicRegistration-BnnWhgU6.js           10.48 kB │ gzip:   3.34 kB │ map:    30.40 kB
-dist/assets/AvatarBackgroundManagement-MOKilSbz.js   10.92 kB │ gzip:   2.96 kB │ map:    29.49 kB
-dist/assets/TeamSettings-CQndtQg6.js                 10.99 kB │ gzip:   3.50 kB │ map:    29.98 kB
-dist/assets/AttendanceScoreManagement-Cwlu8PkJ.js    11.97 kB │ gzip:   4.11 kB │ map:    27.17 kB
-dist/assets/FieldOptionsManagement-CkuUnZ3c.js       12.05 kB │ gzip:   3.34 kB │ map:    37.05 kB
-dist/assets/PngSettingsManagement-CHuOFwOk.js        12.44 kB │ gzip:   3.07 kB │ map:    31.74 kB
-dist/assets/Matches-CuLaQkIO.js                      13.03 kB │ gzip:   3.15 kB │ map:    36.38 kB
-dist/assets/TrialEvaluations-BokvL3G2.js             13.05 kB │ gzip:   3.19 kB │ map:    38.56 kB
-dist/assets/PrivacyPolicy-CElxEqoy.js                13.49 kB │ gzip:   3.34 kB │ map:    26.40 kB
-dist/assets/EditPlayerForm-Cm07QEyl.js               15.33 kB │ gzip:   4.83 kB │ map:    45.36 kB
-dist/assets/UserManagement-Bmm_NL00.js               16.91 kB │ gzip:   4.77 kB │ map:    57.73 kB
-dist/assets/MatchPublicRegistration-DA37GBo0.js      19.24 kB │ gzip:   5.79 kB │ map:    51.86 kB
-dist/assets/PublicSession-DGA10yVR.js                20.48 kB │ gzip:   6.15 kB │ map:    60.35 kB
-dist/assets/AuthMultiTeam-CcsVDkRg.js                21.00 kB │ gzip:   5.98 kB │ map:    58.05 kB
-dist/assets/FormationBuilder-1C7bOlds.js             21.97 kB │ gzip:   6.85 kB │ map:    79.72 kB
-dist/assets/PublicLinkSharing-COvCIqfu.js            22.19 kB │ gzip:   4.69 kB │ map:    64.96 kB
-dist/assets/SessionManagement-D7rx4UnQ.js            22.72 kB │ gzip:   5.91 kB │ map:    68.61 kB
-dist/assets/PlayerDetail-BR1bd-dc.js                 28.04 kB │ gzip:   7.99 kB │ map:    79.49 kB
-dist/assets/Training-BuuZUf7S.js                     31.83 kB │ gzip:   7.00 kB │ map:   100.45 kB
+dist/assets/EmailConfirm-mDTPohao.js                  6.46 kB │ gzip:   2.11 kB │ map:    19.50 kB
+dist/assets/TrainingForm-DQKykQwq.js                  6.68 kB │ gzip:   2.42 kB │ map:    20.68 kB
+dist/assets/JerseyManagement-DCeQCHFI.js              7.59 kB │ gzip:   2.64 kB │ map:    21.86 kB
+dist/assets/MatchForm-B1jAcFni.js                     7.73 kB │ gzip:   2.90 kB │ map:    23.85 kB
+dist/assets/PlayerForm-D0vkEIJt.js                    8.47 kB │ gzip:   2.68 kB │ map:    25.32 kB
+dist/assets/PublicRegistration-PeIxZ8Do.js           10.48 kB │ gzip:   3.34 kB │ map:    30.40 kB
+dist/assets/AvatarBackgroundManagement-BW-213FY.js   10.92 kB │ gzip:   2.96 kB │ map:    29.49 kB
+dist/assets/TeamSettings-Dttostjp.js                 10.99 kB │ gzip:   3.50 kB │ map:    29.98 kB
+dist/assets/AttendanceScoreManagement-CPn2pYFm.js    11.97 kB │ gzip:   4.12 kB │ map:    27.17 kB
+dist/assets/FieldOptionsManagement-B8IZ62Np.js       12.05 kB │ gzip:   3.34 kB │ map:    37.05 kB
+dist/assets/PngSettingsManagement-C-pnJLlk.js        12.44 kB │ gzip:   3.06 kB │ map:    31.74 kB
+dist/assets/Matches-Dh5kh43J.js                      13.03 kB │ gzip:   3.15 kB │ map:    36.38 kB
+dist/assets/TrialEvaluations-C7wLhvBc.js             13.05 kB │ gzip:   3.19 kB │ map:    38.56 kB
+dist/assets/PrivacyPolicy-Uo1vdqbP.js                13.49 kB │ gzip:   3.34 kB │ map:    26.40 kB
+dist/assets/EditPlayerForm-CX-3DfII.js               15.33 kB │ gzip:   4.83 kB │ map:    45.36 kB
+dist/assets/UserManagement-Devj-z6P.js               16.91 kB │ gzip:   4.77 kB │ map:    57.73 kB
+dist/assets/MatchPublicRegistration-6UlxdNBP.js      19.24 kB │ gzip:   5.79 kB │ map:    51.86 kB
+dist/assets/PublicSession-SfYo9gy2.js                20.48 kB │ gzip:   6.14 kB │ map:    60.35 kB
+dist/assets/AuthMultiTeam-Cn2lx3L8.js                21.13 kB │ gzip:   6.02 kB │ map:    58.27 kB
+dist/assets/FormationBuilder-CU4XjLmb.js             21.97 kB │ gzip:   6.85 kB │ map:    79.72 kB
+dist/assets/PublicLinkSharing-Da4pA2cZ.js            22.19 kB │ gzip:   4.69 kB │ map:    64.96 kB
+dist/assets/SessionManagement-Dh-d4Zs-.js            22.72 kB │ gzip:   5.92 kB │ map:    68.61 kB
+dist/assets/PlayerDetail-BdilgXXD.js                 28.04 kB │ gzip:   7.99 kB │ map:    79.49 kB
+dist/assets/Training-C8zch9Xo.js                     31.83 kB │ gzip:   7.00 kB │ map:   100.45 kB
 dist/assets/query-vendor-BMXKtanO.js                 33.79 kB │ gzip:  10.09 kB │ map:   138.67 kB
 dist/assets/icons-vendor-CKEMJ_oK.js                 35.58 kB │ gzip:   6.72 kB │ map:    86.10 kB
-dist/assets/MatchDetail-Cet3BLe0.js                  36.74 kB │ gzip:   8.48 kB │ map:   102.12 kB
-dist/assets/WhatsAppInviteBox-Db9Bcyw8.js            37.07 kB │ gzip:   9.09 kB │ map:   113.71 kB
+dist/assets/MatchDetail-Bu1k4B4H.js                  36.74 kB │ gzip:   8.48 kB │ map:   102.12 kB
+dist/assets/WhatsAppInviteBox-DZ8r5KsU.js            37.07 kB │ gzip:   9.10 kB │ map:   113.71 kB
 dist/assets/utils-vendor-BQDmZFrr.js                 43.54 kB │ gzip:  13.46 kB │ map:   280.95 kB
-dist/assets/Trials-jrPiiYi5.js                       51.03 kB │ gzip:  11.04 kB │ map:   148.92 kB
-dist/assets/MatchLive-bzbebEVy.js                    62.73 kB │ gzip:  15.77 kB │ map:   129.90 kB
-dist/assets/useSupabaseData-0yoeFrhb.js              65.74 kB │ gzip:  13.45 kB │ map:   222.10 kB
+dist/assets/Trials-BWhQum7R.js                       51.03 kB │ gzip:  11.04 kB │ map:   148.92 kB
+dist/assets/MatchLive-DCCo0uPL.js                    62.73 kB │ gzip:  15.77 kB │ map:   129.90 kB
+dist/assets/useSupabaseData-D2HrOzCc.js              65.74 kB │ gzip:  13.45 kB │ map:   222.10 kB
 dist/assets/ui-vendor-DMwS7VbC.js                   102.90 kB │ gzip:  33.95 kB │ map:   528.08 kB
-dist/assets/index-Cj1rDsGq.js                       114.92 kB │ gzip:  34.79 kB │ map:   600.60 kB
+dist/assets/index-BN32iOyL.js                       114.94 kB │ gzip:  34.80 kB │ map:   600.71 kB
 dist/assets/supabase-vendor-BHH-ZMx6.js             123.07 kB │ gzip:  34.19 kB │ map:   515.58 kB
 dist/assets/react-vendor-Ckhrjn13.js                142.43 kB │ gzip:  45.71 kB │ map:   344.92 kB
 dist/assets/html2canvas.esm-BJZKwT5v.js             202.41 kB │ gzip:  48.08 kB │ map:   603.19 kB
-dist/assets/Dashboard-DUtzr44z.js                   287.47 kB │ gzip:  94.17 kB │ map: 1,252.54 kB
-dist/assets/Squad-BuhRCriz.js                       652.69 kB │ gzip: 206.83 kB │ map: 2,478.35 kB
-✓ built in 7.83s
+dist/assets/Dashboard-Bh3Zq22J.js                   287.47 kB │ gzip:  94.18 kB │ map: 1,252.54 kB
+dist/assets/Squad-Bijfn5Z-.js                       652.69 kB │ gzip: 206.83 kB │ map: 2,478.35 kB
+✓ built in 7.73s
 ​
-[90m(build.command completed in 13.1s)[39m
+[90m(build.command completed in 12.4s)[39m
 
 Deploying to Netlify
 ────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ Deploying to Netlify
 [96m[1mNetlify Build Complete                                        [22m[39m
 [96m[1m────────────────────────────────────────────────────────────────[22m[39m
 ​
-[90m(Netlify Build completed in 17.8s)[39m
+[90m(Netlify Build completed in 17.1s)[39m
 
 🚀 Deploy complete
 ────────────────────────────────────────────────────────────────
@@ -140,13 +140,13 @@ Deploying to Netlify
  ╭─────────────────────── ⬥  Draft deploy is live ⬥  ────────────────────────╮
  │                                                                           │
  │                             Deployed draft to                             │
- │   https://68b03bb7f1a65e3f6ddc04c5--gleaming-kleicha-dec5b4.netlify.app   │
+ │   https://68b0420f084f7d007f405799--gleaming-kleicha-dec5b4.netlify.app   │
  │                                                                           │
  ╰───────────────────────────────────────────────────────────────────────────╯
 
-[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68b03bb7f1a65e3f6ddc04c5
-[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68b03bb7f1a65e3f6ddc04c5
-[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68b03bb7f1a65e3f6ddc04c5
+[32mBuild logs: [39m        https://app.netlify.com/projects/gleaming-kleicha-dec5b4/deploys/68b0420f084f7d007f405799
+[32mFunction logs: [39m     https://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/functions?scope=deploy:68b0420f084f7d007f405799
+[32mEdge function Logs: [39mhttps://app.netlify.com/projects/gleaming-kleicha-dec5b4/logs/edge-functions?scope=deployid:68b0420f084f7d007f405799
 
 If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:
 netlify deploy --prod
