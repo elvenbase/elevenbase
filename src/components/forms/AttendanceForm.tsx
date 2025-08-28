@@ -238,35 +238,7 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
     );
   };
 
-  const handleCloseSession = async () => {
-    try {
-      setIsLoading(true);
-      
-      const { error } = await supabase
-        .from('training_sessions')
-        .update({ is_closed: true })
-        .eq('id', sessionId);
 
-      if (error) throw error;
-
-      // Invoca la funzione che marca i non rispondenti come "no_response" per questa sessione
-      try {
-        await supabase.rpc('mark_training_session_no_response', { sid: sessionId });
-      } catch (e) {
-        // Non bloccare la chiusura se la RPC fallisce: segnala solo
-        console.warn('RPC mark_training_session_no_response failed:', e);
-        toast.warning('Sessione chiusa, ma non è stato possibile aggiornare automaticamente i non rispondenti. Verifica manualmente le presenze.');
-      }
-
-      toast.success('Sessione chiusa con successo');
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ['player-attendance-summary'] });
-    } catch (error: any) {
-      toast.error('Errore nella chiusura della sessione: ' + error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -680,14 +652,6 @@ const AttendanceForm = ({ sessionId, sessionTitle }: AttendanceFormProps) => {
           {totalEntities} totali (giocatori + provinanti) • {selfRegisteredCount} auto-registrati
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handleCloseSession}
-            disabled={isLoading}
-          >
-            <Lock className="w-4 h-4 mr-2" />
-            Chiudi Sessione
-          </Button>
           <Button onClick={handleSaveAll} disabled={isLoading}>
             {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>}
             Salva Tutto

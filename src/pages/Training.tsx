@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, Clock, Users, Eye, Copy, Trash2, MoreHorizontal, ChevronDown, ChevronUp, Settings } from 'lucide-react';
+import { Plus, Calendar, Clock, Users, Eye, Copy, Trash2, MoreHorizontal, ChevronDown, ChevronUp, Settings, RotateCcw } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
@@ -14,7 +14,7 @@ import { TrainingSessionModal } from '@/components/forms/TrainingSessionModal';
 import { DuplicateTrainingForm } from '@/components/forms/DuplicateTrainingForm';
 import { ReactivateTrainingForm } from '@/components/forms/ReactivateTrainingForm';
 import StatsCard from '@/components/StatsCard';
-import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSession, useArchiveTrainingSession } from '@/hooks/useSupabaseData';
+import { useTrainingSessions, useTrainingStats, usePlayers, useDeleteTrainingSession, useArchiveTrainingSession, useReopenTrainingSession } from '@/hooks/useSupabaseData';
 
 interface TrainingSession {
   id: string;
@@ -23,7 +23,7 @@ interface TrainingSession {
   start_time: string;
   end_time: string;
   is_closed: boolean;
-  archived_at?: string | null;
+  // archived_at?: string | null; // Temporarily disabled due to schema issue
   description?: string;
   location?: string;
   max_participants?: number;
@@ -40,6 +40,7 @@ const Training = () => {
   const { data: players } = usePlayers();
   const deleteSession = useDeleteTrainingSession();
   const archiveSession = useArchiveTrainingSession();
+  const reopenSession = useReopenTrainingSession();
 
   const handleSessionClosed = () => {
     refetchSessions();
@@ -67,7 +68,8 @@ const Training = () => {
   // Funzione per determinare se una sessione è archiviata (nuova regola):
   // deve essere chiusa e devono essere passate >48h dalla fine
   const isSessionArchived = (session: TrainingSession) => {
-    if (session.archived_at) return true
+    // Temporarily disabled archived_at check due to schema issue
+    // if (session.archived_at) return true
     const end = new Date(session.session_date + 'T' + session.end_time)
     const now = new Date()
     const hoursSinceEnd = (now.getTime() - end.getTime()) / (1000 * 60 * 60)
@@ -101,7 +103,7 @@ const Training = () => {
       return hours > 48
     }
     const active = trainingSessions
-      .filter(s => !s.is_closed && !olderThan48h(s) && !s.archived_at)
+      .filter(s => !s.is_closed && !olderThan48h(s))
       .sort((a, b) => {
         const ta = toTime(a), tb = toTime(b);
         const fa = ta >= now.getTime();
@@ -111,8 +113,8 @@ const Training = () => {
         return fa ? -1 : 1;
       });
     const closed = trainingSessions
-      // Chiuse: (is_closed e non ancora >48h) OPPURE (non chiuse ma già >48h → richiedono chiusura) e non già archiviata
-      .filter(s => !s.archived_at && ((s.is_closed && !olderThan48h(s)) || (!s.is_closed && olderThan48h(s))))
+      // Chiuse: (is_closed e non ancora >48h) OPPURE (non chiuse ma già >48h → richiedono chiusura)
+      .filter(s => ((s.is_closed && !olderThan48h(s)) || (!s.is_closed && olderThan48h(s))))
       .sort((a, b) => toTime(b) - toTime(a));
     const archived = trainingSessions
       .filter(s => isSessionArchived(s))
@@ -490,6 +492,11 @@ const Training = () => {
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => reopenSession.mutate(session.id)}>
+                                        <RotateCcw className="mr-2 h-4 w-4" />
+                                        Riapri Sessione
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
                                       <DropdownMenuItem asChild>
                                         <Link to={`/training/session/${session.id}`} className="flex items-center">
                                           <Eye className="mr-2 h-4 w-4" />

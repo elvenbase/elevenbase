@@ -40,11 +40,10 @@ export const ReactivateTrainingForm = ({ session }: ReactivateTrainingFormProps)
 
   const reactivate = useMutation({
     mutationFn: async () => {
-      // 1) Archive original (ensure closed and archived_at)
-      const nowIso = new Date().toISOString()
+      // 1) Archive original (ensure closed) - archived_at temporarily disabled due to schema
       const { error: updErr } = await supabase
         .from('training_sessions')
-        .update({ is_closed: true, archived_at: nowIso })
+        .update({ is_closed: true })
         .eq('id', session.id)
       if (updErr) throw updErr
 
@@ -60,6 +59,9 @@ export const ReactivateTrainingForm = ({ session }: ReactivateTrainingFormProps)
         public_link_token = Math.random().toString(36).slice(2) + Date.now().toString(36)
       }
 
+      // Get current team ID
+      const currentTeamId = localStorage.getItem('currentTeamId');
+
       const { data: newSession, error: insErr } = await supabase
         .from('training_sessions')
         .insert([
@@ -74,6 +76,7 @@ export const ReactivateTrainingForm = ({ session }: ReactivateTrainingFormProps)
             is_closed: false,
             allow_responses_until: null,
             public_link_token,
+            team_id: currentTeamId, // CRITICAL: Include team_id for visibility
             created_by: (await supabase.auth.getUser()).data.user?.id,
           },
         ])

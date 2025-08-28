@@ -162,13 +162,14 @@ serve(async (req) => {
       const deadline = session.allow_responses_until ? new Date(session.allow_responses_until) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       const isRegistrationExpired = now > deadline
 
-      // Prendi tutti i giocatori attivi del team della sessione
+      // Prendi tutti i giocatori attivi del team della sessione (esclusi gli ospiti)
       console.log('Fetching active players for team:', session.team_id)
       const { data: players, error: playersError } = await supabase
         .from('players')
         .select('id, first_name, last_name, jersey_number, avatar_url')
         .eq('status', 'active')
         .eq('team_id', session.team_id)
+        .or('is_guest.is.null,is_guest.eq.false') // CRITICAL: Exclude guests (handle null values)
         .order('last_name')
 
       console.log('Players query result:', { players, error: playersError })

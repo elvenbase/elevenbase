@@ -836,7 +836,6 @@ export const useUpdateTrainingSession = () => {
         max_participants?: number;
         allow_responses_until?: string | null;
         is_closed?: boolean;
-        archived_at?: string | null;
       };
     }) => {
       const { data: result, error } = await supabase
@@ -893,10 +892,9 @@ export const useArchiveTrainingSession = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('training_sessions')
-        .update({ is_closed: true, archived_at: now })
+        .update({ is_closed: true })
         .eq('id', id)
         .select()
         .single();
@@ -909,6 +907,31 @@ export const useArchiveTrainingSession = () => {
     },
     onError: () => {
       toast({ title: "Errore durante l'archiviazione", variant: 'destructive' });
+    }
+  });
+};
+
+export const useReopenTrainingSession = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('training_sessions')
+        .update({ is_closed: false })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      toast({ title: 'Sessione riaperta con successo' });
+    },
+    onError: () => {
+      toast({ title: "Errore durante la riapertura della sessione", variant: 'destructive' });
     }
   });
 };
@@ -1608,6 +1631,7 @@ export const usePromoteTrialist = () => {
         platform_id: trialist.platform_id,
         is_captain: trialist.is_captain || false,
         status: 'active' as const, // Convert from 'promosso' to 'active'
+        team_id: trialist.team_id, // CRITICAL: Include team_id for RLS policy
         created_by: currentUserId
       };
 
