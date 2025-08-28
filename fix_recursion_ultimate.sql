@@ -23,7 +23,7 @@ DROP POLICY IF EXISTS "team_members_manage" ON public.team_members;
 DROP POLICY IF EXISTS "players_access" ON public.players;
 DROP POLICY IF EXISTS "trialists_access" ON public.trialists;
 DROP POLICY IF EXISTS "training_sessions_access" ON public.training_sessions;
-DROPOLICY IF EXISTS "matches_access" ON public.matches;
+DROP POLICY IF EXISTS "matches_access" ON public.matches;
 DROP POLICY IF EXISTS "training_attendance_access" ON public.training_attendance;
 
 SELECT 'TUTTE LE POLICIES ELIMINATE - RLS DISABILITATO' as status;
