@@ -24,12 +24,54 @@ const EmailConfirm = () => {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const hashAccessToken = hashParams.get('access_token');
 
-        // Se abbiamo un access_token (da query params o hash), Supabase ha creato una sessione temporanea
-        // In questo flusso NON vogliamo mantenere l'utente loggato automaticamente dopo la conferma
+        const allowSessionForPrivilegedUser = async (): Promise<boolean> => {
+          try {
+            const { data: userData } = await supabase.auth.getUser();
+            const userId = userData?.user?.id;
+            if (!userId) return false;
+
+            // Superadmin globale
+            const { data: isSuperAdmin } = await supabase.rpc('has_role', { _user_id: userId, _role: 'superadmin' });
+            if (isSuperAdmin) return true;
+
+            // Owner di almeno un team
+            const { data: ownedTeam } = await supabase
+              .from('teams')
+              .select('id')
+              .eq('owner_id', userId)
+              .limit(1)
+              .maybeSingle();
+            if (ownedTeam?.id) return true;
+
+            // Admin/coach attivo in almeno un team
+            const { data: membership } = await supabase
+              .from('team_members')
+              .select('role,status')
+              .eq('user_id', userId)
+              .eq('status', 'active')
+              .in('role', ['admin', 'coach'])
+              .limit(1)
+              .maybeSingle();
+            if (membership?.role) return true;
+
+            return false;
+          } catch {
+            return false;
+          }
+        };
+
+        // Se abbiamo un access_token (da query params o hash), Supabase ha creato una sessione
+        // Mantieni la sessione SOLO per superadmin/owner/admin attivi; per gli altri fai signOut
         if (accessToken || hashAccessToken) {
-          try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
+          const isPrivileged = await allowSessionForPrivilegedUser();
+          if (!isPrivileged) {
+            try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
+            setStatus('success');
+            setMessage('Email confermata con successo! Ora puoi accedere dal login.');
+            return;
+          }
           setStatus('success');
-          setMessage('Email confermata con successo! Ora puoi accedere dal login.');
+          setMessage('Email confermata con successo! Benvenuto.');
           return;
         }
 
@@ -56,10 +98,16 @@ const EmailConfirm = () => {
             return;
           }
 
-          // Non mantenere sessione attiva dopo la conferma dell'email
-          try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
-          setStatus('success');
-          setMessage('Email confermata con successo! Ora puoi accedere dal login.');
+          // Dopo verifyOtp, potrebbe essere stata creata una sessione: mantienila solo per utenti privilegiati
+          const isPrivileged = await allowSessionForPrivilegedUser();
+          if (!isPrivileged) {
+            try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
+            setStatus('success');
+            setMessage('Email confermata con successo! Ora puoi accedere dal login.');
+          } else {
+            setStatus('success');
+            setMessage('Email confermata con successo! Benvenuto.');
+          }
         } else if (type === 'recovery') {
           // Reset password
           const { error } = await supabase.auth.verifyOtp({
@@ -97,9 +145,36 @@ const EmailConfirm = () => {
       const hashAccessToken = hashParams.get('access_token');
       
       if (hashAccessToken) {
-        try { void supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
-        setStatus('success');
-        setMessage('Email confermata con successo! Ora puoi accedere dal login.');
+        (async () => {
+          const isPrivileged = await (async () => {
+            try {
+              const { data: userData } = await supabase.auth.getUser();
+              const userId = userData?.user?.id;
+              if (!userId) return false;
+              const { data: isSuperAdmin } = await supabase.rpc('has_role', { _user_id: userId, _role: 'superadmin' });
+              if (isSuperAdmin) return true;
+              const { data: ownedTeam } = await supabase.from('teams').select('id').eq('owner_id', userId).limit(1).maybeSingle();
+              if (ownedTeam?.id) return true;
+              const { data: membership } = await supabase
+                .from('team_members')
+                .select('role,status')
+                .eq('user_id', userId)
+                .eq('status', 'active')
+                .in('role', ['admin', 'coach'])
+                .limit(1)
+                .maybeSingle();
+              return Boolean(membership?.role);
+            } catch { return false; }
+          })();
+          if (!isPrivileged) {
+            try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
+            setStatus('success');
+            setMessage('Email confermata con successo! Ora puoi accedere dal login.');
+          } else {
+            setStatus('success');
+            setMessage('Email confermata con successo! Benvenuto.');
+          }
+        })();
       }
     };
 
