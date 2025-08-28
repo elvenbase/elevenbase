@@ -110,7 +110,7 @@ const RegisterFounder = () => {
             description: "Controlla la tua email e clicca sul link di conferma per completare la registrazione e creare il team."
           });
           
-          navigate('/confirm', { 
+          navigate('/email-sent', { 
             state: { 
               email: formData.email, 
               flow: 'founder',
