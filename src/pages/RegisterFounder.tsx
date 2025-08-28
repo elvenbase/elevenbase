@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Crown, Users, Shield } from 'lucide-react';
+import { Crown, Users, Shield, Gamepad2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,6 +17,7 @@ const RegisterFounder = () => {
     teamName: '',
     teamAbbreviation: '',
     eaSportsTeamName: '',
+    eaSportsId: '',
     primaryColor: '#3B82F6',
     secondaryColor: '#1E40AF',
     acceptPrivacy: false,
@@ -85,7 +86,9 @@ const RegisterFounder = () => {
             _team_name: formData.teamName,
             _team_abbreviation: formData.teamAbbreviation,
             _primary_color: formData.primaryColor,
-            _secondary_color: formData.secondaryColor
+            _secondary_color: formData.secondaryColor,
+            _ea_sports_id: formData.eaSportsId || null,
+            _ea_sports_team_name: formData.eaSportsTeamName || null
           });
 
           if (teamError) {
@@ -235,6 +238,23 @@ const RegisterFounder = () => {
                   />
                   <p className="text-sm text-gray-500">
                     Il nome della squadra come appare nel gioco EA Sports FC (opzionale ma utile per le statistiche)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="eaSportsId" className="flex items-center gap-2">
+                    <Gamepad2 className="w-4 h-4" />
+                    EA Sports ID Founder
+                  </Label>
+                  <Input
+                    id="eaSportsId"
+                    value={formData.eaSportsId}
+                    onChange={(e) => handleInputChange('eaSportsId', e.target.value)}
+                    placeholder="Il tuo EA Sports ID personale (opzionale)"
+                    className="text-center font-mono"
+                  />
+                  <p className="text-sm text-gray-500">
+                    Il tuo EA Sports ID personale. Può essere aggiunto ora o successivamente nelle impostazioni.
                   </p>
                 </div>
 
