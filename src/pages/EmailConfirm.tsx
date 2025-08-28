@@ -171,7 +171,8 @@ const EmailConfirm = () => {
         _team_name: confirmationResult.data.teamName,
         _team_abbreviation: confirmationResult.data.teamAbbreviation,
         _primary_color: confirmationResult.data.primaryColor,
-        _secondary_color: confirmationResult.data.secondaryColor
+        _secondary_color: confirmationResult.data.secondaryColor,
+        _ea_sports_team_name: confirmationResult.data.eaSportsTeamName
       });
 
       if (error) {
