@@ -28,8 +28,6 @@ const RegisterInvite = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
-    username: '',
     inviteCode: '',
     eaSportsId: ''
   });
@@ -65,7 +63,7 @@ const RegisterInvite = () => {
           expires_at,
           max_uses,
           used_count,
-          teams!inner(name)
+          team_id
         `)
         .eq('code', code.toUpperCase())
         .eq('is_active', true)
@@ -73,6 +71,19 @@ const RegisterInvite = () => {
 
       if (error || !invite) {
         setCodeError('Codice invito non valido');
+        setInviteInfo(null);
+        return;
+      }
+
+      // Ottieni nome team separatamente
+      const { data: team, error: teamError } = await supabase
+        .from('teams')
+        .select('name')
+        .eq('id', invite.team_id)
+        .single();
+
+      if (teamError || !team) {
+        setCodeError('Errore nel caricamento dati team');
         setInviteInfo(null);
         return;
       }
@@ -92,7 +103,7 @@ const RegisterInvite = () => {
       }
 
       setInviteInfo({
-        team_name: invite.teams.name,
+        team_name: team.name,
         role: invite.role,
         expires_at: invite.expires_at,
         max_uses: invite.max_uses,
