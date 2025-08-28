@@ -8,58 +8,94 @@ interface AdminRouteProps {
 }
 
 const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { user, loading } = useAuth();
+  const { user, loading, registrationStatus } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      if (!user) { setIsAdmin(false); return; }
+      if (!user) { 
+        setIsAdmin(false); 
+        return; 
+      }
+
+      // Usa il registration status se disponibile
+      if (registrationStatus) {
+        const hasAdminAccess = (
+          registrationStatus.is_superadmin || 
+          registrationStatus.role === 'founder' || 
+          registrationStatus.role === 'admin'
+        ) && (
+          registrationStatus.status === 'active' || registrationStatus.is_superadmin
+        );
+        
+        setIsAdmin(hasAdminAccess);
+        return;
+      }
+
+      // Fallback: controllo diretto (per compatibilità)
       try {
-        // Superadmin globale
-        const { data: isSuperAdmin } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'superadmin' });
-        if (isSuperAdmin) { setIsAdmin(true); return; }
-
-        // Admin di team / Founder
-        let teamId: string | null = null;
-        if (typeof window !== 'undefined') teamId = localStorage.getItem('currentTeamId');
-        if (!teamId) {
-          const { data: teamMember } = await supabase
-            .from('team_members')
-            .select('team_id, role, status')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .limit(1)
-            .maybeSingle();
-          teamId = teamMember?.team_id ?? null;
+        // Verifica superadmin
+        const { data: isSuperAdmin } = await supabase.rpc('is_superadmin', { _user_id: user.id });
+        if (isSuperAdmin) { 
+          setIsAdmin(true); 
+          return; 
         }
-        if (!teamId) { setIsAdmin(false); return; }
 
-        const { data: teamData } = await supabase.from('teams').select('owner_id').eq('id', teamId).maybeSingle();
-        if (teamData?.owner_id === user.id) { setIsAdmin(true); return; }
-
-        const { data: hasManageTeamPermission } = await supabase.rpc('has_team_permission', { _team_id: teamId, _permission: 'manage_team' });
-        setIsAdmin(Boolean(hasManageTeamPermission));
-      } catch { setIsAdmin(false); }
+        // Verifica founder/admin del team corrente
+        const teamId = localStorage.getItem('currentTeamId');
+        if (teamId) {
+          const { data: canManage } = await supabase.rpc('can_manage_team', { 
+            _team_id: teamId, 
+            _user_id: user.id 
+          });
+          setIsAdmin(Boolean(canManage));
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error('Errore nel controllo permessi admin:', error);
+        setIsAdmin(false);
+      }
     };
+
     checkAdminStatus();
-  }, [user]);
+  }, [user, registrationStatus]);
 
   if (loading || isAdmin === null) {
-    return (<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>);
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
   }
+
   if (!user) return <Navigate to="/auth" replace />;
+  
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center p-8">
           <div className="text-6xl mb-4">🔒</div>
           <h1 className="text-2xl font-bold mb-2">Accesso Negato</h1>
-          <p className="text-muted-foreground mb-4">Non hai i permessi necessari per accedere a questa sezione.</p>
-          <button onClick={() => window.history.back()} className="text-primary hover:underline">Torna indietro</button>
+          <p className="text-muted-foreground mb-4">
+            Non hai i permessi necessari per accedere a questa sezione.
+            {registrationStatus?.status === 'pending' && (
+              <span className="block mt-2 text-orange-600">
+                Il tuo account è in attesa di approvazione.
+              </span>
+            )}
+          </p>
+          <button 
+            onClick={() => window.history.back()} 
+            className="text-primary hover:underline"
+          >
+            Torna indietro
+          </button>
         </div>
       </div>
     );
   }
+  
   return <>{children}</>;
 };
 
