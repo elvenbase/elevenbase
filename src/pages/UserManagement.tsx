@@ -6,944 +6,660 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { UserPlus, Edit, Trash2, Shield, Eye, EyeOff } from 'lucide-react';
+import { UserCheck, UserX, UserPlus, Shield, Clock, CheckCircle, XCircle, Copy, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUpdateUserStatus } from '@/hooks/useSupabaseData';
+import { Textarea } from '@/components/ui/textarea';
 
-interface User {
+interface TeamMember {
   id: string;
-  email: string;
-  created_at: string;
-  last_sign_in_at?: string;
-  profiles?: {
-    username?: string;
-    first_name?: string;
-    last_name?: string;
-    phone?: string;
-    status?: 'active' | 'inactive';
+  user_id: string;
+  role: 'founder' | 'admin' | 'player';
+  status: 'active' | 'pending' | 'suspended';
+  ea_sports_id?: string;
+  joined_at: string;
+  approved_at?: string;
+  invited_by?: string;
+  approved_by?: string;
+  notes?: string;
+  user?: {
+    email: string;
+    profiles?: {
+      first_name?: string;
+      last_name?: string;
+    };
   };
-  user_roles?: Array<{
-    role: 'superadmin' | 'admin' | 'coach' | 'player';
-  }>;
+  inviter?: {
+    email: string;
+  };
+  approver?: {
+    email: string;
+  };
+}
+
+interface TeamInvite {
+  id: string;
+  code: string;
+  role: 'admin' | 'player';
+  max_uses: number;
+  used_count: number;
+  expires_at: string;
+  is_active: boolean;
+  created_at: string;
+  created_by: string;
+  creator?: {
+    email: string;
+  };
 }
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const { user: currentUser, registrationStatus } = useAuth();
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamInvites, setTeamInvites] = useState<TeamInvite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
   
+  // Modals
+  const [isCreateInviteOpen, setIsCreateInviteOpen] = useState(false);
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  
   // Form states
-  const [newUserUsername, setNewUserUsername] = useState('');
-  const [newUserFirstName, setNewUserFirstName] = useState('');
-  const [newUserLastName, setNewUserLastName] = useState('');
-  const [newUserPhone, setNewUserPhone] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserPassword, setNewUserPassword] = useState('');
-  const [newUserRole, setNewUserRole] = useState<'superadmin' | 'admin' | 'coach' | 'player'>('player');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [inviteRole, setInviteRole] = useState<'admin' | 'coach' | 'player'>('player');
-  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [newInviteRole, setNewInviteRole] = useState<'admin' | 'player'>('player');
+  const [newInviteMaxUses, setNewInviteMaxUses] = useState(1);
+  const [newInviteExpireDays, setNewInviteExpireDays] = useState(7);
+  const [approvalNotes, setApprovalNotes] = useState('');
 
-  const { user: currentUser } = useAuth();
-  
-  // Usare ref per la funzione fetchUsers
-  const fetchUsersRef = React.useRef<(() => void) | null>(null);
-  
-  const updateUserStatus = useUpdateUserStatus(() => {
-    if (fetchUsersRef.current) {
-      fetchUsersRef.current();
-    }
-  });
-
-  const roles: Array<{
-    value: 'superadmin' | 'admin' | 'coach' | 'player';
-    label: string;
-    color: 'default' | 'destructive' | 'outline' | 'secondary';
-  }> = [
-    { value: 'superadmin', label: 'Super Admin', color: 'destructive' },
-    { value: 'admin', label: 'Admin', color: 'default' },
-    { value: 'coach', label: 'Coach', color: 'secondary' },
-    { value: 'player', label: 'Player', color: 'outline' }
-  ];
+  const currentTeamId = registrationStatus?.team_id;
 
   useEffect(() => {
-    checkUserPermissions();
-    fetchUsers();
-  }, []);
-
-  const checkUserPermissions = async () => {
-    if (!currentUser) return;
-
-    // Superadmin globale
-    const { data: isSuperAdmin } = await supabase.rpc('has_role', { _user_id: currentUser.id, _role: 'superadmin' });
-    if (isSuperAdmin) return;
-
-    // Team corrente
-    let currentTeamId = localStorage.getItem('currentTeamId');
-    if (!currentTeamId) {
-      const { data: tm } = await supabase
-        .from('team_members')
-        .select('team_id')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle();
-      if (tm?.team_id) {
-        currentTeamId = tm.team_id;
-        localStorage.setItem('currentTeamId', currentTeamId);
-      }
+    if (currentTeamId) {
+      fetchTeamMembers();
+      fetchTeamInvites();
     }
+  }, [currentTeamId]);
 
-    if (!currentTeamId) {
-      toast.error('Nessun team corrente selezionato');
-      return;
-    }
-
-    // Founder = owner è admin
-    const { data: team } = await supabase
-      .from('teams')
-      .select('owner_id')
-      .eq('id', currentTeamId)
-      .maybeSingle();
-    if (team?.owner_id === currentUser.id) return;
-
-    // Permesso admin di team
-    const { data: canManage } = await supabase.rpc('has_team_permission', { _team_id: currentTeamId, _permission: 'manage_team' });
-    if (!canManage) {
-      toast.error('Non hai i permessi per accedere a questa sezione');
-      return;
-    }
-  };
-
-  const generateInvite = async () => {
+  const fetchTeamMembers = async () => {
+    if (!currentTeamId) return;
+    
+    setIsLoading(true);
     try {
-      let currentTeamId = localStorage.getItem('currentTeamId');
-      if (!currentTeamId) {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          const { data: tm } = await supabase
-            .from('team_members')
-            .select('team_id')
-            .eq('user_id', authUser.id)
-            .eq('status', 'active')
-            .limit(1)
-            .maybeSingle();
-          if (tm?.team_id) {
-            currentTeamId = tm.team_id;
-            localStorage.setItem('currentTeamId', currentTeamId);
-          }
-        }
-      }
-
-      if (!currentTeamId) throw new Error('Nessun team selezionato');
-
-      // Genera un codice invito random locale, poi salva con RLS
-      const code = Math.random().toString(36).slice(2, 10).toUpperCase();
-      const { error } = await supabase
-        .from('team_invites')
-        .insert({ team_id: currentTeamId, code, role: inviteRole });
-      if (error) throw error;
-
-      setInviteCode(code);
-      toast.success('Codice invito generato');
-    } catch (err: any) {
-      console.error('Errore generazione invito:', err);
-      toast.error('Errore nella generazione del codice invito');
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-
-      // Team corrente
-      let currentTeamId = localStorage.getItem('currentTeamId');
-      if (!currentTeamId) {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          const { data: tm } = await supabase
-            .from('team_members')
-            .select('team_id')
-            .eq('user_id', authUser.id)
-            .eq('status', 'active')
-            .limit(1)
-            .maybeSingle();
-          if (tm?.team_id) {
-            currentTeamId = tm.team_id;
-            localStorage.setItem('currentTeamId', currentTeamId);
-          }
-        }
-      }
-
-      if (!currentTeamId) throw new Error('Nessun team selezionato');
-
-      console.log('🔍 UserManagement: Loading users for team:', currentTeamId);
-
-      // Profili SOLO degli utenti del team corrente
-      const { data: teamUsers, error: teamUsersErr } = await supabase
+      const { data, error } = await supabase
         .from('team_members')
-        .select('user_id')
+        .select(`
+          *,
+          user:auth.users!user_id(email),
+          inviter:auth.users!invited_by(email),
+          approver:auth.users!approved_by(email)
+        `)
         .eq('team_id', currentTeamId)
-        .in('status', ['active', 'pending']);
-      
-      console.log('🔍 UserManagement: Team users found:', teamUsers);
-      console.log('🔍 UserManagement: Expected users: active + pending');
-      console.log('🔍 UserManagement: Query was: team_id =', currentTeamId, 'status IN [active, pending]');
-      if (teamUsersErr) {
-        console.error('🔍 UserManagement: Team users error:', teamUsersErr);
-        throw teamUsersErr;
-      }
+        .order('joined_at', { ascending: false });
 
-      const userIds = (teamUsers || []).map(u => u.user_id);
-      if (userIds.length === 0) { setUsers([]); return; }
-
-      console.log('🔍 UserManagement: Looking for profiles with IDs:', userIds);
-
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, username, first_name, last_name, phone, status, created_at')
-        .in('id', userIds);
-      
-      console.log('🔍 UserManagement: Profiles found:', profiles);
-      if (profilesError) {
-        console.error('🔍 UserManagement: Profiles error:', profilesError);
-        throw profilesError;
-      }
-
-      const usersWithRoles = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          // Ruolo di team (se esiste) per il team corrente
-          const { data: teamRole } = await supabase
-            .from('team_members')
-            .select('role,status')
-            .eq('team_id', currentTeamId!)
-            .eq('user_id', profile.id)
-            .maybeSingle();
-
-          return {
-            id: profile.id,
-            email: profile.username || 'N/A',
-            created_at: profile.created_at,
-            profiles: { 
-              username: profile.username,
-              first_name: profile.first_name,
-              last_name: profile.last_name,
-              phone: profile.phone,
-              status: (teamRole?.status as 'active' | 'inactive' | 'pending') || 'inactive'
-            },
-            user_roles: teamRole?.role ? [{ role: (teamRole.role as any) }] : [],
-            team_status: teamRole?.status || 'inactive'
-          };
-        })
-      );
-
-      setUsers(usersWithRoles);
+      if (error) throw error;
+      setTeamMembers(data || []);
     } catch (error: any) {
-      console.error('Error fetching users:', error);
-      toast.error('Errore nel caricamento degli utenti');
+      console.error('Error fetching team members:', error);
+      toast.error('Errore nel caricamento membri del team');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Assegna la funzione al ref dopo la definizione
-  fetchUsersRef.current = fetchUsers;
-
-  const handleCreateUser = async () => {
+  const fetchTeamInvites = async () => {
+    if (!currentTeamId) return;
+    
     try {
-      if (!newUserUsername || !newUserPassword || !newUserFirstName || !newUserLastName) {
-        toast.error('Username, nome, cognome e password sono obbligatori');
-        return;
-      }
+      const { data, error } = await supabase
+        .from('team_invites')
+        .select(`
+          *,
+          creator:auth.users!created_by(email)
+        `)
+        .eq('team_id', currentTeamId)
+        .order('created_at', { ascending: false });
 
-      if (newUserRole === 'player' && !newUserPhone) {
-        toast.error('Il telefono è obbligatorio per i giocatori');
-        return;
-      }
+      if (error) throw error;
+      setTeamInvites(data || []);
+    } catch (error: any) {
+      console.error('Error fetching team invites:', error);
+    }
+  };
 
-      // Generate fake email if none provided
-      const email = newUserEmail || `${newUserUsername.toLowerCase()}@users.com`;
-      
-      // Call edge function to create user in auth system
-      const { data, error } = await supabase.functions.invoke('create-user', {
-        body: {
-          email,
-          password: newUserPassword,
-          username: newUserUsername,
-          firstName: newUserFirstName,
-          lastName: newUserLastName,
-          phone: newUserPhone,
-        }
+  const createInvite = async () => {
+    if (!currentTeamId) {
+      toast.error('Team ID non trovato');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('generate_team_invite', {
+        _team_id: currentTeamId,
+        _role: newInviteRole,
+        _max_uses: newInviteMaxUses,
+        _expires_days: newInviteExpireDays
       });
 
       if (error) throw error;
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      // Assegna il ruolo (prima elimina quello di default creato dal trigger)
-      if (data.user) {
-        // Elimina il ruolo di default creato dal trigger
-        await supabase
-          .from('user_roles')
-          .delete()
-          .eq('user_id', data.user.id);
-
-        // Assegna il ruolo selezionato
-        await supabase
-          .from('user_roles')
-          .insert({
-            user_id: data.user.id,
-            role: newUserRole as any
-          });
-
-        // Se il ruolo è "player", crea anche l'entry nella tabella players
-        if (newUserRole === 'player') {
-          // Get current team ID for the player
-          let currentTeamId = localStorage.getItem('currentTeamId');
-          
-          // If no team in localStorage, try to get it from current user's team membership
-          if (!currentTeamId) {
-            const { data: { user: currentUser } } = await supabase.auth.getUser();
-            if (currentUser) {
-              const { data: teamMember } = await supabase
-                .from('team_members')
-                .select('team_id')
-                .eq('user_id', currentUser.id)
-                .single();
-              
-              if (teamMember) {
-                currentTeamId = teamMember.team_id;
-                localStorage.setItem('currentTeamId', currentTeamId);
-              }
-            }
-          }
-
-          if (!currentTeamId) {
-            throw new Error('No team found - cannot create player without team association');
-          }
-
-          console.log('Creating player in UserManagement with team_id:', currentTeamId);
-
-          await supabase
-            .from('players')
-            .insert({
-              first_name: newUserFirstName,
-              last_name: newUserLastName,
-              phone: newUserPhone,
-              team_id: currentTeamId
-            });
-        }
-      }
-
-      toast.success(`Utente creato con successo. Email: ${email}, Password: ${newUserPassword}`);
-      setIsCreateModalOpen(false);
-      resetForm();
-      fetchUsers();
+      toast.success(`Codice invito ${newInviteRole} creato: ${data.code}`);
+      setIsCreateInviteOpen(false);
+      fetchTeamInvites();
+      
+      // Reset form
+      setNewInviteRole('player');
+      setNewInviteMaxUses(1);
+      setNewInviteExpireDays(7);
     } catch (error: any) {
-      console.error('Error creating user:', error);
-      toast.error('Errore nella creazione dell\'utente: ' + error.message);
+      console.error('Error creating invite:', error);
+      toast.error(error.message || 'Errore nella creazione del codice invito');
     }
   };
 
-  const handleUpdateUserRole = async (userId: string, newRole: 'superadmin' | 'admin' | 'coach' | 'player') => {
+  const approveMember = async (approve: boolean) => {
+    if (!selectedMember) return;
+
     try {
-
-      
-      // Rimuovi tutti i ruoli esistenti
-      const { error: deleteError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-
-      if (deleteError) {
-        console.error('Error deleting existing roles:', deleteError);
-      }
-
-      // Aggiungi il nuovo ruolo
-      const { error: insertError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: newRole as any
+      if (approve) {
+        const { error } = await supabase.rpc('approve_team_member', {
+          _member_id: selectedMember.id,
+          _notes: approvalNotes || null
         });
-
-      if (insertError) {
-        console.error('Error inserting new role:', insertError);
-        throw insertError;
-      }
-
-      toast.success('Ruolo aggiornato con successo');
-      fetchUsers();
-    } catch (error: any) {
-      console.error('Error updating user role:', error);
-      toast.error('Errore nell\'aggiornamento del ruolo: ' + error.message);
-    }
-  };
-
-  const handleDeleteUser = async (userId: string) => {
-    try {
-
-      
-      // Call edge function to delete user from auth system and database
-      const { data, error } = await supabase.functions.invoke('delete-user', {
-        body: { userId }
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      toast.success(data.message);
-      fetchUsers();
-    } catch (error: any) {
-      console.error('Error deleting user:', error);
-      toast.error('Errore nell\'eliminazione dell\'utente: ' + error.message);
-    }
-  };
-
-  const handleEditUser = async () => {
-    if (!selectedUser) return;
-    
-    try {
-
-      
-      // Prepare update data
-      const updateData: any = {
-        userId: selectedUser.id
-      };
-      
-      if (newUserUsername !== selectedUser.profiles?.username) {
-        updateData.username = newUserUsername;
-      }
-      if (newUserFirstName !== selectedUser.profiles?.first_name) {
-        updateData.firstName = newUserFirstName;
-      }
-      if (newUserLastName !== selectedUser.profiles?.last_name) {
-        updateData.lastName = newUserLastName;
-      }
-      if (newUserPhone !== selectedUser.profiles?.phone) {
-        updateData.phone = newUserPhone;
-      }
-      if (newUserEmail && newUserEmail !== selectedUser.email) {
-        updateData.email = newUserEmail;
-      }
-      if (newUserPassword) {
-        updateData.password = newUserPassword;
-      }
-
-      // Call edge function to update user
-      const { data, error } = await supabase.functions.invoke('update-user', {
-        body: updateData
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      toast.success(data.message);
-      setIsEditModalOpen(false);
-      setSelectedUser(null);
-      resetForm();
-      fetchUsers();
-    } catch (error: any) {
-      console.error('Error updating user:', error);
-      toast.error('Errore nell\'aggiornamento dell\'utente: ' + error.message);
-    }
-  };
-
-  const openEditModal = (user: User) => {
-    setSelectedUser(user);
-    setNewUserUsername(user.profiles?.username || '');
-    setNewUserFirstName(user.profiles?.first_name || '');
-    setNewUserLastName(user.profiles?.last_name || '');
-    setNewUserPhone(user.profiles?.phone || '');
-    setNewUserEmail(user.email || '');
-    setNewUserPassword('');
-    setNewUserRole(user.user_roles?.[0]?.role || 'player');
-    setIsEditModalOpen(true);
-  };
-
-  const resetForm = () => {
-    setNewUserUsername('');
-    setNewUserFirstName('');
-    setNewUserLastName('');
-    setNewUserPhone('');
-    setNewUserEmail('');
-    setNewUserPassword('');
-    setNewUserRole('player');
-    setShowPassword(false);
-  };
-
-  const handleToggleUserStatus = async (userId: string, currentStatus: 'active' | 'inactive' | 'pending') => {
-    try {
-      const currentTeamId = localStorage.getItem('currentTeamId');
-      if (!currentTeamId) {
-        toast.error('Errore: Team non trovato');
-        return;
-      }
-
-      let newStatus: 'active' | 'pending' | 'inactive';
-      
-      // Logica toggle: pending/inactive → active, active → inactive
-      if (currentStatus === 'pending' || currentStatus === 'inactive') {
-        newStatus = 'active';
+        if (error) throw error;
+        toast.success('Membro approvato con successo');
       } else {
-        newStatus = 'inactive';
+        const { error } = await supabase
+          .from('team_members')
+          .delete()
+          .eq('id', selectedMember.id);
+        if (error) throw error;
+        toast.success('Richiesta rifiutata');
       }
 
-      await updateUserStatus.mutateAsync({
-        userId,
-        newStatus,
-        teamId: currentTeamId
-      });
-
-      // Il refresh viene fatto automaticamente dall'hook
+      setIsApprovalModalOpen(false);
+      setSelectedMember(null);
+      setApprovalNotes('');
+      fetchTeamMembers();
     } catch (error: any) {
-      console.error('Error toggling user status:', error);
+      console.error('Error processing approval:', error);
+      toast.error('Errore nell\'elaborazione della richiesta');
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = (user.profiles?.username?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                         (user.profiles?.first_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                         (user.profiles?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const suspendMember = async (memberId: string, suspend: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .update({ 
+          status: suspend ? 'suspended' : 'active',
+          notes: suspend ? 'Sospeso manualmente' : 'Riattivato manualmente'
+        })
+        .eq('id', memberId);
+
+      if (error) throw error;
+      
+      toast.success(suspend ? 'Membro sospeso' : 'Membro riattivato');
+      fetchTeamMembers();
+    } catch (error: any) {
+      console.error('Error updating member status:', error);
+      toast.error('Errore nell\'aggiornamento dello status');
+    }
+  };
+
+  const copyInviteLink = (code: string, role: string) => {
+    const link = `${window.location.origin}/register-invite?code=${code}`;
+    navigator.clipboard.writeText(link);
+    toast.success(`Link invito ${role} copiato!`);
+  };
+
+  const toggleInvite = async (inviteId: string, isActive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('team_invites')
+        .update({ is_active: !isActive })
+        .eq('id', inviteId);
+
+      if (error) throw error;
+      
+      toast.success(`Invito ${!isActive ? 'attivato' : 'disattivato'}`);
+      fetchTeamInvites();
+    } catch (error: any) {
+      console.error('Error toggling invite:', error);
+      toast.error('Errore nell\'aggiornamento dell\'invito');
+    }
+  };
+
+  // Filtering
+  const filteredMembers = teamMembers.filter(member => {
+    const searchMatch = !searchTerm || 
+      member.user?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.user?.profiles?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.user?.profiles?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.ea_sports_id?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    if (roleFilter === 'all') return matchesSearch;
+    const statusMatch = statusFilter === 'all' || member.status === statusFilter;
+    const roleMatch = roleFilter === 'all' || member.role === roleFilter;
     
-    const userRole = user.user_roles?.[0]?.role;
-    return matchesSearch && userRole === roleFilter;
+    return searchMatch && statusMatch && roleMatch;
   });
 
-  const getRoleBadgeColor = (role: 'superadmin' | 'admin' | 'coach' | 'player'): 'default' | 'destructive' | 'outline' | 'secondary' => {
-    const roleConfig = roles.find(r => r.value === role);
-    return roleConfig?.color || 'outline';
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge variant="default" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Attivo</Badge>;
+      case 'pending':
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />In Attesa</Badge>;
+      case 'suspended':
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Sospeso</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
-  const getRoleLabel = (role: 'superadmin' | 'admin' | 'coach' | 'player') => {
-    const roleConfig = roles.find(r => r.value === role);
-    return roleConfig?.label || role;
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case 'founder':
+        return <Badge variant="default" className="bg-purple-100 text-purple-800"><Shield className="w-3 h-3 mr-1" />Founder</Badge>;
+      case 'admin':
+        return <Badge variant="default" className="bg-blue-100 text-blue-800"><UserCheck className="w-3 h-3 mr-1" />Admin</Badge>;
+      case 'player':
+        return <Badge variant="outline">🎮 Player</Badge>;
+      default:
+        return <Badge variant="outline">{role}</Badge>;
+    }
   };
+
+  if (!currentUser || !currentTeamId) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-gray-500">Accesso non autorizzato o team non trovato</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto py-8">
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold flex items-center gap-3">
-            <Shield className="h-8 w-8 text-primary" />
-            Gestione Utenti
-          </CardTitle>
-          <CardDescription>
-            Amministra gli utenti del sistema, assegna ruoli e gestisci i permessi
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex gap-4">
-              <Input
-                placeholder="Cerca utenti..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64"
-              />
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Filtra per ruolo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tutti i ruoli</SelectItem>
-                  {roles.map(role => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Nuovo Utente
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Crea Nuovo Utente</DialogTitle>
-                  <DialogDescription>
-                    Inserisci i dati per creare un nuovo utente del sistema
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      value={newUserUsername}
-                      onChange={(e) => setNewUserUsername(e.target.value)}
-                      placeholder="Nome utente"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName">Nome</Label>
-                      <Input
-                        id="firstName"
-                        value={newUserFirstName}
-                        onChange={(e) => setNewUserFirstName(e.target.value)}
-                        placeholder="Nome"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="lastName">Cognome</Label>
-                      <Input
-                        id="lastName"
-                        value={newUserLastName}
-                        onChange={(e) => setNewUserLastName(e.target.value)}
-                        placeholder="Cognome"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Telefono {newUserRole === 'player' && <span className="text-destructive">*</span>}</Label>
-                    <Input
-                      id="phone"
-                      value={newUserPhone}
-                      onChange={(e) => setNewUserPhone(e.target.value)}
-                      placeholder="+39 123 456 7890"
-                      required={newUserRole === 'player'}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email (opzionale)</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newUserEmail}
-                      onChange={(e) => setNewUserEmail(e.target.value)}
-                      placeholder="utente@esempio.com"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={newUserPassword}
-                        onChange={(e) => setNewUserPassword(e.target.value)}
-                        placeholder="Password sicura"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-1/2 -translate-y-1/2"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="role">Ruolo</Label>
-                    <Select value={newUserRole} onValueChange={(value) => setNewUserRole(value as any)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map(role => (
-                          <SelectItem key={role.value} value={role.value}>
-                            {role.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                    Annulla
-                  </Button>
-                  <Button onClick={handleCreateUser}>
-                    Crea Utente
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+    <div className="container mx-auto p-4 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Gestione Team</h1>
+          <p className="text-gray-600">
+            Team: <span className="font-medium">{registrationStatus?.team_name}</span>
+          </p>
+        </div>
+        <Button 
+          onClick={() => setIsCreateInviteOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <UserPlus className="w-4 h-4" />
+          Crea Invito
+        </Button>
+      </div>
 
-            {/* Modal di Modifica */}
-            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Modifica Utente</DialogTitle>
-                  <DialogDescription>
-                    Modifica i dati dell'utente selezionato
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="edit-username">Username</Label>
-                    <Input
-                      id="edit-username"
-                      value={newUserUsername}
-                      onChange={(e) => setNewUserUsername(e.target.value)}
-                      placeholder="Nome utente"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-firstName">Nome</Label>
-                      <Input
-                        id="edit-firstName"
-                        value={newUserFirstName}
-                        onChange={(e) => setNewUserFirstName(e.target.value)}
-                        placeholder="Nome"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-lastName">Cognome</Label>
-                      <Input
-                        id="edit-lastName"
-                        value={newUserLastName}
-                        onChange={(e) => setNewUserLastName(e.target.value)}
-                        placeholder="Cognome"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="edit-phone">Telefono</Label>
-                    <Input
-                      id="edit-phone"
-                      value={newUserPhone}
-                      onChange={(e) => setNewUserPhone(e.target.value)}
-                      placeholder="+39 123 456 7890"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="edit-email">Email</Label>
-                    <Input
-                      id="edit-email"
-                      type="email"
-                      value={newUserEmail}
-                      onChange={(e) => setNewUserEmail(e.target.value)}
-                      placeholder="utente@esempio.com"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="edit-password">Nuova Password (opzionale)</Label>
-                    <div className="relative">
-                      <Input
-                        id="edit-password"
-                        type={showPassword ? "text" : "password"}
-                        value={newUserPassword}
-                        onChange={(e) => setNewUserPassword(e.target.value)}
-                        placeholder="Lascia vuoto per non modificare"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-1/2 -translate-y-1/2"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                    Annulla
-                  </Button>
-                  <Button onClick={handleEditUser}>
-                    Salva Modifiche
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-4">
+            <div className="text-2xl font-bold text-green-600">{teamMembers.filter(m => m.status === 'active').length}</div>
+            <p className="text-sm text-gray-600">Membri Attivi</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4">
+            <div className="text-2xl font-bold text-yellow-600">{teamMembers.filter(m => m.status === 'pending').length}</div>
+            <p className="text-sm text-gray-600">In Attesa</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4">
+            <div className="text-2xl font-bold text-red-600">{teamMembers.filter(m => m.status === 'suspended').length}</div>
+            <p className="text-sm text-gray-600">Sospesi</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4">
+            <div className="text-2xl font-bold text-blue-600">{teamInvites.filter(i => i.is_active).length}</div>
+            <p className="text-sm text-gray-600">Inviti Attivi</p>
+          </CardContent>
+        </Card>
+      </div>
 
-            <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  Genera Invito
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Genera codice invito</DialogTitle>
-                  <DialogDescription>
-                    Crea un codice per unirsi alla squadra corrente con un ruolo specifico.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Ruolo assegnato</Label>
-                    <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
-                      <SelectTrigger className="w-48">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="coach">Coach</SelectItem>
-                        <SelectItem value="player">Player</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {inviteCode && (
-                    <div className="p-3 rounded-md border">
-                      <div className="text-sm text-muted-foreground">Codice generato</div>
-                      <div className="font-mono text-lg">{inviteCode}</div>
-                      <div className="text-xs text-muted-foreground mt-1">Condividi con il nuovo membro per unirsi al team.</div>
-                    </div>
-                  )}
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsInviteModalOpen(false)}>Chiudi</Button>
-                  <Button onClick={generateInvite}>Genera</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+      {/* Filters */}
+      <Card>
+        <CardContent className="pt-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Input
+              placeholder="Cerca per email, nome o EA Sports ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tutti gli Status</SelectItem>
+                <SelectItem value="active">Attivi</SelectItem>
+                <SelectItem value="pending">In Attesa</SelectItem>
+                <SelectItem value="suspended">Sospesi</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Ruolo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tutti i Ruoli</SelectItem>
+                <SelectItem value="founder">Founder</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="player">Player</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button 
+              variant="outline" 
+              onClick={() => { fetchTeamMembers(); fetchTeamInvites(); }}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Aggiorna
+            </Button>
           </div>
         </CardContent>
       </Card>
 
+      {/* Team Members Table */}
       <Card>
-        <CardContent className="p-6">
+        <CardHeader>
+          <CardTitle>Membri del Team ({filteredMembers.length})</CardTitle>
+          <CardDescription>
+            Gestisci i membri del tuo team: approva, sospendi o rimuovi utenti
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           {isLoading ? (
-            <div className="text-center py-8">Caricamento utenti...</div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nessun utente trovato con i filtri selezionati.
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Caricamento membri...</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Username</TableHead>
-                    <TableHead>Nome Completo</TableHead>
-                    <TableHead>Telefono</TableHead>
+                    <TableHead>Utente</TableHead>
                     <TableHead>Ruolo</TableHead>
-                    <TableHead>Stato</TableHead>
-                    <TableHead>Creato il</TableHead>
-                    <TableHead className="text-right">Azioni</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>EA Sports ID</TableHead>
+                    <TableHead>Registrato</TableHead>
+                    <TableHead>Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.profiles?.username || '-'}</TableCell>
+                  {filteredMembers.map((member) => (
+                    <TableRow key={member.id}>
                       <TableCell>
-                        {user.profiles?.first_name && user.profiles?.last_name 
-                          ? `${user.profiles.first_name} ${user.profiles.last_name}` 
-                          : '-'
-                        }
+                        <div>
+                          <div className="font-medium">{member.user?.email}</div>
+                          {(member.user?.profiles?.first_name || member.user?.profiles?.last_name) && (
+                            <div className="text-sm text-gray-500">
+                              {member.user?.profiles?.first_name} {member.user?.profiles?.last_name}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell>{user.profiles?.phone || '-'}</TableCell>
+                      <TableCell>{getRoleBadge(member.role)}</TableCell>
+                      <TableCell>{getStatusBadge(member.status)}</TableCell>
                       <TableCell>
-                        <Badge variant={getRoleBadgeColor(user.user_roles?.[0]?.role || 'player')}>
-                          {getRoleLabel(user.user_roles?.[0]?.role || 'player')}
-                        </Badge>
+                        {member.ea_sports_id ? (
+                          <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                            {member.ea_sports_id}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">N/A</span>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={
-                          user.profiles?.status === 'active' ? 'default' : 
-                          user.profiles?.status === 'pending' ? 'outline' : 'secondary'
-                        }>
-                          {user.profiles?.status === 'active' ? 'Attivo' : 
-                           user.profiles?.status === 'pending' ? 'In Attesa' : 'Inattivo'}
-                        </Badge>
+                        <div className="text-sm">
+                          {new Date(member.joined_at).toLocaleDateString('it-IT')}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        {new Date(user.created_at).toLocaleDateString('it-IT')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                         <div className="flex justify-end gap-2">
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => handleToggleUserStatus(user.id, user.profiles?.status as 'active' | 'inactive' | 'pending' || 'inactive')}
-                           >
-                             {user.profiles?.status === 'active' ? 'Disattiva' : 
-                              user.profiles?.status === 'pending' ? 'Approva' : 'Attiva'}
-                           </Button>
-                           
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => openEditModal(user)}
-                           >
-                             <Edit className="h-4 w-4" />
-                           </Button>
-                           
-                           <Select
-                             value={user.user_roles?.[0]?.role || 'player'}
-                             onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole as any)}
-                           >
-                             <SelectTrigger className="w-32 h-8">
-                               <SelectValue />
-                             </SelectTrigger>
-                             <SelectContent>
-                               {roles.map(role => (
-                                 <SelectItem key={role.value} value={role.value}>
-                                   {role.label}
-                                 </SelectItem>
-                               ))}
-                             </SelectContent>
-                           </Select>
+                        <div className="flex items-center gap-2">
+                          {member.status === 'pending' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedMember(member);
+                                setIsApprovalModalOpen(true);
+                              }}
+                              className="text-green-600 hover:text-green-700"
+                            >
+                              <UserCheck className="w-4 h-4" />
+                            </Button>
+                          )}
                           
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Elimina utente</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Sei sicuro di voler eliminare l'utente <strong>{user.email}</strong>? 
-                                  Questa azione non può essere annullata.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Annulla</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteUser(user.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Elimina
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          {member.status === 'active' && member.role !== 'founder' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => suspendMember(member.id, true)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <UserX className="w-4 h-4" />
+                            </Button>
+                          )}
+                          
+                          {member.status === 'suspended' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => suspendMember(member.id, false)}
+                              className="text-green-600 hover:text-green-700"
+                            >
+                              <UserCheck className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
+                  {filteredMembers.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                        Nessun membro trovato
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Team Invites */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Codici Invito ({teamInvites.length})</CardTitle>
+          <CardDescription>
+            Gestisci i codici invito per far entrare nuovi membri nel team
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Codice</TableHead>
+                  <TableHead>Ruolo</TableHead>
+                  <TableHead>Utilizzi</TableHead>
+                  <TableHead>Scadenza</TableHead>
+                  <TableHead>Stato</TableHead>
+                  <TableHead>Azioni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {teamInvites.map((invite) => (
+                  <TableRow key={invite.id}>
+                    <TableCell>
+                      <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+                        {invite.code}
+                      </span>
+                    </TableCell>
+                    <TableCell>{getRoleBadge(invite.role)}</TableCell>
+                    <TableCell>
+                      <span className={invite.used_count >= invite.max_uses ? 'text-red-600' : 'text-green-600'}>
+                        {invite.used_count}/{invite.max_uses}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {new Date(invite.expires_at).toLocaleDateString('it-IT')}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {invite.is_active && new Date(invite.expires_at) > new Date() && invite.used_count < invite.max_uses ? (
+                        <Badge variant="default" className="bg-green-100 text-green-800">Attivo</Badge>
+                      ) : (
+                        <Badge variant="secondary">Inattivo</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => copyInviteLink(invite.code, invite.role)}
+                          className="flex items-center gap-1"
+                        >
+                          <Copy className="w-3 h-3" />
+                          Copia Link
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleInvite(invite.id, invite.is_active)}
+                          className={invite.is_active ? 'text-red-600' : 'text-green-600'}
+                        >
+                          {invite.is_active ? 'Disattiva' : 'Attiva'}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {teamInvites.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      Nessun invito creato
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Create Invite Modal */}
+      <Dialog open={isCreateInviteOpen} onOpenChange={setIsCreateInviteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Crea Nuovo Invito</DialogTitle>
+            <DialogDescription>
+              Genera un codice invito per aggiungere nuovi membri al team
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Ruolo</label>
+              <Select value={newInviteRole} onValueChange={(value: 'admin' | 'player') => setNewInviteRole(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="player">Player</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Utilizzi Massimi</label>
+              <Input
+                type="number"
+                min="1"
+                max="50"
+                value={newInviteMaxUses}
+                onChange={(e) => setNewInviteMaxUses(parseInt(e.target.value) || 1)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Scadenza (giorni)</label>
+              <Input
+                type="number"
+                min="1"
+                max="30"
+                value={newInviteExpireDays}
+                onChange={(e) => setNewInviteExpireDays(parseInt(e.target.value) || 7)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateInviteOpen(false)}>
+              Annulla
+            </Button>
+            <Button onClick={createInvite}>
+              Crea Invito
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approval Modal */}
+      <Dialog open={isApprovalModalOpen} onOpenChange={setIsApprovalModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approva Membro</DialogTitle>
+            <DialogDescription>
+              Vuoi approvare {selectedMember?.user?.email} come {selectedMember?.role}?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Note (opzionale)</label>
+              <Textarea
+                value={approvalNotes}
+                onChange={(e) => setApprovalNotes(e.target.value)}
+                placeholder="Aggiungi note per l'approvazione..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => approveMember(false)}
+              className="text-red-600 hover:text-red-700"
+            >
+              Rifiuta
+            </Button>
+            <Button variant="outline" onClick={() => setIsApprovalModalOpen(false)}>
+              Annulla
+            </Button>
+            <Button onClick={() => approveMember(true)}>
+              Approva
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
