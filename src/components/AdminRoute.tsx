@@ -20,6 +20,8 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
 
       // Usa il registration status se disponibile
       if (registrationStatus) {
+        console.log('🔍 AdminRoute - registrationStatus:', registrationStatus);
+        
         const hasAdminAccess = (
           registrationStatus.is_superadmin || 
           registrationStatus.role === 'founder' || 
@@ -27,6 +29,12 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
         ) && (
           registrationStatus.status === 'active' || registrationStatus.is_superadmin
         );
+        
+        console.log('🔑 AdminRoute - hasAdminAccess:', hasAdminAccess, {
+          is_superadmin: registrationStatus.is_superadmin,
+          role: registrationStatus.role,
+          status: registrationStatus.status
+        });
         
         setIsAdmin(hasAdminAccess);
         return;
