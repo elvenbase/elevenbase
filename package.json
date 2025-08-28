@@ -14,7 +14,9 @@
     "clean": "rm -rf dist",
     "clean:build": "npm run clean && npm run build",
     "deploy:local": "npm run clean:build && echo 'Build completato. I file sono in ./dist'",
-    "deploy:fast": "npm run clean:build && npx --yes netlify-cli@17 deploy --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID_PRODUCTION --dir dist --prod --message 'Fast Deploy: $(date)'",
+    "deploy:preview": "npm run clean:build && npx --yes netlify-cli@17 deploy --dir dist --message 'Preview: $(date)'",
+    "deploy:prod": "npm run clean:build && npx --yes netlify-cli@17 deploy --dir dist --prod --message 'Production: $(date)'",
+    "deploy:fast": "npm run deploy:prod",
     "start:prod": "npm run deploy:local && npm run preview"
   },
   "dependencies": {
