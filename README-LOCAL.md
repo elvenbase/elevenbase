@@ -21,6 +21,16 @@ npm run build
 ```
 I file buildati saranno nella directory `dist/`
 
+## ✅ Stato Setup Locale
+
+- **Env**: `.env.local` creato con placeholder (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_ENV`, `VITE_API_URL`)
+- **Installazione**: `npm ci` completato
+- **Build**: `npm run build` completato
+- **Dev server**: attivo su `http://localhost:8080`
+- **Test**: Vitest passato (4/4)
+- **Lint**: solo warning non bloccanti (React Hooks deps)
+- **Deploy**: non eseguito (su richiesta)
+
 ## 📋 Comandi Disponibili
 
 ### Sviluppo

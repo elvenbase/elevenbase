@@ -116,6 +116,7 @@ const AuthMultiTeam = () => {
         email: createTeamData.email,
         password: createTeamData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/confirm?type=signup`,
           data: {
             gdpr_consent: gdprConsent,
             marketing_consent: marketingConsent,
@@ -349,6 +350,7 @@ const AuthMultiTeam = () => {
         email: joinTeamData.email,
         password: joinTeamData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/confirm?type=signup`,
           data: {
             gdpr_consent: gdprConsent,
             marketing_consent: marketingConsent,

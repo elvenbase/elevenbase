@@ -1,146 +1,30 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const EmailConfirm = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const confirmEmail = async () => {
-      try {
-        const token = searchParams.get('token');
-        const type = searchParams.get('type');
-        const accessToken = searchParams.get('access_token');
-        const tokenHash = searchParams.get('token_hash');
-
-        // Controlla anche l'hash fragment per access_token
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const hashAccessToken = hashParams.get('access_token');
-
-        // Se abbiamo un access_token (da query params o hash), significa che l'utente è già autenticato
-        if (accessToken || hashAccessToken) {
-
-          setStatus('success');
-          setMessage('Email confermata con successo! Ora puoi accedere.');
-          return;
-        }
-
-        // Se abbiamo un token_hash, usiamo quello
-        const tokenToUse = tokenHash || token;
-
-        if (!tokenToUse) {
-          setStatus('error');
-          setMessage('Token di conferma mancante');
-          return;
-        }
-
-        if (type === 'signup') {
-          // Conferma registrazione
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: tokenToUse,
-            type: 'signup'
-          });
-
-          if (error) {
-            console.error('Errore conferma email:', error);
-            setStatus('error');
-            setMessage('Link di conferma scaduto o non valido. Richiedi una nuova email di conferma.');
-            return;
-          }
-
-          setStatus('success');
-          setMessage('Email confermata con successo! Ora puoi accedere.');
-        } else if (type === 'recovery') {
-          // Reset password
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery'
-          });
-
-          if (error) {
-            console.error('Errore reset password:', error);
-            setStatus('error');
-            setMessage('Errore durante il reset della password. Riprova.');
-            return;
-          }
-
-          setStatus('success');
-          setMessage('Password resettata con successo! Ora puoi accedere con la nuova password.');
-        } else {
-          setStatus('error');
-          setMessage('Tipo di conferma non valido');
-        }
-      } catch (error) {
-        console.error('Errore conferma:', error);
-        setStatus('error');
-        setMessage('Errore imprevisto durante la conferma');
-      }
+    const run = async () => {
+      // Logout globale e messaggio informativo: il gating avverrà al login
+      try { await supabase.auth.signOut({ scope: 'global' as const }); } catch { /* no-op */ }
+      setStatus('success');
+      setMessage('Email confermata con successo! Ora puoi accedere dal login.');
     };
-
-    confirmEmail();
-  }, [searchParams]);
-
-  // Listener per cambiamenti nell'hash
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const hashAccessToken = hashParams.get('access_token');
-      
-      if (hashAccessToken) {
-
-        setStatus('success');
-        setMessage('Email confermata con successo! Ora puoi accedere.');
-      }
-    };
-
-    // Controlla immediatamente se c'è già un hash
-    handleHashChange();
-
-    // Aggiungi listener per cambiamenti nell'hash
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
+    run();
   }, []);
 
   const handleContinue = () => {
     navigate('/auth');
   };
 
-  const handleResendEmail = async () => {
-    try {
-      setStatus('loading');
-      setMessage('Invio nuova email di conferma...');
-      
-      // Richiedi una nuova email di conferma
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: 'a.camolese@gmail.com' // Email hardcoded per ora
-      });
-
-      if (error) {
-        console.error('Errore invio email:', error);
-        setStatus('error');
-        setMessage('Errore nell\'invio della nuova email. Riprova.');
-        return;
-      }
-
-      setStatus('success');
-      setMessage('Nuova email di conferma inviata! Controlla la tua casella email.');
-    } catch (error) {
-      console.error('Errore:', error);
-      setStatus('error');
-      setMessage('Errore imprevisto. Riprova.');
-    }
-  };
+  const handleResendEmail = async () => navigate('/auth');
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -193,6 +77,12 @@ const EmailConfirm = () => {
             <p className="text-sm text-muted-foreground mb-6">
               {message}
             </p>
+            {status === 'success' && (
+              <div className="text-xs text-muted-foreground mb-4 space-y-1">
+                <p>Se sei un <strong>giocatore</strong>, il tuo accesso verrà abilitato dall’amministratore del team.</p>
+                <p>Se sei un <strong>admin/owner</strong>, effettua l’accesso ora.</p>
+              </div>
+            )}
             
             {status === 'success' && (
               <Button onClick={handleContinue} className="w-full">
