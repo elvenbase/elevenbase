@@ -144,7 +144,7 @@ const RegisterFounder = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -310,7 +310,7 @@ const RegisterFounder = () => {
                     type="checkbox"
                     id="acceptPrivacy"
                     checked={formData.acceptPrivacy}
-                    onChange={(e) => handleInputChange('acceptPrivacy', e.target.checked.toString())}
+                    onChange={(e) => handleInputChange('acceptPrivacy', e.target.checked)}
                     className="rounded border-gray-300"
                     required
                   />
@@ -324,7 +324,7 @@ const RegisterFounder = () => {
                     type="checkbox"
                     id="acceptNewsletter"
                     checked={formData.acceptNewsletter}
-                    onChange={(e) => handleInputChange('acceptNewsletter', e.target.checked.toString())}
+                    onChange={(e) => handleInputChange('acceptNewsletter', e.target.checked)}
                     className="rounded border-gray-300"
                   />
                   <Label htmlFor="acceptNewsletter" className="text-sm">
