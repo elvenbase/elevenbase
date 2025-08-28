@@ -47,9 +47,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   // Funzione per aggiornare lo status di registrazione
-  const refreshRegistrationStatus = async () => {
-    const currentUser = user || session?.user;
+  const refreshRegistrationStatus = async (targetUser?: User) => {
+    const currentUser = targetUser || user || session?.user;
     if (!currentUser) {
+      console.log('🚫 No current user found for refreshRegistrationStatus');
       setRegistrationStatus(null);
       return;
     }
@@ -101,7 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (session?.user) {
         console.log('🚀 Initial session found, calling refreshRegistrationStatus');
-        await refreshRegistrationStatus();
+        await refreshRegistrationStatus(session.user);
       } else {
         console.log('❌ No session found');
         setRegistrationStatus(null);
