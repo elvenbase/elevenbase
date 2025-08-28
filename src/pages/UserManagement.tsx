@@ -55,7 +55,7 @@ interface TeamInvite {
 }
 
 const UserManagement = () => {
-  const { user: currentUser, registrationStatus } = useAuth();
+  const { user: currentUser, registrationStatus, refreshRegistrationStatus } = useAuth();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [teamInvites, setTeamInvites] = useState<TeamInvite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,6 +86,14 @@ const UserManagement = () => {
       console.log('❌ No teamId, cannot fetch data');
     }
   }, [currentTeamId]);
+
+  // Force refresh registration status when component mounts
+  useEffect(() => {
+    if (currentUser) {
+      console.log('🔄 UserManagement: Force refresh registration status');
+      refreshRegistrationStatus();
+    }
+  }, [currentUser, refreshRegistrationStatus]);
 
   const fetchTeamMembers = async () => {
     if (!currentTeamId) return;
