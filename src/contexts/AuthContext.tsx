@@ -91,8 +91,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    // Inizializza con la sessione corrente
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        console.log('🚀 Initial session found, calling refreshRegistrationStatus');
+        await refreshRegistrationStatus();
+      } else {
+        setRegistrationStatus(null);
+      }
+      
+      setLoading(false);
+    };
+
+    initializeAuth();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Auth state changed:', event);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -106,16 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await refreshRegistrationStatus();
-      }
-      
-      setLoading(false);
-    });
+
 
     return () => subscription.unsubscribe();
   }, []);
