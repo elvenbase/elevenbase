@@ -219,7 +219,6 @@ const RegisterInvite = () => {
         options: {
           emailRedirectTo: `${window.location.origin}/confirm?type=signup&flow=invite`,
           data: { 
-            username: formData.username,
             invite_code: formData.inviteCode,
             ea_sports_id: formData.eaSportsId || null
           }
@@ -266,7 +265,7 @@ const RegisterInvite = () => {
             description: "Controlla la tua email e clicca sul link di conferma per completare la registrazione al team."
           });
           
-          navigate('/confirm', { 
+          navigate('/email-sent', { 
             state: { 
               email: formData.email, 
               flow: 'invite',
