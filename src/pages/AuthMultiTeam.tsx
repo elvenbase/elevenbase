@@ -174,9 +174,52 @@ const AuthMultiTeam = () => {
 
       console.log('✅ Profile and role created successfully');
       
-      // 2. Skip team name/abbreviation verification (406 errors bypass)
-      console.log('⚠️ Skipping team verification due to persistent 406 errors...');
-      console.log(`Creating team: ${createTeamData.teamName} (${createTeamData.abbreviation.toUpperCase()})`);
+      // 2. Check if team name or abbreviation already exists (with robust error handling)
+      console.log('Checking if team name and abbreviation are available...');
+      
+      try {
+        // Test con query più semplice
+        const { data: existingTeams, error: teamsError } = await supabase
+          .from('teams')
+          .select('name, abbreviation')
+          .or(`name.eq.${createTeamData.teamName},abbreviation.eq.${createTeamData.abbreviation.toUpperCase()}`);
+        
+        if (teamsError) {
+          console.error('❌ Teams query error:', teamsError);
+          throw new Error('Errore nella verifica duplicati team. Riprova.');
+        }
+
+        // Verifica duplicati
+        const nameExists = existingTeams?.find(t => t.name === createTeamData.teamName);
+        const abbrExists = existingTeams?.find(t => t.abbreviation === createTeamData.abbreviation.toUpperCase());
+
+        if (nameExists) {
+          throw new Error(`Una squadra con il nome "${createTeamData.teamName}" esiste già. Scegli un nome diverso.`);
+        }
+
+        if (abbrExists) {
+          throw new Error(`La sigla "${createTeamData.abbreviation.toUpperCase()}" è già in uso. Scegli una sigla diversa.`);
+        }
+
+        console.log('✅ Team name and abbreviation are available');
+        
+      } catch (error: any) {
+        if (error.message.includes('406') || error.message.includes('Not Acceptable')) {
+          // Fallback con query individuale più semplice
+          console.log('⚠️ Retrying with simpler query...');
+          
+          const { count: nameCount } = await supabase
+            .from('teams')
+            .select('*', { count: 'exact', head: true })
+            .eq('name', createTeamData.teamName);
+            
+          if (nameCount && nameCount > 0) {
+            throw new Error(`Una squadra con il nome "${createTeamData.teamName}" esiste già.`);
+          }
+        } else {
+          throw error;
+        }
+      }
       
       // 3. Create the team directly (bypass problematic RPC function)
       console.log('Creating team directly...');
