@@ -28,6 +28,7 @@ const RegisterInvite = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     inviteCode: '',
     eaSportsId: ''
   });
