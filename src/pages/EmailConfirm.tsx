@@ -119,6 +119,7 @@ const EmailConfirm = () => {
           data: {
             teamName: userMetadata.team_name || state?.teamData?.teamName,
             teamAbbreviation: userMetadata.team_abbreviation || state?.teamData?.teamAbbreviation,
+            eaSportsTeamName: userMetadata.ea_sports_team_name || state?.teamData?.eaSportsTeamName,
             primaryColor: userMetadata.primary_color || state?.teamData?.primaryColor,
             secondaryColor: userMetadata.secondary_color || state?.teamData?.secondaryColor
           }

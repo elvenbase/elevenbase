@@ -14,10 +14,9 @@ const RegisterFounder = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
-    username: '',
     teamName: '',
     teamAbbreviation: '',
+    eaSportsTeamName: '',
     primaryColor: '#3B82F6',
     secondaryColor: '#1E40AF',
     acceptPrivacy: false,
@@ -30,14 +29,7 @@ const RegisterFounder = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Errore",
-        description: "Le password non corrispondono",
-        variant: "destructive"
-      });
-      return;
-    }
+
 
     if (formData.password.length < 6) {
       toast({
@@ -67,9 +59,9 @@ const RegisterFounder = () => {
         options: {
           emailRedirectTo: `${window.location.origin}/confirm?type=signup&flow=founder`,
           data: { 
-            username: formData.username,
             team_name: formData.teamName,
             team_abbreviation: formData.teamAbbreviation,
+            ea_sports_team_name: formData.eaSportsTeamName,
             primary_color: formData.primaryColor,
             secondary_color: formData.secondaryColor
           }
@@ -171,57 +163,29 @@ const RegisterFounder = () => {
                   Dati Personali
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      required
-                      placeholder="founder@example.com"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username *</Label>
-                    <Input
-                      id="username"
-                      value={formData.username}
-                      onChange={(e) => handleInputChange('username', e.target.value)}
-                      required
-                      placeholder="il_tuo_username"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    required
+                    placeholder="founder@example.com"
+                  />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password *</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      required
-                      placeholder="••••••••"
-                      minLength={6}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Conferma Password *</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      required
-                      placeholder="••••••••"
-                      minLength={6}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    minLength={6}
+                  />
                 </div>
               </div>
 
@@ -258,6 +222,20 @@ const RegisterFounder = () => {
                       maxLength={10}
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="eaSportsTeamName">Nome EA Sports FC</Label>
+                  <Input
+                    id="eaSportsTeamName"
+                    value={formData.eaSportsTeamName}
+                    onChange={(e) => handleInputChange('eaSportsTeamName', e.target.value)}
+                    placeholder="Nome del team come appare in EA Sports FC"
+                    maxLength={100}
+                  />
+                  <p className="text-sm text-gray-500">
+                    Il nome della squadra come appare nel gioco EA Sports FC (opzionale ma utile per le statistiche)
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
