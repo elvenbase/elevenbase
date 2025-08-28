@@ -59,9 +59,37 @@ const EmailConfirm = () => {
 
   const handleEmailConfirmation = async () => {
     try {
+      // Prima prova a confermare l'email se ci sono parametri URL
+      const token = searchParams.get('token');
+      const tokenHash = searchParams.get('token_hash');
+      const type = searchParams.get('type');
+      
+      console.log('Parametri URL:', { token, tokenHash, type });
+      
+      if (tokenHash && type) {
+        console.log('Tentativo conferma con token...');
+        const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type as any
+        });
+        
+        if (verifyError) {
+          console.error('Errore verifica OTP:', verifyError);
+          setConfirmationResult({
+            success: false,
+            message: `Errore durante la conferma: ${verifyError.message}`
+          });
+          return;
+        }
+        
+        console.log('Conferma riuscita:', verifyData);
+      }
+      
+      // Poi ottieni la sessione
       const { data, error } = await supabase.auth.getSession();
       
       if (error) {
+        console.error('Errore getSession:', error);
         setConfirmationResult({
           success: false,
           message: `Errore durante la conferma: ${error.message}`
@@ -70,6 +98,7 @@ const EmailConfirm = () => {
       }
 
       if (!data.session?.user) {
+        console.log('Nessuna sessione trovata');
         setConfirmationResult({
           success: false,
           message: "Sessione non valida. Riprova il processo di registrazione."
