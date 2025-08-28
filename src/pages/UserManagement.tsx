@@ -77,20 +77,15 @@ const UserManagement = () => {
   const currentTeamId = registrationStatus?.team_id;
 
   useEffect(() => {
-    console.log('🔥 UserManagement useEffect:', { currentTeamId, registrationStatus, currentUser });
     if (currentTeamId) {
-      console.log('✅ Has teamId, fetching data...');
       fetchTeamMembers();
       fetchTeamInvites();
-    } else {
-      console.log('❌ No teamId, cannot fetch data');
     }
   }, [currentTeamId]);
 
   // Force refresh registration status when component mounts
   useEffect(() => {
     if (currentUser) {
-      console.log('🔄 UserManagement: Force refresh registration status');
       refreshRegistrationStatus();
     }
   }, [currentUser, refreshRegistrationStatus]);
@@ -98,7 +93,6 @@ const UserManagement = () => {
   const fetchTeamMembers = async () => {
     if (!currentTeamId) return;
     
-    console.log('🔄 Fetching team members for team:', currentTeamId);
     setIsLoading(true);
     try {
       // Fetch team members first (without JOIN)
@@ -108,7 +102,6 @@ const UserManagement = () => {
         .eq('team_id', currentTeamId)
         .order('joined_at', { ascending: false });
 
-      console.log('📨 Team members response:', { data: membersData, error: membersError });
       if (membersError) throw membersError;
 
       // Fetch profiles separately for each member
@@ -128,9 +121,8 @@ const UserManagement = () => {
       );
 
       setTeamMembers(membersWithProfiles);
-      console.log('✅ Team members set:', membersWithProfiles?.length || 0, 'members');
     } catch (error: any) {
-      console.error('❌ Error fetching team members:', error);
+      console.error('Error fetching team members:', error);
       toast.error('Errore nel caricamento membri del team');
     } finally {
       setIsLoading(false);

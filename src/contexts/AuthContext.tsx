@@ -50,27 +50,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const refreshRegistrationStatus = async (targetUser?: User) => {
     const currentUser = targetUser || user || session?.user;
     if (!currentUser) {
-      console.log('🚫 No current user found for refreshRegistrationStatus');
+
       setRegistrationStatus(null);
       return;
     }
 
     try {
-      console.log('🔄 Calling get_user_registration_status for user:', currentUser.id);
-      
       const { data, error } = await supabase.rpc('get_user_registration_status', {
         _user_id: currentUser.id
       });
 
-      console.log('📨 RPC Response:', { data, error });
-
       if (error) {
-        console.error('❌ Errore nel caricamento status registrazione:', error);
+        console.error('Errore nel caricamento status registrazione:', error);
         setRegistrationStatus(null);
         return;
       }
 
-      console.log('✅ Setting registrationStatus:', data);
       setRegistrationStatus(data);
 
       // Aggiorna localStorage per compatibilità
@@ -94,21 +89,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Inizializza con la sessione corrente
     const initializeAuth = async () => {
-      console.log('🔥 AuthContext STARTING initialization...');
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('🔥 Got session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        console.log('🚀 Initial session found, calling refreshRegistrationStatus');
         await refreshRegistrationStatus(session.user);
       } else {
-        console.log('❌ No session found');
         setRegistrationStatus(null);
       }
       
-      console.log('🔥 AuthContext initialization COMPLETE');
       setLoading(false);
     };
 
@@ -116,7 +106,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state changed:', event);
         setSession(session);
         setUser(session?.user ?? null);
         
