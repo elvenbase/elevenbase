@@ -1,7 +1,4 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Crown, UserPlus, Trophy, Users, BarChart3, Shield } from 'lucide-react';
+import React from 'react';
 
 const Index = () => {
   return (
@@ -19,19 +16,19 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link to="/auth/register-founder">
-                <Button size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-8 py-3">
-                  <Crown className="h-5 w-5 mr-2" />
-                  Fonda il Tuo Team
-                </Button>
-              </Link>
+              <a 
+                href="/auth/register-founder"
+                className="inline-flex items-center px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg transition-colors"
+              >
+                👑 Fonda il Tuo Team
+              </a>
               <span className="text-blue-100 text-sm">oppure</span>
-              <Link to="/auth/register-invite">
-                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                  <UserPlus className="h-4 w-4 mr-1" />
-                  Unisciti con Codice
-                </Button>
-              </Link>
+              <a 
+                href="/auth/register-invite"
+                className="inline-flex items-center px-6 py-3 border border-white/20 text-white hover:bg-white/10 rounded-lg transition-colors"
+              >
+                👥 Unisciti con Codice
+              </a>
             </div>
           </div>
         </div>
@@ -49,43 +46,45 @@ const Index = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <Card className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50">
-            <CardHeader className="text-center pb-6">
+          <div className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6">
+            <div className="text-center pb-6">
               <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Crown className="h-8 w-8 text-white" />
+                <span className="text-2xl">👑</span>
               </div>
-              <CardTitle className="text-2xl text-gray-900">Fonda il Tuo Team</CardTitle>
-              <CardDescription className="text-lg">
+              <h3 className="text-2xl font-bold text-gray-900">Fonda il Tuo Team</h3>
+              <p className="text-lg text-gray-600">
                 Sei un allenatore, dirigente o capitano? Crea il tuo team da zero
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link to="/auth/register-founder" className="block mt-6">
-                <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
-                  Inizia Come Founder
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+              </p>
+            </div>
+            <div>
+              <a 
+                href="/auth/register-founder" 
+                className="block mt-6 w-full text-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg transition-colors"
+              >
+                Inizia Come Founder
+              </a>
+            </div>
+          </div>
 
-          <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50">
-            <CardHeader className="text-center pb-6">
+          <div className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6">
+            <div className="text-center pb-6">
               <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="h-8 w-8 text-white" />
+                <span className="text-2xl">👥</span>
               </div>
-              <CardTitle className="text-2xl text-gray-900">Unisciti a un Team</CardTitle>
-              <CardDescription className="text-lg">
+              <h3 className="text-2xl font-bold text-gray-900">Unisciti a un Team</h3>
+              <p className="text-lg text-gray-600">
                 Hai ricevuto un invito? Entra a far parte di un team esistente
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link to="/auth/register-invite" className="block mt-6">
-                <Button className="w-full">
-                  Unisciti al Team
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+              </p>
+            </div>
+            <div>
+              <a 
+                href="/auth/register-invite" 
+                className="block mt-6 w-full text-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                Unisciti al Team
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -102,53 +101,29 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="text-center">
-              <CardHeader>
-                <div className="flex justify-center mb-4">
-                  <Users className="h-8 w-8 text-blue-500" />
-                </div>
-                <CardTitle className="text-lg">Gestione Squadra</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Organizza i tuoi giocatori, staff tecnico e membri del team.</p>
-              </CardContent>
-            </Card>
+            <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+              <div className="text-4xl mb-4">👥</div>
+              <h3 className="text-lg font-semibold mb-2">Gestione Squadra</h3>
+              <p className="text-gray-600">Organizza i tuoi giocatori, staff tecnico e membri del team.</p>
+            </div>
 
-            <Card className="text-center">
-              <CardHeader>
-                <div className="flex justify-center mb-4">
-                  <Trophy className="h-8 w-8 text-yellow-500" />
-                </div>
-                <CardTitle className="text-lg">Statistiche</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Monitora le performance e analizza i dati della squadra.</p>
-              </CardContent>
-            </Card>
+            <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+              <div className="text-4xl mb-4">🏆</div>
+              <h3 className="text-lg font-semibold mb-2">Statistiche</h3>
+              <p className="text-gray-600">Monitora le performance e analizza i dati della squadra.</p>
+            </div>
 
-            <Card className="text-center">
-              <CardHeader>
-                <div className="flex justify-center mb-4">
-                  <BarChart3 className="h-8 w-8 text-green-500" />
-                </div>
-                <CardTitle className="text-lg">Allenamenti</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Programma sessioni e gestisci le convocazioni.</p>
-              </CardContent>
-            </Card>
+            <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+              <div className="text-4xl mb-4">📊</div>
+              <h3 className="text-lg font-semibold mb-2">Allenamenti</h3>
+              <p className="text-gray-600">Programma sessioni e gestisci le convocazioni.</p>
+            </div>
 
-            <Card className="text-center">
-              <CardHeader>
-                <div className="flex justify-center mb-4">
-                  <Shield className="h-8 w-8 text-purple-500" />
-                </div>
-                <CardTitle className="text-lg">Sicurezza</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">I tuoi dati sono protetti con tecnologie avanzate.</p>
-              </CardContent>
-            </Card>
+            <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+              <div className="text-4xl mb-4">🛡️</div>
+              <h3 className="text-lg font-semibold mb-2">Sicurezza</h3>
+              <p className="text-gray-600">I tuoi dati sono protetti con tecnologie avanzate.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -163,17 +138,18 @@ const Index = () => {
             Unisciti alle squadre che stanno già utilizzando ElevenBase
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/auth/register-founder">
-              <Button size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
-                <Crown className="h-5 w-5 mr-2" />
-                Crea il Tuo Team
-              </Button>
-            </Link>
-            <Link to="/auth">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black">
-                Hai già un account?
-              </Button>
-            </Link>
+            <a 
+              href="/auth/register-founder"
+              className="inline-flex items-center px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg transition-colors"
+            >
+              👑 Crea il Tuo Team
+            </a>
+            <a 
+              href="/auth"
+              className="inline-flex items-center px-8 py-3 border border-white text-white hover:bg-white hover:text-black rounded-lg transition-colors"
+            >
+              📧 Hai già un account?
+            </a>
           </div>
         </div>
       </div>
