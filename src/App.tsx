@@ -49,6 +49,7 @@ const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
 const RegisterFounder = lazy(() => import("@/pages/RegisterFounder"));
 const RegisterInvite = lazy(() => import("@/pages/RegisterInvite"));
 const EmailSent = lazy(() => import("@/pages/EmailSent"));
+const PendingApproval = lazy(() => import("@/pages/PendingApproval"));
 const PendingApprovals = lazy(() => import("@/pages/PendingApprovals"));
 
 // Admin pages
@@ -370,6 +371,7 @@ function App() {
                       <Route path="/register-founder" element={<RegisterFounder />} />
                       <Route path="/register-invite" element={<RegisterInvite />} />
                       <Route path="/email-sent" element={<EmailSent />} />
+                      <Route path="/pending-approval" element={<PendingApproval />} />
                       <Route path="/pending-approvals" element={
                         <AdminRoute>
                           <Navigation />

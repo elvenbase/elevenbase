@@ -137,25 +137,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // Verifica se può effettuare il login
         if (status && !status.can_login) {
-          await supabase.auth.signOut();
-          
+          // Solo per needs_registration facciamo sign out
           if (status.needs_registration) {
+            await supabase.auth.signOut();
             const noTeamError = new Error("Registrazione incompleta");
             toast({ 
               title: "Registrazione incompleta", 
               description: "Devi completare la registrazione. Verrai reindirizzato.", 
               variant: "destructive" 
             });
-            // Qui potresti reindirizzare alla pagina di registrazione
             return { error: noTeamError };
-          } else if (status.status === 'pending') {
-            const pendingError = new Error("Account in attesa di approvazione");
+          } 
+          // Per pending, permettiamo login ma settiamo flag per reindirizzamento
+          else if (status.status === 'pending') {
             toast({ 
-              title: "Account non attivo", 
-              description: "Il tuo account è in attesa di approvazione dal team. Contatta l'amministratore.", 
-              variant: "destructive" 
+              title: "🕐 Account in attesa", 
+              description: "Reindirizzamento alla pagina di attesa approvazione...", 
+              variant: "default" 
             });
-            return { error: pendingError };
+            // Non facciamo signOut per pending - permettiamo l'accesso limitato
+            return { data, isPending: true };
           } else {
             const genericError = new Error("Accesso non autorizzato");
             toast({ 

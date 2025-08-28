@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,8 @@ import { toast } from "sonner";
 import GDPRConsent from "@/components/forms/GDPRConsent";
 
 const AuthMultiTeam = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, signIn } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'create-team' | 'join-team' | 'global-admin'>('login');
   
@@ -50,45 +51,21 @@ const AuthMultiTeam = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginData.email,
-        password: loginData.password
-      });
+      // Usa il nuovo AuthContext
+      const result = await signIn(loginData.email, loginData.password);
       
-      if (error) throw error;
-      
-      // Check if user belongs to a team
-      const { data: teamMember } = await supabase
-        .from('team_members')
-        .select('*, teams(*)')
-        .eq('user_id', data.user.id)
-        .single();
-      
-      if (!teamMember) {
-        toast.error('Non appartieni a nessuna squadra. Contatta un amministratore.');
-        await supabase.auth.signOut();
-      } else {
-        // Check if user is owner (owner should ALWAYS be active from DB)
-        const isOwner = teamMember.teams.owner_id === data.user.id;
-        
-        // Only non-owners need activation
-        if (!isOwner && teamMember.status === 'pending') {
-          toast.error('Il tuo account non è ancora stato attivato. Contatta un amministratore del team.');
-          await supabase.auth.signOut();
-          return;
-        }
-        
-        console.log('Team member found:', teamMember);
-        const welcomeMessage = isOwner 
-          ? `Benvenuto fondatore di ${teamMember.teams.name}!`
-          : `Benvenuto in ${teamMember.teams.name}!`;
-        toast.success(welcomeMessage);
+      if (result.error) {
+        throw result.error;
       }
       
-      // Store team info in localStorage for the app to use
-      localStorage.setItem('currentTeamId', teamMember.team_id);
-      localStorage.setItem('currentTeamName', teamMember.teams.name);
-      localStorage.setItem('userRole', teamMember.role);
+      // Se utente pending, reindirizza alla pagina di attesa
+      if (result.isPending) {
+        navigate('/pending-approval');
+        return;
+      }
+      
+      // Login riuscito per utenti attivi - reindirizza al dashboard
+      navigate('/');
     } catch (error: any) {
       toast.error(error.message || 'Errore durante il login');
     }
