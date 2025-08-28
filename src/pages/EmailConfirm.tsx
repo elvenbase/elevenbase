@@ -59,33 +59,59 @@ const EmailConfirm = () => {
 
   const handleEmailConfirmation = async () => {
     try {
-      // Prima prova a confermare l'email se ci sono parametri URL
+      // Controlla TUTTI i possibili parametri di conferma email Supabase
       const token = searchParams.get('token');
       const tokenHash = searchParams.get('token_hash');
       const type = searchParams.get('type');
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
       
-      console.log('Parametri URL:', { token, tokenHash, type });
+      console.log('Parametri URL completi:', { 
+        token, tokenHash, type, accessToken, refreshToken,
+        fullURL: window.location.href 
+      });
       
-      if (tokenHash && type) {
-        console.log('Tentativo conferma con token...');
+      // Prova diversi metodi di conferma
+      let sessionEstablished = false;
+      
+      // Metodo 1: Se abbiamo access_token e refresh_token (nuovo flusso Supabase)
+      if (accessToken && refreshToken) {
+        console.log('Tentativo setSession con tokens...');
+        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+        
+        if (!sessionError && sessionData.session) {
+          console.log('Sessione stabilita con tokens:', sessionData);
+          sessionEstablished = true;
+        } else {
+          console.error('Errore setSession:', sessionError);
+        }
+      }
+      
+      // Metodo 2: Se abbiamo token_hash (vecchio flusso)
+      if (!sessionEstablished && tokenHash && type) {
+        console.log('Tentativo verifyOtp con token_hash...');
         const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
           type: type as any
         });
         
-        if (verifyError) {
+        if (!verifyError && verifyData.session) {
+          console.log('Conferma riuscita con verifyOtp:', verifyData);
+          sessionEstablished = true;
+        } else {
           console.error('Errore verifica OTP:', verifyError);
-          setConfirmationResult({
-            success: false,
-            message: `Errore durante la conferma: ${verifyError.message}`
-          });
-          return;
         }
-        
-        console.log('Conferma riuscita:', verifyData);
       }
       
-      // Poi ottieni la sessione
+      // Attendi un momento per assicurarsi che la sessione sia propagata
+      if (sessionEstablished) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      // Poi ottieni la sessione finale
       const { data, error } = await supabase.auth.getSession();
       
       if (error) {
