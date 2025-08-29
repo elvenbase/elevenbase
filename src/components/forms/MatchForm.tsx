@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -177,6 +177,9 @@ export const MatchForm = ({ children }: MatchFormProps) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nuova Partita</DialogTitle>
+          <DialogDescription>
+            Crea una nuova partita inserendo i dettagli dell'avversario, data e orario.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative" ref={opponentInputRef}>
