@@ -405,9 +405,9 @@ class BulkImportFileParser {
       'esperienza', 'notes', 'ea_sport_id', 'gaming_platform', 'platform_id'
     ];
 
-    // Cerca dinamicamente la riga degli headers
+    // Cerca dinamicamente la riga degli headers (esteso a 20 righe per nuovo layout)
     let headerRowIndex = -1;
-    for (let i = 0; i < Math.min(data.length, 10); i++) {
+    for (let i = 0; i < Math.min(data.length, 20); i++) {
       const row = data[i] || [];
       const firstCell = row[0]?.toString().trim() || '';
       if (firstCell === 'first_name*') {
@@ -447,9 +447,9 @@ class BulkImportFileParser {
   private extractPlayerData(data: any[][]): PlayerTemplateRow[] {
     const players: PlayerTemplateRow[] = [];
     
-    // Trova dinamicamente la riga degli headers
+    // Trova dinamicamente la riga degli headers (esteso a 20 righe per nuovo layout)
     let headerRowIndex = -1;
-    for (let i = 0; i < Math.min(data.length, 10); i++) {
+    for (let i = 0; i < Math.min(data.length, 20); i++) {
       const row = data[i] || [];
       const firstCell = row[0]?.toString().trim() || '';
       if (firstCell === 'first_name*') {
@@ -529,9 +529,9 @@ class BulkImportFileParser {
       warnings.push('Errore nel fetch ruoli validi');
     }
 
-    // Trova dinamicamente la riga degli headers per calcolare i numeri di riga corretti
+    // Trova dinamicamente la riga degli headers per calcolare i numeri di riga corretti (esteso a 20 righe)
     let headerRowIndex = -1;
-    for (let i = 0; i < Math.min(data.length, 10); i++) {
+    for (let i = 0; i < Math.min(data.length, 20); i++) {
       const row = data[i] || [];
       const firstCell = row[0]?.toString().trim() || '';
       if (firstCell === 'first_name*') {
