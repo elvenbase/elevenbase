@@ -24,18 +24,17 @@ interface TeamMember {
   invited_by?: string;
   approved_by?: string;
   notes?: string;
-  user?: {
-    email: string;
-    profiles?: {
-      first_name?: string;
-      last_name?: string;
-    };
+  user_profile?: {
+    first_name?: string;
+    last_name?: string;
   };
-  inviter?: {
-    email: string;
+  inviter_profile?: {
+    first_name?: string;
+    last_name?: string;
   };
-  approver?: {
-    email: string;
+  approver_profile?: {
+    first_name?: string;
+    last_name?: string;
   };
 }
 
@@ -49,13 +48,14 @@ interface TeamInvite {
   is_active: boolean;
   created_at: string;
   created_by: string;
-  creator?: {
-    email: string;
+  creator_profile?: {
+    first_name?: string;
+    last_name?: string;
   };
 }
 
 const UserManagement = () => {
-  const { user: currentUser, registrationStatus } = useAuth();
+  const { user: currentUser, registrationStatus, refreshRegistrationStatus } = useAuth();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [teamInvites, setTeamInvites] = useState<TeamInvite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,24 +83,44 @@ const UserManagement = () => {
     }
   }, [currentTeamId]);
 
+  // Force refresh registration status when component mounts
+  useEffect(() => {
+    if (currentUser) {
+      refreshRegistrationStatus();
+    }
+  }, [currentUser, refreshRegistrationStatus]);
+
   const fetchTeamMembers = async () => {
     if (!currentTeamId) return;
     
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch team members first (without JOIN)
+      const { data: membersData, error: membersError } = await supabase
         .from('team_members')
-        .select(`
-          *,
-          user:auth.users!user_id(email),
-          inviter:auth.users!invited_by(email),
-          approver:auth.users!approved_by(email)
-        `)
+        .select('*')
         .eq('team_id', currentTeamId)
         .order('joined_at', { ascending: false });
 
-      if (error) throw error;
-      setTeamMembers(data || []);
+      if (membersError) throw membersError;
+
+      // Fetch profiles separately for each member
+      const membersWithProfiles = await Promise.all(
+        (membersData || []).map(async (member) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', member.user_id)
+            .single();
+          
+          return {
+            ...member,
+            user_profile: profileData
+          };
+        })
+      );
+
+      setTeamMembers(membersWithProfiles);
     } catch (error: any) {
       console.error('Error fetching team members:', error);
       toast.error('Errore nel caricamento membri del team');
@@ -113,12 +133,10 @@ const UserManagement = () => {
     if (!currentTeamId) return;
     
     try {
+      // Fetch team invites without JOIN (simpler approach)
       const { data, error } = await supabase
         .from('team_invites')
-        .select(`
-          *,
-          creator:auth.users!created_by(email)
-        `)
+        .select('*')
         .eq('team_id', currentTeamId)
         .order('created_at', { ascending: false });
 
@@ -235,9 +253,8 @@ const UserManagement = () => {
   // Filtering
   const filteredMembers = teamMembers.filter(member => {
     const searchMatch = !searchTerm || 
-      member.user?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.user?.profiles?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.user?.profiles?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.user_profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.user_profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.ea_sports_id?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const statusMatch = statusFilter === 'all' || member.status === statusFilter;
@@ -407,12 +424,12 @@ const UserManagement = () => {
                     <TableRow key={member.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{member.user?.email}</div>
-                          {(member.user?.profiles?.first_name || member.user?.profiles?.last_name) && (
-                            <div className="text-sm text-gray-500">
-                              {member.user?.profiles?.first_name} {member.user?.profiles?.last_name}
-                            </div>
-                          )}
+                          <div className="font-medium">
+                            {member.user_profile?.first_name} {member.user_profile?.last_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            User ID: {member.user_id.slice(0, 8)}...
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{getRoleBadge(member.role)}</TableCell>
@@ -629,7 +646,7 @@ const UserManagement = () => {
           <DialogHeader>
             <DialogTitle>Approva Membro</DialogTitle>
             <DialogDescription>
-              Vuoi approvare {selectedMember?.user?.email} come {selectedMember?.role}?
+              Vuoi approvare {selectedMember?.user_profile?.first_name} {selectedMember?.user_profile?.last_name} come {selectedMember?.role}?
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

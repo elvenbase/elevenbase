@@ -28,6 +28,7 @@ const RegisterInvite = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     inviteCode: '',
     eaSportsId: ''
   });
@@ -435,23 +436,26 @@ const RegisterInvite = () => {
                       </div>
                     </div>
 
-                    {/* EA Sports ID per Player */}
-                    {inviteInfo.role === 'player' && (
+                    {/* EA Sports ID per Player (obbligatorio) e Admin (opzionale) */}
+                    {(inviteInfo.role === 'player' || inviteInfo.role === 'admin') && (
                       <div className="space-y-2">
                         <Label htmlFor="eaSportsId" className="flex items-center gap-2">
                           <Gamepad2 className="w-4 h-4" />
-                          EA Sports ID *
+                          EA Sports ID {inviteInfo.role === 'player' ? '*' : '(opzionale)'}
                         </Label>
                         <Input
                           id="eaSportsId"
                           value={formData.eaSportsId}
                           onChange={(e) => setFormData(prev => ({ ...prev, eaSportsId: e.target.value }))}
-                          required
-                          placeholder="Il tuo EA Sports ID"
+                          required={inviteInfo.role === 'player'}
+                          placeholder={inviteInfo.role === 'player' ? 'Il tuo EA Sports ID' : 'Il tuo EA Sports ID (opzionale)'}
                           className="text-center font-mono"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Questo ID verrà associato al tuo profilo giocatore e non potrà essere modificato.
+                          {inviteInfo.role === 'player' 
+                            ? 'Questo ID verrà associato al tuo profilo giocatore e non potrà essere modificato.'
+                            : 'Puoi aggiungere il tuo EA Sports ID ora o successivamente nelle impostazioni.'
+                          }
                         </p>
                       </div>
                     )}

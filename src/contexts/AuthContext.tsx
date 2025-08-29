@@ -47,9 +47,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   // Funzione per aggiornare lo status di registrazione
-  const refreshRegistrationStatus = async () => {
-    const currentUser = user || session?.user;
+  const refreshRegistrationStatus = async (targetUser?: User) => {
+    const currentUser = targetUser || user || session?.user;
     if (!currentUser) {
+
       setRegistrationStatus(null);
       return;
     }
@@ -86,6 +87,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    // Inizializza con la sessione corrente
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await refreshRegistrationStatus(session.user);
+      } else {
+        setRegistrationStatus(null);
+      }
+      
+      setLoading(false);
+    };
+
+    initializeAuth();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
@@ -101,16 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await refreshRegistrationStatus();
-      }
-      
-      setLoading(false);
-    });
+
 
     return () => subscription.unsubscribe();
   }, []);
