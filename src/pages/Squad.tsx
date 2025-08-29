@@ -1223,7 +1223,13 @@ const Squad = () => {
                               variant="ghost"
                               size="sm"
                               className="h-8 w-8 p-0 hover:bg-white/80 rounded-full"
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                              onTouchStart={(e) => {
+                                e.stopPropagation();
+                              }}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
