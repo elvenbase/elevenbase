@@ -1224,7 +1224,6 @@ const Squad = () => {
                               size="sm"
                               className="h-8 w-8 p-0 hover:bg-white/80 rounded-full"
                               onClick={(e) => {
-                                e.preventDefault();
                                 e.stopPropagation();
                               }}
                               onTouchStart={(e) => {
