@@ -55,14 +55,14 @@ const Welcome = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] font-inter overflow-hidden">
       {/* Navigation */}
-      <nav className="relative z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0">
+      <nav className="relative z-50 bg-black/20 backdrop-blur-sm border-b border-white/10 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-24">
             <div className="flex items-center">
               <img 
                 src="/assets/IMG_0055.png" 
                 alt="ElevenBase" 
-                className="h-12 w-auto"
+                className="h-20 w-auto drop-shadow-2xl brightness-110 contrast-110"
               />
             </div>
             <div className="flex items-center gap-4">
