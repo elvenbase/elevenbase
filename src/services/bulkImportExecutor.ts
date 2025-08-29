@@ -349,9 +349,9 @@ class BulkImportExecutor {
         throw new Error('Accesso negato: non fai parte di questo team');
       }
 
-      // Verifica permessi per import (solo owner/admin)
-      if (!['owner', 'admin'].includes(membership.role)) {
-        throw new Error('Permessi insufficienti: solo owner e admin possono importare giocatori');
+      // Verifica permessi per import (solo founder/owner/admin)
+      if (!['founder', 'owner', 'admin'].includes(membership.role)) {
+        throw new Error('Permessi insufficienti: solo founder, owner e admin possono importare giocatori');
       }
 
     } catch (error) {
