@@ -58,6 +58,13 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
     return playerAttendance?.status === 'present';
   })
   
+  // Giocatori disponibili per selezione (esclusi quelli già convocati)
+  const availablePlayersForSelection = presentPlayers.filter(player => {
+    // Escludi giocatori già convocati
+    const isAlreadyConvocato = convocati.some(c => c.player_id === player.id);
+    return !isAlreadyConvocato;
+  })
+  
   // Notifica al parent ogni volta che cambia la selezione dei convocati
   useEffect(() => {
     onConvocatiChange?.(selectedPlayers)
@@ -192,8 +199,8 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
   }
 
   const selectAllPresentPlayers = () => {
-    const allPresentIds = presentPlayers.map(player => player.id)
-    setSelectedPlayers(allPresentIds)
+    const allAvailableIds = availablePlayersForSelection.map(player => player.id)
+    setSelectedPlayers(allAvailableIds)
   }
 
   const deselectAllPlayers = () => {
@@ -218,7 +225,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
   }).length
   const totaleConvocati = titolariCount + convocatiCount
   
-  const allPresentSelected = presentPlayers.length > 0 && presentPlayers.every(player => selectedPlayers.includes(player.id))
+  const allAvailableSelected = availablePlayersForSelection.length > 0 && availablePlayersForSelection.every(player => selectedPlayers.includes(player.id))
 
   return (
     <div className="space-y-6">
@@ -327,11 +334,11 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
                   <Button
                     variant="outline"
                     onClick={selectAllPresentPlayers}
-                    disabled={allPresentSelected}
+                    disabled={allAvailableSelected || availablePlayersForSelection.length === 0}
                     className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <CheckCircle className="h-4 w-4" />
-                    {allPresentSelected ? 'Tutti selezionati' : `Convoca tutti (${presentPlayers.length})`}
+                    {allAvailableSelected ? 'Tutti selezionati' : `Convoca tutti (${availablePlayersForSelection.length})`}
                   </Button>
                   {selectedPlayers.length > 0 && (
                     <Button
@@ -353,7 +360,7 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
-              {presentPlayers.map((player) => (
+              {availablePlayersForSelection.map((player) => (
                 <div
                   key={player.id}
                   className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
