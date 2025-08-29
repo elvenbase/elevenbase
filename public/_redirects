@@ -1,3 +1,2 @@
-# Serve static files first, then SPA fallback
-/*.html  /:splat.html  200
-/*       /index.html   200
+# SPA fallback - only for non-existing files
+/*    /index.html   200
