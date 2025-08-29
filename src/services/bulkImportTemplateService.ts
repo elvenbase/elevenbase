@@ -75,7 +75,17 @@ class BulkImportTemplateService {
     // Riga 4: Vuota (separatore)
     worksheetData.push([]);
     
-    // Riga 5: Header colonne
+    // Riga 5: Sezione ruoli validi
+    worksheetData.push(['=== RUOLI VALIDI ===']);
+    worksheetData.push(['difensore_centrale, terzino_destro, terzino_sinistro, esterno_destro_basso, esterno_sinistro_basso, mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti']);
+    worksheetData.push([]);
+    
+    // Riga 8: Sezione gaming platforms
+    worksheetData.push(['=== GAMING PLATFORMS ===']);
+    worksheetData.push(['PC, PS5, Xbox, Nintendo Switch']);
+    worksheetData.push([]);
+    
+    // Riga 11: Header colonne
     worksheetData.push([
       'first_name*',
       'last_name*', 
@@ -87,10 +97,13 @@ class BulkImportTemplateService {
       'birth_date',
       'email',
       'esperienza',
-      'notes'
+      'notes',
+      'ea_sport_id',
+      'gaming_platform',
+      'platform_id'
     ]);
     
-    // Riga 9-10: Esempi
+    // Riga 12-13: Solo 2 esempi puliti
     worksheetData.push([
       'Mario',
       'Rossi',
@@ -102,7 +115,10 @@ class BulkImportTemplateService {
       '1995-03-15',
       'mario.rossi@email.com',
       'Professionale',
-      'Capitano squadra'
+      'Capitano squadra',
+      'MarioRossi_EA',
+      'PS5',
+      'PSNMarioRossi'
     ]);
     
     worksheetData.push([
@@ -116,14 +132,11 @@ class BulkImportTemplateService {
       '',
       '',
       '',
+      '',
+      '',
+      'PC',
       ''
     ]);
-    
-    // Riga vuota + info ruoli
-    worksheetData.push([]);
-    worksheetData.push(['=== RUOLI VALIDI ===']);
-    worksheetData.push(['difensore_centrale, terzino_destro, terzino_sinistro, esterno_destro_basso, esterno_sinistro_basso,']);
-    worksheetData.push(['mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti']);
     
     // Crea worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -166,12 +179,16 @@ class BulkImportTemplateService {
     lines.push('# mediano, regista, mezzala, interno_centrocampo, trequartista, ala_destra, ala_sinistra, seconda_punta, falso_nove, centravanti');
     lines.push('#');
     
-    // Header
-    lines.push('first_name*,last_name*,jersey_number*,position,player_role,status*,phone,birth_date,email,esperienza,notes');
+    // Gaming platforms info
+    lines.push('# GAMING PLATFORMS: PC, PS5, Xbox, Nintendo Switch');
+    lines.push('#');
     
-    // Esempi
-    lines.push('Mario,Rossi,10,Centrocampo,regista,active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra"');
-    lines.push('Luigi,Bianchi,7,Attacco,centravanti,active,,,,,');
+    // Header con campi gaming
+    lines.push('first_name*,last_name*,jersey_number*,position,player_role,status*,phone,birth_date,email,esperienza,notes,ea_sport_id,gaming_platform,platform_id');
+    
+    // Esempi puliti
+    lines.push('Mario,Rossi,10,Centrocampo,regista,active,+39123456789,1995-03-15,mario.rossi@email.com,Professionale,"Capitano squadra",MarioRossi_EA,PS5,PSNMarioRossi');
+    lines.push('Luigi,Bianchi,7,Attacco,centravanti,active,,,,,,,PC,');
     
     return lines.join('\n');
   }
