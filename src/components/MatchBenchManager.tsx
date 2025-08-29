@@ -49,6 +49,8 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
 
   const availablePlayers = useMemo(() => allPlayers.filter(p => !playersInLineup.includes(p.id)), [allPlayers, playersInLineup])
   const presentPlayers = useMemo(() => availablePlayers.filter(player => attendance.find(a => a.player_id === player.id)?.status === 'present'), [availablePlayers, attendance])
+  // Giocatori disponibili per panchina = tutti i giocatori non in formazione (non solo presenti)
+  const benchCandidates = useMemo(() => availablePlayers, [availablePlayers])
 
   // Roster-only utilities for counts that should not include trialists
   const rosterPlayers = useMemo(() => allPlayers.filter(p => !p.isTrialist), [allPlayers])
@@ -176,8 +178,6 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
   }).length
   const totaleConvocati = titolariCount + convocatiCount
 
-  const allPresentSelected = presentPlayers.length > 0 && presentPlayers.every(p => selectedPlayers.includes(p.id))
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
@@ -193,22 +193,22 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
       {!isReadOnly && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" />Seleziona Convocati</CardTitle>
-            <CardDescription>Seleziona i presenti da aggiungere alla panchina</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" />Seleziona Panchina</CardTitle>
+            <CardDescription>Seleziona i giocatori da aggiungere alla panchina (non è necessario che siano presenti)</CardDescription>
           </CardHeader>
           <CardContent>
-            {presentPlayers.length === 0 && (
+            {benchCandidates.length === 0 && (
               <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-center gap-2 text-amber-800"><Info className="h-4 w-4" /><p className="text-sm"><strong>Nessun giocatore presente.</strong></p></div>
+                <div className="flex items-center gap-2 text-amber-800"><Info className="h-4 w-4" /><p className="text-sm"><strong>Nessun giocatore disponibile per la panchina.</strong></p></div>
               </div>
             )}
 
-            {presentPlayers.length > 0 && (
+            {benchCandidates.length > 0 && (
               <div className="mb-4 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                  <Button variant="outline" onClick={() => setSelectedPlayers(presentPlayers.map(p => p.id))} disabled={allPresentSelected} className="flex items-center gap-2 w-full sm:w-auto">
+                  <Button variant="outline" onClick={() => setSelectedPlayers(benchCandidates.map(p => p.id))} disabled={selectedPlayers.length === benchCandidates.length} className="flex items-center gap-2 w-full sm:w-auto">
                     <CheckCircle className="h-4 w-4" />
-                    {allPresentSelected ? 'Tutti selezionati' : `Convoca tutti (${presentPlayers.length})`}
+                    {selectedPlayers.length === benchCandidates.length ? 'Tutti selezionati' : `Convoca tutti (${benchCandidates.length})`}
                   </Button>
                   {selectedPlayers.length > 0 && (
                     <Button variant="outline" onClick={() => setSelectedPlayers([])} className="flex items-center gap-2 w-full sm:w-auto">
@@ -216,12 +216,14 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
                     </Button>
                   )}
                 </div>
-                {selectedPlayers.length > 0 && (<span className="text-sm text-muted-foreground">{selectedPlayers.length}/{presentPlayers.length} selezionati</span>)}
+                {selectedPlayers.length > 0 && (<span className="text-sm text-muted-foreground">{selectedPlayers.length}/{benchCandidates.length} selezionati</span>)}
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
-              {presentPlayers.map((player) => (
+              {benchCandidates.map((player) => {
+                const attendanceStatus = attendance.find(a => a.player_id === player.id)?.status;
+                return (
                 <div key={player.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedPlayers.includes(player.id) ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`} onClick={() => togglePlayerSelection(player.id)}>
                   <Checkbox checked={selectedPlayers.includes(player.id)} onChange={() => togglePlayerSelection(player.id)} />
                   <PlayerAvatar firstName={player.first_name} lastName={player.last_name} avatarUrl={player.avatar_url} size="sm" />
@@ -229,11 +231,16 @@ const MatchBenchManager = ({ matchId, allPlayers, attendance = [], playersInLine
                     <p className="text-sm font-medium flex items-center gap-2">
                       <span className="truncate">{player.first_name} {player.last_name}</span>
                       {player.isTrialist && <Badge variant="secondary" className="text-[10px] px-1 py-0">provinante</Badge>}
+                      {attendanceStatus === 'present' && <Badge variant="default" className="text-[10px] px-1 py-0">presente</Badge>}
+                      {attendanceStatus === 'absent' && <Badge variant="destructive" className="text-[10px] px-1 py-0">assente</Badge>}
+                      {attendanceStatus === 'uncertain' && <Badge variant="secondary" className="text-[10px] px-1 py-0">incerto</Badge>}
+                      {!attendanceStatus && <Badge variant="outline" className="text-[10px] px-1 py-0">senza risposta</Badge>}
                     </p>
                     {player.jersey_number && (<p className="text-xs text-muted-foreground">#{player.jersey_number}</p>)}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex justify-end mt-4">
