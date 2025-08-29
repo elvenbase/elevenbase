@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElevenBase Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .loading { background: #fff3cd; border-color: #ffeaa7; }
+        pre { background: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔬 ElevenBase Diagnostic Test</h1>
+    <p>Timestamp: <span id="timestamp"></span></p>
+    
+    <div id="tests"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const testsDiv = document.getElementById('tests');
+        const timestamp = document.getElementById('timestamp');
+        timestamp.textContent = new Date().toISOString();
+        
+        function addTest(name, status, details, duration) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `
+                <h3>${status === 'loading' ? '⏳' : status === 'success' ? '✅' : '❌'} ${name}</h3>
+                ${duration ? `<p><strong>Duration:</strong> ${duration}ms</p>` : ''}
+                <pre>${details}</pre>
+            `;
+            testsDiv.appendChild(div);
+        }
+        
+        async function runTests() {
+            addTest('Test Environment', 'loading', 'Checking environment variables...');
+            
+            // Test 1: Environment Variables
+            const supabaseUrl = 'https://cuthalxqxkonmfzqjdvw.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1dGhhbHhxeGtvbm1menFqZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjIzNTM1MDEsImV4cCI6MjAzNzkyOTUwMX0.VoFNzYHt26M5KT8DCXM_l52P8QwF5tqNYYmz9rBxlEY';
+            
+            if (!supabaseUrl || !supabaseKey) {
+                addTest('Environment Variables', 'error', 'Missing SUPABASE_URL or SUPABASE_ANON_KEY');
+                return;
+            }
+            
+            addTest('Environment Variables', 'success', `URL: ${supabaseUrl}\nKey: ${supabaseKey.substring(0, 20)}...`);
+            
+            // Test 2: Supabase Client Creation
+            let supabase;
+            try {
+                addTest('Supabase Client', 'loading', 'Creating Supabase client...');
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                addTest('Supabase Client', 'success', 'Client created successfully');
+            } catch (error) {
+                addTest('Supabase Client', 'error', `Error: ${error.message}`);
+                return;
+            }
+            
+            // Test 3: Basic Connection
+            try {
+                addTest('Basic Connection', 'loading', 'Testing basic connection...');
+                const start = Date.now();
+                
+                const { data, error } = await supabase
+                    .from('teams')
+                    .select('count')
+                    .limit(1);
+                
+                const duration = Date.now() - start;
+                
+                if (error) {
+                    addTest('Basic Connection', 'error', `Error: ${error.message}`, duration);
+                } else {
+                    addTest('Basic Connection', 'success', `Connection successful\nData: ${JSON.stringify(data, null, 2)}`, duration);
+                }
+            } catch (error) {
+                addTest('Basic Connection', 'error', `Exception: ${error.message}`);
+            }
+            
+            // Test 4: Auth Check
+            try {
+                addTest('Auth Session', 'loading', 'Checking auth session...');
+                const start = Date.now();
+                
+                const { data: session, error } = await supabase.auth.getSession();
+                const duration = Date.now() - start;
+                
+                if (error) {
+                    addTest('Auth Session', 'error', `Error: ${error.message}`, duration);
+                } else {
+                    addTest('Auth Session', 'success', `Session: ${session.session ? 'Active' : 'None'}\nUser: ${session.session?.user?.email || 'Not logged in'}`, duration);
+                }
+            } catch (error) {
+                addTest('Auth Session', 'error', `Exception: ${error.message}`);
+            }
+            
+            // Test 5: RPC Call (the problematic one)
+            try {
+                addTest('RPC Function', 'loading', 'Testing get_user_registration_status RPC...');
+                const start = Date.now();
+                
+                // Use a dummy UUID for testing
+                const { data, error } = await supabase.rpc('get_user_registration_status', {
+                    _user_id: '00000000-0000-0000-0000-000000000000'
+                });
+                
+                const duration = Date.now() - start;
+                
+                if (error) {
+                    addTest('RPC Function', 'error', `Error: ${error.message}\nCode: ${error.code}\nDetails: ${error.details}`, duration);
+                } else {
+                    addTest('RPC Function', 'success', `RPC call successful\nData: ${JSON.stringify(data, null, 2)}`, duration);
+                }
+            } catch (error) {
+                addTest('RPC Function', 'error', `Exception: ${error.message}`);
+            }
+            
+            // Test 6: team_members table access
+            try {
+                addTest('Team Members Table', 'loading', 'Testing team_members table access...');
+                const start = Date.now();
+                
+                const { data, error } = await supabase
+                    .from('team_members')
+                    .select('count')
+                    .limit(1);
+                
+                const duration = Date.now() - start;
+                
+                if (error) {
+                    addTest('Team Members Table', 'error', `Error: ${error.message}\nCode: ${error.code}`, duration);
+                } else {
+                    addTest('Team Members Table', 'success', `Table access successful\nData: ${JSON.stringify(data, null, 2)}`, duration);
+                }
+            } catch (error) {
+                addTest('Team Members Table', 'error', `Exception: ${error.message}`);
+            }
+            
+            console.log('All tests completed');
+        }
+        
+        // Run tests when page loads
+        runTests().catch(error => {
+            addTest('Test Runner', 'error', `Test runner failed: ${error.message}`);
+        });
+    </script>
+</body>
+</html>
