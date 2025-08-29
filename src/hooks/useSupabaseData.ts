@@ -894,7 +894,10 @@ export const useArchiveTrainingSession = () => {
     mutationFn: async (id: string) => {
       const { data, error } = await supabase
         .from('training_sessions')
-        .update({ is_closed: true })
+        .update({ 
+          is_closed: true,
+          archived_at: new Date().toISOString()
+        })
         .eq('id', id)
         .select()
         .single();
@@ -903,10 +906,11 @@ export const useArchiveTrainingSession = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
-      toast({ title: 'Sessione archiviata' });
+      toast({ title: 'Sessione archiviata con successo' });
     },
-    onError: () => {
-      toast({ title: "Errore durante l'archiviazione", variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Archive error:', error);
+      toast({ title: `Errore durante l'archiviazione: ${error.message}`, variant: 'destructive' });
     }
   });
 };

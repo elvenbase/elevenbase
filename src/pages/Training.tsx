@@ -23,7 +23,7 @@ interface TrainingSession {
   start_time: string;
   end_time: string;
   is_closed: boolean;
-  // archived_at?: string | null; // Temporarily disabled due to schema issue
+  archived_at?: string | null;
   description?: string;
   location?: string;
   max_participants?: number;
@@ -65,11 +65,14 @@ const Training = () => {
     await deleteSession.mutateAsync(sessionId);
   };
 
-  // Funzione per determinare se una sessione è archiviata (nuova regola):
-  // deve essere chiusa e devono essere passate >48h dalla fine
+  // Funzione per determinare se una sessione è archiviata:
+  // 1. Ha archived_at impostato (archiviazione manuale)
+  // 2. È chiusa e sono passate >48h dalla fine (archiviazione automatica)
   const isSessionArchived = (session: TrainingSession) => {
-    // Temporarily disabled archived_at check due to schema issue
-    // if (session.archived_at) return true
+    // Priorità: se ha archived_at è sicuramente archiviata
+    if (session.archived_at) return true;
+    
+    // Fallback: logica temporale per sessioni vecchie
     const end = new Date(session.session_date + 'T' + session.end_time)
     const now = new Date()
     const hoursSinceEnd = (now.getTime() - end.getTime()) / (1000 * 60 * 60)
