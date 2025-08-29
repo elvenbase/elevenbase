@@ -5,52 +5,10 @@ import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCir
 import { useState, useEffect, useRef } from 'react';
 
 const Welcome = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [parallaxY, setParallaxY] = useState(0);
+  const [isVisible, setIsVisible] = useState(true); // Always visible - no animation delays
   const heroRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Entrance animation
-    const timer = setTimeout(() => setIsVisible(true), 100);
-
-    // Parallax effect
-    const handleScroll = () => {
-      if (heroRef.current) {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
-        setParallaxY(rate);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  // Intersection Observer for staggered animations
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-fade-in-up');
-          entry.target.classList.remove('opacity-0', 'translate-y-8');
-        }
-      });
-    }, observerOptions);
-
-    // Observe all elements with the class 'animate-on-scroll'
-    const animateElements = document.querySelectorAll('.animate-on-scroll');
-    animateElements.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, []);
+  // No heavy animations for performance
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] font-inter overflow-hidden">
@@ -76,31 +34,24 @@ const Welcome = () => {
         </div>
       </nav>
 
-      {/* Hero Section with Parallax */}
+      {/* Hero Section - Optimized */}
       <div 
         ref={heroRef}
-        className="relative overflow-hidden min-h-screen flex items-center"
-        style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=1993&q=80")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          transform: `translateY(${parallaxY}px)`
-        }}
+        className="relative overflow-hidden min-h-screen flex items-center bg-gradient-to-br from-[#004d4d] to-[#1a237e]"
       >
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#004d4d]/80 to-[#1a237e]/80"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 z-10">
-          <div className={`text-center transform transition-all duration-1000 ease-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+          <div className="text-center">
             {/* Badge */}
-            <div className={`inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white border border-white/20 mb-8 transition-all duration-700 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+            <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white border border-white/20 mb-8">
               <Gamepad2 className="h-4 w-4 mr-2" />
               <span className="text-sm font-medium">Gestione Professionale per EA Sports FC™</span>
             </div>
 
             {/* Main Title */}
-            <h1 className={`text-5xl md:text-7xl font-bold mb-6 leading-tight text-white transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
               Il futuro della gestione
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#006666]">
@@ -108,17 +59,17 @@ const Welcome = () => {
               </span>
             </h1>
 
-            <p className={`text-xl md:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed transition-all duration-1000 delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+            <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed">
               ElevenBase è la piattaforma definitiva per gestire il tuo Club di EA Sports FC™. 
               Organizza giocatori, pianifica allenamenti, gestisci le formazioni e domina la competizione digitale.
             </p>
             
             {/* CTA Buttons */}
-            <div className={`flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 transition-all duration-1000 delay-900 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               <Link to="/register-founder">
                 <Button 
                   size="lg" 
-                  className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                  className="bg-white text-[#004d4d] font-semibold px-12 py-4 text-lg shadow-xl"
                 >
                   <Crown className="h-5 w-5 mr-3" />
                   Fonda il Tuo Club FC
@@ -131,7 +82,7 @@ const Welcome = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="border-2 border-white/80 text-white bg-transparent hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+                  className="border-2 border-white/80 text-white bg-transparent font-semibold px-12 py-4 text-lg backdrop-blur-sm"
                 >
                   <UserPlus className="h-5 w-5 mr-3" />
                   Unisciti a un Club
