@@ -1,0 +1,393 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+};
+
+const validateUuid = (uuid) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response(null, {
+    headers: corsHeaders
+  });
+
+  try {
+    const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+    const url = new URL(req.url);
+    let token = url.searchParams.get('token');
+    let method = req.method;
+    let body = null;
+
+    if (req.method === 'POST') {
+      const raw = await req.text();
+      if (raw && raw.trim()) {
+        body = JSON.parse(raw);
+        if (body.method === 'GET') {
+          method = 'GET';
+          token = body.token;
+        } else {
+          token = body.token || token;
+        }
+      }
+    }
+
+    if (method === 'GET') {
+      if (!token) return new Response(JSON.stringify({
+        error: 'Token mancante'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const { data: match, error: matchError } = await supabase.from('matches').select(`
+          *,
+          teams (
+            id,
+            name,
+            logo_url,
+            primary_color,
+            secondary_color
+          )
+        `).eq('public_link_token', token).single();
+
+      if (matchError || !match) return new Response(JSON.stringify({
+        error: 'Token non valido'
+      }), {
+        status: 404,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // CONTROLLO 1: Status della partita
+      if (match.status === 'completed') {
+        return new Response(JSON.stringify({
+          error: 'La partita è terminata, registrazioni chiuse'
+        }), {
+          status: 403,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      if (match.status === 'cancelled') {
+        return new Response(JSON.stringify({
+          error: 'La partita è stata annullata'
+        }), {
+          status: 403,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      // CONTROLLO 2: Deadline registrazioni
+      const now = new Date();
+      const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      
+      if (match.allow_responses_until && now > deadline) {
+        return new Response(JSON.stringify({
+          error: 'Tempo scaduto per le registrazioni'
+        }), {
+          status: 403,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      // CONTROLLO 3: Live state (partita terminata)
+      if (match.live_state === 'finished') {
+        return new Response(JSON.stringify({
+          error: 'La partita è terminata'
+        }), {
+          status: 403,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      const { data: players, error: playersError } = await supabase.from('players')
+        .select('id, first_name, last_name, jersey_number, position, avatar_url')
+        .eq('status', 'active')
+        .eq('team_id', match.team_id)
+        .or('is_guest.is.null,is_guest.eq.false')
+        .order('last_name');
+
+      if (playersError) throw playersError;
+
+      const { data: existingAttendance, error: attendanceError } = await supabase.from('match_attendance')
+        .select('player_id, status, self_registered')
+        .eq('match_id', match.id);
+
+      if (attendanceError) throw attendanceError;
+
+      const { data: lineupRow } = await supabase.from('match_lineups')
+        .select('formation, players_data')
+        .eq('match_id', match.id)
+        .maybeSingle();
+
+      const { data: bench, error: benchError } = await supabase.from('match_bench').select(`
+          id, match_id, player_id, trialist_id, notes,
+          players (
+            id, first_name, last_name, jersey_number, position, avatar_url
+          ),
+          trialists:trialist_id (
+            id, first_name, last_name, avatar_url
+          )
+        `).eq('match_id', match.id);
+
+      if (benchError) {
+        console.warn('bench fetch error', benchError);
+      }
+
+      const { data: trialistInvites, error: tiErr } = await supabase.from('match_trialist_invites').select(`
+          trialist_id,
+          status,
+          self_registered,
+          trialists!inner (
+            id,
+            first_name,
+            last_name
+          )
+        `).eq('match_id', match.id);
+
+      if (tiErr) console.warn('trialist invites fetch error', tiErr);
+
+      console.log('Trialist invites raw data:', trialistInvites);
+      console.log('Match ID:', match.id);
+
+      const trialistsInvited = (trialistInvites || []).map((t) => ({
+        id: t.trialist_id,
+        first_name: t.trialists?.first_name || 'Unknown',
+        last_name: t.trialists?.last_name || 'Unknown',
+        status: t.status,
+        self_registered: t.self_registered
+      }));
+
+      console.log('Trialists mapped:', trialistsInvited);
+      console.log('Trialists with status present:', trialistsInvited.filter((t) => t.status === 'present'));
+      console.log('Trialists with status absent:', trialistsInvited.filter((t) => t.status === 'absent'));
+
+      return new Response(JSON.stringify({
+        match,
+        players,
+        existingAttendance,
+        lineup: lineupRow ? {
+          formation: lineupRow.formation,
+          players_data: lineupRow.players_data
+        } : null,
+        bench: bench || [],
+        trialistsInvited: trialistsInvited,
+        deadline: deadline.toISOString(),
+        isRegistrationExpired: now > deadline
+      }), {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+
+    if (method === 'POST' || req.method === 'POST' && method !== 'GET') {
+      if (!body) return new Response(JSON.stringify({
+        error: 'Body JSON non valido'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const { playerId, trialistId, status } = body;
+
+      if (!token || !playerId && !trialistId || !status) return new Response(JSON.stringify({
+        error: 'Missing required parameters'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (playerId && !validateUuid(playerId)) return new Response(JSON.stringify({
+        error: 'Invalid player ID format'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (trialistId && !validateUuid(trialistId)) return new Response(JSON.stringify({
+        error: 'Invalid trialist ID format'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!['present', 'absent', 'uncertain'].includes(status)) return new Response(JSON.stringify({
+        error: 'Invalid status value'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const { data: match, error: matchError } = await supabase.from('matches')
+        .select('*')
+        .eq('public_link_token', token)
+        .single();
+
+      if (matchError || !match) return new Response(JSON.stringify({
+        error: 'Token non valido'
+      }), {
+        status: 404,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // CONTROLLO 1: Status della partita (per POST)
+      if (match.status === 'completed') {
+        return new Response(JSON.stringify({
+          error: 'La partita è terminata, non è possibile modificare le registrazioni'
+        }), {
+          status: 403,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      if (match.status === 'cancelled') {
+        return new Response(JSON.stringify({
+          error: 'La partita è stata annullata'
+        }), {
+          status: 403,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      // CONTROLLO 2: Deadline registrazioni (per POST)
+      const now = new Date();
+      const deadline = match.allow_responses_until ? new Date(match.allow_responses_until) : null;
+      if (deadline && now > deadline) return new Response(JSON.stringify({
+        error: 'Tempo scaduto per le registrazioni'
+      }), {
+        status: 403,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // CONTROLLO 3: Live state (per POST)
+      if (match.live_state === 'finished') {
+        return new Response(JSON.stringify({
+          error: 'La partita è terminata, non è possibile modificare le registrazioni'
+        }), {
+          status: 403,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      if (playerId) {
+        const { data, error } = await supabase.from('match_attendance').upsert({
+          match_id: match.id,
+          player_id: playerId,
+          status,
+          self_registered: true
+        }, {
+          onConflict: 'match_id,player_id'
+        }).select();
+
+        if (error) throw error;
+
+        return new Response(JSON.stringify({
+          success: true,
+          data
+        }), {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      if (trialistId) {
+        const { error: upErr } = await supabase.from('match_trialist_invites').upsert({
+          match_id: match.id,
+          trialist_id: trialistId,
+          status,
+          self_registered: true
+        }, {
+          onConflict: 'match_id,trialist_id'
+        });
+
+        if (upErr) throw upErr;
+
+        return new Response(JSON.stringify({
+          success: true
+        }), {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+    }
+
+    return new Response(JSON.stringify({
+      error: 'Metodo non supportato'
+    }), {
+      status: 405,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    });
+
+  } catch (error) {
+    console.error('Errore in public-match-registration:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Errore server';
+    return new Response(JSON.stringify({
+      error: errorMessage
+    }), {
+      status: 500,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+});
