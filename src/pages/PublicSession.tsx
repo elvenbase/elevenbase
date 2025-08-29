@@ -126,11 +126,11 @@ const PublicSession = () => {
 
     try {
       // Use fetch directly to handle HTTP errors better
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/public-registration`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-registration`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({ token, method: 'GET' })
       })
@@ -257,9 +257,9 @@ const PublicSession = () => {
       if (kind === 'player') payload.playerId = id
       if (kind === 'trialist') payload.trialistId = id
 
-      const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/public-registration`, {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-registration`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabase.supabaseKey}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
         body: JSON.stringify(payload)
       })
       const data = await resp.json()
