@@ -2251,11 +2251,23 @@ export const useCreateMatch = () => {
         }
       }
 
+      // Generate public link token client-side
+      let public_link_token = '';
+      try {
+        const bytes = new Uint8Array(16);
+        // @ts-ignore
+        (typeof crypto !== 'undefined' && crypto.getRandomValues) ? crypto.getRandomValues(bytes) : bytes.forEach((_, i) => bytes[i] = Math.floor(Math.random() * 256));
+        public_link_token = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+      } catch {
+        public_link_token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
       const payload: any = { 
         ...match, 
         opponent_logo_url: undefined, 
         opponent_id, 
         team_id: currentTeamId,
+        public_link_token,
         created_by: (await supabase.auth.getUser()).data.user?.id 
       }
       const { data, error } = await supabase
