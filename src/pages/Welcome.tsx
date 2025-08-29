@@ -57,26 +57,18 @@ const Welcome = () => {
       {/* Navigation */}
       <nav className="relative z-50 bg-black/20 backdrop-blur-sm border-b border-white/10 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-24">
+          <div className="flex justify-between items-center h-32">
             <div className="flex items-center">
               <img 
                 src="/assets/IMG_0055.png" 
                 alt="ElevenBase" 
-                className="h-20 w-auto drop-shadow-2xl brightness-110 contrast-110"
+                className="h-40 w-auto drop-shadow-2xl brightness-110 contrast-110"
               />
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center">
               <Link to="/auth">
-                <Button 
-                  variant="outline" 
-                  className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all duration-300"
-                >
+                <Button className="bg-white text-[#004d4d] font-semibold px-6 py-2">
                   Accedi
-                </Button>
-              </Link>
-              <Link to="/register-founder">
-                <Button className="bg-[#006666] hover:bg-[#004d4d] text-white transition-all duration-300">
-                  Inizia Ora
                 </Button>
               </Link>
             </div>
