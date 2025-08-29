@@ -1,12 +1,35 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star, Gamepad2, Target } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const Welcome = () => {
   const [isVisible, setIsVisible] = useState(true); // Always visible - no animation delays
   const heroRef = useRef<HTMLDivElement>(null);
+  
+  // Login state
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      await signIn(loginData.email, loginData.password);
+      toast.success('Login effettuato con successo!');
+    } catch (error) {
+      toast.error('Errore durante il login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // No heavy animations for performance
 
@@ -271,6 +294,71 @@ const Welcome = () => {
         </div>
       </div>
 
+      {/* Login Section */}
+      <div id="login-section" className="relative bg-white py-20">
+        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-[#004d4d] mb-4">
+              Accesso
+            </h2>
+            <p className="text-[#666666]">
+              Accedi al tuo account ElevenBase
+            </p>
+          </div>
+
+          <Card>
+            <CardContent className="p-6">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="tua@email.com"
+                    className="mt-1"
+                    value={loginData.email}
+                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="mt-1"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                    required
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-[#004d4d] hover:bg-[#006666]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Accesso...' : 'Accedi'}
+                </Button>
+              </form>
+              
+              <div className="mt-6 text-center text-sm text-[#666666]">
+                <p>Non hai un account?</p>
+                <div className="flex gap-4 justify-center mt-2">
+                  <Link to="/register-founder" className="text-[#004d4d] hover:underline">
+                    Registrati come Founder
+                  </Link>
+                  <span>•</span>
+                  <Link to="/register-invite" className="text-[#1a237e] hover:underline">
+                    Hai un codice invito?
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* Footer with Disclaimer */}
       <footer className="bg-[#2c2c2c] py-8 pb-24 text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -321,14 +409,17 @@ const Welcome = () => {
             </Link>
 
             {/* Accesso */}
-            <Link to="/auth" className="flex flex-col items-center gap-1 group">
+            <button 
+              onClick={() => document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className="flex flex-col items-center gap-1 group"
+            >
               <div className="p-3 rounded-full bg-gray-600 text-white group-hover:bg-gray-700 transition-all duration-300 group-hover:scale-110 shadow-lg">
                 <ArrowRight className="h-6 w-6" />
               </div>
               <span className="text-xs font-medium text-gray-700 group-hover:text-gray-800 transition-colors">
                 Accesso
               </span>
-            </Link>
+            </button>
           </div>
         </div>
       </nav>
