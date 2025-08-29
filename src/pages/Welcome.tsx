@@ -12,24 +12,52 @@ const Welcome = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] font-inter overflow-hidden">
-      {/* Navigation */}
-      <nav className="relative z-50 liquid-glass sticky top-0">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
-          <div className="flex justify-between items-center h-32">
-            <div className="flex items-center -ml-2">
-              <img 
-                src="/assets/IMG_0055.png" 
-                alt="ElevenBase" 
-                className="h-40 w-auto drop-shadow-2xl brightness-110 contrast-110"
-              />
-            </div>
-            <div className="flex items-center">
-              <Link to="/auth">
-                <Button className="bg-white text-[#004d4d] font-semibold px-6 py-2">
-                  Accedi
-                </Button>
-              </Link>
-            </div>
+      {/* Top Bar - Logo Centrato */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center h-16">
+            <img 
+              src="/assets/IMG_0055.png" 
+              alt="ElevenBase" 
+              className="h-12 w-auto"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky Action Bar */}
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center h-14 gap-12">
+            {/* Fonda Team */}
+            <Link to="/register-founder" className="flex flex-col items-center gap-1 group">
+              <div className="p-2 rounded-full bg-[#004d4d] text-white group-hover:bg-[#006666] transition-colors">
+                <Crown className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-medium text-gray-700 group-hover:text-[#004d4d] transition-colors">
+                Fonda Team
+              </span>
+            </Link>
+
+            {/* Unisciti */}
+            <Link to="/register-invite" className="flex flex-col items-center gap-1 group">
+              <div className="p-2 rounded-full bg-[#1a237e] text-white group-hover:bg-[#3949ab] transition-colors">
+                <UserPlus className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-medium text-gray-700 group-hover:text-[#1a237e] transition-colors">
+                Unisciti
+              </span>
+            </Link>
+
+            {/* Accesso */}
+            <Link to="/auth" className="flex flex-col items-center gap-1 group">
+              <div className="p-2 rounded-full bg-gray-600 text-white group-hover:bg-gray-700 transition-colors">
+                <ArrowRight className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-medium text-gray-700 group-hover:text-gray-800 transition-colors">
+                Accesso
+              </span>
+            </Link>
           </div>
         </div>
       </nav>
@@ -37,7 +65,8 @@ const Welcome = () => {
       {/* Hero Section - Optimized */}
       <div 
         ref={heroRef}
-        className="relative overflow-hidden min-h-screen flex items-center bg-gradient-to-br from-[#004d4d] to-[#1a237e]"
+        className="relative overflow-hidden flex items-center bg-gradient-to-br from-[#004d4d] to-[#1a237e]"
+        style={{ minHeight: 'calc(100vh - 120px)' }}
       >
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#004d4d]/80 to-[#1a237e]/80"></div>
@@ -59,35 +88,14 @@ const Welcome = () => {
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-white/90 mb-16 max-w-4xl mx-auto leading-relaxed">
               ElevenBase è la piattaforma definitiva per gestire il tuo Club di EA Sports FC™. 
               Organizza giocatori, pianifica allenamenti, gestisci le formazioni e domina la competizione digitale.
             </p>
             
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-              <Link to="/register-founder">
-                <Button 
-                  size="lg" 
-                  className="bg-white text-[#004d4d] font-semibold px-12 py-4 text-lg shadow-xl"
-                >
-                  <Crown className="h-5 w-5 mr-3" />
-                  Fonda il Tuo Club FC
-                </Button>
-              </Link>
-              
-              <div className="text-white/70 text-lg font-medium">oppure</div>
-              
-              <Link to="/register-invite">
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="border-2 border-white/80 text-white bg-transparent font-semibold px-12 py-4 text-lg backdrop-blur-sm"
-                >
-                  <UserPlus className="h-5 w-5 mr-3" />
-                  Unisciti a un Club
-                </Button>
-              </Link>
+            {/* Action Hint */}
+            <div className="text-white/70 text-lg text-center mb-8">
+              ⬆️ Usa le icone sopra per iniziare
             </div>
 
             {/* Stats Row */}
