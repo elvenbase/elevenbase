@@ -307,8 +307,8 @@ export const TopLeaderCard = ({ metricLabel, valueUnit, variant = 'neutral', ite
                 />
               </div>
             ) : (
-              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[130px] md:h-[130px] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center avatar-initials-fallback">
-                <span className="text-lg md:text-2xl font-semibold text-blue-600">
+              <div className="absolute -top-4 left-0 md:-top-6 md:left-0 w-[96px] h-[96px] md:w-[130px] md:h-[130px] rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center avatar-initials-fallback">
+                <span className="text-lg md:text-2xl font-semibold text-primary">
                   {p.first_name?.[0]}{p.last_name?.[0]}
                 </span>
               </div>
