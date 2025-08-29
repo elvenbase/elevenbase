@@ -50,7 +50,7 @@ const Welcome = () => {
               <Link to="/auth">
                 <Button 
                   variant="outline" 
-                  className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all duration-300"
+                  className="bg-white/10 border-white/50 text-white hover:bg-white/20 hover:border-white/70 transition-all duration-300"
                 >
                   Accedi
                 </Button>
@@ -105,9 +105,8 @@ const Welcome = () => {
               
               <Link to="/register-invite">
                 <Button 
-                  variant="outline" 
                   size="lg"
-                  className="border-2 border-white text-white hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+                  className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                 >
                   <UserPlus className="h-5 w-5 mr-3" />
                   Unisciti con Codice
