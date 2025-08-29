@@ -4,6 +4,7 @@ import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { SiteLogo } from '@/components/SiteLogo'
 import { toast } from 'sonner'
 
 const ResetPassword: React.FC = () => {
@@ -56,10 +57,10 @@ const ResetPassword: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-6">
-          <img
-            src="/assets/IMG_0055.png"
-            alt="Logo ElevenBase"
+          <SiteLogo 
             className="h-24 w-auto mx-auto"
+            alt="Logo ElevenBase"
+            fallbackSrc="/assets/IMG_0055.png"
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
           />
         </div>

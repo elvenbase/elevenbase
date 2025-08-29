@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { SiteLogo } from '@/components/SiteLogo';
 
 const Welcome = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -37,11 +38,7 @@ const Welcome = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <img 
-                src="/assets/IMG_0055.png" 
-                alt="ElevenBase" 
-                className="h-10 w-auto"
-              />
+              <SiteLogo className="h-10 w-auto" />
               <div className="text-2xl font-semibold text-white">
                 ElevenBase
               </div>

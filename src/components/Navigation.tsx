@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { NavLink, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { SiteLogo } from "@/components/SiteLogo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -116,11 +117,10 @@ const Navigation = () => {
           {/* Logo and brand */}
           <NavLink to="/" className="flex items-center space-x-3">
             <div className="ml-[-12px]">
-              <img
-                src={`/assets/IMG_0055.png?v=${import.meta.env?.VITE_APP_VERSION || Date.now()}`}
-                alt="Logo"
+              <SiteLogo 
                 className="h-10 w-auto scale-[3] origin-left"
-                onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
+                fallbackSrc="/assets/IMG_0055.png"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
               />
             </div>
           </NavLink>

@@ -11,10 +11,12 @@ const GlobalAdmin: React.FC = () => {
   const [bgColor, setBgColor] = useState('#222222')
   const [logoUrl, setLogoUrl] = useState('')
   const [faviconUrl, setFaviconUrl] = useState('')
+  const [loadingGifUrl, setLoadingGifUrl] = useState('')
   const [uploadingJersey, setUploadingJersey] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingFavicon, setUploadingFavicon] = useState(false)
+  const [uploadingLoadingGif, setUploadingLoadingGif] = useState(false)
 
   const ensureGlobalAdmin = async () => {
     const { data: user } = await supabase.auth.getUser()
@@ -74,6 +76,16 @@ const GlobalAdmin: React.FC = () => {
         .eq('type', 'image')
         .maybeSingle()
       if (sysFavicon?.value) setFaviconUrl(sysFavicon.value)
+
+      // Loading GIF sito (system): created_by NULL + name=site-loading-gif
+      const { data: sysLoadingGif } = await supabase
+        .from('avatar_assets')
+        .select('value')
+        .is('created_by', null)
+        .eq('name', 'site-loading-gif')
+        .eq('type', 'image')
+        .maybeSingle()
+      if (sysLoadingGif?.value) setLoadingGifUrl(sysLoadingGif.value)
     } catch (e) { void e }
   }
 
@@ -257,6 +269,48 @@ const GlobalAdmin: React.FC = () => {
     }
   }
 
+  const uploadLoadingGifImage = async (file: File) => {
+    try {
+      setUploadingLoadingGif(true)
+      await ensureGlobalAdmin()
+      
+      const fileExt = file.name.split('.').pop()
+      const fileName = `site-loading-gif.${fileExt}`
+      const filePath = `global/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      setLoadingGifUrl(data.publicUrl)
+    } catch (e: any) {
+      toast.error(e.message || 'Errore upload loading GIF')
+    } finally {
+      setUploadingLoadingGif(false)
+    }
+  }
+
+  const saveSystemLoadingGif = async () => {
+    try {
+      await ensureGlobalAdmin()
+      // Remove existing loading gif
+      await supabase.from('avatar_assets').delete().is('created_by', null).eq('name', 'site-loading-gif')
+      // Insert new
+      const { error } = await supabase.from('avatar_assets').insert({
+        name: 'site-loading-gif', type: 'image', value: loadingGifUrl,
+        is_default: true, created_by: null
+      })
+      if (error) throw error
+      await loadCurrentDefaults()
+      toast.success('Loading GIF salvata con successo')
+    } catch (e: any) {
+      toast.error(e.message || 'Errore salvataggio loading GIF')
+    }
+  }
+
   return (
     <div className="container mx-auto py-8">
       <Card className="mb-6">
@@ -278,6 +332,14 @@ const GlobalAdmin: React.FC = () => {
             {faviconUrl && <img src={faviconUrl} alt="favicon" className="h-8 w-8 border rounded" />}
             <Button disabled={uploadingFavicon} onClick={saveSystemFavicon}>
               {uploadingFavicon ? 'Caricamento...' : 'Salva Favicon'}
+            </Button>
+          </div>
+          <div className="space-y-2">
+            <div className="font-semibold">GIF Caricamento (per loader animati)</div>
+            <Input type="file" accept="image/gif,image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLoadingGifImage(f) }} />
+            {loadingGifUrl && <img src={loadingGifUrl} alt="loading gif" className="h-16 border rounded" />}
+            <Button disabled={uploadingLoadingGif} onClick={saveSystemLoadingGif}>
+              {uploadingLoadingGif ? 'Caricamento...' : 'Salva Loading GIF'}
             </Button>
           </div>
           <div className="space-y-2">

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, User, Lock, Users, Hash, Mail, Palette, FileText, Upload, Image, Settings, ArrowLeft } from "lucide-react";
+import { SiteLogo } from "@/components/SiteLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -455,10 +456,9 @@ const AuthMultiTeam = () => {
       <div className="w-full max-w-md mx-auto">
         {/* Logo */}
         <div className="text-center">
-          <img
-            src="/assets/IMG_0055.png"
-            alt="Logo"
+          <SiteLogo 
             className="h-48 w-auto mx-auto"
+            fallbackSrc="/assets/IMG_0055.png"
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
           />
         </div>
