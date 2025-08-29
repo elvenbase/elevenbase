@@ -1,70 +1,59 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star, Gamepad2, Target } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const Welcome = () => {
-  const [isVisible, setIsVisible] = useState(true); // Always visible - no animation delays
-  const heroRef = useRef<HTMLDivElement>(null);
-  
-  // Login state
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [isVisible, setIsVisible] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      await signIn(loginData.email, loginData.password);
-      toast.success('Login effettuato con successo!');
-    } catch (error) {
-      toast.error('Errore durante il login');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // No heavy animations for performance
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] font-inter overflow-hidden">
-      {/* Top Bar - Logo Centrato */}
-      <div className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] font-inter">
+      {/* Navigation */}
+      <nav className="relative z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-16">
-            <img 
-              src="/assets/IMG_0055.png" 
-              alt="ElevenBase" 
-              className="h-12 w-auto"
-            />
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/assets/IMG_0055.png" 
+                alt="ElevenBase" 
+                className="h-10 w-auto"
+              />
+              <div className="text-2xl font-semibold text-white">
+                ElevenBase
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link to="/auth">
+                <Button 
+                  variant="outline" 
+                  className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all duration-300"
+                >
+                  Accedi
+                </Button>
+              </Link>
+              <Link to="/register-founder">
+                <Button className="bg-[#006666] hover:bg-[#004d4d] text-white transition-all duration-300">
+                  Inizia Ora
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </nav>
 
-
-
-      {/* Hero Section - Optimized */}
-      <div 
-        ref={heroRef}
-        className="relative overflow-hidden flex items-center bg-gradient-to-br from-[#004d4d] to-[#1a237e]"
-        style={{ minHeight: 'calc(100vh - 80px)' }}
-      >
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#004d4d]/80 to-[#1a237e]/80"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 z-10">
-          <div className="text-center">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className={`text-center transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             {/* Badge */}
             <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white border border-white/20 mb-8">
-              <Gamepad2 className="h-4 w-4 mr-2" />
-              <span className="text-sm font-medium">Gestione Professionale per EA Sports FC™</span>
+              <Star className="h-4 w-4 mr-2" />
+              <span className="text-sm font-medium">Piattaforma di Gestione Sportiva Professionale</span>
             </div>
 
             {/* Main Title */}
@@ -72,31 +61,53 @@ const Welcome = () => {
               Il futuro della gestione
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#006666]">
-                dei Club FC
+                sportiva
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/90 mb-16 max-w-4xl mx-auto leading-relaxed">
-              ElevenBase è la piattaforma definitiva per gestire il tuo Club di EA Sports FC™. 
-              Organizza giocatori, pianifica allenamenti, gestisci le formazioni e domina la competizione digitale.
+            <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed">
+              ElevenBase trasforma la gestione della tua squadra con tecnologie avanzate, 
+              analytics intelligenti e automazione completa.
             </p>
             
-            {/* Action Hint */}
-            <div className="text-white/70 text-lg text-center mb-8">
-              ⬇️ Usa le icone in basso per iniziare
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+              <Link to="/register-founder">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                >
+                  <Crown className="h-5 w-5 mr-3" />
+                  Fonda il Tuo Team
+                </Button>
+              </Link>
+              
+              <div className="text-white/70 text-lg font-medium">oppure</div>
+              
+              <Link to="/register-invite">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="border-2 border-white text-white hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+                >
+                  <UserPlus className="h-5 w-5 mr-3" />
+                  Unisciti con Codice
+                </Button>
+              </Link>
             </div>
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
               {[
-                { number: "500+", label: "Club FC Attivi" },
-                { number: "25K+", label: "Giocatori Online" },
-                { number: "10K+", label: "Partite Gestite" },
-                { number: "99.9%", label: "Uptime Garantito" }
+                { number: "1000+", label: "Squadre Attive" },
+                { number: "50K+", label: "Giocatori" },
+                { number: "99.9%", label: "Uptime" },
+                { number: "24/7", label: "Supporto" }
               ].map((stat, index) => (
                 <div 
                   key={index}
-                  className={`text-center transform transition-all duration-700 delay-${1100 + index * 100} ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+                  className={`text-center transform transition-all duration-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+                  style={{ transitionDelay: `${index * 200}ms` }}
                 >
                   <div className="text-2xl md:text-3xl font-bold text-white">{stat.number}</div>
                   <div className="text-white/70 text-sm">{stat.label}</div>
@@ -110,37 +121,37 @@ const Welcome = () => {
       {/* Two Paths Section */}
       <div className="relative bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
+          <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-[#004d4d] mb-6">
-              Due modi per entrare nel mondo FC
+              Due percorsi per iniziare
             </h2>
             <p className="text-xl text-[#666666] max-w-3xl mx-auto">
-              Che tu sia un Manager esperto o un Giocatore in cerca di gloria, ElevenBase ha il percorso giusto per te
+              Scegli il percorso più adatto alle tue esigenze: crea un nuovo team o unisciti a uno esistente
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 mb-16">
             {/* Founder Path */}
-            <Card className="group border-2 border-[#006666]/20 hover:border-[#006666]/40 hover:shadow-xl transition-all duration-500 overflow-hidden animate-on-scroll opacity-0 translate-y-8">
+            <Card className="group border-2 border-[#006666]/20 hover:border-[#006666]/40 hover:shadow-xl transition-all duration-300 overflow-hidden">
               <CardHeader className="text-center pb-6 bg-gradient-to-br from-[#004d4d]/5 to-[#006666]/5">
                 <div className="w-16 h-16 bg-gradient-to-r from-[#004d4d] to-[#006666] rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Crown className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-[#004d4d] mb-3">Manager del Club</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[#004d4d] mb-3">Founder</CardTitle>
                 <CardDescription className="text-lg text-[#666666]">
-                  Crea e gestisci il tuo Club di EA Sports FC™ con controllo totale su ogni aspetto
+                  Crea e gestisci la tua squadra da zero con controllo completo
                 </CardDescription>
               </CardHeader>
               
               <CardContent className="space-y-6 p-6">
                 <div className="space-y-4">
                   {[
-                    "Personalizza nome, colori e badge del tuo Club FC",
-                    "Recluta giocatori e costruisci la rosa perfetta", 
-                    "Gestisci formazioni, tattiche e strategie",
-                    "Analytics avanzate per performance e statistiche"
+                    "Crea il team con nome, colori e logo personalizzati",
+                    "Invita giocatori, staff e amministratori", 
+                    "Controllo completo su tutte le funzionalità",
+                    "Analytics avanzate e report dettagliati"
                   ].map((feature, index) => (
-                    <div key={index} className={`flex items-start gap-3 transform transition-all duration-300 delay-${index * 100} group-hover:translate-x-2`}>
+                    <div key={index} className="flex items-start gap-3">
                       <CheckCircle className="h-5 w-5 text-[#006666] flex-shrink-0 mt-0.5" />
                       <span className="text-[#2c2c2c]">{feature}</span>
                     </div>
@@ -148,35 +159,35 @@ const Welcome = () => {
                 </div>
                 
                 <Link to="/register-founder" className="block mt-8">
-                  <Button className="w-full bg-gradient-to-r from-[#004d4d] to-[#006666] hover:from-[#006666] hover:to-[#004d4d] text-white font-semibold py-3 transition-all duration-300 group-hover:shadow-lg">
-                    Diventa Manager
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  <Button className="w-full bg-gradient-to-r from-[#004d4d] to-[#006666] hover:from-[#006666] hover:to-[#004d4d] text-white font-semibold py-3 transition-all duration-300">
+                    Inizia come Founder
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
             {/* Join Team Path */}
-            <Card className="group border-2 border-[#1a237e]/20 hover:border-[#1a237e]/40 hover:shadow-xl transition-all duration-500 overflow-hidden animate-on-scroll opacity-0 translate-y-8">
+            <Card className="group border-2 border-[#1a237e]/20 hover:border-[#1a237e]/40 hover:shadow-xl transition-all duration-300 overflow-hidden">
               <CardHeader className="text-center pb-6 bg-gradient-to-br from-[#1a237e]/5 to-[#3949ab]/5">
                 <div className="w-16 h-16 bg-gradient-to-r from-[#1a237e] to-[#3949ab] rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <UserPlus className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-[#004d4d] mb-3">Giocatore FC</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[#004d4d] mb-3">Membro Team</CardTitle>
                 <CardDescription className="text-lg text-[#666666]">
-                  Unisciti a un Club FC esistente e aiuta la squadra a raggiungere la vittoria
+                  Unisciti a un team esistente con un codice di invito
                 </CardDescription>
               </CardHeader>
               
               <CardContent className="space-y-6 p-6">
                 <div className="space-y-4">
                   {[
-                    "Registrati con il codice invito del tuo Manager",
-                    "Sincronizza il tuo profilo EA Sports FC™",
-                    "Accesso a allenamenti e convocazioni del Club",
-                    "Statistiche personali e progressi nel tempo"
+                    "Registrazione rapida con codice invito",
+                    "Ruoli: Giocatore, Amministratore o Staff",
+                    "Accesso immediato dopo approvazione",
+                    "Integrazione EA Sports FC per giocatori"
                   ].map((feature, index) => (
-                    <div key={index} className={`flex items-start gap-3 transform transition-all duration-300 delay-${index * 100} group-hover:translate-x-2`}>
+                    <div key={index} className="flex items-start gap-3">
                       <CheckCircle className="h-5 w-5 text-[#1a237e] flex-shrink-0 mt-0.5" />
                       <span className="text-[#2c2c2c]">{feature}</span>
                     </div>
@@ -184,9 +195,9 @@ const Welcome = () => {
                 </div>
                 
                 <Link to="/register-invite" className="block mt-8">
-                  <Button className="w-full bg-gradient-to-r from-[#1a237e] to-[#3949ab] hover:from-[#3949ab] hover:to-[#1a237e] text-white font-semibold py-3 transition-all duration-300 group-hover:shadow-lg">
-                    Entra nel Club
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  <Button className="w-full bg-gradient-to-r from-[#1a237e] to-[#3949ab] hover:from-[#3949ab] hover:to-[#1a237e] text-white font-semibold py-3 transition-all duration-300">
+                    Unisciti al Team
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
               </CardContent>
@@ -198,12 +209,12 @@ const Welcome = () => {
       {/* Features Section */}
       <div className="relative bg-gray-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
+          <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-[#004d4d] mb-6">
-              Tutto per il tuo Club FC
+              Funzionalità complete
             </h2>
             <p className="text-xl text-[#666666] max-w-3xl mx-auto">
-              Gli strumenti professionali per portare il tuo Club di EA Sports FC™ al livello successivo
+              Una piattaforma completa per gestire ogni aspetto della tua squadra sportiva
             </p>
           </div>
 
@@ -211,35 +222,35 @@ const Welcome = () => {
             {[
               {
                 icon: <Users className="h-8 w-8" />,
-                title: "Gestione Rosa",
-                description: "Organizza la tua rosa FC, gestisci i ruoli e ottimizza la chimica del team.",
+                title: "Gestione Squadra",
+                description: "Organizza giocatori, staff e membri in un'unica piattaforma intuitiva.",
                 color: "text-[#004d4d]"
               },
               {
-                icon: <Target className="h-8 w-8" />,
-                title: "Formazioni & Tattiche",
-                description: "Crea formazioni personalizzate e strategie vincenti per ogni partita.",
+                icon: <Trophy className="h-8 w-8" />,
+                title: "Statistiche Avanzate",
+                description: "Analytics dettagliate per monitorare e migliorare le performance.",
                 color: "text-[#006666]"
               },
               {
                 icon: <BarChart3 className="h-8 w-8" />,
-                title: "Analytics FC",
-                description: "Statistiche dettagliate dei giocatori e performance del Club in tempo reale.",
+                title: "Allenamenti",
+                description: "Programma sessioni e gestisci convocazioni con facilità.",
                 color: "text-[#1a237e]"
               },
               {
-                icon: <Trophy className="h-8 w-8" />,
-                title: "Competizioni",
-                description: "Gestisci tornei, campionati e sfide tra Club con sistema di ranking.",
+                icon: <Shield className="h-8 w-8" />,
+                title: "Sicurezza",
+                description: "Protezione avanzata con tecnologie di sicurezza enterprise.",
                 color: "text-[#3949ab]"
               }
             ].map((feature, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-all duration-500 border-0 shadow-sm group animate-on-scroll opacity-0 translate-y-8 hover:-translate-y-2">
+              <Card key={index} className="text-center hover:shadow-lg transition-all duration-300 border-0 shadow-sm">
                 <CardHeader>
-                  <div className={`flex justify-center mb-4 ${feature.color} group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`flex justify-center mb-4 ${feature.color}`}>
                     {feature.icon}
                   </div>
-                  <CardTitle className="text-lg font-semibold text-[#2c2c2c] group-hover:text-[#004d4d] transition-colors duration-300">
+                  <CardTitle className="text-lg font-semibold text-[#2c2c2c]">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
@@ -255,20 +266,14 @@ const Welcome = () => {
       </div>
 
       {/* Footer CTA */}
-      <div className="relative bg-gradient-to-r from-[#004d4d] to-[#1a237e] py-20 overflow-hidden">
-        {/* Subtle animated background */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute w-96 h-96 bg-white rounded-full -top-48 -left-48 animate-pulse"></div>
-          <div className="absolute w-64 h-64 bg-white rounded-full -bottom-32 -right-32 animate-pulse delay-1000"></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
+      <div className="relative bg-gradient-to-r from-[#004d4d] to-[#1a237e] py-20">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Pronto per la gloria FC?
+            Pronto a iniziare?
           </h2>
           <p className="text-xl text-white/90 mb-12 max-w-3xl mx-auto">
-            Unisciti ai Club più competitivi che stanno già utilizzando ElevenBase 
-            per dominare EA Sports FC™ con strategia e precisione.
+            Unisciti alle squadre che stanno già utilizzando ElevenBase per gestire 
+            le loro attività sportive in modo professionale.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -278,14 +283,14 @@ const Welcome = () => {
                 className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
                 <Crown className="h-5 w-5 mr-3" />
-                Crea il Tuo Club FC
+                Crea il Tuo Team
               </Button>
             </Link>
             <Link to="/auth">
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+                className="border-2 border-white text-white hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
               >
                 Hai già un account?
               </Button>
@@ -293,136 +298,6 @@ const Welcome = () => {
           </div>
         </div>
       </div>
-
-      {/* Login Section */}
-      <div id="login-section" className="relative bg-white py-20">
-        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-[#004d4d] mb-4">
-              Accesso
-            </h2>
-            <p className="text-[#666666]">
-              Accedi al tuo account ElevenBase
-            </p>
-          </div>
-
-          <Card>
-            <CardContent className="p-6">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="tua@email.com"
-                    className="mt-1"
-                    value={loginData.email}
-                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    className="mt-1"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-[#004d4d] hover:bg-[#006666]"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Accesso...' : 'Accedi'}
-                </Button>
-              </form>
-              
-              <div className="mt-6 text-center text-sm text-[#666666]">
-                <p>Non hai un account?</p>
-                <div className="flex gap-4 justify-center mt-2">
-                  <Link to="/register-founder" className="text-[#004d4d] hover:underline">
-                    Registrati come Founder
-                  </Link>
-                  <span>•</span>
-                  <Link to="/register-invite" className="text-[#1a237e] hover:underline">
-                    Hai un codice invito?
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Footer with Disclaimer */}
-      <footer className="bg-[#2c2c2c] py-8 pb-24 text-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex items-center space-y-2 md:space-y-0 md:space-x-4 flex-col md:flex-row">
-              <Link to="/privacy-policy" className="text-[#666666] hover:text-white text-sm transition-colors duration-300">
-                Privacy Policy
-              </Link>
-              <span className="hidden md:inline text-[#666666]">•</span>
-              <span className="text-[#666666] text-sm">© 2024 ElevenBase</span>
-            </div>
-            <div className="text-xs text-[#666666] max-w-4xl leading-relaxed">
-              <p className="mb-2">
-                <strong>Disclaimer:</strong> ElevenBase è una piattaforma di gestione indipendente per Club virtuali. 
-                Non è affiliata, sponsorizzata, approvata o in altro modo associata a Electronic Arts Inc. o ai suoi licenziatari.
-              </p>
-              <p>
-                EA Sports™, EA Sports FC™ e tutti i marchi correlati sono marchi registrati di Electronic Arts Inc. 
-                Tutti i diritti sono riservati ai rispettivi proprietari.
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* Sticky Bottom Action Bar - Mobile App Style */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-center items-center h-16 gap-16">
-            {/* Fonda Team */}
-            <Link to="/register-founder" className="flex flex-col items-center gap-1 group">
-              <div className="p-3 rounded-full bg-[#004d4d] text-white group-hover:bg-[#006666] transition-all duration-300 group-hover:scale-110 shadow-lg">
-                <Crown className="h-6 w-6" />
-              </div>
-              <span className="text-xs font-medium text-gray-700 group-hover:text-[#004d4d] transition-colors">
-                Fonda Team
-              </span>
-            </Link>
-
-            {/* Unisciti */}
-            <Link to="/register-invite" className="flex flex-col items-center gap-1 group">
-              <div className="p-3 rounded-full bg-[#1a237e] text-white group-hover:bg-[#3949ab] transition-all duration-300 group-hover:scale-110 shadow-lg">
-                <UserPlus className="h-6 w-6" />
-              </div>
-              <span className="text-xs font-medium text-gray-700 group-hover:text-[#1a237e] transition-colors">
-                Unisciti
-              </span>
-            </Link>
-
-            {/* Accesso */}
-            <button 
-              onClick={() => document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="flex flex-col items-center gap-1 group"
-            >
-              <div className="p-3 rounded-full bg-gray-600 text-white group-hover:bg-gray-700 transition-all duration-300 group-hover:scale-110 shadow-lg">
-                <ArrowRight className="h-6 w-6" />
-              </div>
-              <span className="text-xs font-medium text-gray-700 group-hover:text-gray-800 transition-colors">
-                Accesso
-              </span>
-            </button>
-          </div>
-        </div>
-      </nav>
     </div>
   );
 };
