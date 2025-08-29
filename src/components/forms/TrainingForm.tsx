@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateTrainingSession, useUpdateTrainingSession, useTrialists, useSetTrainingTrialistInvites } from '@/hooks/useSupabaseData';
+import { useCreateTrainingSession, useUpdateTrainingSession, useTrialists, useSetTrainingTrialistInvites, useTrainingTrialistInvites } from '@/hooks/useSupabaseData';
 import { Plus, Edit } from 'lucide-react';
 
 interface TrainingSession {
@@ -86,6 +86,7 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
   const updateTrainingSession = useUpdateTrainingSession();
   const { data: trialists = [] } = useTrialists();
   const setTrialistInvites = useSetTrainingTrialistInvites();
+  const { data: existingTrialistInvites = [] } = useTrainingTrialistInvites(session?.id || '');
   const [includeTrialists, setIncludeTrialists] = useState(false);
   const [selectedTrialists, setSelectedTrialists] = useState<string[]>([]);
 
@@ -102,8 +103,15 @@ export const TrainingForm = ({ children, session, mode = 'create', onOpenChange 
       });
       setCommunicationType(parsed.type);
       setCommunicationDetails(parsed.details);
+      
+      // Controlla se ci sono già provinanti associati alla sessione
+      if (existingTrialistInvites.length > 0) {
+        setIncludeTrialists(true);
+        const trialistIds = existingTrialistInvites.map((invite: any) => invite.trialist_id);
+        setSelectedTrialists(trialistIds);
+      }
     }
-  }, [session, mode]);
+  }, [session, mode, existingTrialistInvites]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
