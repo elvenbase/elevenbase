@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
 
@@ -10,12 +11,16 @@ const GlobalAdmin: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState('')
   const [bgColor, setBgColor] = useState('#222222')
   const [logoUrl, setLogoUrl] = useState('')
-  const [faviconUrl, setFaviconUrl] = useState('')
+  const [favicon16Url, setFavicon16Url] = useState('')
+  const [favicon32Url, setFavicon32Url] = useState('')
+  const [appleTouchIconUrl, setAppleTouchIconUrl] = useState('')
   const [loadingGifUrl, setLoadingGifUrl] = useState('')
   const [uploadingJersey, setUploadingJersey] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
-  const [uploadingFavicon, setUploadingFavicon] = useState(false)
+  const [uploadingFavicon16, setUploadingFavicon16] = useState(false)
+  const [uploadingFavicon32, setUploadingFavicon32] = useState(false)
+  const [uploadingAppleTouch, setUploadingAppleTouch] = useState(false)
   const [uploadingLoadingGif, setUploadingLoadingGif] = useState(false)
 
   const ensureGlobalAdmin = async () => {
@@ -67,15 +72,35 @@ const GlobalAdmin: React.FC = () => {
         .maybeSingle()
       if (sysLogo?.value) setLogoUrl(sysLogo.value)
 
-      // Favicon sito (system): created_by NULL + name=site-favicon  
-      const { data: sysFavicon } = await supabase
+      // Favicon 16x16
+      const { data: favicon16 } = await supabase
         .from('avatar_assets')
         .select('value')
         .is('created_by', null)
-        .eq('name', 'site-favicon')
+        .eq('name', 'site-favicon-16x16')
         .eq('type', 'image')
         .maybeSingle()
-      if (sysFavicon?.value) setFaviconUrl(sysFavicon.value)
+      if (favicon16?.value) setFavicon16Url(favicon16.value)
+
+      // Favicon 32x32
+      const { data: favicon32 } = await supabase
+        .from('avatar_assets')
+        .select('value')
+        .is('created_by', null)
+        .eq('name', 'site-favicon-32x32')
+        .eq('type', 'image')
+        .maybeSingle()
+      if (favicon32?.value) setFavicon32Url(favicon32.value)
+
+      // Apple Touch Icon 180x180
+      const { data: appleTouch } = await supabase
+        .from('avatar_assets')
+        .select('value')
+        .is('created_by', null)
+        .eq('name', 'site-apple-touch-icon')
+        .eq('type', 'image')
+        .maybeSingle()
+      if (appleTouch?.value) setAppleTouchIconUrl(appleTouch.value)
 
       // Loading GIF sito (system): created_by NULL + name=site-loading-gif
       const { data: sysLoadingGif } = await supabase
@@ -251,23 +276,53 @@ const GlobalAdmin: React.FC = () => {
     }
   }
 
-  const saveSystemFavicon = async () => {
+  // Funzioni generiche per favicon
+  const uploadFavicon = async (file: File, name: string, setter: (url: string) => void, setUploading: (loading: boolean) => void) => {
+    try {
+      setUploading(true)
+      await ensureGlobalAdmin()
+      
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${name}.${fileExt}`
+      const filePath = `global/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      setter(data.publicUrl)
+    } catch (e: any) {
+      toast.error(e.message || 'Errore upload')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const saveFavicon = async (name: string, url: string, successMsg: string) => {
     try {
       await ensureGlobalAdmin()
-      // Remove existing site favicon
-      await supabase.from('avatar_assets').delete().is('created_by', null).eq('name', 'site-favicon')
-      // Insert new
+      await supabase.from('avatar_assets').delete().is('created_by', null).eq('name', name)
       const { error } = await supabase.from('avatar_assets').insert({
-        name: 'site-favicon', type: 'image', value: faviconUrl,
-        is_default: true, created_by: null
+        name, type: 'image', value: url, is_default: true, created_by: null
       })
       if (error) throw error
       await loadCurrentDefaults()
-      toast.success('Favicon sito salvato con successo')
+      toast.success(successMsg)
     } catch (e: any) {
-      toast.error(e.message || 'Errore salvataggio favicon')
+      toast.error(e.message || 'Errore salvataggio')
     }
   }
+
+  const uploadFavicon16 = (file: File) => uploadFavicon(file, 'site-favicon-16x16', setFavicon16Url, setUploadingFavicon16)
+  const uploadFavicon32 = (file: File) => uploadFavicon(file, 'site-favicon-32x32', setFavicon32Url, setUploadingFavicon32)
+  const uploadAppleTouch = (file: File) => uploadFavicon(file, 'site-apple-touch-icon', setAppleTouchIconUrl, setUploadingAppleTouch)
+
+  const saveFavicon16 = () => saveFavicon('site-favicon-16x16', favicon16Url, 'Favicon 16x16 salvata')
+  const saveFavicon32 = () => saveFavicon('site-favicon-32x32', favicon32Url, 'Favicon 32x32 salvata')
+  const saveAppleTouch = () => saveFavicon('site-apple-touch-icon', appleTouchIconUrl, 'Apple Touch Icon salvata')
 
   const uploadLoadingGifImage = async (file: File) => {
     try {
@@ -326,13 +381,34 @@ const GlobalAdmin: React.FC = () => {
               {uploadingLogo ? 'Caricamento...' : 'Salva Logo Sito'}
             </Button>
           </div>
-          <div className="space-y-2">
-            <div className="font-semibold">Favicon Sito</div>
-            <Input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFaviconImage(f) }} />
-            {faviconUrl && <img src={faviconUrl} alt="favicon" className="h-8 w-8 border rounded" />}
-            <Button disabled={uploadingFavicon} onClick={saveSystemFavicon}>
-              {uploadingFavicon ? 'Caricamento...' : 'Salva Favicon'}
-            </Button>
+          <div className="space-y-4">
+            <div className="font-semibold">Favicon Complete (16x16, 32x32, Apple Touch 180x180)</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm">Favicon 16x16</Label>
+                <Input type="file" accept="image/png,image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFavicon16(f) }} />
+                {favicon16Url && <img src={favicon16Url} alt="favicon 16x16" className="h-4 w-4 border rounded" />}
+                <Button disabled={uploadingFavicon16} onClick={saveFavicon16} size="sm">
+                  {uploadingFavicon16 ? 'Upload...' : 'Salva 16x16'}
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm">Favicon 32x32</Label>
+                <Input type="file" accept="image/png,image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFavicon32(f) }} />
+                {favicon32Url && <img src={favicon32Url} alt="favicon 32x32" className="h-8 w-8 border rounded" />}
+                <Button disabled={uploadingFavicon32} onClick={saveFavicon32} size="sm">
+                  {uploadingFavicon32 ? 'Upload...' : 'Salva 32x32'}
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm">Apple Touch 180x180</Label>
+                <Input type="file" accept="image/png,image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAppleTouch(f) }} />
+                {appleTouchIconUrl && <img src={appleTouchIconUrl} alt="apple touch" className="h-12 w-12 border rounded" />}
+                <Button disabled={uploadingAppleTouch} onClick={saveAppleTouch} size="sm">
+                  {uploadingAppleTouch ? 'Upload...' : 'Salva Apple'}
+                </Button>
+              </div>
+            </div>
           </div>
           <div className="space-y-2">
             <div className="font-semibold">GIF Caricamento (per loader animati)</div>

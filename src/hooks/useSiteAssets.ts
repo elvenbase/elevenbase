@@ -3,14 +3,18 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface SiteAssets {
   logoUrl: string | null;
-  faviconUrl: string | null;
+  favicon16Url: string | null;
+  favicon32Url: string | null;
+  appleTouchIconUrl: string | null;
   loadingGifUrl: string | null;
   loading: boolean;
 }
 
 export const useSiteAssets = (): SiteAssets => {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
+  const [favicon16Url, setFavicon16Url] = useState<string | null>(null);
+  const [favicon32Url, setFavicon32Url] = useState<string | null>(null);
+  const [appleTouchIconUrl, setAppleTouchIconUrl] = useState<string | null>(null);
   const [loadingGifUrl, setLoadingGifUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,17 +34,43 @@ export const useSiteAssets = (): SiteAssets => {
           setLogoUrl(logoData.value);
         }
 
-        // Carica favicon sito
-        const { data: faviconData } = await supabase
+        // Carica favicon 16x16
+        const { data: favicon16Data } = await supabase
           .from('avatar_assets')
           .select('value')
           .is('created_by', null)
-          .eq('name', 'site-favicon')
+          .eq('name', 'site-favicon-16x16')
           .eq('type', 'image')
           .maybeSingle();
         
-        if (faviconData?.value) {
-          setFaviconUrl(faviconData.value);
+        if (favicon16Data?.value) {
+          setFavicon16Url(favicon16Data.value);
+        }
+
+        // Carica favicon 32x32
+        const { data: favicon32Data } = await supabase
+          .from('avatar_assets')
+          .select('value')
+          .is('created_by', null)
+          .eq('name', 'site-favicon-32x32')
+          .eq('type', 'image')
+          .maybeSingle();
+        
+        if (favicon32Data?.value) {
+          setFavicon32Url(favicon32Data.value);
+        }
+
+        // Carica Apple Touch Icon
+        const { data: appleTouchData } = await supabase
+          .from('avatar_assets')
+          .select('value')
+          .is('created_by', null)
+          .eq('name', 'site-apple-touch-icon')
+          .eq('type', 'image')
+          .maybeSingle();
+        
+        if (appleTouchData?.value) {
+          setAppleTouchIconUrl(appleTouchData.value);
         }
 
         // Carica loading GIF sito
@@ -67,7 +97,9 @@ export const useSiteAssets = (): SiteAssets => {
 
   return {
     logoUrl,
-    faviconUrl,
+    favicon16Url,
+    favicon32Url,
+    appleTouchIconUrl,
     loadingGifUrl,
     loading
   };
