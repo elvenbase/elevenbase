@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star } from 'lucide-react';
+import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star, Gamepad2, Target } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 const Welcome = () => {
@@ -103,8 +103,8 @@ const Welcome = () => {
           <div className={`text-center transform transition-all duration-1000 ease-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
             {/* Badge */}
             <div className={`inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white border border-white/20 mb-8 transition-all duration-700 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-              <Star className="h-4 w-4 mr-2" />
-              <span className="text-sm font-medium">Piattaforma di Gestione Sportiva Professionale</span>
+              <Gamepad2 className="h-4 w-4 mr-2" />
+              <span className="text-sm font-medium">Gestione Professionale per EA Sports FC™</span>
             </div>
 
             {/* Main Title */}
@@ -112,13 +112,13 @@ const Welcome = () => {
               Il futuro della gestione
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#006666]">
-                sportiva
+                dei Club FC
               </span>
             </h1>
 
             <p className={`text-xl md:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed transition-all duration-1000 delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
-              ElevenBase trasforma la gestione della tua squadra con tecnologie avanzate, 
-              analytics intelligenti e automazione completa.
+              ElevenBase è la piattaforma definitiva per gestire il tuo Club di EA Sports FC™. 
+              Organizza giocatori, pianifica allenamenti, gestisci le formazioni e domina la competizione digitale.
             </p>
             
             {/* CTA Buttons */}
@@ -129,7 +129,7 @@ const Welcome = () => {
                   className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                 >
                   <Crown className="h-5 w-5 mr-3" />
-                  Fonda il Tuo Team
+                  Fonda il Tuo Club FC
                 </Button>
               </Link>
               
@@ -142,7 +142,7 @@ const Welcome = () => {
                   className="border-2 border-white/80 text-white bg-transparent hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
                 >
                   <UserPlus className="h-5 w-5 mr-3" />
-                  Unisciti con Codice
+                  Unisciti a un Club
                 </Button>
               </Link>
             </div>
@@ -150,10 +150,10 @@ const Welcome = () => {
             {/* Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
               {[
-                { number: "1000+", label: "Squadre Attive" },
-                { number: "50K+", label: "Giocatori" },
-                { number: "99.9%", label: "Uptime" },
-                { number: "24/7", label: "Supporto" }
+                { number: "500+", label: "Club FC Attivi" },
+                { number: "25K+", label: "Giocatori Online" },
+                { number: "10K+", label: "Partite Gestite" },
+                { number: "99.9%", label: "Uptime Garantito" }
               ].map((stat, index) => (
                 <div 
                   key={index}
@@ -173,10 +173,10 @@ const Welcome = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-4xl md:text-5xl font-bold text-[#004d4d] mb-6">
-              Due percorsi per iniziare
+              Due modi per entrare nel mondo FC
             </h2>
             <p className="text-xl text-[#666666] max-w-3xl mx-auto">
-              Scegli il percorso più adatto alle tue esigenze: crea un nuovo team o unisciti a uno esistente
+              Che tu sia un Manager esperto o un Giocatore in cerca di gloria, ElevenBase ha il percorso giusto per te
             </p>
           </div>
 
@@ -187,19 +187,19 @@ const Welcome = () => {
                 <div className="w-16 h-16 bg-gradient-to-r from-[#004d4d] to-[#006666] rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Crown className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-[#004d4d] mb-3">Founder</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[#004d4d] mb-3">Manager del Club</CardTitle>
                 <CardDescription className="text-lg text-[#666666]">
-                  Crea e gestisci la tua squadra da zero con controllo completo
+                  Crea e gestisci il tuo Club di EA Sports FC™ con controllo totale su ogni aspetto
                 </CardDescription>
               </CardHeader>
               
               <CardContent className="space-y-6 p-6">
                 <div className="space-y-4">
                   {[
-                    "Crea il team con nome, colori e logo personalizzati",
-                    "Invita giocatori, staff e amministratori", 
-                    "Controllo completo su tutte le funzionalità",
-                    "Analytics avanzate e report dettagliati"
+                    "Personalizza nome, colori e badge del tuo Club FC",
+                    "Recluta giocatori e costruisci la rosa perfetta", 
+                    "Gestisci formazioni, tattiche e strategie",
+                    "Analytics avanzate per performance e statistiche"
                   ].map((feature, index) => (
                     <div key={index} className={`flex items-start gap-3 transform transition-all duration-300 delay-${index * 100} group-hover:translate-x-2`}>
                       <CheckCircle className="h-5 w-5 text-[#006666] flex-shrink-0 mt-0.5" />
@@ -210,7 +210,7 @@ const Welcome = () => {
                 
                 <Link to="/register-founder" className="block mt-8">
                   <Button className="w-full bg-gradient-to-r from-[#004d4d] to-[#006666] hover:from-[#006666] hover:to-[#004d4d] text-white font-semibold py-3 transition-all duration-300 group-hover:shadow-lg">
-                    Inizia come Founder
+                    Diventa Manager
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </Link>
@@ -223,19 +223,19 @@ const Welcome = () => {
                 <div className="w-16 h-16 bg-gradient-to-r from-[#1a237e] to-[#3949ab] rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <UserPlus className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-[#004d4d] mb-3">Membro Team</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[#004d4d] mb-3">Giocatore FC</CardTitle>
                 <CardDescription className="text-lg text-[#666666]">
-                  Unisciti a un team esistente con un codice di invito
+                  Unisciti a un Club FC esistente e aiuta la squadra a raggiungere la vittoria
                 </CardDescription>
               </CardHeader>
               
               <CardContent className="space-y-6 p-6">
                 <div className="space-y-4">
                   {[
-                    "Registrazione rapida con codice invito",
-                    "Ruoli: Giocatore, Amministratore o Staff",
-                    "Accesso immediato dopo approvazione",
-                    "Integrazione EA Sports FC per giocatori"
+                    "Registrati con il codice invito del tuo Manager",
+                    "Sincronizza il tuo profilo EA Sports FC™",
+                    "Accesso a allenamenti e convocazioni del Club",
+                    "Statistiche personali e progressi nel tempo"
                   ].map((feature, index) => (
                     <div key={index} className={`flex items-start gap-3 transform transition-all duration-300 delay-${index * 100} group-hover:translate-x-2`}>
                       <CheckCircle className="h-5 w-5 text-[#1a237e] flex-shrink-0 mt-0.5" />
@@ -246,7 +246,7 @@ const Welcome = () => {
                 
                 <Link to="/register-invite" className="block mt-8">
                   <Button className="w-full bg-gradient-to-r from-[#1a237e] to-[#3949ab] hover:from-[#3949ab] hover:to-[#1a237e] text-white font-semibold py-3 transition-all duration-300 group-hover:shadow-lg">
-                    Unisciti al Team
+                    Entra nel Club
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </Link>
@@ -261,10 +261,10 @@ const Welcome = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-4xl md:text-5xl font-bold text-[#004d4d] mb-6">
-              Funzionalità complete
+              Tutto per il tuo Club FC
             </h2>
             <p className="text-xl text-[#666666] max-w-3xl mx-auto">
-              Una piattaforma completa per gestire ogni aspetto della tua squadra sportiva
+              Gli strumenti professionali per portare il tuo Club di EA Sports FC™ al livello successivo
             </p>
           </div>
 
@@ -272,26 +272,26 @@ const Welcome = () => {
             {[
               {
                 icon: <Users className="h-8 w-8" />,
-                title: "Gestione Squadra",
-                description: "Organizza giocatori, staff e membri in un'unica piattaforma intuitiva.",
+                title: "Gestione Rosa",
+                description: "Organizza la tua rosa FC, gestisci i ruoli e ottimizza la chimica del team.",
                 color: "text-[#004d4d]"
               },
               {
-                icon: <Trophy className="h-8 w-8" />,
-                title: "Statistiche Avanzate",
-                description: "Analytics dettagliate per monitorare e migliorare le performance.",
+                icon: <Target className="h-8 w-8" />,
+                title: "Formazioni & Tattiche",
+                description: "Crea formazioni personalizzate e strategie vincenti per ogni partita.",
                 color: "text-[#006666]"
               },
               {
                 icon: <BarChart3 className="h-8 w-8" />,
-                title: "Allenamenti",
-                description: "Programma sessioni e gestisci convocazioni con facilità.",
+                title: "Analytics FC",
+                description: "Statistiche dettagliate dei giocatori e performance del Club in tempo reale.",
                 color: "text-[#1a237e]"
               },
               {
-                icon: <Shield className="h-8 w-8" />,
-                title: "Sicurezza",
-                description: "Protezione avanzata con tecnologie di sicurezza enterprise.",
+                icon: <Trophy className="h-8 w-8" />,
+                title: "Competizioni",
+                description: "Gestisci tornei, campionati e sfide tra Club con sistema di ranking.",
                 color: "text-[#3949ab]"
               }
             ].map((feature, index) => (
@@ -325,11 +325,11 @@ const Welcome = () => {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Pronto a iniziare?
+            Pronto per la gloria FC?
           </h2>
           <p className="text-xl text-white/90 mb-12 max-w-3xl mx-auto">
-            Unisciti alle squadre che stanno già utilizzando ElevenBase per gestire 
-            le loro attività sportive in modo professionale.
+            Unisciti ai Club più competitivi che stanno già utilizzando ElevenBase 
+            per dominare EA Sports FC™ con strategia e precisione.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -339,7 +339,7 @@ const Welcome = () => {
                 className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
                 <Crown className="h-5 w-5 mr-3" />
-                Crea il Tuo Team
+                Crea il Tuo Club FC
               </Button>
             </Link>
             <Link to="/auth">
@@ -354,6 +354,31 @@ const Welcome = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer with Disclaimer */}
+      <footer className="bg-[#2c2c2c] py-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="flex items-center space-y-2 md:space-y-0 md:space-x-4 flex-col md:flex-row">
+              <Link to="/privacy-policy" className="text-[#666666] hover:text-white text-sm transition-colors duration-300">
+                Privacy Policy
+              </Link>
+              <span className="hidden md:inline text-[#666666]">•</span>
+              <span className="text-[#666666] text-sm">© 2024 ElevenBase</span>
+            </div>
+            <div className="text-xs text-[#666666] max-w-4xl leading-relaxed">
+              <p className="mb-2">
+                <strong>Disclaimer:</strong> ElevenBase è una piattaforma di gestione indipendente per Club virtuali. 
+                Non è affiliata, sponsorizzata, approvata o in altro modo associata a Electronic Arts Inc. o ai suoi licenziatari.
+              </p>
+              <p>
+                EA Sports™, EA Sports FC™ e tutti i marchi correlati sono marchi registrati di Electronic Arts Inc. 
+                Tutti i diritti sono riservati ai rispettivi proprietari.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
