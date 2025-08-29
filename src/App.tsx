@@ -20,16 +20,17 @@ import Navigation from "@/components/Navigation";
 // Lazy load pages for better performance
 const Welcome = lazy(() => import("@/pages/Welcome"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const Squad = lazy(() => import("@/pages/Squad"));
-const Training = lazy(() => import("@/pages/Training"));
-const SessionManagement = lazy(() => import("@/pages/SessionManagement"));
+// TEMPORANEAMENTE DISABILITATE PER PERFORMANCE
+// const Squad = lazy(() => import("@/pages/Squad"));
+// const Training = lazy(() => import("@/pages/Training"));
+// const SessionManagement = lazy(() => import("@/pages/SessionManagement"));
 // const Competitions = lazy(() => import("@/pages/Competitions"));
-const Matches = lazy(() => import("@/pages/Matches"));
-const MatchDetail = lazy(() => import("@/pages/MatchDetail"));
-const MatchLive = lazy(() => import("@/pages/MatchLive"));
-const Formations = lazy(() => import("@/pages/Formations"));
-const Trials = lazy(() => import("@/pages/Trials"));
-const TrialEvaluations = lazy(() => import("@/pages/TrialEvaluations"));
+// const Matches = lazy(() => import("@/pages/Matches"));
+// const MatchDetail = lazy(() => import("@/pages/MatchDetail"));
+// const MatchLive = lazy(() => import("@/pages/MatchLive"));
+// const Formations = lazy(() => import("@/pages/Formations"));
+// const Trials = lazy(() => import("@/pages/Trials"));
+// const TrialEvaluations = lazy(() => import("@/pages/TrialEvaluations"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
 const FieldOptionsManagement = lazy(() => import("@/pages/FieldOptionsManagement"));
 const PublicRegistration = lazy(() => import("@/pages/PublicRegistration"));
@@ -181,6 +182,7 @@ function App() {
                           </main>
                         </ProtectedRoute>
                       } />
+                      {/* TEMPORANEAMENTE DISABILITATO - TROPPO PESANTE
                       <Route path="/squad" element={
                         <ProtectedRoute>
                           <Navigation />
@@ -189,6 +191,7 @@ function App() {
                           </main>
                         </ProtectedRoute>
                       } />
+                      */}
                       <Route path="/training" element={
                         <ProtectedRoute>
                           <Navigation />
