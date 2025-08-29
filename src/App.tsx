@@ -165,14 +165,7 @@ function App() {
                       <Route path="/session/:token" element={<PublicSession />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                      <Route path="/" element={
-                        <ProtectedRoute>
-                          <Navigation />
-                          <main className="ml-0 transition-all duration-200">
-                            <Dashboard />
-                          </main>
-                        </ProtectedRoute>
-                      } />
+                      <Route path="/" element={<Welcome />} />
                       <Route path="/dashboard" element={
                         <ProtectedRoute>
                           <Navigation />
