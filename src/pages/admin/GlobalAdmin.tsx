@@ -9,8 +9,12 @@ const GlobalAdmin: React.FC = () => {
   const [jerseyUrl, setJerseyUrl] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   const [bgColor, setBgColor] = useState('#222222')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [faviconUrl, setFaviconUrl] = useState('')
   const [uploadingJersey, setUploadingJersey] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingFavicon, setUploadingFavicon] = useState(false)
 
   const ensureGlobalAdmin = async () => {
     const { data: user } = await supabase.auth.getUser()
@@ -50,6 +54,26 @@ const GlobalAdmin: React.FC = () => {
         .eq('is_default', true)
         .maybeSingle()
       if (sysBg?.value) setBgColor(sysBg.value)
+
+      // Logo sito (system): created_by NULL + name=site-logo
+      const { data: sysLogo } = await supabase
+        .from('avatar_assets')
+        .select('value')
+        .is('created_by', null)
+        .eq('name', 'site-logo')
+        .eq('type', 'image')
+        .maybeSingle()
+      if (sysLogo?.value) setLogoUrl(sysLogo.value)
+
+      // Favicon sito (system): created_by NULL + name=site-favicon  
+      const { data: sysFavicon } = await supabase
+        .from('avatar_assets')
+        .select('value')
+        .is('created_by', null)
+        .eq('name', 'site-favicon')
+        .eq('type', 'image')
+        .maybeSingle()
+      if (sysFavicon?.value) setFaviconUrl(sysFavicon.value)
     } catch (e) { void e }
   }
 
@@ -149,29 +173,133 @@ const GlobalAdmin: React.FC = () => {
     }
   }
 
+  const uploadLogoImage = async (file: File) => {
+    try {
+      setUploadingLogo(true)
+      await ensureGlobalAdmin()
+      
+      const fileExt = file.name.split('.').pop()
+      const fileName = `site-logo.${fileExt}`
+      const filePath = `global/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      setLogoUrl(data.publicUrl)
+    } catch (e: any) {
+      toast.error(e.message || 'Errore upload logo')
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
+  const saveSystemLogo = async () => {
+    try {
+      await ensureGlobalAdmin()
+      // Remove existing site logo
+      await supabase.from('avatar_assets').delete().is('created_by', null).eq('name', 'site-logo')
+      // Insert new
+      const { error } = await supabase.from('avatar_assets').insert({
+        name: 'site-logo', type: 'image', value: logoUrl,
+        is_default: true, created_by: null
+      })
+      if (error) throw error
+      await loadCurrentDefaults()
+      toast.success('Logo sito salvato con successo')
+    } catch (e: any) {
+      toast.error(e.message || 'Errore salvataggio logo')
+    }
+  }
+
+  const uploadFaviconImage = async (file: File) => {
+    try {
+      setUploadingFavicon(true)
+      await ensureGlobalAdmin()
+      
+      const fileExt = file.name.split('.').pop()
+      const fileName = `site-favicon.${fileExt}`
+      const filePath = `global/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      setFaviconUrl(data.publicUrl)
+    } catch (e: any) {
+      toast.error(e.message || 'Errore upload favicon')
+    } finally {
+      setUploadingFavicon(false)
+    }
+  }
+
+  const saveSystemFavicon = async () => {
+    try {
+      await ensureGlobalAdmin()
+      // Remove existing site favicon
+      await supabase.from('avatar_assets').delete().is('created_by', null).eq('name', 'site-favicon')
+      // Insert new
+      const { error } = await supabase.from('avatar_assets').insert({
+        name: 'site-favicon', type: 'image', value: faviconUrl,
+        is_default: true, created_by: null
+      })
+      if (error) throw error
+      await loadCurrentDefaults()
+      toast.success('Favicon sito salvato con successo')
+    } catch (e: any) {
+      toast.error(e.message || 'Errore salvataggio favicon')
+    }
+  }
+
   return (
     <div className="container mx-auto py-8">
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Pannello Amministrazione Globale (Avatar Persona, Avatar Background, Maglie)</CardTitle>
+          <CardTitle>Pannello Amministrazione Globale</CardTitle>
         </CardHeader>
         <CardContent className="space-y-8">
+          <div className="space-y-2">
+            <div className="font-semibold">Logo Sito (per navigazione e loader)</div>
+            <Input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogoImage(f) }} />
+            {logoUrl && <img src={logoUrl} alt="logo" className="h-16 border rounded" />}
+            <Button disabled={uploadingLogo} onClick={saveSystemLogo}>
+              {uploadingLogo ? 'Caricamento...' : 'Salva Logo Sito'}
+            </Button>
+          </div>
+          <div className="space-y-2">
+            <div className="font-semibold">Favicon Sito</div>
+            <Input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFaviconImage(f) }} />
+            {faviconUrl && <img src={faviconUrl} alt="favicon" className="h-8 w-8 border rounded" />}
+            <Button disabled={uploadingFavicon} onClick={saveSystemFavicon}>
+              {uploadingFavicon ? 'Caricamento...' : 'Salva Favicon'}
+            </Button>
+          </div>
           <div className="space-y-2">
             <div className="font-semibold">Maglia di default (globale)</div>
             <Input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadJerseyImage(f) }} />
             {jerseyUrl && <img src={jerseyUrl} alt="jersey" className="h-24 border rounded" />}
-            <Button disabled={uploadingJersey} onClick={saveSystemJersey}>Salva maglia default</Button>
+            <Button disabled={uploadingJersey} onClick={saveSystemJersey}>
+              {uploadingJersey ? 'Caricamento...' : 'Salva Maglia Default'}
+            </Button>
           </div>
           <div className="space-y-2">
             <div className="font-semibold">Avatar Persona di default (globale)</div>
             <Input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatarImage(f) }} />
             {avatarUrl && <img src={avatarUrl} alt="avatar" className="h-24 w-24 rounded-full border" />}
-            <Button disabled={uploadingAvatar} onClick={saveSystemAvatar}>Salva Avatar Persona default</Button>
+            <Button disabled={uploadingAvatar} onClick={saveSystemAvatar}>
+              {uploadingAvatar ? 'Caricamento...' : 'Salva Avatar Default'}
+            </Button>
           </div>
           <div className="space-y-2">
             <div className="font-semibold">Avatar Background di default (globale)</div>
             <Input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} />
-            <Button onClick={saveSystemAvatarBackground}>Salva Avatar Background default</Button>
+            <Button onClick={saveSystemAvatarBackground}>Salva Avatar Background Default</Button>
           </div>
         </CardContent>
       </Card>
