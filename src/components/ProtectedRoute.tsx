@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+  const { user, loading, registrationStatus } = useAuth();
 
   if (loading) {
     return (
@@ -22,6 +22,16 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Redirect pending users to approval page (except if already on it)
+  if (registrationStatus?.status === 'pending' && window.location.pathname !== '/pending-approval') {
+    return <Navigate to="/pending-approval" replace />;
+  }
+
+  // Block access for users who need registration
+  if (registrationStatus?.needs_registration) {
     return <Navigate to="/auth" replace />;
   }
 
