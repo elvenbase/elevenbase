@@ -588,7 +588,7 @@ const PublicSession = () => {
                           <div className="flex items-center gap-3 w-full">
                             <PlayerAvatar firstName={t.first_name} lastName={t.last_name} size="sm" />
                             <span className="font-medium">{t.first_name} {t.last_name}</span>
-                            {t.status && (
+                            {t.self_registered && (
                               <Badge variant="default" className="ml-auto text-xs">
                                 Ha votato
                               </Badge>
