@@ -124,7 +124,6 @@ const formations = {
 }
 
 const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'training' }: LineupManagerProps) => {
-  console.log('🎯 [LINEUP DEBUG] LineupManager rendered with mode:', mode, 'sessionId:', sessionId);
   
   const [selectedFormation, setSelectedFormation] = useState<string>('4-4-2')
   const [playerPositions, setPlayerPositions] = useState<Record<string, string>>({})
@@ -146,12 +145,9 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
   
   // Guest players management (only for match mode)
   const currentTeamId = localStorage.getItem('currentTeamId')
-  console.log('🎯 [LINEUP DEBUG] Guest management setup:', { mode, currentTeamId, isMatch: mode === 'match' });
   
   const { data: guestPlayers = [], refetch: refetchGuests } = useGuestPlayers(mode === 'match' ? currentTeamId : undefined)
   const seedGuests = useSeedTeamGuests()
-  
-  console.log('🎯 [LINEUP DEBUG] Guest players loaded:', guestPlayers.length, 'guests');
   
   // Stati per la personalizzazione PNG - inizializzati dopo l'hook
   const [fieldLinesColor, setFieldLinesColor] = useState('#ffffff')
@@ -1147,7 +1143,6 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                 variant="outline" 
                 className="w-full sm:w-auto bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" 
                 onClick={() => {
-                  console.log('🎯 [LINEUP DEBUG] Guest button clicked!');
                   addGuestToLineup();
                 }}
                 disabled={loading || seedGuests.isPending}
@@ -1161,7 +1156,6 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
                 variant="outline" 
                 className="w-full sm:w-auto bg-green-50 hover:bg-green-100 border-green-200 text-green-700" 
                 onClick={() => {
-                  console.log('🎯 [LINEUP DEBUG] Fill formation button clicked!');
                   fillFormationWithGuests();
                 }}
                 disabled={loading || seedGuests.isPending || isFormationComplete}
@@ -1172,7 +1166,7 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
               </Button>
             </>
           )}
-          {mode !== 'match' && console.log('🎯 [LINEUP DEBUG] Guest button NOT rendered - mode is:', mode)}
+
         </div>
 
         {/* Personalizzazione Export PNG */}
