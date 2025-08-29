@@ -25,48 +25,13 @@ const Welcome = () => {
         </div>
       </div>
 
-      {/* Sticky Action Bar */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-14 gap-12">
-            {/* Fonda Team */}
-            <Link to="/register-founder" className="flex flex-col items-center gap-1 group">
-              <div className="p-2 rounded-full bg-[#004d4d] text-white group-hover:bg-[#006666] transition-colors">
-                <Crown className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-medium text-gray-700 group-hover:text-[#004d4d] transition-colors">
-                Fonda Team
-              </span>
-            </Link>
 
-            {/* Unisciti */}
-            <Link to="/register-invite" className="flex flex-col items-center gap-1 group">
-              <div className="p-2 rounded-full bg-[#1a237e] text-white group-hover:bg-[#3949ab] transition-colors">
-                <UserPlus className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-medium text-gray-700 group-hover:text-[#1a237e] transition-colors">
-                Unisciti
-              </span>
-            </Link>
-
-            {/* Accesso */}
-            <Link to="/auth" className="flex flex-col items-center gap-1 group">
-              <div className="p-2 rounded-full bg-gray-600 text-white group-hover:bg-gray-700 transition-colors">
-                <ArrowRight className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-medium text-gray-700 group-hover:text-gray-800 transition-colors">
-                Accesso
-              </span>
-            </Link>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero Section - Optimized */}
       <div 
         ref={heroRef}
         className="relative overflow-hidden flex items-center bg-gradient-to-br from-[#004d4d] to-[#1a237e]"
-        style={{ minHeight: 'calc(100vh - 120px)' }}
+        style={{ minHeight: 'calc(100vh - 80px)' }}
       >
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#004d4d]/80 to-[#1a237e]/80"></div>
@@ -95,7 +60,7 @@ const Welcome = () => {
             
             {/* Action Hint */}
             <div className="text-white/70 text-lg text-center mb-8">
-              ⬆️ Usa le icone sopra per iniziare
+              ⬇️ Usa le icone in basso per iniziare
             </div>
 
             {/* Stats Row */}
@@ -307,7 +272,7 @@ const Welcome = () => {
       </div>
 
       {/* Footer with Disclaimer */}
-      <footer className="bg-[#2c2c2c] py-8 text-center">
+      <footer className="bg-[#2c2c2c] py-8 pb-24 text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center space-y-4">
             <div className="flex items-center space-y-2 md:space-y-0 md:space-x-4 flex-col md:flex-row">
@@ -330,6 +295,43 @@ const Welcome = () => {
           </div>
         </div>
       </footer>
+
+      {/* Sticky Bottom Action Bar - Mobile App Style */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-center items-center h-16 gap-16">
+            {/* Fonda Team */}
+            <Link to="/register-founder" className="flex flex-col items-center gap-1 group">
+              <div className="p-3 rounded-full bg-[#004d4d] text-white group-hover:bg-[#006666] transition-all duration-300 group-hover:scale-110 shadow-lg">
+                <Crown className="h-6 w-6" />
+              </div>
+              <span className="text-xs font-medium text-gray-700 group-hover:text-[#004d4d] transition-colors">
+                Fonda Team
+              </span>
+            </Link>
+
+            {/* Unisciti */}
+            <Link to="/register-invite" className="flex flex-col items-center gap-1 group">
+              <div className="p-3 rounded-full bg-[#1a237e] text-white group-hover:bg-[#3949ab] transition-all duration-300 group-hover:scale-110 shadow-lg">
+                <UserPlus className="h-6 w-6" />
+              </div>
+              <span className="text-xs font-medium text-gray-700 group-hover:text-[#1a237e] transition-colors">
+                Unisciti
+              </span>
+            </Link>
+
+            {/* Accesso */}
+            <Link to="/auth" className="flex flex-col items-center gap-1 group">
+              <div className="p-3 rounded-full bg-gray-600 text-white group-hover:bg-gray-700 transition-all duration-300 group-hover:scale-110 shadow-lg">
+                <ArrowRight className="h-6 w-6" />
+              </div>
+              <span className="text-xs font-medium text-gray-700 group-hover:text-gray-800 transition-colors">
+                Accesso
+              </span>
+            </Link>
+          </div>
+        </div>
+      </nav>
     </div>
   );
 };
