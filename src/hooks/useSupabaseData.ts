@@ -2193,13 +2193,22 @@ export const useCreateMatch = () => {
       const opponentName = (match.opponent_name || '').trim()
       let opponent_id: string | undefined = undefined
       if (opponentName) {
-        const lower = opponentName.toLowerCase()
-        // Search only within current team's opponents
-        const { data: existing } = await supabase
+        // Search only within current team's opponents (exact match first, then case-insensitive)
+        let { data: existing } = await supabase
           .from('opponents')
           .select('id, logo_url')
-          .ilike('name', lower)
+          .eq('name', opponentName)
           .eq('team_id', currentTeamId)
+        
+        // If no exact match, try case-insensitive
+        if (!existing || existing.length === 0) {
+          const { data: existingIlike } = await supabase
+            .from('opponents')
+            .select('id, logo_url')
+            .ilike('name', opponentName)
+            .eq('team_id', currentTeamId)
+          existing = existingIlike
+        }
         
         if (existing && existing.length > 0) {
           opponent_id = existing[0].id
@@ -2209,17 +2218,36 @@ export const useCreateMatch = () => {
           }
         } else {
           // Create new opponent for current team
-          const { data: inserted, error: oppErr } = await supabase
-            .from('opponents')
-            .insert({ 
-              name: opponentName, 
-              logo_url: match.opponent_logo_url || null,
-              team_id: currentTeamId 
-            })
-            .select()
-            .single()
-          if (oppErr) throw oppErr
-          opponent_id = inserted?.id
+          try {
+            const { data: inserted, error: oppErr } = await supabase
+              .from('opponents')
+              .insert({ 
+                name: opponentName, 
+                logo_url: match.opponent_logo_url || null,
+                team_id: currentTeamId 
+              })
+              .select()
+              .single()
+            if (oppErr) throw oppErr
+            opponent_id = inserted?.id
+          } catch (error: any) {
+            // If duplicate key error, try to find the existing opponent again
+            if (error?.code === '23505') {
+              const { data: existingAfterError } = await supabase
+                .from('opponents')
+                .select('id')
+                .eq('name', opponentName)
+                .eq('team_id', currentTeamId)
+                .single()
+              if (existingAfterError) {
+                opponent_id = existingAfterError.id
+              } else {
+                throw new Error(`Avversario "${opponentName}" già esistente ma non trovato`)
+              }
+            } else {
+              throw error
+            }
+          }
         }
       }
 
