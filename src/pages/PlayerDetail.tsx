@@ -105,22 +105,14 @@ const PlayerDetail = () => {
   }, [timeMode, ultimiChoice, periodSel, customStart, customEnd, attendance, startDate, endDate])
 
   const handleBack = () => {
-    // Sempre priorità al ref esplicito se presente e valido
+    // Se abbiamo un ref valido che inizia con /, usalo
     if (backRef && backRef.startsWith('/')) {
       navigate(backRef)
       return
     }
-    // Se il ref non è valido ma sappiamo da dove veniamo, forza /squad
-    if (backRef === '/squad' || backRef.includes('squad')) {
-      navigate('/squad')
-      return
-    }
-    // Fallback: prova history.back() se disponibile
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      navigate(-1)
-      return
-    }
-    // Ultimo fallback: vai sempre a /squad
+    
+    // Per tutti gli altri casi (ref vuoto, '/squad', o altro), vai sempre a /squad
+    // Evita navigate(-1) che può portare a pagine impreviste come la home
     navigate('/squad')
   }
 
