@@ -2,30 +2,68 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const Welcome = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [parallaxY, setParallaxY] = useState(0);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsVisible(true);
+    // Entrance animation
+    const timer = setTimeout(() => setIsVisible(true), 100);
+
+    // Parallax effect
+    const handleScroll = () => {
+      if (heroRef.current) {
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.5;
+        setParallaxY(rate);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Intersection Observer for staggered animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-fade-in-up');
+          entry.target.classList.remove('opacity-0', 'translate-y-8');
+        }
+      });
+    }, observerOptions);
+
+    // Observe all elements with the class 'animate-on-scroll'
+    const animateElements = document.querySelectorAll('.animate-on-scroll');
+    animateElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] font-inter overflow-hidden">
       {/* Navigation */}
       <nav className="relative z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center">
               <img 
                 src="/assets/IMG_0055.png" 
                 alt="ElevenBase" 
-                className="h-10 w-auto"
+                className="h-12 w-auto"
               />
-              <div className="text-2xl font-semibold text-white">
-                ElevenBase
-              </div>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/auth">
@@ -46,18 +84,31 @@ const Welcome = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className={`text-center transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+      {/* Hero Section with Parallax */}
+      <div 
+        ref={heroRef}
+        className="relative overflow-hidden min-h-screen flex items-center"
+        style={{
+          backgroundImage: 'url("https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=1993&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          transform: `translateY(${parallaxY}px)`
+        }}
+      >
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#004d4d]/80 to-[#1a237e]/80"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 z-10">
+          <div className={`text-center transform transition-all duration-1000 ease-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
             {/* Badge */}
-            <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white border border-white/20 mb-8">
+            <div className={`inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white border border-white/20 mb-8 transition-all duration-700 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
               <Star className="h-4 w-4 mr-2" />
               <span className="text-sm font-medium">Piattaforma di Gestione Sportiva Professionale</span>
             </div>
 
             {/* Main Title */}
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
+            <h1 className={`text-5xl md:text-7xl font-bold mb-6 leading-tight text-white transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
               Il futuro della gestione
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#006666]">
@@ -65,13 +116,13 @@ const Welcome = () => {
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed">
+            <p className={`text-xl md:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed transition-all duration-1000 delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
               ElevenBase trasforma la gestione della tua squadra con tecnologie avanzate, 
               analytics intelligenti e automazione completa.
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+            <div className={`flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 transition-all duration-1000 delay-900 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
               <Link to="/register-founder">
                 <Button 
                   size="lg" 
@@ -88,7 +139,7 @@ const Welcome = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="border-2 border-white text-white hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+                  className="border-2 border-white/80 text-white bg-transparent hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
                 >
                   <UserPlus className="h-5 w-5 mr-3" />
                   Unisciti con Codice
@@ -106,8 +157,7 @@ const Welcome = () => {
               ].map((stat, index) => (
                 <div 
                   key={index}
-                  className={`text-center transform transition-all duration-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-                  style={{ transitionDelay: `${index * 200}ms` }}
+                  className={`text-center transform transition-all duration-700 delay-${1100 + index * 100} ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
                 >
                   <div className="text-2xl md:text-3xl font-bold text-white">{stat.number}</div>
                   <div className="text-white/70 text-sm">{stat.label}</div>
@@ -121,7 +171,7 @@ const Welcome = () => {
       {/* Two Paths Section */}
       <div className="relative bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-4xl md:text-5xl font-bold text-[#004d4d] mb-6">
               Due percorsi per iniziare
             </h2>
@@ -132,7 +182,7 @@ const Welcome = () => {
 
           <div className="grid md:grid-cols-2 gap-8 mb-16">
             {/* Founder Path */}
-            <Card className="group border-2 border-[#006666]/20 hover:border-[#006666]/40 hover:shadow-xl transition-all duration-300 overflow-hidden">
+            <Card className="group border-2 border-[#006666]/20 hover:border-[#006666]/40 hover:shadow-xl transition-all duration-500 overflow-hidden animate-on-scroll opacity-0 translate-y-8">
               <CardHeader className="text-center pb-6 bg-gradient-to-br from-[#004d4d]/5 to-[#006666]/5">
                 <div className="w-16 h-16 bg-gradient-to-r from-[#004d4d] to-[#006666] rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Crown className="h-8 w-8 text-white" />
@@ -151,7 +201,7 @@ const Welcome = () => {
                     "Controllo completo su tutte le funzionalità",
                     "Analytics avanzate e report dettagliati"
                   ].map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
+                    <div key={index} className={`flex items-start gap-3 transform transition-all duration-300 delay-${index * 100} group-hover:translate-x-2`}>
                       <CheckCircle className="h-5 w-5 text-[#006666] flex-shrink-0 mt-0.5" />
                       <span className="text-[#2c2c2c]">{feature}</span>
                     </div>
@@ -159,16 +209,16 @@ const Welcome = () => {
                 </div>
                 
                 <Link to="/register-founder" className="block mt-8">
-                  <Button className="w-full bg-gradient-to-r from-[#004d4d] to-[#006666] hover:from-[#006666] hover:to-[#004d4d] text-white font-semibold py-3 transition-all duration-300">
+                  <Button className="w-full bg-gradient-to-r from-[#004d4d] to-[#006666] hover:from-[#006666] hover:to-[#004d4d] text-white font-semibold py-3 transition-all duration-300 group-hover:shadow-lg">
                     Inizia come Founder
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
             {/* Join Team Path */}
-            <Card className="group border-2 border-[#1a237e]/20 hover:border-[#1a237e]/40 hover:shadow-xl transition-all duration-300 overflow-hidden">
+            <Card className="group border-2 border-[#1a237e]/20 hover:border-[#1a237e]/40 hover:shadow-xl transition-all duration-500 overflow-hidden animate-on-scroll opacity-0 translate-y-8">
               <CardHeader className="text-center pb-6 bg-gradient-to-br from-[#1a237e]/5 to-[#3949ab]/5">
                 <div className="w-16 h-16 bg-gradient-to-r from-[#1a237e] to-[#3949ab] rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <UserPlus className="h-8 w-8 text-white" />
@@ -187,7 +237,7 @@ const Welcome = () => {
                     "Accesso immediato dopo approvazione",
                     "Integrazione EA Sports FC per giocatori"
                   ].map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
+                    <div key={index} className={`flex items-start gap-3 transform transition-all duration-300 delay-${index * 100} group-hover:translate-x-2`}>
                       <CheckCircle className="h-5 w-5 text-[#1a237e] flex-shrink-0 mt-0.5" />
                       <span className="text-[#2c2c2c]">{feature}</span>
                     </div>
@@ -195,9 +245,9 @@ const Welcome = () => {
                 </div>
                 
                 <Link to="/register-invite" className="block mt-8">
-                  <Button className="w-full bg-gradient-to-r from-[#1a237e] to-[#3949ab] hover:from-[#3949ab] hover:to-[#1a237e] text-white font-semibold py-3 transition-all duration-300">
+                  <Button className="w-full bg-gradient-to-r from-[#1a237e] to-[#3949ab] hover:from-[#3949ab] hover:to-[#1a237e] text-white font-semibold py-3 transition-all duration-300 group-hover:shadow-lg">
                     Unisciti al Team
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                 </Link>
               </CardContent>
@@ -209,7 +259,7 @@ const Welcome = () => {
       {/* Features Section */}
       <div className="relative bg-gray-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-4xl md:text-5xl font-bold text-[#004d4d] mb-6">
               Funzionalità complete
             </h2>
@@ -245,12 +295,12 @@ const Welcome = () => {
                 color: "text-[#3949ab]"
               }
             ].map((feature, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-all duration-300 border-0 shadow-sm">
+              <Card key={index} className="text-center hover:shadow-lg transition-all duration-500 border-0 shadow-sm group animate-on-scroll opacity-0 translate-y-8 hover:-translate-y-2">
                 <CardHeader>
-                  <div className={`flex justify-center mb-4 ${feature.color}`}>
+                  <div className={`flex justify-center mb-4 ${feature.color} group-hover:scale-110 transition-transform duration-300`}>
                     {feature.icon}
                   </div>
-                  <CardTitle className="text-lg font-semibold text-[#2c2c2c]">
+                  <CardTitle className="text-lg font-semibold text-[#2c2c2c] group-hover:text-[#004d4d] transition-colors duration-300">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
@@ -266,8 +316,14 @@ const Welcome = () => {
       </div>
 
       {/* Footer CTA */}
-      <div className="relative bg-gradient-to-r from-[#004d4d] to-[#1a237e] py-20">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative bg-gradient-to-r from-[#004d4d] to-[#1a237e] py-20 overflow-hidden">
+        {/* Subtle animated background */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute w-96 h-96 bg-white rounded-full -top-48 -left-48 animate-pulse"></div>
+          <div className="absolute w-64 h-64 bg-white rounded-full -bottom-32 -right-32 animate-pulse delay-1000"></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Pronto a iniziare?
           </h2>
@@ -290,7 +346,7 @@ const Welcome = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-white text-white hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+                className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
               >
                 Hai già un account?
               </Button>
