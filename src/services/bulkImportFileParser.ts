@@ -614,17 +614,34 @@ class BulkImportFileParser {
   }
 
   /**
-   * Controllo CSV injection
+   * Controllo CSV injection con whitelist per numeri di telefono
    */
   private hasCSVInjection(player: PlayerTemplateRow): boolean {
-    const dangerousChars = ['=', '+', '@', '-'];
     const fields = Object.values(player);
     
-    return fields.some(field => 
-      typeof field === 'string' && 
-      field.length > 0 && 
-      dangerousChars.includes(field.charAt(0))
-    );
+    return fields.some(field => {
+      if (typeof field !== 'string' || field.length === 0) return false;
+      
+      const firstChar = field.charAt(0);
+      
+      // Whitelist per numeri di telefono internazionali
+      if (firstChar === '+') {
+        // Verifica se è un numero di telefono valido (+39, +1, +44, etc.)
+        const phoneRegex = /^\+\d{1,3}\d{4,15}$/;
+        if (phoneRegex.test(field.replace(/[\s\-\(\)]/g, ''))) {
+          return false; // È un numero di telefono valido, non injection
+        }
+      }
+      
+      // Controllo injection per caratteri pericolosi
+      const dangerousChars = ['=', '@', '-'];
+      if (dangerousChars.includes(firstChar)) return true;
+      
+      // + è pericoloso solo se NON è un numero di telefono
+      if (firstChar === '+') return true;
+      
+      return false;
+    });
   }
 
   /**
