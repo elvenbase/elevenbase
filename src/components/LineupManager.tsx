@@ -230,6 +230,24 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
     }
   }, [playerPositions, lineup])
 
+  // HELPER FUNCTIONS: Dichiarate prima degli useEffect che le usano
+  const getCurrentFormation = useCallback(() => {
+    const customFormation = customFormations.find(f => f.id === selectedFormation)
+    if (customFormation) {
+      return {
+        name: customFormation.name,
+        positions: customFormation.positions
+      }
+    }
+    
+    const predefinedFormation = formations[selectedFormation as keyof typeof formations]
+    if (predefinedFormation) {
+      return predefinedFormation
+    }
+    
+    return formations['4-4-2']
+  }, [customFormations, selectedFormation])
+
   // Auto-save intelligente: salva solo quando isDirty e non già in salvataggio
   useEffect(() => {
     if (!isDirty || isAutoSaving) return
@@ -299,23 +317,6 @@ const LineupManager = ({ sessionId, presentPlayers, onLineupChange, mode = 'trai
       }
     }
   }
-
-  const getCurrentFormation = useCallback(() => {
-    const customFormation = customFormations.find(f => f.id === selectedFormation)
-    if (customFormation) {
-      return {
-        name: customFormation.name,
-        positions: customFormation.positions
-      }
-    }
-    
-    const predefinedFormation = formations[selectedFormation as keyof typeof formations]
-    if (predefinedFormation) {
-      return predefinedFormation
-    }
-    
-    return formations['4-4-2']
-  }, [customFormations, selectedFormation])
 
   const handlePlayerAssignment = (positionId: string, playerId: string) => {
     setPlayerPositions(prev => {
