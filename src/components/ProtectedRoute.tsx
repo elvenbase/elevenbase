@@ -1,5 +1,5 @@
 
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Shield } from "lucide-react";
 
@@ -9,6 +9,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading, registrationStatus } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -26,7 +27,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   // Redirect pending users to approval page (except if already on it)
-  if (registrationStatus?.status === 'pending' && window.location.pathname !== '/pending-approval') {
+  if (registrationStatus?.status === 'pending' && location.pathname !== '/pending-approval') {
     return <Navigate to="/pending-approval" replace />;
   }
 
