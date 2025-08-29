@@ -250,7 +250,17 @@ class BulkImportTemplateService {
     // Riga 4: Vuota (separatore)
     worksheetData.push([]);
     
-    // Riga 5: Header colonne
+    // Riga 5: Sezione ruoli validi
+    worksheetData.push(['=== RUOLI VALIDI ===']);
+    worksheetData.push([rolesText]);
+    worksheetData.push([]);
+    
+    // Riga 8: Sezione gaming platforms
+    worksheetData.push(['=== GAMING PLATFORMS ===']);
+    worksheetData.push(['PC, PS5, Xbox, Nintendo Switch']);
+    worksheetData.push([]);
+    
+    // Riga 11: Header colonne
     worksheetData.push([
       'first_name*',
       'last_name*', 
@@ -268,7 +278,7 @@ class BulkImportTemplateService {
       'platform_id'
     ]);
     
-    // Riga 8-9: Esempi con ruoli dinamici
+    // Riga 12-13: Solo 2 esempi puliti con ruoli dinamici
     const exampleRole1 = validRoles.includes('regista') ? 'regista' : (validRoles[0] || 'ruolo_esempio');
     const exampleRole2 = validRoles.includes('centravanti') ? 'centravanti' : (validRoles[1] || 'ruolo_esempio_2');
     
@@ -305,14 +315,6 @@ class BulkImportTemplateService {
       'PC',
       ''
     ]);
-    
-    // Riga vuota + info ruoli e gaming
-    worksheetData.push([]);
-    worksheetData.push(['=== RUOLI VALIDI ===']);
-    worksheetData.push([rolesText]);
-    worksheetData.push([]);
-    worksheetData.push(['=== GAMING PLATFORMS ===']);
-    worksheetData.push(['PC, PS5, Xbox, Nintendo Switch']);
     
     // Crea worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
