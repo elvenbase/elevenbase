@@ -58,11 +58,13 @@ export const ConvocatiManager = ({ sessionId, allPlayers, attendance, playersInL
     return playerAttendance?.status === 'present';
   })
   
-  // Giocatori disponibili per selezione (esclusi quelli già convocati)
+  // Giocatori disponibili per selezione (esclusi quelli già convocati E quelli in panchina/formazione)
   const availablePlayersForSelection = presentPlayers.filter(player => {
     // Escludi giocatori già convocati
     const isAlreadyConvocato = convocati.some(c => c.player_id === player.id);
-    return !isAlreadyConvocato;
+    // Escludi giocatori già in panchina/formazione
+    const isInLineupOrBench = playersInLineup.includes(player.id);
+    return !isAlreadyConvocato && !isInLineupOrBench;
   })
   
   // Notifica al parent ogni volta che cambia la selezione dei convocati
