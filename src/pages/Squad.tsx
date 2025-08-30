@@ -747,30 +747,46 @@ const Squad = () => {
   const updateCaptain = async (newCaptainId: string) => {
     try {
       const paramId = (!newCaptainId || newCaptainId === 'none') ? null : newCaptainId
-      const teamId = localStorage.getItem('teamId')
+      const teamId = localStorage.getItem('currentTeamId') // Fix: currentTeamId invece di teamId
       
-      // Try RPC first (atomic)
-      const rpcRes = await supabase.rpc('set_captain', { new_captain_id: paramId as any })
+      console.log('🎯 [CAPTAIN DEBUG] Updating captain:', { newCaptainId, paramId, teamId })
+      
+      if (!teamId) {
+        throw new Error('Team ID non trovato. Ricarica la pagina e riprova.')
+      }
+      
+      // Try RPC first (atomic) - Fix: gestione corretta del NULL
+      const rpcRes = await supabase.rpc('set_captain', { 
+        new_captain_id: paramId // NULL viene gestito correttamente da Supabase
+      })
+      
+      console.log('🎯 [CAPTAIN DEBUG] RPC Response:', { rpcRes })
+      
       if (rpcRes.error) {
+        console.log('🎯 [CAPTAIN DEBUG] RPC failed, trying fallback:', rpcRes.error)
         // If RPC is missing, fallback to direct updates
-        const notFound = (rpcRes.error.message || '').toLowerCase().includes('could not find the function')
+        const notFound = (rpcRes.error.message || '').toLowerCase().includes('could not find the function') ||
+                         (rpcRes.error.message || '').toLowerCase().includes('function') ||
+                         (rpcRes.error.code === 'PGRST202')
         if (!notFound) throw rpcRes.error
         
         // Fallback: unset previous captain(s) ONLY FOR THIS TEAM
-        const { error: unsetErr } = await supabase
-          .from('players')
-          .update({ is_captain: false })
-          .eq('is_captain', true)
-          .eq('team_id', teamId) // 🔧 AGGIUNTO: Filtra per team
-        if (unsetErr) throw unsetErr
+        if (teamId) {
+          const { error: unsetErr } = await supabase
+            .from('players')
+            .update({ is_captain: false })
+            .eq('is_captain', true)
+            .eq('team_id', teamId)
+          if (unsetErr) throw unsetErr
+        }
         
         // Set new captain if provided
-        if (paramId) {
+        if (paramId && teamId) {
           const { error: setErr } = await supabase
             .from('players')
             .update({ is_captain: true })
             .eq('id', paramId)
-            .eq('team_id', teamId) // 🔧 AGGIUNTO: Sicurezza extra
+            .eq('team_id', teamId)
           if (setErr) throw setErr
         }
       }
