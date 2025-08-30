@@ -30,7 +30,20 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <style>
       :root { --app-font: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; }
-      html { font-family: var(--app-font); }
+      html { 
+        font-family: var(--app-font); 
+        scroll-behavior: smooth;
+        overflow-x: hidden;
+      }
+      body { 
+        margin: 0; 
+        padding: 0; 
+        overflow-x: hidden;
+      }
+      /* Prevenire layout shift da caricamento contenuto */
+      * {
+        box-sizing: border-box;
+      }
     </style>
   </head>
 

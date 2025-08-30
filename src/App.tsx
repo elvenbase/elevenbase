@@ -10,6 +10,7 @@ import { useState, useEffect, Suspense, lazy } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import RecoveryRedirector from "@/components/RecoveryRedirector";
+import ScrollManager from "@/components/ScrollManager";
 
 // Import components
 import { AdminSetup } from "@/components/AdminSetup";
@@ -147,8 +148,14 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
         <TooltipProvider>
           <AuthProvider>
-            <BrowserRouter>
+            <BrowserRouter 
+              future={{ 
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+              }}
+            >
               <RecoveryRedirector />
+              <ScrollManager />
               <ErrorBoundary>
                 <div className="min-h-screen bg-background">
                   <Suspense fallback={
