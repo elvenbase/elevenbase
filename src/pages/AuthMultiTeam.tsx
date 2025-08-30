@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,15 +7,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Lock } from "lucide-react";
 import { SiteLogo } from "@/components/SiteLogo";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const AuthMultiTeam = () => {
   const { user, loading, signIn } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [teamLogo, setTeamLogo] = useState<string | null>(null);
   
   // Form state - solo login
   const [loginData, setLoginData] = useState({ email: '', password: '' });
+
+  // Load team logo se disponibile
+  useEffect(() => {
+    const loadTeamLogo = async () => {
+      const currentTeamId = localStorage.getItem('currentTeamId');
+      if (!currentTeamId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('teams')
+          .select('logo_url')
+          .eq('id', currentTeamId)
+          .single();
+
+        if (error) throw error;
+        const base = data?.logo_url || null;
+        setTeamLogo(base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
+      } catch (error) {
+        console.error('Error loading team logo:', error);
+      }
+    };
+
+    loadTeamLogo();
+  }, []);
 
   // Redirect if already authenticated
   if (!loading && user) {
@@ -50,16 +76,31 @@ const AuthMultiTeam = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <SiteLogo 
-            className="h-16 w-auto mx-auto mb-4" 
-            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
-          />
-          <h1 className="text-2xl font-bold text-white">ElevenBase</h1>
-          <p className="text-white/80 text-sm mt-1">Gestione Sportiva Professionale</p>
+        {/* Logo Grande */}
+        <div className="text-center mb-12">
+          {teamLogo ? (
+            <img 
+              src={teamLogo}
+              alt="Team Logo"
+              className="h-32 w-32 mx-auto object-contain"
+              onError={(e) => {
+                // Fallback al logo di default se il team logo fallisce
+                const img = e.currentTarget as HTMLImageElement;
+                img.style.display = 'none';
+                // Mostra il SiteLogo come fallback
+                const fallbackDiv = img.nextElementSibling as HTMLElement;
+                if (fallbackDiv) fallbackDiv.style.display = 'block';
+              }}
+            />
+          ) : null}
+          <div style={{ display: teamLogo ? 'none' : 'block' }}>
+            <SiteLogo 
+              className="h-32 w-auto mx-auto" 
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
+            />
+          </div>
         </div>
 
         <Card className="shadow-lg">
@@ -119,12 +160,12 @@ const AuthMultiTeam = () => {
 
         {/* Additional Options */}
         <div className="mt-6 text-center">
-          <div className="text-sm text-white/80 mb-3">
+          <div className="text-sm text-muted-foreground mb-3">
             Nuovi alla piattaforma?
           </div>
           <Link 
             to="/"
-            className="inline-flex items-center gap-2 text-sm text-white hover:text-white/80 hover:underline font-medium"
+            className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 hover:underline font-medium"
           >
             🚀 Scopri tutto su ElevenBase
           </Link>
