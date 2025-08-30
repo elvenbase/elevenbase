@@ -50,7 +50,7 @@ const CookiePolicy = () => {
                 <img 
                   src={globalLogo}
                   alt="Platform Logo"
-                  className="h-8 w-auto object-cover"
+                  className="h-8 md:h-14 w-auto object-cover"
                   style={{ maxWidth: '120px' }}
                 />
               )}

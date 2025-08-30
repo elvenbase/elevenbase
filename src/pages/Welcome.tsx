@@ -46,7 +46,7 @@ const Welcome = () => {
                   <img 
                     src={globalLogo}
                     alt="Platform Logo"
-                    className="h-12 sm:h-16 md:h-20 w-auto object-cover"
+                    className="h-12 sm:h-16 md:h-14 w-auto object-cover"
                     style={{ maxWidth: '280px' }}
                     onError={(e) => {
                       console.log('🎯 [WELCOME DEBUG] Logo failed to load:', globalLogo);
@@ -59,7 +59,7 @@ const Welcome = () => {
                   />
                 ) : null}
                 <div style={{ display: globalLogo ? 'none' : 'block' }}>
-                  <SiteLogo className="h-12 sm:h-16 md:h-20 w-auto" />
+                  <SiteLogo className="h-12 sm:h-16 md:h-14 w-auto" />
                 </div>
               </div>
             </div>

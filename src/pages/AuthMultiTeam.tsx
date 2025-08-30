@@ -60,7 +60,7 @@ const AuthMultiTeam = () => {
             <img 
               src={globalLogo}
               alt="Platform Logo"
-              className="h-24 w-auto mx-auto object-cover max-h-24"
+              className="h-20 md:h-24 w-auto mx-auto object-cover"
               style={{ maxWidth: '320px' }}
               onError={(e) => {
                 // Fallback al SiteLogo se il logo globale fallisce

@@ -10,49 +10,71 @@ interface SiteAssets {
   loading: boolean;
 }
 
+// Cache globale per evitare ricaricamenti
+let globalLogoCache: string | null = null;
+let logoLoadPromise: Promise<string | null> | null = null;
+
+const loadLogoOnce = async (): Promise<string | null> => {
+  if (globalLogoCache !== null) {
+    return globalLogoCache;
+  }
+  
+  if (logoLoadPromise) {
+    return logoLoadPromise;
+  }
+
+  logoLoadPromise = (async () => {
+    try {
+      // Prima prova dal database
+      const { data: logoData, error: logoError } = await supabase
+        .from('avatar_assets')
+        .select('value')
+        .is('created_by', null)
+        .eq('name', 'site-logo')
+        .eq('type', 'image')
+        .maybeSingle();
+      
+      if (logoData?.value) {
+        globalLogoCache = logoData.value;
+        return globalLogoCache;
+      }
+      
+      // Fallback: storage diretto
+      const storageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/global/site-logo.png`;
+      
+      const response = await fetch(storageUrl, { method: 'HEAD' });
+      if (response.ok) {
+        globalLogoCache = storageUrl;
+        return globalLogoCache;
+      }
+      
+      globalLogoCache = null;
+      return null;
+    } catch (error) {
+      console.error('Error loading logo:', error);
+      globalLogoCache = null;
+      return null;
+    }
+  })();
+
+  return logoLoadPromise;
+};
+
 export const useSiteAssets = (): SiteAssets => {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(globalLogoCache);
   const [favicon16Url, setFavicon16Url] = useState<string | null>(null);
   const [favicon32Url, setFavicon32Url] = useState<string | null>(null);
   const [appleTouchIconUrl, setAppleTouchIconUrl] = useState<string | null>(null);
   const [loadingGifUrl, setLoadingGifUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(globalLogoCache === null);
 
   useEffect(() => {
     const loadSiteAssets = async () => {
       try {
-        // Carica logo sito
-        console.log('🎯 [LOGO DEBUG] Loading site logo...');
-        const { data: logoData, error: logoError } = await supabase
-          .from('avatar_assets')
-          .select('value')
-          .is('created_by', null)
-          .eq('name', 'site-logo')
-          .eq('type', 'image')
-          .maybeSingle();
-        
-        console.log('🎯 [LOGO DEBUG] Logo query result:', { logoData, logoError });
-        
-        if (logoData?.value) {
-          console.log('🎯 [LOGO DEBUG] Setting logo URL from database:', logoData.value);
-          setLogoUrl(logoData.value);
-        } else {
-          // Fallback: prova a caricare direttamente da Storage
-          console.log('🎯 [LOGO DEBUG] No logo in database, trying direct storage URL...');
-          const storageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/global/site-logo.png`;
-          
-          // Verifica se il file esiste su storage
-          try {
-            const response = await fetch(storageUrl, { method: 'HEAD' });
-            if (response.ok) {
-              console.log('🎯 [LOGO DEBUG] Found logo in storage, using direct URL:', storageUrl);
-              setLogoUrl(storageUrl);
-            } else {
-              console.log('🎯 [LOGO DEBUG] No logo found in storage either, using fallback');
-            }
-          } catch (error) {
-            console.log('🎯 [LOGO DEBUG] Error checking storage, using fallback:', error);
-          }
+        // Carica logo (usa cache se disponibile)
+        if (globalLogoCache === null) {
+          const logoResult = await loadLogoOnce();
+          setLogoUrl(logoResult);
         }
 
         // Carica favicon 16x16
