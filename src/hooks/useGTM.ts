@@ -20,7 +20,7 @@ export const useGTM = (config: GTMConfig) => {
       preview: config.preview
     });
 
-    console.log('🎯 [GTM] Initialized with container:', config.gtmId);
+
   }, [config.gtmId]);
 
   // Funzioni helper per tracking
@@ -31,7 +31,7 @@ export const useGTM = (config: GTMConfig) => {
         ...parameters
       }
     });
-    console.log('🎯 [GTM] Event tracked:', event, parameters);
+
   };
 
   const trackPageView = (pagePath: string, pageTitle?: string) => {
@@ -42,7 +42,7 @@ export const useGTM = (config: GTMConfig) => {
         page_title: pageTitle || document.title
       }
     });
-    console.log('🎯 [GTM] Page view tracked:', pagePath);
+
   };
 
   return {
