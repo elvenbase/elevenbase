@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Navigate, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,41 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Lock } from "lucide-react";
 import { SiteLogo } from "@/components/SiteLogo";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useSiteAssets } from "@/hooks/useSiteAssets";
 import { toast } from "sonner";
 
 const AuthMultiTeam = () => {
   const { user, loading, signIn } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [teamLogo, setTeamLogo] = useState<string | null>(null);
+  const { logoUrl: globalLogo } = useSiteAssets();
   
   // Form state - solo login
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-
-  // Load team logo se disponibile
-  useEffect(() => {
-    const loadTeamLogo = async () => {
-      const currentTeamId = localStorage.getItem('currentTeamId');
-      if (!currentTeamId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('teams')
-          .select('logo_url')
-          .eq('id', currentTeamId)
-          .single();
-
-        if (error) throw error;
-        const base = data?.logo_url || null;
-        setTeamLogo(base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
-      } catch (error) {
-        console.error('Error loading team logo:', error);
-      }
-    };
-
-    loadTeamLogo();
-  }, []);
 
   // Redirect if already authenticated
   if (!loading && user) {
@@ -80,22 +56,21 @@ const AuthMultiTeam = () => {
       <div className="w-full max-w-md">
         {/* Logo Grande */}
         <div className="text-center mb-12">
-          {teamLogo ? (
+          {globalLogo ? (
             <img 
-              src={teamLogo}
-              alt="Team Logo"
+              src={globalLogo}
+              alt="Platform Logo"
               className="h-32 w-32 mx-auto object-contain"
               onError={(e) => {
-                // Fallback al logo di default se il team logo fallisce
+                // Fallback al SiteLogo se il logo globale fallisce
                 const img = e.currentTarget as HTMLImageElement;
                 img.style.display = 'none';
-                // Mostra il SiteLogo come fallback
                 const fallbackDiv = img.nextElementSibling as HTMLElement;
                 if (fallbackDiv) fallbackDiv.style.display = 'block';
               }}
             />
           ) : null}
-          <div style={{ display: teamLogo ? 'none' : 'block' }}>
+          <div style={{ display: globalLogo ? 'none' : 'block' }}>
             <SiteLogo 
               className="h-32 w-auto mx-auto" 
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}

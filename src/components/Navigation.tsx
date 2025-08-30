@@ -29,12 +29,14 @@ import {
   Target
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSiteAssets } from "@/hooks/useSiteAssets";
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [teamLogo, setTeamLogo] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
   const { user, signOut } = useAuth();
+  const { logoUrl: globalLogo } = useSiteAssets();
   const { pathname } = useLocation();
 
   // Lock body scroll when mobile menu is open
@@ -117,11 +119,19 @@ const Navigation = () => {
           {/* Logo and brand */}
           <NavLink to="/" className="flex items-center space-x-3">
             <div className="ml-[-12px]">
-              <SiteLogo 
-                className="h-10 w-auto scale-[3] origin-left"
-                fallbackSrc="/assets/IMG_0055.png"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
-              />
+              {globalLogo ? (
+                <img 
+                  src={globalLogo}
+                  alt="Platform Logo"
+                  className="h-10 w-10 object-contain scale-[3] origin-left"
+                />
+              ) : (
+                <SiteLogo 
+                  className="h-10 w-auto scale-[3] origin-left"
+                  fallbackSrc="/assets/IMG_0055.png"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
+                />
+              )}
             </div>
           </NavLink>
 

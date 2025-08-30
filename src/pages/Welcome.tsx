@@ -5,10 +5,12 @@ import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCir
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SiteLogo } from '@/components/SiteLogo';
+import { useSiteAssets } from '@/hooks/useSiteAssets';
 
 const Welcome = () => {
   const [isVisible, setIsVisible] = useState(false);
   const { user, loading } = useAuth();
+  const { logoUrl: globalLogo } = useSiteAssets();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,10 +35,15 @@ const Welcome = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <SiteLogo className="h-10 w-auto" />
-              <div className="text-2xl font-semibold text-white">
-                ElevenBase
-              </div>
+              {globalLogo ? (
+                <img 
+                  src={globalLogo}
+                  alt="Platform Logo"
+                  className="h-12 w-12 object-contain"
+                />
+              ) : (
+                <SiteLogo className="h-12 w-auto" />
+              )}
             </div>
             <div className="flex items-center gap-4">
               <Link to="/auth">
