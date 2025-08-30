@@ -34,7 +34,7 @@ const Welcome = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 font-inter">
       {/* Navigation */}
       <nav className="relative z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
