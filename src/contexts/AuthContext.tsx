@@ -111,11 +111,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (session?.user) {
           await refreshRegistrationStatus();
+          setLoading(false); // ✅ Spostato dopo refreshRegistrationStatus
         } else {
           setRegistrationStatus(null);
+          setLoading(false); // ✅ Anche qui dopo setRegistrationStatus
         }
-        
-        setLoading(false);
       }
     );
 

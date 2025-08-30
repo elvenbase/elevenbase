@@ -55,7 +55,10 @@ const Navigation = () => {
   useEffect(() => {
     const loadTeamData = async () => {
       const currentTeamId = localStorage.getItem('currentTeamId');
-      if (!currentTeamId) return;
+      if (!currentTeamId) {
+        setTeamLogo(null); // ✅ Reset logo se non c'è team
+        return;
+      }
 
       try {
         const { data, error } = await supabase
@@ -69,19 +72,22 @@ const Navigation = () => {
         setTeamLogo(base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
       } catch (error) {
         console.error('Error loading team logo:', error);
+        setTeamLogo(null); // ✅ Reset logo in caso di errore
       }
     };
 
     loadTeamData();
+    
     // React to logo updates broadcast via localStorage
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'teamLogoUpdatedAt') {
-        loadTeamData()
+    const onStorage = async (e: StorageEvent) => {
+      if (e.key === 'teamLogoUpdatedAt' || e.key === 'currentTeamId') {
+        await loadTeamData(); // ✅ Await della chiamata asincrona
       }
     }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, []);
+    
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [user]) // ✅ Aggiunta dipendenza user per ricaricare quando cambia utente;
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: BarChart3 },
