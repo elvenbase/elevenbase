@@ -180,7 +180,7 @@ function App() {
                       <Route path="/reset-password" element={<Layout><ResetPassword /></Layout>} />
                       <Route path="/privacy-policy" element={<Layout><PrivacyPolicy /></Layout>} />
                       <Route path="/cookie-policy" element={<Layout><CookiePolicy /></Layout>} />
-                      <Route path="/terms-of-service" element={<Layout><TermsOfService /></Layout>} />
+                      <Route path="/termini-di-servizio" element={<Layout><TermsOfService /></Layout>} />
                       <Route path="/" element={<RootRedirect />} />
                       <Route path="/dashboard" element={
                         <ProtectedRoute>

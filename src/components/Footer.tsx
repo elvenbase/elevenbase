@@ -30,7 +30,7 @@ const Footer = () => {
           {/* Link legali */}
           <div className="flex flex-wrap justify-center items-center gap-4 text-sm">
             <Link 
-              to="/terms-of-service" 
+              to="/termini-di-servizio" 
               className="text-slate-700 hover:text-slate-900 hover:underline"
             >
               Termini di servizio

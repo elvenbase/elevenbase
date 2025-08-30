@@ -45,38 +45,122 @@ const TermsOfService = () => {
             </p>
           </CardHeader>
           <CardContent className="prose prose-slate max-w-none">
-            <div className="space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">📄 Contenuto in preparazione</h3>
-                <p className="text-blue-800">
-                  Il contenuto dettagliato dei Termini di Servizio verrà inserito a breve.
-                  Questa pagina è stata creata per conformità legale e sarà popolata con il testo definitivo.
+            <div className="space-y-8 text-slate-700 leading-relaxed">
+              {/* Ultimo aggiornamento */}
+              <div className="text-center">
+                <p className="text-sm text-slate-500 font-medium">
+                  Ultimo aggiornamento: {new Date().toLocaleDateString('it-IT')}
                 </p>
               </div>
 
+              {/* Introduzione */}
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-slate-800">1. Accettazione dei Termini</h2>
-                <p className="text-slate-700">
-                  L'utilizzo di ElevenBase implica l'accettazione di questi termini di servizio.
+                <p className="text-lg">
+                  Benvenuto su <strong>ElevenBase</strong>.
                 </p>
-
-                <h2 className="text-2xl font-bold text-slate-800">2. Descrizione del Servizio</h2>
-                <p className="text-slate-700">
-                  ElevenBase è una piattaforma di gestione sportiva per squadre e club.
+                <p>
+                  Utilizzando questa applicazione, accetti i seguenti termini e condizioni.
                 </p>
+              </div>
 
-                <h2 className="text-2xl font-bold text-slate-800">3. Disclaimer EA Sports</h2>
-                <p className="text-slate-700 bg-yellow-50 border border-yellow-200 rounded p-4">
-                  <strong>Importante:</strong> ElevenBase è un'applicazione indipendente e non ufficiale, 
-                  non affiliata, sponsorizzata né approvata da EA Sports. Tutti i marchi sono proprietà 
-                  dei rispettivi proprietari.
+              {/* 1. Descrizione del servizio */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">
+                  1. Descrizione del servizio
+                </h2>
+                <p>
+                  <strong>ElevenBase</strong> è un'applicazione gratuita che consente di gestire squadre, giocatori, 
+                  allenamenti e partite all'interno del contesto videoludico EA Sports FC.
                 </p>
+                <p>
+                  L'applicazione è fornita a titolo gratuito. Eventuali donazioni sono facoltative e non danno 
+                  diritto a funzionalità aggiuntive.
+                </p>
+              </div>
 
-                <div className="text-center pt-8">
-                  <p className="text-sm text-slate-500">
-                    Ultima modifica: {new Date().toLocaleDateString('it-IT')}
+              {/* 2. Donazioni */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">
+                  2. Donazioni
+                </h2>
+                <p>
+                  Puoi supportare lo sviluppo dell'app tramite donazioni volontarie.
+                </p>
+                <p>La donazione:</p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li><strong>non è obbligatoria</strong>,</li>
+                  <li><strong>non costituisce acquisto</strong> di beni o servizi,</li>
+                  <li><strong>non dà diritto</strong> a funzioni premium o vantaggi.</li>
+                </ul>
+              </div>
+
+              {/* 3. Limitazione di responsabilità */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">
+                  3. Limitazione di responsabilità
+                </h2>
+                <p>
+                  <strong>ElevenBase</strong> viene fornita "così com'è", senza garanzie di funzionamento 
+                  continuo o assenza di errori.
+                </p>
+                <p>Non siamo responsabili per:</p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>eventuali <strong>perdite di dati</strong>,</li>
+                  <li><strong>malfunzionamenti</strong>,</li>
+                  <li><strong>interruzioni del servizio</strong>.</li>
+                </ul>
+              </div>
+
+              {/* 4. Proprietà intellettuale */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">
+                  4. Proprietà intellettuale
+                </h2>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                  <p className="font-semibold text-yellow-900 mb-2">
+                    ⚖️ Disclaimer EA Sports
+                  </p>
+                  <p>
+                    <strong>EA Sports</strong>, il logo EA e tutti i marchi relativi a <strong>EA Sports FC</strong> sono 
+                    di proprietà di Electronic Arts Inc.
+                  </p>
+                  <p className="mt-2">
+                    <strong>ElevenBase è un'app indipendente</strong> e non è affiliata, sponsorizzata o approvata da EA Sports.
                   </p>
                 </div>
+              </div>
+
+              {/* 5. Uso corretto */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">
+                  5. Uso corretto
+                </h2>
+                <p>È vietato:</p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>utilizzare <strong>ElevenBase</strong> per scopi illegali,</li>
+                  <li>tentare di accedere ai dati di altri utenti senza autorizzazione,</li>
+                  <li>sfruttare vulnerabilità o bug.</li>
+                </ul>
+              </div>
+
+              {/* 6. Modifiche ai termini */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">
+                  6. Modifiche ai termini
+                </h2>
+                <p>
+                  Ci riserviamo il diritto di aggiornare i presenti termini in qualsiasi momento.
+                </p>
+                <p>
+                  Gli aggiornamenti saranno pubblicati su questa pagina.
+                </p>
+              </div>
+
+              {/* Footer con data */}
+              <div className="text-center pt-8 border-t border-slate-200">
+                <p className="text-sm text-slate-500">
+                  © 2025 ElevenBase – Tutti i diritti riservati
+                </p>
               </div>
             </div>
           </CardContent>
