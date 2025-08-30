@@ -13,6 +13,7 @@ import RecoveryRedirector from "@/components/RecoveryRedirector";
 import ScrollManager from "@/components/ScrollManager";
 import Footer from "@/components/Footer";
 import Layout from "@/components/Layout";
+import GTMProvider from "@/components/GTMProvider";
 
 // Import components
 import { AdminSetup } from "@/components/AdminSetup";
@@ -158,9 +159,10 @@ function App() {
                 v7_relativeSplatPath: true
               }}
             >
-              <RecoveryRedirector />
-              <ScrollManager />
-              <ErrorBoundary>
+              <GTMProvider>
+                <RecoveryRedirector />
+                <ScrollManager />
+                <ErrorBoundary>
                 <div className="min-h-screen bg-background">
                   <Suspense fallback={
                     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -403,6 +405,7 @@ function App() {
               </ErrorBoundary>
               <Toaster />
               <Sonner />
+              </GTMProvider>
             </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>
