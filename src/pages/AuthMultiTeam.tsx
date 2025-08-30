@@ -60,7 +60,8 @@ const AuthMultiTeam = () => {
             <img 
               src={globalLogo}
               alt="Platform Logo"
-              className="h-32 w-32 mx-auto object-contain"
+              className="h-24 w-auto mx-auto object-cover max-h-24"
+              style={{ maxWidth: '320px' }}
               onError={(e) => {
                 // Fallback al SiteLogo se il logo globale fallisce
                 const img = e.currentTarget as HTMLImageElement;
@@ -72,7 +73,7 @@ const AuthMultiTeam = () => {
           ) : null}
           <div style={{ display: globalLogo ? 'none' : 'block' }}>
             <SiteLogo 
-              className="h-32 w-auto mx-auto" 
+              className="h-24 w-auto mx-auto" 
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/logo_elevenBase.png' }}
             />
           </div>
