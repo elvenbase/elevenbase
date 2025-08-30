@@ -38,14 +38,14 @@ const Welcome = () => {
       {/* Navigation */}
       <nav className="relative z-50 bg-white/80 backdrop-blur-xl border-b border-slate-300/50 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-18 sm:h-20 md:h-24 py-2">
             <div className="flex items-center space-x-3">
               {globalLogo ? (
                 <img 
                   src={globalLogo}
                   alt="Platform Logo"
-                  className="h-12 w-auto object-cover max-h-12"
-                  style={{ maxWidth: '240px' }}
+                  className="h-14 sm:h-16 md:h-20 w-auto object-cover"
+                  style={{ maxWidth: '280px' }}
                   onError={(e) => {
                     console.log('🎯 [WELCOME DEBUG] Logo failed to load:', globalLogo);
                     // Fallback al SiteLogo se il logo globale fallisce
@@ -57,7 +57,7 @@ const Welcome = () => {
                 />
               ) : null}
               <div style={{ display: globalLogo ? 'none' : 'block' }}>
-                <SiteLogo className="h-12 w-auto" />
+                <SiteLogo className="h-14 sm:h-16 md:h-20 w-auto" />
               </div>
             </div>
             <div className="flex items-center gap-4">
