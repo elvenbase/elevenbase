@@ -35,7 +35,7 @@ const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [teamLogo, setTeamLogo] = useState<string | null>(null);
   const [isExiting, setIsExiting] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, registrationStatus } = useAuth();
   const { logoUrl: globalLogo } = useSiteAssets();
   const { pathname } = useLocation();
 
@@ -51,15 +51,20 @@ const Navigation = () => {
     }
   }, [isMobileMenuOpen]);
 
-  // Load team logo
+  // ✅ Load team logo direttamente da AuthContext
   useEffect(() => {
-    const loadTeamData = async () => {
-      const currentTeamId = localStorage.getItem('currentTeamId');
-      if (!currentTeamId) {
-        setTeamLogo(null); // ✅ Reset logo se non c'è team
-        return;
-      }
-
+    if (registrationStatus?.team_logo_url) {
+      const base = registrationStatus.team_logo_url;
+      setTeamLogo(base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
+    } else {
+      setTeamLogo(null);
+    }
+    
+    // Fallback: se AuthContext non ha il logo, caricalo separatamente
+    const loadTeamDataFallback = async () => {
+      const currentTeamId = registrationStatus?.team_id || localStorage.getItem('currentTeamId');
+      if (!currentTeamId || registrationStatus?.team_logo_url) return; // Skip se già abbiamo il logo
+      
       try {
         const { data, error } = await supabase
           .from('teams')
@@ -67,27 +72,30 @@ const Navigation = () => {
           .eq('id', currentTeamId)
           .single();
 
-        if (error) throw error;
-        const base = data?.logo_url || null
-        setTeamLogo(base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
+        if (!error && data?.logo_url) {
+          const base = data.logo_url;
+          setTeamLogo(base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
+        }
       } catch (error) {
-        console.error('Error loading team logo:', error);
-        setTeamLogo(null); // ✅ Reset logo in caso di errore
+        console.warn('Fallback logo loading failed:', error);
       }
     };
 
-    loadTeamData();
+    // Se non abbiamo logo da AuthContext, prova fallback
+    if (registrationStatus?.team_id && !registrationStatus?.team_logo_url) {
+      loadTeamDataFallback();
+    }
     
-    // React to logo updates broadcast via localStorage
+    // React to logo updates broadcast via localStorage (per TeamSettings)
     const onStorage = async (e: StorageEvent) => {
-      if (e.key === 'teamLogoUpdatedAt' || e.key === 'currentTeamId' || e.key === 'teamDataUpdatedAt') {
-        await loadTeamData(); // ✅ Await della chiamata asincrona
+      if (e.key === 'teamLogoUpdatedAt') {
+        await loadTeamDataFallback();
       }
     }
     
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, [user]) // ✅ Aggiunta dipendenza user per ricaricare quando cambia utente;
+  }, [registrationStatus]) // ✅ Dipendenza da registrationStatus invece di user
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: BarChart3 },

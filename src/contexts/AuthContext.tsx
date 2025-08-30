@@ -11,6 +11,7 @@ interface RegistrationStatus {
   team_id?: string;
   team_name?: string;
   team_abbreviation?: string;
+  team_logo_url?: string; // ✅ Aggiunto logo URL
   role?: 'founder' | 'admin' | 'player';
   status?: 'pending' | 'active' | 'suspended';
   ea_sports_id?: string;
@@ -64,6 +65,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Errore nel caricamento status registrazione:', error);
         setRegistrationStatus(null);
         return;
+      }
+
+      // ✅ Se abbiamo team_id, carichiamo anche il logo
+      if (data?.team_id) {
+        try {
+          const { data: teamData, error: teamError } = await supabase
+            .from('teams')
+            .select('logo_url')
+            .eq('id', data.team_id)
+            .single();
+            
+          if (!teamError && teamData?.logo_url) {
+            data.team_logo_url = teamData.logo_url;
+          }
+        } catch (logoError) {
+          console.warn('Could not load team logo:', logoError);
+        }
       }
 
       setRegistrationStatus(data);
