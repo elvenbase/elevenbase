@@ -2,13 +2,36 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
+import { useEffect } from 'react';
 import { useSiteAssets } from '@/hooks/useSiteAssets';
 
 const CookiePolicy = () => {
   const { logoUrl: globalLogo } = useSiteAssets();
 
-
+  useEffect(() => {
+    // Carica lo script Cookiebot per la dichiarazione cookie
+    const script = document.createElement('script');
+    script.id = 'CookieDeclaration';
+    script.src = 'https://consent.cookiebot.com/08edd00d-6217-4c19-a1bf-2ebd58a79e6c/cd.js';
+    script.type = 'text/javascript';
+    script.async = true;
+    
+    // Trova il container e aggiungi lo script
+    const container = document.getElementById('CookieDeclaration-container');
+    if (container) {
+      // Pulisci il container prima di aggiungere lo script
+      container.innerHTML = '';
+      container.appendChild(script);
+    }
+    
+    // Cleanup
+    return () => {
+      const existingScript = document.getElementById('CookieDeclaration');
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -48,14 +71,16 @@ const CookiePolicy = () => {
             </p>
           </CardHeader>
           <CardContent className="prose prose-slate max-w-none">
-            {/* Script Cookiebot per dichiarazione cookie */}
+            {/* Container per script Cookiebot - popolato da useEffect */}
             <div 
               id="CookieDeclaration-container" 
               className="min-h-[400px]"
-              dangerouslySetInnerHTML={{
-                __html: '<script id="CookieDeclaration" src="https://consent.cookiebot.com/08edd00d-6217-4c19-a1bf-2ebd58a79e6c/cd.js" type="text/javascript" async></script>'
-              }}
-            />
+            >
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-slate-600 mx-auto mb-4"></div>
+                <p className="text-slate-500">Caricamento informazioni sui cookie...</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
