@@ -49,7 +49,7 @@ const AdminDashboard = () => {
         badge: 'Maglie'
       },
     {
-      title: 'Avatar Persona & Avatar Background',
+      title: 'Gestione Avatar',
       description: 'Gestisci Avatar Persona di default e Avatar Background',
       icon: Image,
       href: '/admin/avatar-backgrounds',
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
       badge: 'PNG'
     },
           {
-        title: 'Opzioni Giocatori',
+        title: 'Gestione Ruoli',
         description: 'Gestisci le opzioni dinamiche dei form (ruoli, posizioni, status)',
         icon: UserCog,
         href: '/field-options',

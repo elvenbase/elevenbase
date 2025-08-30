@@ -92,10 +92,10 @@ const Navigation = () => {
     { name: "Utenti", path: "/admin/users", icon: Users },
     { name: "Formazioni", path: "/admin/formations", icon: Layout },
     { name: "Maglie", path: "/admin/jerseys", icon: Shirt },
-    { name: "Avatar Persona & Avatar Background", path: "/admin/avatar-backgrounds", icon: Image },
+    { name: "Gestione Avatar", path: "/admin/avatar-backgrounds", icon: Image },
     { name: "Impostazioni PNG", path: "/admin/png-settings", icon: Settings },
     { name: "Avversari", path: "/admin/opponents", icon: Users },
-    { name: "Opzioni Giocatori", path: "/field-options", icon: UserCog },
+    { name: "Gestione Ruoli", path: "/field-options", icon: UserCog },
     { name: "Squad Score", path: "/admin/attendance-score", icon: BarChart3 },
     { name: "Tutte le opzioni", path: "/admin", icon: Shield },
   ];
