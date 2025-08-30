@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import RecoveryRedirector from "@/components/RecoveryRedirector";
 import ScrollManager from "@/components/ScrollManager";
+import Footer from "@/components/Footer";
+import Layout from "@/components/Layout";
 
 // Import components
 import { AdminSetup } from "@/components/AdminSetup";
@@ -43,6 +45,8 @@ const PlayerDetail = lazy(() => import("@/pages/PlayerDetail"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const TeamSettings = lazy(() => import("@/pages/TeamSettings"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const CookiePolicy = lazy(() => import("@/pages/CookiePolicy"));
+const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 
 // Multi-team authentication system
 const AuthMultiTeam = lazy(() => import("@/pages/AuthMultiTeam"));
@@ -165,37 +169,45 @@ function App() {
                   }>
                     <Routes>
                       {/* Public Routes */}
-                      <Route path="/welcome" element={<Welcome />} />
-                      <Route path="/auth" element={<AuthMultiTeam />} />
-                      <Route path="/confirm" element={<EmailConfirm />} />
-                      <Route path="/register/:token" element={<PublicRegistration />} />
-                      <Route path="/m/:token" element={<MatchPublicRegistration />} />
-                      <Route path="/session/:token" element={<PublicSession />} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
-                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                      <Route path="/welcome" element={<Layout><Welcome /></Layout>} />
+                      <Route path="/auth" element={<Layout><AuthMultiTeam /></Layout>} />
+                      <Route path="/confirm" element={<Layout><EmailConfirm /></Layout>} />
+                      <Route path="/register/:token" element={<Layout><PublicRegistration /></Layout>} />
+                      <Route path="/m/:token" element={<Layout><MatchPublicRegistration /></Layout>} />
+                      <Route path="/session/:token" element={<Layout><PublicSession /></Layout>} />
+                      <Route path="/reset-password" element={<Layout><ResetPassword /></Layout>} />
+                      <Route path="/privacy-policy" element={<Layout><PrivacyPolicy /></Layout>} />
+                      <Route path="/cookie-policy" element={<Layout><CookiePolicy /></Layout>} />
+                      <Route path="/terms-of-service" element={<Layout><TermsOfService /></Layout>} />
                       <Route path="/" element={<RootRedirect />} />
                       <Route path="/dashboard" element={
                         <ProtectedRoute>
-                          <Navigation />
-                          <main className="ml-0 transition-all duration-200">
-                            <Dashboard />
-                          </main>
+                          <Layout>
+                            <Navigation />
+                            <main className="ml-0 transition-all duration-200">
+                              <Dashboard />
+                            </main>
+                          </Layout>
                         </ProtectedRoute>
                       } />
                       <Route path="/squad" element={
                         <ProtectedRoute>
-                          <Navigation />
-                          <main className="ml-0 transition-all duration-200">
-                            <Squad />
-                          </main>
+                          <Layout>
+                            <Navigation />
+                            <main className="ml-0 transition-all duration-200">
+                              <Squad />
+                            </main>
+                          </Layout>
                         </ProtectedRoute>
                       } />
                       <Route path="/training" element={
                         <ProtectedRoute>
-                          <Navigation />
-                          <main className="ml-0 transition-all duration-200">
-                            <Training />
-                          </main>
+                          <Layout>
+                            <Navigation />
+                            <main className="ml-0 transition-all duration-200">
+                              <Training />
+                            </main>
+                          </Layout>
                         </ProtectedRoute>
                       } />
                       <Route path="/sessions" element={
