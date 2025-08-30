@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star } from 'lucide-react';
+import { Crown, UserPlus, Trophy, Users, BarChart3, Shield, ArrowRight, CheckCircle, Star, LogIn } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SiteLogo } from '@/components/SiteLogo';
@@ -69,10 +69,10 @@ const Welcome = () => {
 
             {/* Main Title */}
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
-              Il futuro della gestione
+              Il gioco di squadra
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#006666]">
-                sportiva
+                comincia qui
               </span>
             </h1>
 
@@ -299,9 +299,9 @@ const Welcome = () => {
             <Link to="/auth">
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="border-2 border-white text-white hover:bg-white hover:text-[#004d4d] font-semibold px-12 py-4 text-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+                className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
+                <LogIn className="h-5 w-5 mr-3" />
                 Hai già un account?
               </Button>
             </Link>
