@@ -768,26 +768,41 @@ const Squad = () => {
         const notFound = (rpcRes.error.message || '').toLowerCase().includes('could not find the function') ||
                          (rpcRes.error.message || '').toLowerCase().includes('function') ||
                          (rpcRes.error.code === 'PGRST202')
+        
+        console.log('🎯 [CAPTAIN DEBUG] Is function not found?', notFound)
+        
         if (!notFound) throw rpcRes.error
+        
+        console.log('🎯 [CAPTAIN DEBUG] Using fallback method...')
         
         // Fallback: unset previous captain(s) ONLY FOR THIS TEAM
         if (teamId) {
+          console.log('🎯 [CAPTAIN DEBUG] Unsetting previous captains for team:', teamId)
           const { error: unsetErr } = await supabase
             .from('players')
             .update({ is_captain: false })
             .eq('is_captain', true)
             .eq('team_id', teamId)
-          if (unsetErr) throw unsetErr
+          if (unsetErr) {
+            console.error('🎯 [CAPTAIN DEBUG] Unset error:', unsetErr)
+            throw unsetErr
+          }
+          console.log('🎯 [CAPTAIN DEBUG] Previous captains unset successfully')
         }
         
         // Set new captain if provided
         if (paramId && teamId) {
+          console.log('🎯 [CAPTAIN DEBUG] Setting new captain:', paramId)
           const { error: setErr } = await supabase
             .from('players')
             .update({ is_captain: true })
             .eq('id', paramId)
             .eq('team_id', teamId)
-          if (setErr) throw setErr
+          if (setErr) {
+            console.error('🎯 [CAPTAIN DEBUG] Set error:', setErr)
+            throw setErr
+          }
+          console.log('🎯 [CAPTAIN DEBUG] New captain set successfully')
         }
       }
 
