@@ -83,11 +83,7 @@ const Welcome = () => {
       <div className="relative overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className={`text-center transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            {/* Badge */}
-            <div className="inline-flex items-center px-4 py-2 bg-slate-800/10 backdrop-blur-sm rounded-full text-slate-800 border border-slate-300 mb-8">
-              <Star className="h-4 w-4 mr-2" />
-              <span className="text-sm font-medium">Piattaforma di Gestione Sportiva Professionale</span>
-            </div>
+
 
             {/* Main Title */}
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-slate-800">
