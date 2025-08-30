@@ -8,22 +8,17 @@ import { SiteLogo } from '@/components/SiteLogo';
 
 const Welcome = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const { user, isLoading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
-  // Redirect to dashboard if user is already logged in
-  useEffect(() => {
-    if (!isLoading && user) {
-      navigate('/dashboard');
-    }
-  }, [user, isLoading, navigate]);
+  // Note: Redirect logic moved to RootRedirect component
 
   // Show loading while checking auth status
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#004d4d] to-[#1a237e] flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>

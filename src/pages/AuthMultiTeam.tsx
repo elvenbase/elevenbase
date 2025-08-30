@@ -42,7 +42,7 @@ const AuthMultiTeam = () => {
 
   // Redirect if already authenticated
   if (!loading && user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
 
@@ -66,7 +66,7 @@ const AuthMultiTeam = () => {
       }
       
       // Login riuscito per utenti attivi - reindirizza al dashboard
-      navigate('/');
+      navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Errore durante il login');
     }

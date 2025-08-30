@@ -16,6 +16,7 @@ import { AdminSetup } from "@/components/AdminSetup";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import Navigation from "@/components/Navigation";
+import RootRedirect from "@/components/RootRedirect";
 
 // Lazy load pages for better performance
 const Welcome = lazy(() => import("@/pages/Welcome"));
@@ -165,7 +166,7 @@ function App() {
                       <Route path="/session/:token" element={<PublicSession />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                      <Route path="/" element={<Welcome />} />
+                      <Route path="/" element={<RootRedirect />} />
                       <Route path="/dashboard" element={
                         <ProtectedRoute>
                           <Navigation />
