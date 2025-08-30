@@ -195,14 +195,25 @@
         window.addEventListener('load', function() {
             setTimeout(function() {
                 const debugDiv = document.getElementById('debug-info');
+                
+                // Check for GTM script in more detail
+                const gtmScripts = document.querySelectorAll('script[src*="googletagmanager.com"]');
+                const gtmInlineScripts = document.querySelectorAll('script:not([src])');
+                
                 const info = {
                     'GTM Container': 'GTM-WFC39G5J',
                     'DataLayer Type': typeof window.dataLayer,
                     'DataLayer Exists': window.dataLayer ? 'YES' : 'NO',
                     'DataLayer Length': window.dataLayer ? window.dataLayer.length : 'N/A',
-                    'GTM Script Loaded': !!document.querySelector('script[src*="googletagmanager.com"]') ? 'YES' : 'NO',
+                    'DataLayer Content': window.dataLayer ? JSON.stringify(window.dataLayer, null, 2) : 'N/A',
+                    'GTM External Scripts': gtmScripts.length,
+                    'GTM Inline Scripts': Array.from(gtmInlineScripts).filter(s => s.textContent.includes('GTM-WFC39G5J')).length,
+                    'All GTM Scripts': Array.from(gtmScripts).map(s => s.src).join(', '),
+                    'Network Errors': 'Check console for failed requests',
                     'Page Load Time': new Date().toISOString(),
-                    'User Agent': navigator.userAgent.substring(0, 100) + '...'
+                    'User Agent': navigator.userAgent.substring(0, 100) + '...',
+                    'Document Ready State': document.readyState,
+                    'Window GTM': typeof window.google_tag_manager
                 };
                 
                 let debugText = '';
@@ -213,6 +224,22 @@
 
                 // Auto-test DataLayer
                 testDataLayer();
+                
+                // Check for network errors
+                setTimeout(() => {
+                    console.log('🔍 GTM DEBUG: Checking for failed network requests...');
+                    const resources = performance.getEntriesByType('resource');
+                    const gtmResources = resources.filter(r => r.name.includes('googletagmanager.com'));
+                    console.log('🔍 GTM Resources:', gtmResources);
+                    
+                    gtmResources.forEach(resource => {
+                        if (resource.transferSize === 0) {
+                            console.error('❌ GTM Resource failed to load:', resource.name);
+                        } else {
+                            console.log('✅ GTM Resource loaded:', resource.name, 'Size:', resource.transferSize);
+                        }
+                    });
+                }, 2000);
             }, 1000);
         });
     </script>
