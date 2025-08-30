@@ -34,9 +34,9 @@ const Welcome = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 font-inter">
       {/* Navigation */}
-      <nav className="relative z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0">
+      <nav className="relative z-50 bg-white/80 backdrop-blur-xl border-b border-slate-300/50 sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -64,13 +64,13 @@ const Welcome = () => {
               <Link to="/auth">
                 <Button 
                   variant="outline" 
-                  className="bg-white/10 border-white/50 text-white hover:bg-white/20 hover:border-white/70 transition-all duration-300"
+                  className="bg-slate-800/10 border-slate-600 text-slate-800 hover:bg-slate-800/20 hover:border-slate-700 transition-all duration-300"
                 >
                   Accedi
                 </Button>
               </Link>
               <Link to="/register-founder">
-                <Button className="bg-[#006666] hover:bg-[#004d4d] text-white transition-all duration-300">
+                <Button className="bg-slate-800 hover:bg-slate-900 text-white transition-all duration-300">
                   Inizia Ora
                 </Button>
               </Link>
@@ -84,21 +84,21 @@ const Welcome = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className={`text-center transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             {/* Badge */}
-            <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white border border-white/20 mb-8">
+            <div className="inline-flex items-center px-4 py-2 bg-slate-800/10 backdrop-blur-sm rounded-full text-slate-800 border border-slate-300 mb-8">
               <Star className="h-4 w-4 mr-2" />
               <span className="text-sm font-medium">Piattaforma di Gestione Sportiva Professionale</span>
             </div>
 
             {/* Main Title */}
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-slate-800">
               Il gioco di squadra
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#006666]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-[#006666]">
                 comincia qui
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-slate-700 mb-12 max-w-4xl mx-auto leading-relaxed">
               ElevenBase trasforma la gestione della tua squadra con tecnologie avanzate, 
               analytics intelligenti e automazione completa.
             </p>
@@ -108,19 +108,19 @@ const Welcome = () => {
               <Link to="/register-founder">
                 <Button 
                   size="lg" 
-                  className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                  className="bg-slate-800 text-white hover:bg-slate-900 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                 >
                   <Crown className="h-5 w-5 mr-3" />
                   Fonda il Tuo Team
                 </Button>
               </Link>
               
-              <div className="text-white/70 text-lg font-medium">oppure</div>
+              <div className="text-slate-600 text-lg font-medium">oppure</div>
               
               <Link to="/register-invite">
                 <Button 
                   size="lg"
-                  className="bg-white text-[#004d4d] hover:bg-gray-100 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                  className="bg-slate-800 text-white hover:bg-slate-900 font-semibold px-12 py-4 text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                 >
                   <UserPlus className="h-5 w-5 mr-3" />
                   Unisciti con Codice
@@ -141,8 +141,8 @@ const Welcome = () => {
                   className={`text-center transform transition-all duration-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
                   style={{ transitionDelay: `${index * 200}ms` }}
                 >
-                  <div className="text-2xl md:text-3xl font-bold text-white">{stat.number}</div>
-                  <div className="text-white/70 text-sm">{stat.label}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-slate-800">{stat.number}</div>
+                  <div className="text-slate-600 text-sm">{stat.label}</div>
                 </div>
               ))}
             </div>
