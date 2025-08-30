@@ -78,6 +78,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             
           if (!teamError && teamData?.logo_url) {
             data.team_logo_url = teamData.logo_url;
+            console.log('✅ Logo caricato in AuthContext:', teamData.logo_url);
+          } else {
+            console.warn('⚠️ Logo non trovato o errore:', teamError);
           }
         } catch (logoError) {
           console.warn('Could not load team logo:', logoError);

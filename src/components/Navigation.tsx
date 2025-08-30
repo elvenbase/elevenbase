@@ -53,10 +53,20 @@ const Navigation = () => {
 
   // ✅ Load team logo direttamente da AuthContext
   useEffect(() => {
+    console.log('🔍 Navigation: registrationStatus changed:', {
+      hasTeamId: !!registrationStatus?.team_id,
+      hasTeamLogo: !!registrationStatus?.team_logo_url,
+      teamName: registrationStatus?.team_name,
+      logoUrl: registrationStatus?.team_logo_url
+    });
+    
     if (registrationStatus?.team_logo_url) {
       const base = registrationStatus.team_logo_url;
-      setTeamLogo(base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
+      const logoWithCache = base ? `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}` : null;
+      console.log('✅ Setting team logo from AuthContext:', logoWithCache);
+      setTeamLogo(logoWithCache);
     } else {
+      console.log('❌ No logo in AuthContext, setting null');
       setTeamLogo(null);
     }
     
