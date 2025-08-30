@@ -126,7 +126,7 @@ const PublicSession = () => {
 
     try {
       // Use fetch directly to handle HTTP errors better
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/public-registration`, {
+      const response = await fetch(`https://cuthalxqxkonmfzqjdvw.supabase.co/functions/v1/public-registration`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -257,7 +257,7 @@ const PublicSession = () => {
       if (kind === 'player') payload.playerId = id
       if (kind === 'trialist') payload.trialistId = id
 
-      const resp = await fetch(`${supabase.supabaseUrl}/functions/v1/public-registration`, {
+      const resp = await fetch(`https://cuthalxqxkonmfzqjdvw.supabase.co/functions/v1/public-registration`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabase.supabaseKey}` },
         body: JSON.stringify(payload)
