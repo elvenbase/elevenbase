@@ -28,7 +28,6 @@ const RegisterInvite = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
     inviteCode: '',
     eaSportsId: ''
   });
@@ -170,14 +169,7 @@ const RegisterInvite = () => {
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Errore",
-        description: "Le password non corrispondono",
-        variant: "destructive"
-      });
-      return;
-    }
+
 
     if (formData.password.length < 6) {
       toast({
@@ -383,56 +375,30 @@ const RegisterInvite = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="username">Username *</Label>
-                      <Input
-                        id="username"
-                        value={formData.username}
-                        onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                        required
-                        placeholder="il_tuo_username"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="password">Password *</Label>
-                        <div className="relative">
-                          <Input
-                            id="password"
-                            type={showPassword ? "text" : "password"}
-                            value={formData.password}
-                            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                            required
-                            placeholder="••••••••"
-                            minLength={6}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Conferma *</Label>
+                      <Label htmlFor="password">Password *</Label>
+                      <div className="relative">
                         <Input
-                          id="confirmPassword"
-                          type="password"
-                          value={formData.confirmPassword}
-                          onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          value={formData.password}
+                          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                           required
                           placeholder="••••••••"
                           minLength={6}
                         />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
                       </div>
                     </div>
 
