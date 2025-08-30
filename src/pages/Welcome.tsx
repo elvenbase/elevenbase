@@ -44,7 +44,7 @@ const Welcome = () => {
                 <img 
                   src={globalLogo}
                   alt="Platform Logo"
-                  className="h-12 w-12 object-contain"
+                  className="h-16 w-auto object-contain max-w-[200px]"
                   onError={(e) => {
                     console.log('🎯 [WELCOME DEBUG] Logo failed to load:', globalLogo);
                     // Fallback al SiteLogo se il logo globale fallisce
@@ -56,7 +56,7 @@ const Welcome = () => {
                 />
               ) : null}
               <div style={{ display: globalLogo ? 'none' : 'block' }}>
-                <SiteLogo className="h-12 w-auto" />
+                <SiteLogo className="h-16 w-auto" />
               </div>
             </div>
             <div className="flex items-center gap-4">
