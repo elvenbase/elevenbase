@@ -73,10 +73,26 @@ serve(async (req) => {
     console.log('URL:', req.url)
     console.log('Client IP:', clientIP)
     
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    // Check environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    
+    console.log('Environment check:', {
+      hasUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey,
+      urlValue: supabaseUrl || 'MISSING'
+    })
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing environment variables')
+      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    console.log('Supabase client created successfully')
 
     const url = new URL(req.url)
     let token = url.searchParams.get('token')
@@ -127,6 +143,8 @@ serve(async (req) => {
       }
 
       // Trova la sessione con questo token e carica i dati del team
+      console.log('Starting database query for token:', token)
+      
       const { data: session, error: sessionError } = await supabase
         .from('training_sessions')
         .select(`
@@ -141,6 +159,12 @@ serve(async (req) => {
         `)
         .eq('public_link_token', token)
         .single()
+        
+      console.log('Session query completed:', { 
+        hasSession: !!session, 
+        error: sessionError?.message,
+        sessionId: session?.id 
+      })
 
       if (sessionError || !session) {
         return new Response(JSON.stringify({ error: 'Token non valido' }), {
