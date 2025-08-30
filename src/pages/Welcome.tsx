@@ -10,8 +10,13 @@ import { useSiteAssets } from '@/hooks/useSiteAssets';
 const Welcome = () => {
   const [isVisible, setIsVisible] = useState(false);
   const { user, loading } = useAuth();
-  const { logoUrl: globalLogo } = useSiteAssets();
+  const { logoUrl: globalLogo, loading: logoLoading } = useSiteAssets();
   const navigate = useNavigate();
+
+  // Debug logging per il logo
+  useEffect(() => {
+    console.log('🎯 [WELCOME DEBUG] Logo state:', { globalLogo, logoLoading });
+  }, [globalLogo, logoLoading]);
 
   useEffect(() => {
     setIsVisible(true);
@@ -40,10 +45,19 @@ const Welcome = () => {
                   src={globalLogo}
                   alt="Platform Logo"
                   className="h-12 w-12 object-contain"
+                  onError={(e) => {
+                    console.log('🎯 [WELCOME DEBUG] Logo failed to load:', globalLogo);
+                    // Fallback al SiteLogo se il logo globale fallisce
+                    const img = e.currentTarget as HTMLImageElement;
+                    img.style.display = 'none';
+                    const fallbackDiv = img.nextElementSibling as HTMLElement;
+                    if (fallbackDiv) fallbackDiv.style.display = 'block';
+                  }}
                 />
-              ) : (
+              ) : null}
+              <div style={{ display: globalLogo ? 'none' : 'block' }}>
                 <SiteLogo className="h-12 w-auto" />
-              )}
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/auth">
