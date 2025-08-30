@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Edit, Trash2, BarChart3, MessageCircle, ChevronDown, ChevronUp, ArrowUpDown, Filter, Settings } from 'lucide-react';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { usePlayersWithAttendance, useDeletePlayer, useUpdatePlayer, useLeaders, useAttendanceScoreSettings } from '@/hooks/useSupabaseData';
+import { useOptimizedPlayersBase } from '@/hooks/useOptimizedSquadData';
 import { computeAttendanceScore } from '@/lib/attendanceScore'
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
@@ -584,7 +585,13 @@ const Squad = () => {
     fallback: string;
   } | null>(null);
   
-  const { data: players = [], isLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
+  // ⚡ OTTIMIZZAZIONE: Carica prima i players base (veloce), poi le statistiche (lento)
+  const { data: playersBase = [], isLoading: playersBaseLoading } = useOptimizedPlayersBase();
+  const { data: playersWithStats = [], isLoading: statsLoading } = usePlayersWithAttendance(dateRange?.from, dateRange?.to);
+  
+  // Usa players con stats se disponibili, altrimenti players base
+  const players = playersWithStats.length > 0 ? playersWithStats : playersBase;
+  const playersLoading = playersBaseLoading;
   const { data: roles = [] } = useRoles();
   const rolesByCode = useMemo(() => Object.fromEntries(roles.map(r => [r.code, r])), [roles])
   const { defaultAvatarImageUrl } = useAvatarBackgrounds()
@@ -594,8 +601,12 @@ const Squad = () => {
   const teamName = localStorage.getItem('currentTeamName') || 'Team';
 
   // Squad Score computed like Dashboard using leaders + settings within the selected dateRange
+  // ⚡ OTTIMIZZAZIONE: Carica score settings e leaders solo dopo che i players sono caricati
   const { data: scoreSettings } = useAttendanceScoreSettings()
-  const { data: leaders } = useLeaders({ startDate: dateRange?.from, endDate: dateRange?.to })
+  const { data: leaders, isLoading: leadersLoading } = useLeaders({ 
+    startDate: dateRange?.from, 
+    endDate: dateRange?.to 
+  })
   const squadScoreByPlayer = React.useMemo(() => {
     if (!leaders) return {}
     const toCount = (arr: any[] | undefined, pid: string) => {
@@ -982,7 +993,15 @@ const Squad = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header compatto */}
       <div className="flex items-center justify-between mb-2">
-        <div className="text-base sm:text-lg font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
+        <div className="flex items-center gap-2">
+          <div className="text-base sm:text-lg font-semibold">Rosa Squadra · <span className="tabular-nums">{players.length}</span> giocatori</div>
+          {(leadersLoading || statsLoading) && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="animate-spin rounded-full h-3 w-3 border border-primary border-t-transparent"></div>
+              {statsLoading ? 'Caricamento presenze...' : 'Caricamento punteggi...'}
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {/* Add Player Buttons - Desktop only */}
           <div className="hidden sm:flex gap-2">
@@ -1152,16 +1171,32 @@ const Squad = () => {
       {/* Vista Card */}
       {viewMode === 'card' && (
         <div className="">
-                      {isLoading ? (
-            <div className="grid grid-cols-1 min-[1000px]:grid-cols-2 min-[1440px]:grid-cols-3 min-[1800px]:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_,i)=> (
-                <div key={i} className="rounded-2xl border p-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-40" />
-                      <Skeleton className="h-3 w-56" />
-                    </div>
+                      {playersLoading ? (
+            <div className="space-y-6">
+              {Array.from({ length: 3 }).map((_, groupIndex) => (
+                <div key={groupIndex} className="space-y-4">
+                  <Skeleton className="h-8 w-32" /> {/* Role header */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {Array.from({ length: 4 }).map((_, playerIndex) => (
+                      <div key={playerIndex} className="relative rounded-lg border p-4 bg-gradient-to-r from-slate-50 to-slate-100">
+                        <div className="flex items-start gap-4">
+                          <Skeleton className="h-16 w-16 rounded-lg" /> {/* Player photo */}
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-5 w-32" /> {/* Player name */}
+                            <Skeleton className="h-4 w-24" /> {/* Role */}
+                            <Skeleton className="h-2 w-full rounded-full" /> {/* Progress bar */}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 mt-4">
+                          {Array.from({ length: 4 }).map((_, statIndex) => (
+                            <div key={statIndex} className="space-y-1">
+                              <Skeleton className="h-3 w-12" />
+                              <Skeleton className="h-4 w-8" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -1281,7 +1316,12 @@ const Squad = () => {
                                 <Badge className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">(C)</Badge>
                               )}
                             </div>
-                            <NeonPillProgress value={squadScoreByPlayer[p.id]} />
+                            <NeonPillProgress 
+                              value={leadersLoading ? undefined : squadScoreByPlayer[p.id]} 
+                              indeterminate={leadersLoading}
+                              showLabel={!leadersLoading}
+                              ariaLabel={leadersLoading ? "Caricamento punteggio..." : undefined}
+                            />
                           </div>
                         </div>
 
@@ -1335,7 +1375,7 @@ const Squad = () => {
       {viewMode === 'table' && (
         <Card><CardContent className="p-4 sm:p-6">
  
-          {isLoading ? (
+          {playersLoading ? (
             <div className="text-center py-8">Caricamento giocatori...</div>
           ) : filteredAndSortedPlayers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">

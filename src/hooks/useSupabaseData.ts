@@ -132,6 +132,9 @@ export const usePlayers = (options: UsePlayersOptions = {}) => {
 export const usePlayersWithAttendance = (startDate?: Date, endDate?: Date) => {
   return useQuery({
     queryKey: ['players-with-attendance', startDate?.toISOString(), endDate?.toISOString(), localStorage.getItem('currentTeamId')],
+    staleTime: 2 * 60 * 1000, // 2 minuti di cache
+    gcTime: 5 * 60 * 1000, // 5 minuti prima di garbage collection
+    refetchOnWindowFocus: false, // Non ricarica quando si cambia finestra
     queryFn: async () => {
       // Get current team from localStorage
       let currentTeamId = localStorage.getItem('currentTeamId');
@@ -3145,6 +3148,9 @@ export const usePlayerNoteEvents = (playerId: string) => {
 export const useLeaders = (opts?: { startDate?: Date; endDate?: Date }) => {
   return useQuery({
     queryKey: ['leaders', opts?.startDate?.toISOString(), opts?.endDate?.toISOString()],
+    staleTime: 2 * 60 * 1000, // 2 minuti di cache
+    gcTime: 5 * 60 * 1000, // 5 minuti prima di garbage collection
+    refetchOnWindowFocus: false, // Non ricarica quando si cambia finestra
     queryFn: async () => {
       const pad = (n: number) => String(n).padStart(2, '0')
       const fmt = (d?: Date) => d ? `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` : undefined
