@@ -747,63 +747,14 @@ const Squad = () => {
   const updateCaptain = async (newCaptainId: string) => {
     try {
       const paramId = (!newCaptainId || newCaptainId === 'none') ? null : newCaptainId
-      const teamId = localStorage.getItem('currentTeamId') // Fix: currentTeamId invece di teamId
       
-      console.log('🎯 [CAPTAIN DEBUG] Updating captain:', { newCaptainId, paramId, teamId })
-      
-      if (!teamId) {
-        throw new Error('Team ID non trovato. Ricarica la pagina e riprova.')
-      }
-      
-      // Try RPC first (atomic) - Fix: gestione corretta del NULL
-      const rpcRes = await supabase.rpc('set_captain', { 
-        new_captain_id: paramId // NULL viene gestito correttamente da Supabase
+      // Usa la funzione atomica set_captain (ora disponibile su Supabase)
+      const { error } = await supabase.rpc('set_captain', { 
+        new_captain_id: paramId
       })
       
-      console.log('🎯 [CAPTAIN DEBUG] RPC Response:', { rpcRes })
-      
-      if (rpcRes.error) {
-        console.log('🎯 [CAPTAIN DEBUG] RPC failed, trying fallback:', rpcRes.error)
-        // If RPC is missing, fallback to direct updates
-        const notFound = (rpcRes.error.message || '').toLowerCase().includes('could not find the function') ||
-                         (rpcRes.error.message || '').toLowerCase().includes('function') ||
-                         (rpcRes.error.code === 'PGRST202')
-        
-        console.log('🎯 [CAPTAIN DEBUG] Is function not found?', notFound)
-        
-        if (!notFound) throw rpcRes.error
-        
-        console.log('🎯 [CAPTAIN DEBUG] Using fallback method...')
-        
-        // Fallback: unset previous captain(s) ONLY FOR THIS TEAM
-        if (teamId) {
-          console.log('🎯 [CAPTAIN DEBUG] Unsetting previous captains for team:', teamId)
-          const { error: unsetErr } = await supabase
-            .from('players')
-            .update({ is_captain: false })
-            .eq('is_captain', true)
-            .eq('team_id', teamId)
-          if (unsetErr) {
-            console.error('🎯 [CAPTAIN DEBUG] Unset error:', unsetErr)
-            throw unsetErr
-          }
-          console.log('🎯 [CAPTAIN DEBUG] Previous captains unset successfully')
-        }
-        
-        // Set new captain if provided
-        if (paramId && teamId) {
-          console.log('🎯 [CAPTAIN DEBUG] Setting new captain:', paramId)
-          const { error: setErr } = await supabase
-            .from('players')
-            .update({ is_captain: true })
-            .eq('id', paramId)
-            .eq('team_id', teamId)
-          if (setErr) {
-            console.error('🎯 [CAPTAIN DEBUG] Set error:', setErr)
-            throw setErr
-          }
-          console.log('🎯 [CAPTAIN DEBUG] New captain set successfully')
-        }
+      if (error) {
+        throw error
       }
 
       if (paramId) {
@@ -817,13 +768,7 @@ const Squad = () => {
       queryClient.invalidateQueries({ queryKey: ['players'] })
       setCaptainDialogOpen(false)
     } catch (error) {
-      console.error('🔥 ERRORE DETTAGLIATO CAPITANO:', {
-        error,
-        message: (error as any)?.message,
-        code: (error as any)?.code,
-        details: (error as any)?.details,
-        hint: (error as any)?.hint
-      });
+      console.error('Errore aggiornamento capitano:', error);
       toast.error(`Errore nell'aggiornamento del capitano: ${(error as any)?.message || error}`);
       // Revert UI state
       const currentCaptain = players.find(p => p.is_captain);
@@ -1056,9 +1001,12 @@ const Squad = () => {
             <DialogTrigger asChild>
               <Button variant="ghost" className="h-9 px-3 rounded-full text-xs">Seleziona Capitano</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent aria-describedby="captain-dialog-description">
               <DialogHeader>
                 <DialogTitle>Seleziona Capitano</DialogTitle>
+                <p id="captain-dialog-description" className="text-sm text-muted-foreground">
+                  Scegli un giocatore attivo come capitano della squadra
+                </p>
               </DialogHeader>
               <div className="p-2 space-y-3">
                 <Select value={selectedCaptain} onValueChange={setSelectedCaptain}>
