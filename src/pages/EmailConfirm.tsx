@@ -54,11 +54,23 @@ const EmailConfirm = () => {
   const state = location.state as EmailConfirmState | null;
 
   useEffect(() => {
-    handleEmailConfirmation();
+    console.log('🔍 [EMAIL-CONFIRM] Component mounted, starting confirmation...');
+    try {
+      handleEmailConfirmation();
+    } catch (error) {
+      console.error('🚨 [EMAIL-CONFIRM] Error in useEffect:', error);
+      setConfirming(false);
+      setConfirmationResult({
+        success: false,
+        message: `Errore critico durante il caricamento: ${error}`
+      });
+    }
   }, []);
 
   const handleEmailConfirmation = async () => {
     try {
+      console.log('🔍 [EMAIL-CONFIRM] Starting handleEmailConfirmation...');
+      
       // Controlla TUTTI i possibili parametri di conferma email Supabase
       const token = searchParams.get('token');
       const tokenHash = searchParams.get('token_hash');
@@ -66,7 +78,7 @@ const EmailConfirm = () => {
       const accessToken = searchParams.get('access_token');
       const refreshToken = searchParams.get('refresh_token');
       
-      console.log('Parametri URL completi:', { 
+      console.log('🔍 [EMAIL-CONFIRM] Parametri URL completi:', { 
         token, tokenHash, type, accessToken, refreshToken,
         fullURL: window.location.href 
       });
@@ -169,12 +181,14 @@ const EmailConfirm = () => {
         });
       }
     } catch (error) {
-      console.error('Errore durante la conferma:', error);
+      console.error('🚨 [EMAIL-CONFIRM] Errore durante la conferma:', error);
+      console.error('🚨 [EMAIL-CONFIRM] Error stack:', error);
       setConfirmationResult({
         success: false,
-        message: "Si è verificato un errore imprevisto durante la conferma."
+        message: `Errore imprevisto durante la conferma: ${error}`
       });
     } finally {
+      console.log('🔍 [EMAIL-CONFIRM] Setting confirming to false...');
       setConfirming(false);
     }
   };
@@ -305,7 +319,10 @@ const EmailConfirm = () => {
     return "La tua email è stata confermata con successo.";
   };
 
+  console.log('🔍 [EMAIL-CONFIRM] Rendering - confirming:', confirming, 'confirmationResult:', confirmationResult);
+
   if (confirming) {
+    console.log('🔍 [EMAIL-CONFIRM] Showing loading screen...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl">
@@ -316,6 +333,31 @@ const EmailConfirm = () => {
               <p className="text-muted-foreground">
                 Stiamo verificando la tua email, attendere prego.
               </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  console.log('🔍 [EMAIL-CONFIRM] Showing confirmation result screen...');
+
+  // Fallback di sicurezza se confirmationResult è null
+  if (!confirmationResult) {
+    console.log('🚨 [EMAIL-CONFIRM] confirmationResult is null, showing fallback...');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-xl">
+          <CardContent className="p-8 text-center space-y-6">
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto" />
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-red-600">Errore di Caricamento</h3>
+              <p className="text-muted-foreground">
+                La pagina di conferma non è riuscita a caricare correttamente.
+              </p>
+              <Button onClick={() => window.location.reload()} className="mt-4">
+                Riprova
+              </Button>
             </div>
           </CardContent>
         </Card>
