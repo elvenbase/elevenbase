@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const RegisterFounder = () => {
   const [loading, setLoading] = useState(false);
+  const [abbreviationStatus, setAbbreviationStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -26,6 +27,35 @@ const RegisterFounder = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Funzione per verificare la sigla in tempo reale
+  const checkAbbreviationAvailability = async (abbreviation: string) => {
+    if (!abbreviation || abbreviation.length < 2) {
+      setAbbreviationStatus('idle');
+      return;
+    }
+
+    setAbbreviationStatus('checking');
+    
+    try {
+      const { data: existingTeam, error } = await supabase
+        .from('teams')
+        .select('id, abbreviation')
+        .eq('abbreviation', abbreviation.toUpperCase())
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking abbreviation:', error);
+        setAbbreviationStatus('idle');
+        return;
+      }
+
+      setAbbreviationStatus(existingTeam ? 'taken' : 'available');
+    } catch (error) {
+      console.error('Error in abbreviation check:', error);
+      setAbbreviationStatus('idle');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +83,35 @@ const RegisterFounder = () => {
     setLoading(true);
 
     try {
+      // 0. Verifica che la sigla del team non sia già in uso
+      console.log('🎯 [TEAM DEBUG] Checking team abbreviation:', formData.teamAbbreviation);
+      const { data: existingTeam, error: checkError } = await supabase
+        .from('teams')
+        .select('id, abbreviation')
+        .eq('abbreviation', formData.teamAbbreviation.toUpperCase())
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking team abbreviation:', checkError);
+        toast({
+          title: "Errore verifica",
+          description: "Errore durante la verifica della sigla. Riprova.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (existingTeam) {
+        toast({
+          title: "Sigla già in uso",
+          description: `La sigla "${formData.teamAbbreviation.toUpperCase()}" è già utilizzata da un altro team. Scegli una sigla diversa.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('🎯 [TEAM DEBUG] Team abbreviation available, proceeding with registration');
+
       // 1. Registrazione utente su Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -141,6 +200,14 @@ const RegisterFounder = () => {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Se è il campo abbreviation, verifica disponibilità
+    if (field === 'teamAbbreviation' && typeof value === 'string') {
+      // Debounce: aspetta 500ms prima di controllare
+      setTimeout(() => {
+        checkAbbreviationAvailability(value);
+      }, 500);
+    }
   };
 
   return (
@@ -216,14 +283,32 @@ const RegisterFounder = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="teamAbbreviation">Abbreviazione *</Label>
-                    <Input
-                      id="teamAbbreviation"
-                      value={formData.teamAbbreviation}
-                      onChange={(e) => handleInputChange('teamAbbreviation', e.target.value.toUpperCase())}
-                      required
-                      placeholder="FCE"
-                      maxLength={10}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="teamAbbreviation"
+                        value={formData.teamAbbreviation}
+                        onChange={(e) => handleInputChange('teamAbbreviation', e.target.value.toUpperCase())}
+                        required
+                        placeholder="FCE"
+                        maxLength={10}
+                        className={
+                          abbreviationStatus === 'taken' ? 'border-red-500 focus:border-red-500' :
+                          abbreviationStatus === 'available' ? 'border-green-500 focus:border-green-500' :
+                          ''
+                        }
+                      />
+                      {abbreviationStatus === 'checking' && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600"></div>
+                        </div>
+                      )}
+                    </div>
+                    {abbreviationStatus === 'available' && (
+                      <p className="text-sm text-green-600">✅ Sigla disponibile</p>
+                    )}
+                    {abbreviationStatus === 'taken' && (
+                      <p className="text-sm text-red-600">❌ Sigla già in uso, scegline un'altra</p>
+                    )}
                   </div>
                 </div>
 
@@ -331,7 +416,11 @@ const RegisterFounder = () => {
                 </div>
               </div>
 
-              <Button type="submit" disabled={loading || !formData.acceptPrivacy} className="w-full text-lg py-6">
+              <Button 
+                type="submit" 
+                disabled={loading || !formData.acceptPrivacy || abbreviationStatus === 'taken' || abbreviationStatus === 'checking'} 
+                className="w-full text-lg py-6"
+              >
                 {loading ? "Creazione team in corso..." : "🚀 Crea Team e Registrati"}
               </Button>
             </form>
