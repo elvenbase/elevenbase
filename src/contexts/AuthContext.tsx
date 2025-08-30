@@ -74,11 +74,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.setItem('currentTeamName', data.team_name || '');
         localStorage.setItem('userRole', data.role || '');
         localStorage.setItem('isGlobalAdmin', data.is_superadmin ? 'true' : 'false');
+        
+        // ✅ Trigger logo update per Navigation
+        localStorage.setItem('teamDataUpdatedAt', Date.now().toString());
       } else {
         localStorage.removeItem('currentTeamId');
         localStorage.removeItem('currentTeamName');
         localStorage.removeItem('userRole');
         localStorage.removeItem('isGlobalAdmin');
+        
+        // ✅ Trigger logo reset per Navigation
+        localStorage.setItem('teamDataUpdatedAt', Date.now().toString());
       }
     } catch (err) {
       console.error('Errore nel refresh status:', err);

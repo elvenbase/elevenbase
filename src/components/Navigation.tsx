@@ -80,7 +80,7 @@ const Navigation = () => {
     
     // React to logo updates broadcast via localStorage
     const onStorage = async (e: StorageEvent) => {
-      if (e.key === 'teamLogoUpdatedAt' || e.key === 'currentTeamId') {
+      if (e.key === 'teamLogoUpdatedAt' || e.key === 'currentTeamId' || e.key === 'teamDataUpdatedAt') {
         await loadTeamData(); // ✅ Await della chiamata asincrona
       }
     }
