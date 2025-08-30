@@ -99,6 +99,9 @@ serve(async (req) => {
     let method = req.method
     let requestBody = null
     
+    console.log('Full URL received:', req.url)
+    console.log('Parsed URL pathname:', url.pathname)
+    console.log('URL search params:', url.search)
     console.log('Initial token from query params:', token)
     
     // Gestisci le chiamate da supabase.functions.invoke che usano sempre POST
