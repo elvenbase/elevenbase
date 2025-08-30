@@ -163,15 +163,45 @@ const EmailConfirm = () => {
           }
         });
       } else if (flow === 'invite') {
+        // Recupera nome team dal codice invito se non disponibile in state
+        let teamName = state?.inviteData?.teamName;
+        let role = state?.inviteData?.role;
+        
+        const inviteCode = userMetadata.invite_code || state?.inviteData?.code;
+        
+        if (!teamName && inviteCode) {
+          try {
+            console.log('🔍 [EMAIL-CONFIRM] Recupero dati team da codice invito:', inviteCode);
+            const { data: invite, error } = await supabase
+              .from('team_invites')
+              .select(`
+                role,
+                team_id,
+                teams!inner(name)
+              `)
+              .eq('code', inviteCode.toUpperCase())
+              .eq('is_active', true)
+              .single();
+            
+            if (!error && invite) {
+              teamName = invite.teams.name;
+              role = invite.role;
+              console.log('🔍 [EMAIL-CONFIRM] Team trovato:', { teamName, role });
+            }
+          } catch (error) {
+            console.error('🚨 [EMAIL-CONFIRM] Errore recupero team da invite:', error);
+          }
+        }
+        
         setConfirmationResult({
           success: true,
           message: "Email confermata! Ora ti registreremo al team.",
           flow: 'invite',
           data: {
-            inviteCode: userMetadata.invite_code || state?.inviteData?.code,
+            inviteCode,
             eaSportsId: userMetadata.ea_sports_id || state?.inviteData?.eaSportsId,
-            teamName: state?.inviteData?.teamName,
-            role: state?.inviteData?.role
+            teamName,
+            role
           }
         });
       } else {
