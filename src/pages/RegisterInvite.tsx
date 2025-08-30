@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { UserPlus, Shield, Gamepad2, AlertTriangle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, Shield, Gamepad2, AlertTriangle, CheckCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSiteAssets } from '@/hooks/useSiteAssets';
 
 interface InviteInfo {
   team_name: string;
@@ -24,6 +25,7 @@ const RegisterInvite = () => {
   const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
   const [codeError, setCodeError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const { logoUrl: globalLogo } = useSiteAssets();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -285,18 +287,44 @@ const RegisterInvite = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        <Card className="shadow-xl">
-          <CardHeader className="text-center space-y-4">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-              <UserPlus className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
+      {/* Header con logo */}
+      <div className="bg-white/80 backdrop-blur-xl border-b border-slate-300/50 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between min-h-[64px] py-2">
+            <div className="flex items-center space-x-4">
+              <Link to="/">
+                <Button variant="ghost" size="sm" className="text-slate-700 hover:text-slate-900">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Torna alla Home
+                </Button>
+              </Link>
+              {globalLogo && (
+                <img 
+                  src={globalLogo}
+                  alt="ElevenBase Logo"
+                  className="h-8 md:h-12 w-auto object-cover"
+                  style={{ maxWidth: '180px' }}
+                />
+              )}
             </div>
-            <CardTitle className="text-3xl font-bold">Unisciti al Team</CardTitle>
-            <CardDescription className="text-lg">
-              Registrati con il codice invito ricevuto
-            </CardDescription>
-          </CardHeader>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenuto principale */}
+      <div className="flex items-center justify-center p-4 pt-12">
+        <div className="w-full max-w-lg">
+          <Card className="shadow-xl">
+            <CardHeader className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-teal-600 rounded-full flex items-center justify-center">
+                <UserPlus className="w-8 h-8 text-white" />
+              </div>
+              <CardTitle className="text-3xl font-bold text-slate-800">Unisciti al Team</CardTitle>
+              <CardDescription className="text-lg text-slate-600">
+                Registrati con il codice invito ricevuto su <span className="font-semibold text-blue-600">ElevenBase</span>
+              </CardDescription>
+            </CardHeader>
 
           <CardContent className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -434,22 +462,33 @@ const RegisterInvite = () => {
               )}
             </form>
 
-            <div className="text-center space-y-2 border-t pt-4">
-              <p className="text-sm text-muted-foreground">
-                Hai già un account?{' '}
-                <Link to="/auth" className="text-blue-600 hover:underline font-medium">
-                  Accedi qui
-                </Link>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Vuoi creare un nuovo team?{' '}
-                <Link to="/register-founder" className="text-purple-600 hover:underline font-medium">
-                  Registrati come Founder
-                </Link>
-              </p>
+            <div className="text-center space-y-3 border-t border-slate-200 pt-6">
+              <div className="space-y-2">
+                <p className="text-sm text-slate-600">
+                  Hai già un account?{' '}
+                  <Link to="/auth" className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                    Accedi qui
+                  </Link>
+                </p>
+                <p className="text-sm text-slate-600">
+                  Vuoi creare un nuovo team?{' '}
+                  <Link to="/register-founder" className="text-teal-600 hover:text-teal-800 hover:underline font-medium">
+                    Registrati come Founder
+                  </Link>
+                </p>
+              </div>
+              
+              {/* Brand footer */}
+              <div className="pt-4 border-t border-slate-100">
+                <p className="text-xs text-slate-500">
+                  Powered by <span className="font-semibold text-blue-600">ElevenBase</span> - 
+                  Gestione sportiva professionale per EA Sports FC
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );
