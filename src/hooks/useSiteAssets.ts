@@ -22,7 +22,8 @@ export const useSiteAssets = (): SiteAssets => {
     const loadSiteAssets = async () => {
       try {
         // Carica logo sito
-        const { data: logoData } = await supabase
+        console.log('🎯 [LOGO DEBUG] Loading site logo...');
+        const { data: logoData, error: logoError } = await supabase
           .from('avatar_assets')
           .select('value')
           .is('created_by', null)
@@ -30,8 +31,13 @@ export const useSiteAssets = (): SiteAssets => {
           .eq('type', 'image')
           .maybeSingle();
         
+        console.log('🎯 [LOGO DEBUG] Logo query result:', { logoData, logoError });
+        
         if (logoData?.value) {
+          console.log('🎯 [LOGO DEBUG] Setting logo URL:', logoData.value);
           setLogoUrl(logoData.value);
+        } else {
+          console.log('🎯 [LOGO DEBUG] No logo found, using fallback');
         }
 
         // Carica favicon 16x16
